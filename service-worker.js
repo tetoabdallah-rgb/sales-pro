@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sales-pro-enterprise-v1';
+const CACHE_NAME = 'salespro-v2';
 const urlsToCache = [
   './',
   './index.html',
@@ -18,16 +18,22 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Only intercept GET requests
+  if (event.request.method !== 'GET') return;
+  
+  // Exclude Firebase/Firestore API calls
+  if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('firebase')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
         return fetch(event.request);
-      }
-    )
+      })
   );
 });
 
