@@ -8,7 +8,9 @@ let hwCats = []; // Hardware Categories
 let C = []; // Collections/PayData
 let D = []; // Dues
 let CH = {}; // Chart Instances
-let L = localStorage.getItem('sp_lang') || 'ar'; // Language
+let L = localStorage.getItem('sp_lang') || 'ar';
+L = L.replace(/"/g, ''); // Strip quotes if JSON stringified
+if (L !== 'ar' && L !== 'en') L = 'ar';
 let P = 'dash'; // Current Page
 let _cache = {};
 let _chkC = {};
