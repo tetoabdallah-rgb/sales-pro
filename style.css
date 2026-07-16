@@ -1288,3 +1288,15 @@ input[type=file] {
     display: none;
   }
 }
+
+/* Print & PDF Export Styles */
+@media print {
+    body { background: white !important; color: black !important; }
+    .sidebar, .bnav, .ph button, #ss, .sbox, #spg, #cpg { display: none !important; }
+    .mw { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: none !important; }
+    .card, .kg, .cg, .tb { box-shadow: none !important; border: 1px solid #ccc !important; page-break-inside: avoid; }
+    table { width: 100% !important; border-collapse: collapse !important; }
+    th, td { border: 1px solid #ddd !important; padding: 8px !important; color: black !important; background: white !important; }
+    .badge { border: 1px solid #000; background: transparent !important; color: #000 !important; }
+    canvas { max-width: 100% !important; }
+}
