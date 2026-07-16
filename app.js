@@ -22,7 +22,7 @@ const ICONS = {
     dash:'🏠', sales:'💰', targets:'🎯', personal:'👤', customers:'🏪', brands:'📦',
     accessories:'🎧', hardware:'📱', analytics:'🧠', potential:'🚀', profit:'💵',
     keyacc:'⭐', dormant:'💤', prospects:'🔍', ai:'🤖', alerts:'🔔', account:'👤',
-    backup:'💾', setup:'📂', reset:'🗑️', settings:'⚙️'
+    backup:'💾', setup:'📂', reset:'🗑️', settings:'⚙️', collections:'💰'
 };
 
 function buildNav() {

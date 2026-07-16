@@ -709,11 +709,48 @@ function rBk() {
 
 function rSetup() {
     $('M').innerHTML = `
-        <div class="ph"><h1>${ICONS.setup} ${t('setup')}</h1></div>
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.setup}</span> ${t('setup')}</h1></div>
         <div class="card">
-            <h3>Upload Data</h3>
-            <p>Cloud Sync via Firebase is active.</p>
-            <div style="padding:16px;background:var(--bg3);border-radius:12px;"><strong>Sales:</strong> ${S.length} <br><strong>Targets:</strong> ${T.length}</div>
+            <h3 style="margin-bottom:12px;">${L==='ar'?'رفع ملفات Excel':'Upload Excel Files'}</h3>
+            <p style="margin-bottom:16px;color:var(--tx2);font-size:0.85rem;">${L==='ar'?'ارفع ملف Excel الخاص بالمبيعات والتارجت والتحصيلات لتحديث البيانات.':'Upload your Sales, Target and Collections Excel files to update the data.'}</p>
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <div>
+                    <label style="font-size:0.8rem;font-weight:bold;display:block;margin-bottom:6px;">📊 ${L==='ar'?'ملف المبيعات':'Sales File'}</label>
+                    <input type="file" id="fSales" accept=".xlsx,.xls,.csv" style="padding:8px;background:var(--bg3);border:1px dashed var(--bd);border-radius:8px;width:100%;cursor:pointer;">
+                    <p style="font-size:0.7rem;color:var(--tx2);margin-top:4px;">${S.length} ${L==='ar'?'سجل محمّل حالياً':'records currently loaded'}</p>
+                </div>
+                <div>
+                    <label style="font-size:0.8rem;font-weight:bold;display:block;margin-bottom:6px;">🎯 ${L==='ar'?'ملف التارجت':'Target File'}</label>
+                    <input type="file" id="fTarget" accept=".xlsx,.xls,.csv" style="padding:8px;background:var(--bg3);border:1px dashed var(--bd);border-radius:8px;width:100%;cursor:pointer;">
+                    <p style="font-size:0.7rem;color:var(--tx2);margin-top:4px;">${T.length} ${L==='ar'?'سجل محمّل حالياً':'records currently loaded'}</p>
+                </div>
+                <div>
+                    <label style="font-size:0.8rem;font-weight:bold;display:block;margin-bottom:6px;">💰 ${L==='ar'?'ملف التحصيلات':'Collections File'}</label>
+                    <input type="file" id="fPay" accept=".xlsx,.xls,.csv" style="padding:8px;background:var(--bg3);border:1px dashed var(--bd);border-radius:8px;width:100%;cursor:pointer;">
+                    <p style="font-size:0.7rem;color:var(--tx2);margin-top:4px;">${C.length} ${L==='ar'?'سجل محمّل حالياً':'records currently loaded'}</p>
+                </div>
+            </div>
+            <button id="bUpload" class="btn btn-p" style="margin-top:16px;width:100%;">⬆️ ${L==='ar'?'رفع البيانات':'Upload Data'}</button>
         </div>
     `;
+    function parseFile(file, cb) {
+        let reader = new FileReader();
+        reader.onload = e => {
+            try {
+                let wb = XLSX.read(e.target.result, {type:'array'});
+                let ws = wb.Sheets[wb.SheetNames[0]];
+                cb(XLSX.utils.sheet_to_json(ws));
+            } catch(err) { toast('❌ Error reading file'); }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    $('bUpload').onclick = () => {
+        let done = 0, total = 0;
+        let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
+        if(!fS && !fT && !fP) { toast(L==='ar'?'اختار ملف الأول!':'Choose a file first!'); return; }
+        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) { toast('✅ Done'); render(); } }); }
+        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) { toast('✅ Done'); render(); } }); }
+        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast('✅ Done'); render(); } }); }
+    };
 }
+
