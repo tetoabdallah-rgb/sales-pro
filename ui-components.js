@@ -332,8 +332,6 @@ function rCust() {
     $('cusr').oninput = debounce(() => { pState.customers.page = 1; window.doCustSearch(); }, 200);
 }
 
-
-}
 function rReset() {
     $('M').innerHTML=`<div class="ph"><h1>${ICONS.reset} ${t('reset')}</h1></div><div class="card" style="text-align:center;"><p style="margin-bottom:16px;color:var(--tx2);">${L==='ar'?'هتمسح كل البيانات المحفوظة على الجهاز. هذا لا يؤثر على بيانات السحابة.':'This will clear all locally stored data. Cloud data is not affected.'}</p><button id="fRst" class="btn btn-p" style="background:var(--rd)">${L==='ar'?'مسح كل البيانات':'Wipe All Local Data'}</button></div>`;
     $('fRst').onclick = () => {
