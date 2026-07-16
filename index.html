@@ -1,28 +1,86 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-
-<!-- skill:chrome -->
-
-
-<!-- /skill:chrome -->
-<!-- skill:libraries -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js" integrity="sha384-XcdcwHqIPULERb2yDEM4R0XaQKU3YnDsrTmjACBZyfdVVqjh6xQ4/DCMd7XLcA6Y" crossorigin="anonymous"></script>
-<!-- /skill:libraries -->
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Sales Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Sales Pro — نظام إدارة المبيعات</title>
+  <meta name="description" content="Sales Pro Enterprise — نظام متكامل لإدارة وتحليل المبيعات والتحصيلات والتارجت">
   <meta name="theme-color" content="#1e293b">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3214/3214746.png">
+  <link rel="manifest" href="manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="AUTH" class="auth-bg"><div class="auth-card"><div style="font-size:1.4rem">📊</div><h1>Sales Pro</h1><p class="ds">سجّل دخول أو اعمل حساب جديد</p><div class="fg"><label>الإيميل (Email)</label><input id="inE" type="email"></div><div class="fg"><label>كلمة المرور (Password)</label><input id="inP" type="password"></div><div class="aerr" id="aErr"></div><div class="abtns" style="flex-direction:column;gap:10px;"><button class="btn btn-p" id="bLog">دخول / إنشاء حساب (Email)</button><button class="btn" id="bLogG" style="background:#fff;color:#333;border:1px solid #ccc;width:100%;margin-top:5px;"><img src="https://www.google.com/favicon.ico" width="14" style="margin-right:6px"> دخول بحساب جوجل</button></div></div></div>
-<div id="APP" class="hidden"><nav class="sidebar"><div class="sbt"><span class="sbr">📊 Sales Pro</span><div class="sbb"><button id="bTh">🌙</button><button id="bLn">EN</button><button id="bOt">خروج</button></div></div><div id="NV"></div></nav><main class="mw" id="M"></main><nav class="bnav"><div class="bni" id="BN"></div></nav></div>
+
+<!-- Loading Overlay -->
+<div id="LOADER" class="loader-overlay">
+  <div class="loader-content">
+    <div class="loader-icon">📊</div>
+    <div class="loader-text">Sales Pro</div>
+    <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  </div>
+</div>
+
+<!-- Auth Screen -->
+<div id="AUTH" class="auth-bg">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">📊</div>
+      <div class="auth-logo-glow"></div>
+    </div>
+    <h1>Sales Pro</h1>
+    <p class="ds">سجّل دخول أو اعمل حساب جديد</p>
+    <div class="fg">
+      <label>الإيميل (Email)</label>
+      <div class="input-wrap">
+        <input id="inE" type="email" placeholder="example@email.com">
+        <span class="input-icon">✉️</span>
+      </div>
+    </div>
+    <div class="fg">
+      <label>كلمة المرور (Password)</label>
+      <div class="input-wrap">
+        <input id="inP" type="password" placeholder="••••••••">
+        <span class="input-icon toggle-pw" onclick="var p=document.getElementById('inP');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'👁️':'🙈';">👁️</span>
+      </div>
+    </div>
+    <div class="aerr" id="aErr"></div>
+    <div class="abtns" style="flex-direction:column;gap:10px;">
+      <button class="btn btn-p btn-login" id="bLog">
+        <span class="btn-login-text">دخول / إنشاء حساب</span>
+        <span class="btn-login-loader hidden">⏳</span>
+      </button>
+      <button class="btn btn-google" id="bLogG">
+        <img src="https://www.google.com/favicon.ico" width="16" alt="Google"> دخول بحساب جوجل
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="APP" class="hidden">
+  <nav class="sidebar">
+    <div class="sbt">
+      <span class="sbr">📊 Sales Pro</span>
+      <div class="sbb">
+        <button id="bTh" title="تغيير الثيم">🌙</button>
+        <button id="bLn" title="تغيير اللغة">EN</button>
+        <button id="bOt" title="تسجيل الخروج">خروج</button>
+      </div>
+    </div>
+    <div id="NV"></div>
+  </nav>
+  <main class="mw" id="M"></main>
+  <nav class="bnav">
+    <div class="bni" id="BN"></div>
+  </nav>
+</div>
+
+<!-- Toast -->
 <div class="toast" id="TT"></div>
+
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -32,24 +90,30 @@
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
 
+<script src="app.js"></script>
+<script>
+  // Hide loader when app is ready
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      var loader = document.getElementById('LOADER');
+      if (loader) {
+        loader.classList.add('fade-out');
+        setTimeout(function() { loader.style.display = 'none'; }, 500);
+      }
+    }, 800);
+  });
 
-
-  <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        // Force unregister any old service workers first
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          for(let registration of registrations) {
-            registration.unregister();
-          }
-        }).then(() => {
-          // Then register the new one
-          navigator.serviceWorker.register('service-worker.js?v=' + new Date().getTime());
-        });
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(var i = 0; i < registrations.length; i++) {
+          registrations[i].unregister();
+        }
+      }).then(function() {
+        navigator.serviceWorker.register('service-worker.js?v=' + new Date().getTime());
       });
-    }
-  </script>
+    });
+  }
+</script>
 </body>
 </html>
-
