@@ -331,7 +331,6 @@ function rCust() {
     window.doCustSearch();
     $('cusr').oninput = debounce(() => { pState.customers.page = 1; window.doCustSearch(); }, 200);
 }
-
 function rReset() {
     $('M').innerHTML=`<div class="ph"><h1>${ICONS.reset} ${t('reset')}</h1></div><div class="card" style="text-align:center;"><p style="margin-bottom:16px;color:var(--tx2);">${L==='ar'?'هتمسح كل البيانات المحفوظة على الجهاز. هذا لا يؤثر على بيانات السحابة.':'This will clear all locally stored data. Cloud data is not affected.'}</p><button id="fRst" class="btn btn-p" style="background:var(--rd)">${L==='ar'?'مسح كل البيانات':'Wipe All Local Data'}</button></div>`;
     $('fRst').onclick = () => {
@@ -713,6 +712,9 @@ function rSetup() {
         <div class="card">
             <h3 style="margin-bottom:12px;">${L==='ar'?'رفع ملفات Excel':'Upload Excel Files'}</h3>
             <p style="margin-bottom:16px;color:var(--tx2);font-size:0.85rem;">${L==='ar'?'ارفع ملف Excel الخاص بالمبيعات والتارجت والتحصيلات لتحديث البيانات.':'Upload your Sales, Target and Collections Excel files to update the data.'}</p>
+            <div style="background:var(--gn);color:#fff;padding:10px;border-radius:8px;margin-bottom:16px;font-size:0.9rem;display:flex;align-items:center;gap:8px;">
+                ☁️ <strong>${L==='ar'?'الرفع السحابي مفعل':'Cloud Sync Active'}</strong>
+            </div>
             <div style="display:flex;flex-direction:column;gap:16px;">
                 <div style="background:var(--bg3);padding:16px;border-radius:12px;border:1px solid var(--bd);">
                     <label for="fSales" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">📊 ${L==='ar'?'ملف المبيعات':'Sales File'}</label>
@@ -753,4 +755,3 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast('✅ Done'); render(); } }); }
     };
 }
-
