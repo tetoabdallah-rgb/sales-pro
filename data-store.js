@@ -1,18 +1,19 @@
 // js/data-store.js
 
 // Global State
-let S = []; // Sales
-let T = []; // Targets
-let accCats = []; // Accessories Categories
-let hwCats = []; // Hardware Categories
-let C = []; // Collections/PayData
-let D = []; // Dues
+function loadLS(k) { try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : []; } catch(e){ return []; } }
+let S = loadLS('salesData'); // Sales
+let T = loadLS('targetData'); // Targets
+let accCats = loadLS('accCats'); // Accessories Categories
+let hwCats = loadLS('hwCats'); // Hardware Categories
+let C = loadLS('payData'); // Collections/PayData
+let D = loadLS('duesData'); // Dues
 let CH = {}; // Chart Instances
 let L = localStorage.getItem('sp_lang') || 'ar';
 L = L.replace(/"/g, ''); // Strip quotes if JSON stringified
 if (L !== 'ar' && L !== 'en') L = 'ar';
 let P = 'dash'; // Current Page
-let _cache = {};
+let _cache = { salesData: S, targetData: T, accCats: accCats, hwCats: hwCats, payData: C, duesData: D };
 let _chkC = {};
 let _mtC = {};
 let globalDateRange = { start: null, end: null }; // Global Date Filter
