@@ -1163,14 +1163,32 @@ function rAI() {
                         contents: msgs,
                         generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
                     };
-                    let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                    
+                    // 1. Fetch available models for this key
+                    let modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                    let modelsData = await modelsRes.json();
+                    
+                    if(modelsData.error) {
+                        window.aiChatHistory.push({role:'model', text: 'API Key Error: ' + modelsData.error.message});
+                        rAI();
+                        return;
+                    }
+
+                    // 2. Find a supported model
+                    let targetModelName = "models/gemini-1.5-flash"; // Default
+                    if (modelsData.models) {
+                        let validModel = modelsData.models.find(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent") && m.name.includes("gemini-1.5"));
+                        if(!validModel) validModel = modelsData.models.find(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent") && m.name.includes("gemini"));
+                        if(validModel) targetModelName = validModel.name;
+                    }
+
+                    // 3. Generate Content
+                    let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${targetModelName}:generateContent?key=${key}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(reqBody)
                     });
-                    let data = await res.json();
-                    if(data.error && data.error.message.includes('not found')) {
-                        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`, {
+                    let data = await res.json();`, {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify(reqBody)
@@ -1285,5 +1303,6 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast('✅ Done'); render(); } }); }
     };
 }
+
 
 
