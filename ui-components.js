@@ -1175,20 +1175,29 @@ function rAI() {
                     }
 
                     // 2. Find a supported model
-                    let targetModelName = "models/gemini-1.5-flash"; // Default
+                    let targetModelName = "models/gemini-1.5-flash";
+                    let data = null;
                     if (modelsData.models) {
-                        let validModel = modelsData.models.find(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent") && m.name.includes("gemini-1.5"));
-                        if(!validModel) validModel = modelsData.models.find(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent") && m.name.includes("gemini"));
-                        if(validModel) targetModelName = validModel.name;
+                        let geminiModels = modelsData.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent") && m.name.includes("gemini"));
+                        // Sort descending so newer models (like 4.0, 3.5) are tried first
+                        geminiModels.sort((a,b) => b.name.localeCompare(a.name));
+                        
+                        let success = false;
+                        for(let m of geminiModels) {
+                            try {
+                                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${m.name}:generateContent?key=${key}`, {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify(reqBody)
+                                });
+                                data = await res.json();
+                                if(!data.error) {
+                                    success = true;
+                                    break;
+                                }
+                            } catch(e) { continue; }
+                        }
                     }
-
-                    // 3. Generate Content
-                    let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${targetModelName}:generateContent?key=${key}`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(reqBody)
-                    });
-                    let data = await res.json();
                     if(data.error) {
                         window.aiChatHistory.push({role:'model', text: 'Error: ' + data.error.message});
                     } else if(data.candidates && data.candidates.length > 0) {
@@ -1297,6 +1306,7 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast('? Done'); render(); } }); }
     };
 }
+
 
 
 
