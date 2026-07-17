@@ -1076,13 +1076,114 @@ function rAI() {
     arr.filter(r=>r.m<5&&r.s>10000).slice(0,3).forEach(r => insights.push({icon:'💡',color:'var(--am)',text:`${r.n}: ${L==='ar'?'هامش ربح منخفض':'Low margin'} (${pc(r.m)}) — ${L==='ar'?'يحتاج مراجعة أسعار':'Review pricing'}`}));
     arr.filter(r=>{ let days=Math.floor((today-new Date(r.last))/86400000); return days>=45&&days<90; }).slice(0,3).forEach(r => insights.push({icon:'🔔',color:'var(--am)',text:`${r.n}: ${L==='ar'?'يحتاج متابعة — لم يشتر منذ':'Needs follow-up — last purchase was'} ${Math.floor((today-new Date(r.last))/86400000)} ${L==='ar'?'يوم':'days ago'}`}));
     arr.filter(r=>r.accS===0&&r.hwS>0).slice(0,3).forEach(r => insights.push({icon:'🎯',color:'var(--am)',text:`${r.n}: ${L==='ar'?'لم يشتر أكسسوارات — فرصة بيع إضافية':'No accessories — upsell opportunity'}`}));
+    
+    let key = ld('sp_gemini_key') || '';
+    window.aiChatHistory = window.aiChatHistory || [];
+
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.ai}</span> ${t('ai')}</h1></div>
-        <div class="card">
-            <h3 style="margin-bottom:16px;">🤖 ${L==='ar'?'توصيات ذكية بناءً على بياناتك':'Smart Insights Based on Your Data'}</h3>
+        
+        <div class="card" style="margin-bottom:20px;">
+            <h3 style="margin-bottom:16px;">🤖 ${L==='ar'?'توصيات ذكية سريعة':'Quick Smart Insights'}</h3>
             ${insights.length===0?`<p style="color:var(--tx2);text-align:center;">${L==='ar'?'ارفع بياناتك للحصول على توصيات':'Upload your data to get AI insights'}</p>`:insights.map(i=>`<div style="display:flex;gap:12px;padding:12px;margin-bottom:10px;background:var(--bg3);border-radius:10px;border-left:3px solid ${i.color};"><span style="font-size:1.3rem;">${i.icon}</span><span style="font-size:0.85rem;line-height:1.5;">${i.text}</span></div>`).join('')}
         </div>
+
+        <div class="card" style="display:flex; flex-direction:column; height:500px;">
+            <h3 style="margin-bottom:16px;">✨ ${L==='ar'?'المساعد الذكي (AI Co-pilot)':'AI Co-pilot Chat'}</h3>
+            ${!key ? `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                    <span style="font-size:3rem; margin-bottom:16px;">🔑</span>
+                    <p style="color:var(--tx2); margin-bottom:16px;">${L==='ar'?'يجب إدخال مفتاح Gemini API في الإعدادات لتفعيل المحادثة الذكية.':'You must enter a Gemini API Key in settings to enable smart chat.'}</p>
+                    <button class="btn btn-p" onclick="P='settings';buildNav();render();">${L==='ar'?'الذهاب للإعدادات':'Go to Settings'}</button>
+                </div>
+            ` : `
+                <div id="aiChatBox" style="flex:1; overflow-y:auto; background:var(--bg2); border-radius:8px; padding:16px; margin-bottom:16px; display:flex; flex-direction:column; gap:12px;">
+                    ${window.aiChatHistory.length===0 ? `
+                        <div style="text-align:center; color:var(--tx2); margin:auto;">
+                            <span style="font-size:2rem;">👋</span><br>
+                            ${L==='ar'?'أهلاً بك! يمكنك سؤالي أي شيء عن مبيعاتك وعملائك.':'Hello! Ask me anything about your sales and customers.'}
+                        </div>
+                    ` : window.aiChatHistory.map(msg => `
+                        <div style="align-self:${msg.role==='user'?'flex-end':'flex-start'}; background:${msg.role==='user'?'var(--p)':'var(--bg3)'}; color:${msg.role==='user'?'#fff':'var(--tx1)'}; padding:10px 14px; border-radius:12px; max-width:85%; word-wrap:break-word; font-size:0.9rem; line-height:1.5;">
+                            ${msg.text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <input id="aiInput" type="text" class="sbox" style="flex:1;" placeholder="${L==='ar'?'اسأل المساعد الذكي...':'Ask the AI assistant...'}" onkeypress="if(event.key==='Enter') document.getElementById('aiSend').click()">
+                    <button id="aiSend" class="btn btn-p" style="padding:0 24px;">${L==='ar'?'إرسال':'Send'}</button>
+                </div>
+            `}
+        </div>
     `;
+
+    if(key) {
+        let chatBox = $('aiChatBox');
+        if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+
+        let sendBtn = $('aiSend');
+        if(sendBtn) {
+            sendBtn.onclick = async () => {
+                let inp = $('aiInput');
+                let txt = inp.value.trim();
+                if(!txt) return;
+
+                window.aiChatHistory.push({role:'user', text:txt});
+                inp.value = '';
+                inp.disabled = true;
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '⏳';
+                rAI(); 
+
+                let totalSales = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0), 0);
+                let totalProfit = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0), 0);
+                let ctx = {
+                    totalSales,
+                    totalProfit,
+                    top5Customers: arr.slice(0,5).map(x=>({name:x.n, sales:x.s, profit:x.p})),
+                    totalCustomers: arr.length
+                };
+                
+                let systemPrompt = `أنت مساعد ذكي لتطبيق إدارة المبيعات "Sales Pro". تجيب باللغة ${L==='ar'?'العربية':'الإنجليزية'}.
+ملخص بيانات المبيعات الحالية:
+- إجمالي المبيعات: ${ctx.totalSales}
+- إجمالي الأرباح: ${ctx.totalProfit}
+- عدد العملاء النشطين: ${ctx.totalCustomers}
+- أفضل 5 عملاء ومبيعاتهم وأرباحهم: ${JSON.stringify(ctx.top5Customers)}
+
+أجب بشكل مختصر، احترافي، ومباشر بناءً على هذه الأرقام حصراً، ولا تقدم افتراضات من خارج البيانات.`;
+
+                let msgs = window.aiChatHistory.map(m => ({role: m.role==='user'?'user':'model', parts: [{text: m.text}]}));
+                if(msgs.length > 0) {
+                    msgs[0].parts[0].text = `[SYSTEM CONTEXT: ${systemPrompt}]\n\nUser: ` + msgs[0].parts[0].text;
+                }
+                
+                try {
+                    let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            contents: msgs,
+                            generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
+                        })
+                    });
+                    let data = await res.json();
+                    if(data.error) {
+                        window.aiChatHistory.push({role:'model', text: 'Error: ' + data.error.message});
+                    } else if(data.candidates && data.candidates.length > 0) {
+                        let aiTxt = data.candidates[0].content.parts[0].text;
+                        window.aiChatHistory.push({role:'model', text: aiTxt});
+                    } else {
+                        window.aiChatHistory.push({role:'model', text: 'No response received.'});
+                    }
+                } catch(e) {
+                    window.aiChatHistory.push({role:'model', text: 'Network Error: ' + e.message});
+                }
+                rAI();
+            };
+        }
+    }
+    initAnm && initAnm();
 }
 
 // Account
