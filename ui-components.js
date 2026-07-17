@@ -1159,15 +1159,24 @@ function rAI() {
                 }
                 
                 try {
+                    let reqBody = {
+                        contents: msgs,
+                        generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
+                    };
                     let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            contents: msgs,
-                            generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
-                        })
+                        body: JSON.stringify(reqBody)
                     });
                     let data = await res.json();
+                    if(data.error && data.error.message.includes('not found')) {
+                        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(reqBody)
+                        });
+                        data = await res.json();
+                    }
                     if(data.error) {
                         window.aiChatHistory.push({role:'model', text: 'Error: ' + data.error.message});
                     } else if(data.candidates && data.candidates.length > 0) {
@@ -1276,3 +1285,5 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast('✅ Done'); render(); } }); }
     };
 }
+
+
