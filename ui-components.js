@@ -14,9 +14,9 @@ function renderPagination(total, stateKey, onPageChange) {
     
     let html = `<div style="display:flex;justify-content:center;gap:8px;padding:12px;border-top:1px solid var(--bd-s)">`;
     
-    html += `<button class="btn" ${state.page === 1 ? 'disabled' : ''} onclick="pState['${stateKey}'].page--; ${onPageChange}()">Ø§Ù„Ø³Ø§Ø¨Ù‚</button>`;
-    html += `<span style="font-size:0.75rem;font-weight:bold;align-self:center;">ØµÙØ­Ø© ${state.page} Ù…Ù† ${totalPages}</span>`;
-    html += `<button class="btn" ${state.page === totalPages ? 'disabled' : ''} onclick="pState['${stateKey}'].page++; ${onPageChange}()">Ø§Ù„ØªØ§Ù„ÙŠ</button>`;
+    html += `<button class="btn" ${state.page === 1 ? 'disabled' : ''} onclick="pState['${stateKey}'].page--; ${onPageChange}()">&#x2B05;&#xFE0F;</button>`;
+    html += `<span style="font-size:0.75rem;font-weight:bold;align-self:center;">&#x1F4C4; ${state.page} ${totalPages}</span>`;
+    html += `<button class="btn" ${state.page === totalPages ? 'disabled' : ''} onclick="pState['${stateKey}'].page++; ${onPageChange}()">&#x27A1;&#xFE0F;</button>`;
     
     html += `</div>`;
     return html;
@@ -38,11 +38,11 @@ function rDash() {
     
     let dateFilterUI = `
         <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);">
-            <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?'Ù…Ù†':'From'}:</label>
+            <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('From'):'From'}:</label>
             <input type="date" id="dfStart" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.start||''}">
-            <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?'Ø¥Ù„Ù‰':'To'}:</label>
+            <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('To'):'To'}:</label>
             <input type="date" id="dfEnd" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.end||''}">
-            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">Ã—</button>
+            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">?</button>
         </div>
     `;
     
@@ -52,18 +52,18 @@ function rDash() {
             ${dateFilterUI}
         </div>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø­Ù‚Ù‚':'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Cust.'}</div><div class="vl">${aFmt(Object.keys(cu).length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Cust.'):'Cust.'}</div><div class="vl">${aFmt(Object.keys(cu).length)}</div></div>
         </div>
-        <div class="rg">${ring(L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales', ap, tt)}${ring(L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit', pp, tpt)}</div>
+        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, tt)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tpt)}</div>
         
         <div class="cg">
-            <div class="cc"><h3>${L==='ar'?'ÙŠÙˆÙ…ÙŠ':'Daily'}</h3><div class="cw"><canvas id="cD"></canvas></div></div>
-            <div class="cc"><h3>${L==='ar'?'Ø§Ù„ØªØµÙ†ÙŠÙØ§Øª':'Cats'}</h3><div class="cw"><canvas id="cC"></canvas></div></div>
+            <div class="cc"><h3>${L==='ar'?TUI('Daily'):'Daily'}</h3><div class="cw"><canvas id="cD"></canvas></div></div>
+            <div class="cc"><h3>${L==='ar'?TUI('Cats'):'Cats'}</h3><div class="cw"><canvas id="cC"></canvas></div></div>
         </div>
     `;
     
@@ -138,18 +138,18 @@ function rSales() {
         let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : i===2 ? '#f39c12' : 'var(--tx2)';
         topItemsHtml += `
             <div class="card" style="flex:1; min-width:200px; border-top:4px solid ${color}; padding:16px;">
-                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'Ø§Ù„ØªØ±ØªÙŠØ¨':'Rank'} #${i+1}</div>
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
                 <h3 style="margin:8px 0; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales'):'Sales'}</span>
                     <strong style="color:${color}; font-size:0.9rem;">${aFmt(d.s)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„ÙƒÙ…ÙŠØ©':'Qty'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Qty'):'Qty'}</span>
                     <strong style="font-size:0.9rem;">${fmt(d.qty)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Profit'):'Profit'}</span>
                     <strong style="font-size:0.9rem;">${aFmt(d.p)}</strong>
                 </div>
             </div>
@@ -160,27 +160,27 @@ function rSales() {
         <div class="ph" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.sales}</span> ${t('sales')}</h1>
             <div style="margin-left:auto;display:flex;gap:10px;">
-                <button id="bExSales" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">ðŸ“Š</span> Excel</button>
+                <button id="bExSales" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">?</span> Excel</button>
                 <button onclick="window.print()" class="btn btn-p"><span style="width:20px;height:20px;display:inline-flex">${ICONS.sales}</span> Print</button>
             </div>
         </div>
 
-        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'Ø£ÙØ¶Ù„ 5 Ù…Ø¨ÙŠØ¹Ø§Ù‹':'Top 5 Best-Sellers'}</h3>
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 5 Best-Sellers'):'Top 5 Best-Sellers'}</h3>
         <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
             ${topItemsHtml}
         </div>
 
         <div class="tb">
             <div class="tbt">
-                <h3>${L==='ar'?'Ø¬Ø¯ÙˆÙ„ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales Table'} (${fmt(ds.length)} ${L==='ar'?'Ø³Ø¬Ù„Ø§Øª':'Records'})</h3>
-                <input class="sbox" id="ss" placeholder="${L==='ar'?'Ø¨Ø­Ø«...':'Search...'}">
+                <h3>${L==='ar'?TUI('Sales Table'):'Sales Table'} (${fmt(ds.length)} ${L==='ar'?TUI('Records'):'Records'})</h3>
+                <input class="sbox" id="ss" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
             </div>
             <div class="tbs">
                 <table>
                     <thead><tr>
-                        <th data-c="Date">Date â†•</th><th data-c="Nbr"># â†•</th><th data-c="Customer">Customer â†•</th>
-                        <th data-c="Region">Region â†•</th><th data-c="Class">Class â†•</th><th data-c="Product">Product â†•</th>
-                        <th data-c="Qty">Qty â†•</th><th data-c="Sales">Sales â†•</th><th data-c="Profit">Profit â†•</th>
+                        <th data-c="Date">Date ? </th><th data-c="Nbr"># ? </th><th data-c="Customer">Customer ? </th>
+                        <th data-c="Region">Region ? </th><th data-c="Class">Class ? </th><th data-c="Product">Product ? </th>
+                        <th data-c="Qty">Qty ? </th><th data-c="Sales">Sales ? </th><th data-c="Profit">Profit ? </th>
                     </tr></thead>
                     <tbody id="stb"></tbody>
                 </table>
@@ -253,7 +253,7 @@ function rTgt(){
     $('M').innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}</h1>
-            <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">ðŸ“Š</span> Excel</button>
+            <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
         </div>
         <div class="kg">
             <div class="ki"><div class="lb">Target</div><div class="vl">${aFmt(tt)}</div></div>
@@ -271,7 +271,7 @@ function rTgt(){
     function fTg(d){
         $('ttb').innerHTML = d.map(r => {
             let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
-            return `<tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'âœ…':p>=60?'âš ï¸':'âŒ'}</span></td></tr>`;
+            return `<tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>`;
         }).join('');
     }
     
@@ -347,83 +347,83 @@ function rPers() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.personal}</span> ${t('personal')}</h1></div>
         
         <div class="card" style="margin-bottom:24px; padding:20px; border-left:4px solid var(--p);">
-            <h3 style="margin-bottom:16px;">${L==='ar'?'Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù Ø§Ù„Ø´Ø®ØµÙŠ':'Personal Target Settings'}</h3>
+            <h3 style="margin-bottom:16px;">${L==='ar'?TUI('Personal Target Settings'):'Personal Target Settings'}</h3>
             <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
                 <!-- Total -->
                 <div style="flex:1; min-width:150px;">
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Total Target'}</label>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Total Target'):'Total Target'}</label>
                     <input type="number" id="inPTarget" value="${tt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <div style="flex:1; min-width:150px;">
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ù…Ø³ØªÙ‡Ø¯Ù Ø§Ù„Ø±Ø¨Ø­':'Total Profit Target'}</label>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Total Profit Target'):'Total Profit Target'}</label>
                     <input type="number" id="inPProfit" value="${tpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <!-- Accessories -->
                 <div style="flex:1; min-width:150px;">
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'Ù…Ø³ØªÙ‡Ø¯Ù Ø§Ù„Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Acc. Target'}</label>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Acc. Target'):'Acc. Target'}</label>
                     <input type="number" id="inAccTarget" value="${att}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <div style="flex:1; min-width:150px;">
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'Ø±Ø¨Ø­ Ø§Ù„Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Acc. Profit'}</label>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Acc. Profit'):'Acc. Profit'}</label>
                     <input type="number" id="inAccProfit" value="${atpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <!-- Hardware -->
                 <div style="flex:1; min-width:150px;">
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'Ù…Ø³ØªÙ‡Ø¯Ù Ø§Ù„Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'HW Target'}</label>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('HW Target'):'HW Target'}</label>
                     <input type="number" id="inHwTarget" value="${htt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <div style="flex:1; min-width:150px;">
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'Ø±Ø¨Ø­ Ø§Ù„Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'HW Profit'}</label>
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('HW Profit'):'HW Profit'}</label>
                     <input type="number" id="inHwProfit" value="${htpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <div style="min-width:120px;">
-                    <button id="bSaveTarget" class="btn btn-p" style="width:100%; padding:10px; height:42px;">${L==='ar'?'Ø­ÙØ¸':'Save'}</button>
+                    <button id="bSaveTarget" class="btn btn-p" style="width:100%; padding:10px; height:42px;">${L==='ar'?TUI('Save'):'Save'}</button>
                 </div>
             </div>
         </div>
 
         <!-- TOTALS -->
-        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'Ø§Ù„Ù…Ù„Ø®Øµ Ø§Ù„Ø¹Ø§Ù…':'Overall Summary'}</h3>
+        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Overall Summary'):'Overall Summary'}</h3>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø­Ù‚Ù‚':'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ':'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(remS)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</div><div class="vl">${aFmt(tpt)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ':'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(remP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Remaining'):'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(remS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tpt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Remaining'):'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(remP)}</div></div>
         </div>
 
         <!-- ACCESSORIES -->
-        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px; margin-top:24px;">${L==='ar'?'Ø§Ù„Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Accessories'}</h3>
+        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px; margin-top:24px;">${L==='ar'?TUI('Accessories'):'Accessories'}</h3>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Acc. Sales'}</div><div class="vl">${aFmt(accS)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</div><div class="vl">${aFmt(att)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø­Ù‚Ù‚':'Ach.'}</div><div class="vl">${aFmt(aap,true)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ':'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(aremS)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø±Ø¨Ø­ Ø§Ù„Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Acc. Profit'}</div><div class="vl">${aFmt(accP)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</div><div class="vl">${aFmt(atpt)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</div><div class="vl">${aFmt(accS>0?accP/accS*100:0,true)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­ Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ':'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(aremP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Acc. Sales'):'Acc. Sales'}</div><div class="vl">${aFmt(accS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(att)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(aap,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Remaining'):'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(aremS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Acc. Profit'):'Acc. Profit'}</div><div class="vl">${aFmt(accP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(atpt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(accS>0?accP/accS*100:0,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Rem. Profit'):'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(aremP)}</div></div>
         </div>
 
         <!-- HARDWARE -->
-        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px; margin-top:24px;">${L==='ar'?'Ø§Ù„Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'Hardware'}</h3>
+        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px; margin-top:24px;">${L==='ar'?TUI('Hardware'):'Hardware'}</h3>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'HW Sales'}</div><div class="vl">${aFmt(hwS)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</div><div class="vl">${aFmt(htt)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø­Ù‚Ù‚':'Ach.'}</div><div class="vl">${aFmt(hap,true)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ':'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremS)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø±Ø¨Ø­ Ø§Ù„Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'HW Profit'}</div><div class="vl">${aFmt(hwP)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</div><div class="vl">${aFmt(htpt)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</div><div class="vl">${aFmt(hwS>0?hwP/hwS*100:0,true)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­ Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ':'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('HW Sales'):'HW Sales'}</div><div class="vl">${aFmt(hwS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(htt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(hap,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Remaining'):'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('HW Profit'):'HW Profit'}</div><div class="vl">${aFmt(hwP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(htpt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(hwS>0?hwP/hwS*100:0,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Rem. Profit'):'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremP)}</div></div>
         </div>
 
-        <div class="rg">${ring(L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales', ap, tt)}${ring(L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit', pp, tpt)}</div>
-        <div class="tb"><div class="tbt"><h3>${L==='ar'?'Ø´Ù‡Ø±ÙŠ':'Monthly'}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'Ø§Ù„Ø´Ù‡Ø±':'Month'}</th><th>${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</th><th>${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</th><th>${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</th></tr></thead>
+        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, tt)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tpt)}</div>
+        <div class="tb"><div class="tbt"><h3>${L==='ar'?TUI('Monthly'):'Monthly'}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Month'):'Month'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th></tr></thead>
         <tbody>${months.map(m => `<tr><td>${m}</td><td>${fmt(monthly[m].s)}</td><td>${fmt(monthly[m].p)}</td><td><span class="badge ${monthly[m].s>0&&monthly[m].p/monthly[m].s*100>=5?'bg-g':'bg-a'}">${pc(monthly[m].s>0?monthly[m].p/monthly[m].s*100:0)}</span></td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
@@ -435,7 +435,7 @@ function rPers() {
         localStorage.setItem('personal_acc_profit_target', $('inAccProfit').value);
         localStorage.setItem('personal_hw_target', $('inHwTarget').value);
         localStorage.setItem('personal_hw_profit_target', $('inHwProfit').value);
-        toast(L==='ar'?'ØªÙ… Ø§Ù„Ø­ÙØ¸!':'Saved!');
+        toast(L==='ar'?TUI('Saved!'):'Saved!');
         rPers();
     };
     initAnm && initAnm();
@@ -469,18 +469,18 @@ function rCust() {
         let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
-                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'Ø§Ù„ØªØ±ØªÙŠØ¨':'Rank'} #${i+1}</div>
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
                 <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--tx2);">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</span>
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Sales'):'Sales'}</span>
                     <strong style="color:${color};">${aFmt(d.s)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--tx2);">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</span>
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Profit'):'Profit'}</span>
                     <strong>${aFmt(d.p)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--tx2);">${L==='ar'?'Ø§Ù„Ù…Ø³Ø§Ù‡Ù…Ø©':'Contribution'}</span>
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Contribution'):'Contribution'}</span>
                     <span class="badge" style="background:${color}; color:white;">${pc(contrib)}</span>
                 </div>
             </div>
@@ -493,21 +493,21 @@ function rCust() {
             <button id="bExCust" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">?</span> Excel</button>
         </div>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡':'Customers'}</div><div class="vl">${aFmt(arr.length)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</div><div class="vl">${aFmt(totS)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</div><div class="vl">${aFmt(totP)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</div><div class="vl">${aFmt(totS>0?totP/totS*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Customers'):'Customers'}</div><div class="vl">${aFmt(arr.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(totS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(totP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(totS>0?totP/totS*100:0,true)}</div></div>
         </div>
         
-        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'Ø£ÙØ¶Ù„ 3 Ù…Ø´ØªØ±ÙŠÙ†':'Top 3 Buyers'}</h3>
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 Buyers'):'Top 3 Buyers'}</h3>
         <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
             ${topHtml}
         </div>
 
         <div class="tb">
             <div class="tbt" style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>${L==='ar'?'ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡':'Customers Details'}</h3>
-                <input class="sbox" id="cusr" placeholder="${L==='ar'?'Ø¨Ø­Ø«...':'Search...'}">
+                <h3>${L==='ar'?TUI('Customers Details'):'Customers Details'}</h3>
+                <input class="sbox" id="cusr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
             </div>
             <div class="tbs"><table><thead><tr><th>Customer</th><th>Region</th><th>Orders</th><th>Sales</th><th>Acc</th><th>HW</th><th>Profit</th><th>Margin</th><th>Target</th><th>Ach.</th><th>Last</th></tr></thead><tbody id="cutb"></tbody></table></div>
             <div id="cpg"></div>
@@ -531,11 +531,11 @@ function rCust() {
     $('cusr').oninput = debounce(() => { pState.customers.page = 1; window.doCustSearch(); }, 200);
 }
 function rReset() {
-    $('M').innerHTML=`<div class="ph"><h1>${ICONS.reset} ${t('reset')}</h1></div><div class="card" style="text-align:center;"><p style="margin-bottom:16px;color:var(--tx2);">${L==='ar'?'Ù‡Ø°Ø§ Ø³ÙŠÙ…Ø³Ø­ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø®Ø²Ù†Ø© Ù…Ø­Ù„ÙŠØ§Ù‹. Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø³Ø­Ø§Ø¨ÙŠØ© Ù„Ù† ØªØªØ£Ø«Ø±.':'This will clear all locally stored data. Cloud data is not affected.'}</p><button id="fRst" class="btn btn-p" style="background:var(--rd)">${L==='ar'?'Ù…Ø³Ø­ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø­Ù„ÙŠØ©':'Wipe All Local Data'}</button></div>`;
+    $('M').innerHTML=`<div class="ph"><h1>${ICONS.reset} ${t('reset')}</h1></div><div class="card" style="text-align:center;"><p style="margin-bottom:16px;color:var(--tx2);">${L==='ar'?TUI('This will clear all locally stored data. Cloud data is not affected.'):'This will clear all locally stored data. Cloud data is not affected.'}</p><button id="fRst" class="btn btn-p" style="background:var(--rd)">${L==='ar'?TUI('Wipe All Local Data'):'Wipe All Local Data'}</button></div>`;
     $('fRst').onclick = () => {
-        if(confirm(L==='ar'?'Ù‡Ù„ Ø£Ù†Øª Ù…ØªØ£ÙƒØ¯ØŸ':'Are you sure?')) {
+        if(confirm(L==='ar'?TUI('Are you sure?'):'Are you sure?')) {
             localStorage.clear(); S=[]; T=[]; C=[]; D=[];
-            toast(L==='ar'?'ØªÙ… Ø§Ù„Ù…Ø³Ø­':'Wiped');
+            toast(L==='ar'?TUI('Wiped'):'Wiped');
             setTimeout(()=>location.reload(), 500);
         }
     };
@@ -563,18 +563,18 @@ function rBrands() {
         let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
-                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'Ø§Ù„ØªØ±ØªÙŠØ¨':'Rank'} #${i+1}</div>
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
                 <h3 style="margin:8px 0; font-size:1.4rem;">${n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--tx2);">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</span>
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Sales'):'Sales'}</span>
                     <strong style="color:${color};">${aFmt(d.s)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--tx2);">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</span>
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Profit'):'Profit'}</span>
                     <strong>${aFmt(d.p)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--tx2);">${L==='ar'?'Ø§Ù„Ù…Ø³Ø§Ù‡Ù…Ø©':'Contribution'}</span>
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Contribution'):'Contribution'}</span>
                     <span class="badge" style="background:${color}; color:white;">${pc(contrib)}</span>
                 </div>
             </div>
@@ -585,32 +585,32 @@ function rBrands() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.brands}</span> ${t('brands')}</h1></div>
         
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø§Ø±ÙƒØ§Øª':'Brands'}</div><div class="vl">${aFmt(arr.length)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</div><div class="vl">${aFmt(tsTotal)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Brands'):'Brands'}</div><div class="vl">${aFmt(arr.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(tsTotal)}</div></div>
         </div>
 
         <!-- TOP 3 CARDS -->
-        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'Ø£ÙØ¶Ù„ 3 Ù…Ø§Ø±ÙƒØ§Øª':'Top 3 Brands'}</h3>
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 Brands'):'Top 3 Brands'}</h3>
         <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
             ${topHtml}
         </div>
 
         <div class="tb">
             <div class="tbt" style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>${L==='ar'?'ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…Ø§Ø±ÙƒØ§Øª':'Brands Details'}</h3>
-                <input class="sbox" id="bsr" placeholder="${L==='ar'?'Ø¨Ø­Ø«...':'Search...'}">
+                <h3>${L==='ar'?TUI('Brands Details'):'Brands Details'}</h3>
+                <input class="sbox" id="bsr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
             </div>
             <div class="tbs">
                 <table>
                     <thead>
                         <tr>
-                            <th>${L==='ar'?'Ø§Ù„Ù…Ø§Ø±ÙƒØ©':'Brand'}</th>
-                            <th>${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</th>
-                            <th>${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</th>
-                            <th>${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</th>
-                            <th>${L==='ar'?'Ø§Ù„ÙƒÙ…ÙŠØ©':'Qty'}</th>
-                            <th>${L==='ar'?'Ø§Ù„Ù…Ø³Ø§Ù‡Ù…Ø© %':'Contr. %'}</th>
-                            <th>${L==='ar'?'Ù…ØªÙˆØ³Ø· Ø§Ù„Ø³Ø¹Ø±':'Avg Price'}</th>
+                            <th>${L==='ar'?TUI('Brand'):'Brand'}</th>
+                            <th>${L==='ar'?TUI('Sales'):'Sales'}</th>
+                            <th>${L==='ar'?TUI('Profit'):'Profit'}</th>
+                            <th>${L==='ar'?TUI('Margin'):'Margin'}</th>
+                            <th>${L==='ar'?TUI('Qty'):'Qty'}</th>
+                            <th>${L==='ar'?TUI('Contr. %'):'Contr. %'}</th>
+                            <th>${L==='ar'?TUI('Avg Price'):'Avg Price'}</th>
                         </tr>
                     </thead>
                     <tbody id="brtb">
@@ -666,16 +666,16 @@ function rAn() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.analytics}</span> ${t('analytics')}</h1></div>
         <div class="cg">
-            <div class="cc"><h3>${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„Ø´Ù‡Ø±ÙŠØ©':'Monthly Sales'}</h3><div class="cw"><canvas id="anM"></canvas></div></div>
-            <div class="cc"><h3>${L==='ar'?'Ø§Ù„ØªØµÙ†ÙŠÙØ§Øª':'Categories'}</h3><div class="cw"><canvas id="anC"></canvas></div></div>
+            <div class="cc"><h3>${L==='ar'?TUI('Monthly Sales'):'Monthly Sales'}</h3><div class="cw"><canvas id="anM"></canvas></div></div>
+            <div class="cc"><h3>${L==='ar'?TUI('Categories'):'Categories'}</h3><div class="cw"><canvas id="anC"></canvas></div></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;" class="rg-grid">
             <div class="card">
-                <h3 style="margin-bottom:12px;">ðŸ—ºï¸ ${L==='ar'?'Ø§Ù„Ù…Ù†Ø§Ø·Ù‚':'Regions'}</h3>
+                <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Regions'):'Regions'}</h3>
                 ${topReg.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:0.8rem;"><span>${n}</span><strong>${fmt(v)}</strong></div>`).join('')}
             </div>
             <div class="card">
-                <h3 style="margin-bottom:12px;">ðŸ—ºï¸ ${L==='ar'?'Ø£ÙØ¶Ù„ Ø§Ù„ØªØµÙ†ÙŠÙØ§Øª':'Top Categories'}</h3>
+                <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Top Categories'):'Top Categories'}</h3>
                 ${topCats.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:0.8rem;"><span>${n}</span><strong>${fmt(v)}</strong></div>`).join('')}
             </div>
         </div>
@@ -717,18 +717,18 @@ function rProfit() {
         let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
-                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'Ø§Ù„ØªØ±ØªÙŠØ¨':'Rank'} #${i+1}</div>
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
                 <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}">${ka.n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Profit'):'Profit'}</span>
                     <strong style="font-size:0.9rem; color:${color}">${aFmt(ka.p)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales'):'Sales'}</span>
                     <strong style="font-size:0.9rem;">${aFmt(ka.s)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Margin'):'Margin'}</span>
                     <span class="badge ${ka.m>=10?'bg-g':ka.m>=5?'bg-a':'bg-r'}">${pc(ka.m)}</span>
                 </div>
             </div>
@@ -739,17 +739,17 @@ function rProfit() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.profit}</span> ${t('profit')}</h1></div>
         
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø±Ø¨Ø­':'Total Profit'}</div><div class="vl">${aFmt(arr.reduce((s,x)=>s+x.p,0))}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ù…ØªÙˆØ³Ø· Ø§Ù„Ù‡Ø§Ù…Ø´':'Avg Margin'}</div><div class="vl">${aFmt(arr.length>0?arr.reduce((s,x)=>s+x.m,0)/arr.length:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Profit'):'Total Profit'}</div><div class="vl">${aFmt(arr.reduce((s,x)=>s+x.p,0))}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Avg Margin'):'Avg Margin'}</div><div class="vl">${aFmt(arr.length>0?arr.reduce((s,x)=>s+x.m,0)/arr.length:0,true)}</div></div>
         </div>
 
-        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'Ø£ÙƒØ«Ø± 3 Ø±Ø¨Ø­ÙŠØ©':'Top 3 Profitable'}</h3>
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 Profitable'):'Top 3 Profitable'}</h3>
         <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
-            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'Ù„Ø§ ÙŠÙˆØ¬Ø¯':'None'}</div>`}
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
         </div>
 
         <div class="tb"><div class="tbt"><h3>${t('profit')}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</th><th>${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</th><th>${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</th><th>${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</th></tr></thead>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th></tr></thead>
         <tbody>${arr.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=10?'bg-g':r.m>=5?'bg-a':'bg-r'}">${pc(r.m)}</span></td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
@@ -767,14 +767,14 @@ function rAcc() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.accessories}</span> ${t('accessories')}</h1></div>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</div><div class="vl">${aFmt(tot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</div><div class="vl">${aFmt(prof)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</div><div class="vl">${aFmt(tot>0?prof/tot*100:0,true)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø³Ø¬Ù„Ø§Øª':'Records'}</div><div class="vl">${aFmt(ds.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(prof)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(tot>0?prof/tot*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(ds.length)}</div></div>
         </div>
-        <div class="cg"><div class="cc"><h3>${L==='ar'?'Ø§Ù„ØªØµÙ†ÙŠÙØ§Øª':'Categories'}</h3><div class="cw"><canvas id="accC"></canvas></div></div></div>
+        <div class="cg"><div class="cc"><h3>${L==='ar'?TUI('Categories'):'Categories'}</h3><div class="cw"><canvas id="accC"></canvas></div></div></div>
         <div class="tb"><div class="tbt"><h3>${t('accessories')}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'Ø§Ù„ØªØµÙ†ÙŠÙ':'Category'}</th><th>${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</th><th>%</th></tr></thead>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Category'):'Category'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>%</th></tr></thead>
         <tbody>${catArr.map(([n,v])=>`<tr><td>${n}</td><td>${fmt(v)}</td><td>${pc(tot>0?v/tot*100:0)}</td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
@@ -795,14 +795,14 @@ function rHW() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.hardware}</span> ${t('hardware')}</h1></div>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</div><div class="vl">${aFmt(tot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</div><div class="vl">${aFmt(prof)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</div><div class="vl">${aFmt(tot>0?prof/tot*100:0,true)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø³Ø¬Ù„Ø§Øª':'Records'}</div><div class="vl">${aFmt(ds.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(prof)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(tot>0?prof/tot*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(ds.length)}</div></div>
         </div>
-        <div class="cg"><div class="cc"><h3>${L==='ar'?'Ø§Ù„ØªØµÙ†ÙŠÙØ§Øª':'Categories'}</h3><div class="cw"><canvas id="hwC"></canvas></div></div></div>
+        <div class="cg"><div class="cc"><h3>${L==='ar'?TUI('Categories'):'Categories'}</h3><div class="cw"><canvas id="hwC"></canvas></div></div></div>
         <div class="tb"><div class="tbt"><h3>${t('hardware')}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'Ø§Ù„ØªØµÙ†ÙŠÙ':'Category'}</th><th>${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</th><th>%</th></tr></thead>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Category'):'Category'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>%</th></tr></thead>
         <tbody>${catArr.map(([n,v])=>`<tr><td>${n}</td><td>${fmt(v)}</td><td>${pc(tot>0?v/tot*100:0)}</td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
@@ -818,13 +818,13 @@ function rCollections() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª':'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø³Ø¬Ù„Ø§Øª':'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
         </div>
         ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
         <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
         <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
-        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª ØªØ­ØµÙŠÙ„Ø§Øª. Ù‚Ù… Ø¨Ø±ÙØ¹ Ù…Ù„Ù Ù…Ù† ØµÙØ­Ø© Ø§Ù„Ù…Ù„ÙØ§Øª.':'No collections data. Upload a file from the Files page.'}</p></div>`}
+        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}
     `;
     initAnm && initAnm();
 }
@@ -850,18 +850,18 @@ function rKey() {
         let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
-                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'ÙƒØ¨Ø§Ø± Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡':'VIP'} #${i+1}</div>
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('VIP'):'VIP'} #${i+1}</div>
                 <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}">${ka.n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales'):'Sales'}</span>
                     <strong style="font-size:0.9rem; color:${color}">${aFmt(ka.s)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Profit'):'Profit'}</span>
                     <strong style="font-size:0.9rem;">${aFmt(ka.p)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ø·Ù„Ø¨Ø§Øª':'Orders'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Orders'):'Orders'}</span>
                     <span class="badge bg-g">${ka.o}</span>
                 </div>
             </div>
@@ -872,17 +872,17 @@ function rKey() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.keyacc}</span> ${t('keyacc')}</h1></div>
         
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'ÙƒØ¨Ø§Ø± Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡':'Key Accounts'}</div><div class="vl">${aFmt(keyAcc.length)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ù…Ø³Ø§Ù‡Ù…Ø©':'Contribution'}</div><div class="vl">${aFmt(totS>0?keyAcc.reduce((s,x)=>s+x.s,0)/totS*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Key Accounts'):'Key Accounts'}</div><div class="vl">${aFmt(keyAcc.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Contribution'):'Contribution'}</div><div class="vl">${aFmt(totS>0?keyAcc.reduce((s,x)=>s+x.s,0)/totS*100:0,true)}</div></div>
         </div>
 
-        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'Ø£ÙØ¶Ù„ 3 ÙƒØ¨Ø§Ø± Ø¹Ù…Ù„Ø§Ø¡':'Top 3 VIPs'}</h3>
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 VIPs'):'Top 3 VIPs'}</h3>
         <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
-            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'Ù„Ø§ ÙŠÙˆØ¬Ø¯':'None'}</div>`}
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
         </div>
 
-        <div class="tb"><div class="tbt"><h3>${t('keyacc')} — ${L==='ar'?'80% Ù…Ù† Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'80% of Sales'}</h3></div>
-        <div class="tbs"><table><thead><tr><th>#</th><th>${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</th><th>${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</th><th>${L==='ar'?'Ø§Ù„Ø±Ø¨Ø­':'Profit'}</th><th>${L==='ar'?'Ø§Ù„Ù‡Ø§Ù…Ø´':'Margin'}</th><th>${L==='ar'?'Ø§Ù„Ø·Ù„Ø¨Ø§Øª':'Orders'}</th></tr></thead>
+        <div class="tb"><div class="tbt"><h3>${t('keyacc')} ? ${L==='ar'?TUI('80% of Sales'):'80% of Sales'}</h3></div>
+        <div class="tbs"><table><thead><tr><th>#</th><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th><th>${L==='ar'?TUI('Orders'):'Orders'}</th></tr></thead>
         <tbody>${keyAcc.map((r,i)=>`<tr><td><span class="badge bg-g">${i+1}</span></td><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${r.o}</td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
@@ -930,12 +930,12 @@ function rDorm() {
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
                 <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.n}">${d.n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--tx2);">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Total Sales'}</span>
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Total Sales'):'Total Sales'}</span>
                     <strong style="color:${color};">${aFmt(d.s)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--tx2);">${L==='ar'?'ØºÙŠØ± Ù†Ø´Ø· Ù„Ù…Ø¯Ø©':'Inactive for'}</span>
-                    <span class="badge" style="background:${color}; color:white;">${d.days} ${L==='ar'?'Ø£ÙŠØ§Ù…':'days'}</span>
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Inactive for'):'Inactive for'}</span>
+                    <span class="badge" style="background:${color}; color:white;">${d.days} ${L==='ar'?TUI('days'):'days'}</span>
                 </div>
             </div>
         `;
@@ -945,18 +945,18 @@ function rDorm() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dormant}</span> ${t('dormant')}</h1></div>
         
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ Ø§Ù„Ø®Ø§Ù…Ù„ÙˆÙ†':'Dormant Customers'}</div><div class="vl">${aFmt(dormant.length)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„Ù…ÙÙ‚ÙˆØ¯Ø© Ø§Ù„Ù…Ø­ØªÙ…Ù„Ø©':'Lost Sales Potential'}</div><div class="vl" style="color:var(--rd);">${aFmt(dormant.reduce((sum,r)=>sum+r.s,0))}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Dormant Customers'):'Dormant Customers'}</div><div class="vl">${aFmt(dormant.length)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Lost Sales Potential'):'Lost Sales Potential'}</div><div class="vl" style="color:var(--rd);">${aFmt(dormant.reduce((sum,r)=>sum+r.s,0))}</div></div>
         </div>
 
-        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'Ø£ÙƒØ¨Ø± Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ Ø§Ù„Ù…ÙÙ‚ÙˆØ¯ÙŠÙ†':'Top Lost Accounts'}</h3>
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top Lost Accounts'):'Top Lost Accounts'}</h3>
         <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
-            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'Ù„Ø§ ÙŠÙˆØ¬Ø¯':'None'}</div>`}
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
         </div>
 
-        <div class="tb"><div class="tbt"><h3>${t('dormant')} - ${L==='ar'?'Ù„Ù… ÙŠØ´ØªØ±Ù Ù…Ù†Ø° Ø£ÙƒØ«Ø± Ù…Ù† 60 ÙŠÙˆÙ…Ø§Ù‹':'No purchase in 60+ days'}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</th><th>${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Total Sales'}</th><th>${L==='ar'?'Ø¢Ø®Ø± Ø´Ø±Ø§Ø¡':'Last Purchase'}</th><th>${L==='ar'?'Ù…Ù†Ø° Ø£ÙŠØ§Ù…':'Days Ago'}</th><th>${L==='ar'?'Ø§Ù„Ø­Ø§Ù„Ø©':'Status'}</th></tr></thead>
-        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}">${r.days>=120?(L==='ar'?'Ù…ÙÙ‚ÙˆØ¯':'Lost'):(L==='ar'?'Ø®Ø§Ù…Ù„':'Dormant')}</span></td></tr>`).join('')}</tbody>
+        <div class="tb"><div class="tbt"><h3>${t('dormant')} - ${L==='ar'?TUI('No purchase in 60+ days'):'No purchase in 60+ days'}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Total Sales'):'Total Sales'}</th><th>${L==='ar'?TUI('Last Purchase'):'Last Purchase'}</th><th>${L==='ar'?TUI('Days Ago'):'Days Ago'}</th><th>${L==='ar'?TUI('Status'):'Status'}</th></tr></thead>
+        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}">${r.days>=120?(L==='ar'?TUI('Lost'):'Lost'):(L==='ar'?TUI('Dormant'):'Dormant')}</span></td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
 }
@@ -967,10 +967,10 @@ function rPros() {
     let prospects = T.filter(r=>!activeCustomers.has(r.Customer));
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.prospects}</span> ${t('prospects')}</h1></div>
-        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„ÙØ±Øµ':'Prospects'}</div><div class="vl">${aFmt(prospects.length)}</div></div></div>
+        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?TUI('Prospects'):'Prospects'}</div><div class="vl">${aFmt(prospects.length)}</div></div></div>
         <div class="tb"><div class="tbt"><h3>${t('prospects')}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</th><th>${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</th></tr></thead>
-        <tbody>${prospects.map(r=>`<tr><td><strong>${r.Customer}</strong></td><td>${fmt(Number(r.Target)||0)}</td></tr>`).join('')}${prospects.length===0?`<tr><td colspan="2" style="text-align:center;color:var(--tx2)">${L==='ar'?'Ù„Ø§ ÙŠÙˆØ¬Ø¯':'None'}</td></tr>`:''}</tbody>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Target'):'Target'}</th></tr></thead>
+        <tbody>${prospects.map(r=>`<tr><td><strong>${r.Customer}</strong></td><td>${fmt(Number(r.Target)||0)}</td></tr>`).join('')}${prospects.length===0?`<tr><td colspan="2" style="text-align:center;color:var(--tx2)">${L==='ar'?TUI('None'):'None'}</td></tr>`:''}</tbody>
         </table></div></div>
     `;
 }
@@ -990,18 +990,18 @@ function rPot() {
         let color = i===0 ? '#e74c3c' : i===1 ? '#e67e22' : '#f1c40f';
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
-                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'Ø§Ù„ÙØ±ØµØ©':'Opportunity'} #${i+1}</div>
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Opportunity'):'Opportunity'} #${i+1}</div>
                 <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${o.n}">${o.n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Target'):'Target'}</span>
                     <strong style="font-size:0.9rem;">${aFmt(o.tg)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'Ø§Ù„Ù…Ø­Ù‚Ù‚':'Achieved'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Achieved'):'Achieved'}</span>
                     <strong style="font-size:0.9rem;">${aFmt(o.ach)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'ÙØ¬ÙˆØ© Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales Gap'}</span>
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales Gap'):'Sales Gap'}</span>
                     <strong style="color:${color}; font-size:1rem;">${aFmt(o.gap)}</strong>
                 </div>
             </div>
@@ -1012,17 +1012,17 @@ function rPot() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.potential}</span> ${t('potential')}</h1></div>
         
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ÙØ±Øµ':'Total Opportunities'}</div><div class="vl">${aFmt(opps.length)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--p);"><div class="lb" style="color:var(--p);">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ÙØ¬ÙˆØ© Ø§Ù„Ù…Ø­ØªÙ…Ù„Ø©':'Total Gap Potential'}</div><div class="vl" style="color:var(--p);">${aFmt(opps.reduce((s,r)=>s+r.gap,0))}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Opportunities'):'Total Opportunities'}</div><div class="vl">${aFmt(opps.length)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--p);"><div class="lb" style="color:var(--p);">${L==='ar'?TUI('Total Gap Potential'):'Total Gap Potential'}</div><div class="vl" style="color:var(--p);">${aFmt(opps.reduce((s,r)=>s+r.gap,0))}</div></div>
         </div>
 
-        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'Ø£ÙØ¶Ù„ 3 ÙØ±Øµ':'Top 3 Opportunities'}</h3>
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 Opportunities'):'Top 3 Opportunities'}</h3>
         <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
-            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'Ù„Ø§ ÙŠÙˆØ¬Ø¯':'None'}</div>`}
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
         </div>
 
         <div class="tb"><div class="tbt"><h3>${t('potential')}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</th><th>${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target'}</th><th>${L==='ar'?'Ø§Ù„Ù…Ø­Ù‚Ù‚':'Achieved'}</th><th>%</th><th>${L==='ar'?'Ø§Ù„ÙØ¬ÙˆØ©':'Gap'}</th></tr></thead>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Target'):'Target'}</th><th>${L==='ar'?TUI('Achieved'):'Achieved'}</th><th>%</th><th>${L==='ar'?TUI('Gap'):'Gap'}</th></tr></thead>
         <tbody>${opps.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.tg)}</td><td>${fmt(r.ach)}</td><td><span class="badge ${r.pct>=60?'bg-a':'bg-r'}">${pc(r.pct)}</span></td><td style="color:var(--rd);font-weight:bold;">${fmt(r.gap)}</td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
@@ -1037,20 +1037,20 @@ function rAl() {
     S.forEach(r => { let c=r.Customer||''; let d=pd(r['Order Date']); if(!cu[c]||d>cu[c]) cu[c]=d; });
     Object.entries(cu).forEach(([n,last]) => {
         let days = Math.floor((today - new Date(last)) / 86400000);
-        if(days >= 60) alerts.push({type:'warn', icon:'âš ï¸', msg:`${n} ? ${L==='ar'?'Ù„Ù… ÙŠØ´ØªØ±Ù Ù…Ù†Ø°':'No purchase since'} ${days} ${L==='ar'?'Ø£ÙŠØ§Ù…':'days'}`});
+        if(days >= 60) alerts.push({type:'warn', icon:'&#x26A0;&#xFE0F;', msg:`${n} ? ${L==='ar'?TUI('No purchase since'):'No purchase since'} ${days} ${L==='ar'?TUI('days'):'days'}`});
     });
     // Low target alerts
     let cuS = {};
     S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(Number(r['Sales After Discount'])||0); });
     T.forEach(r => {
         let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
-        if(pct<50 && tg>0) alerts.push({type:'danger', icon:'âš ï¸', msg:`${r.Customer} ? ${L==='ar'?'Ù†Ø³Ø¨Ø© Ø§Ù„ØªØ­Ù‚ÙŠÙ‚':'Achievement'} ${pc(pct)}`});
+        if(pct<50 && tg>0) alerts.push({type:'danger', icon:'&#x26A0;&#xFE0F;', msg:`${r.Customer} ? ${L==='ar'?TUI('Achievement'):'Achievement'} ${pc(pct)}`});
     });
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.alerts}</span> ${t('alerts')}</h1></div>
-        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?'Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª':'Alerts'}</div><div class="vl">${aFmt(alerts.length)}</div></div></div>
+        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?TUI('Alerts'):'Alerts'}</div><div class="vl">${aFmt(alerts.length)}</div></div></div>
         <div class="card">
-            ${alerts.length===0?`<p style="text-align:center;color:var(--tx2);">✅ ${L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ ØªÙ†Ø¨ÙŠÙ‡Ø§Øª':'No alerts'}</p>`:alerts.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:10px;margin-bottom:8px;background:var(--bg3);border-radius:8px;border-left:3px solid ${a.type==='danger'?'var(--rd)':'var(--am)'}"><span style="font-size:1.2rem;">${a.icon}</span><span style="font-size:0.85rem;">${a.msg}</span></div>`).join('')}
+            ${alerts.length===0?`<p style="text-align:center;color:var(--tx2);">? ${L==='ar'?TUI('No alerts'):'No alerts'}</p>`:alerts.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:10px;margin-bottom:8px;background:var(--bg3);border-radius:8px;border-left:3px solid ${a.type==='danger'?'var(--rd)':'var(--am)'}"><span style="font-size:1.2rem;">${a.icon}</span><span style="font-size:0.85rem;">${a.msg}</span></div>`).join('')}
         </div>
     `;
 }
@@ -1072,18 +1072,130 @@ function rAI() {
     let insights = [];
     let arr = Object.entries(cu).map(([n,d])=>({n,...d,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
     let today = new Date();
-    arr.slice(0,5).forEach(r => insights.push({icon:'?',color:'var(--gn)',text:`${r.n}: ${L==='ar'?'Ø£ÙØ¶Ù„ Ø¹Ù…ÙŠÙ„ Ø¨Ù…Ø¨ÙŠØ¹Ø§Øª':'Top customer with'} ${fmt(r.s)}`}));
-    arr.filter(r=>r.m<5&&r.s>10000).slice(0,3).forEach(r => insights.push({icon:'ðŸ’¡',color:'var(--am)',text:`${r.n}: ${L==='ar'?'Ù‡Ø§Ù…Ø´ Ø±Ø¨Ø­ Ù…Ù†Ø®ÙØ¶':'Low margin'} (${pc(r.m)}) â€” ${L==='ar'?'ÙŠØ­ØªØ§Ø¬ Ù…Ø±Ø§Ø¬Ø¹Ø© Ø£Ø³Ø¹Ø§Ø±':'Review pricing'}`}));
-    arr.filter(r=>{ let days=Math.floor((today-new Date(r.last))/86400000); return days>=45&&days<90; }).slice(0,3).forEach(r => insights.push({icon:'?',color:'var(--am)',text:`${r.n}: ${L==='ar'?'Yahtaaj mutabaah â€” lam yashtar mundhu':'Needs follow-up â€” last purchase was'} ${Math.floor((today-new Date(r.last))/86400000)} ${L==='ar'?'ÙŠÙˆÙ…':'days ago'}`}));
-    arr.filter(r=>r.accS===0&&r.hwS>0).slice(0,3).forEach(r => insights.push({icon:'âš ï¸',color:'var(--am)',text:`${r.n}: ${L==='ar'?'Lam yashtar akseswaraat â€” fursat baya idafiyah':'No accessories â€” upsell opportunity'}`}));
+    arr.slice(0,5).forEach(r => insights.push({icon:'?',color:'var(--gn)',text:`${r.n}: ${L==='ar'?TUI('Top customer with'):'Top customer with'} ${fmt(r.s)}`}));
+    arr.filter(r=>r.m<5&&r.s>10000).slice(0,3).forEach(r => insights.push({icon:'&#x26A0;&#xFE0F;',color:'var(--am)',text:`${r.n}: ${L==='ar'?TUI('Low margin'):'Low margin'} (${pc(r.m)}) ? ${L==='ar'?TUI('Review pricing'):'Review pricing'}`}));
+    arr.filter(r=>{ let days=Math.floor((today-new Date(r.last))/86400000); return days>=45&&days<90; }).slice(0,3).forEach(r => insights.push({icon:'&#x26A0;&#xFE0F;',color:'var(--am)',text:`${r.n}: ${L==='ar'?TUI('Needs follow-up ? last purchase was'):'Needs follow-up ? last purchase was'} ${Math.floor((today-new Date(r.last))/86400000)} ${L==='ar'?TUI('days ago'):'days ago'}`}));
+    arr.filter(r=>r.accS===0&&r.hwS>0).slice(0,3).forEach(r => insights.push({icon:'&#x26A0;&#xFE0F;',color:'var(--am)',text:`${r.n}: ${L==='ar'?TUI('No accessories ? upsell opportunity'):'No accessories ? upsell opportunity'}`}));
     
+    let key = ld('sp_gemini_key') || '';
+    window.aiChatHistory = window.aiChatHistory || [];
+
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.ai}</span> ${t('ai')}</h1></div>
+        
         <div class="card" style="margin-bottom:20px;">
-            <h3 style="margin-bottom:16px;">ðŸ—ºï¸ ${L==='ar'?'ØªÙˆØµÙŠØ§Øª Ø°ÙƒÙŠØ©':'Smart Insights'}</h3>
-            ${insights.length===0?`<p style="color:var(--tx2);text-align:center;">${L==='ar'?'Ø§Ø±ÙØ¹ Ø¨ÙŠØ§Ù†Ø§ØªÙƒ Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ ØªÙˆØµÙŠØ§Øª':'Upload your data to get AI insights'}</p>`:insights.map(i=>`<div style="display:flex;gap:12px;padding:12px;margin-bottom:10px;background:var(--bg3);border-radius:10px;border-left:3px solid ${i.color};"><span style="font-size:1.3rem;">${i.icon}</span><span style="font-size:0.85rem;line-height:1.5;">${i.text}</span></div>`).join('')}
+            <h3 style="margin-bottom:16px;">${L==='ar'?TUI('Quick Smart Insights'):'Quick Smart Insights'}</h3>
+            ${insights.length===0?`<p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('Upload your data to get AI insights'):'Upload your data to get AI insights'}</p>`:insights.map(i=>`<div style="display:flex;gap:12px;padding:12px;margin-bottom:10px;background:var(--bg3);border-radius:10px;border-left:3px solid ${i.color};"><span style="font-size:1.3rem;">${i.icon}</span><span style="font-size:0.85rem;line-height:1.5;">${i.text}</span></div>`).join('')}
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; height:500px;">
+            <h3 style="margin-bottom:16px;">? ${L==='ar'?TUI('AI Co-pilot Chat'):'AI Co-pilot Chat'}</h3>
+            ${!key ? `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                    <span style="font-size:3rem; margin-bottom:16px;">&#x1F4C8;</span>
+                    <p style="color:var(--tx2); margin-bottom:16px;">${L==='ar'?TUI('You must enter a Gemini API Key in settings to enable smart chat.'):'You must enter a Gemini API Key in settings to enable smart chat.'}</p>
+                    <button class="btn btn-p" onclick="P='settings';buildNav();render();">${L==='ar'?TUI('Go to Settings'):'Go to Settings'}</button>
+                </div>
+            ` : `
+                <div id="aiChatBox" style="flex:1; overflow-y:auto; background:var(--bg2); border-radius:8px; padding:16px; margin-bottom:16px; display:flex; flex-direction:column; gap:12px;">
+                    ${window.aiChatHistory.length===0 ? `
+                        <div style="text-align:center; color:var(--tx2); margin:auto;">
+                            <span style="font-size:2rem;">&#x1F4B0;</span><br>
+                            ${L==='ar'?TUI('Hello! Ask me anything about your sales and customers.'):'Hello! Ask me anything about your sales and customers.'}
+                        </div>
+                    ` : window.aiChatHistory.map(msg => `
+                        <div style="align-self:${msg.role==='user'?'flex-end':'flex-start'}; background:${msg.role==='user'?'var(--p)':'var(--bg3)'}; color:${msg.role==='user'?'#fff':'var(--tx1)'}; padding:10px 14px; border-radius:12px; max-width:85%; word-wrap:break-word; font-size:0.9rem; line-height:1.5;">
+                            ${msg.text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <input id="aiInput" type="text" class="sbox" style="flex:1;" placeholder="${L==='ar'?TUI('Ask the AI assistant...'):'Ask the AI assistant...'}" onkeypress="if(event.key==='Enter') document.getElementById('aiSend').click()">
+                    <button id="aiSend" class="btn btn-p" style="padding:0 24px;">${L==='ar'?TUI('Send'):'Send'}</button>
+                </div>
+            `}
         </div>
     `;
+
+    if(key) {
+        let chatBox = $('aiChatBox');
+        if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+
+        let sendBtn = $('aiSend');
+        if(sendBtn) {
+            sendBtn.onclick = async () => {
+                let inp = $('aiInput');
+                let txt = inp.value.trim();
+                if(!txt) return;
+
+                window.aiChatHistory.push({role:'user', text:txt});
+                inp.value = '';
+                inp.disabled = true;
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '?';
+                rAI(); 
+
+                let totalSales = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0), 0);
+                let totalProfit = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0), 0);
+                let ctx = {
+                    totalSales,
+                    totalProfit,
+                    top5Customers: arr.slice(0,5).map(x=>({name:x.n, sales:x.s, profit:x.p})),
+                    totalCustomers: arr.length
+                };
+                
+                let systemPrompt = `You are a specialized Sales Analysis AI for "Sales Pro". Respond in ${L==='ar'?'Arabic':'English'}.
+Analyze the following:
+- Total Sales: ${ctx.totalSales}
+- Total Profit: ${ctx.totalProfit}
+- Total Customers: ${ctx.totalCustomers}
+- Top 5 Customers: ${JSON.stringify(ctx.top5Customers)}
+Provide business insights and actionable recommendations.`;
+
+                let msgs = window.aiChatHistory.map(m => ({role: m.role==='user'?'user':'model', parts: [{text: m.text}]}));
+                if(msgs.length > 0) {
+                    msgs[0].parts[0].text = `[SYSTEM CONTEXT: ${systemPrompt}]\n\nUser: ` + msgs[0].parts[0].text;
+                }
+                
+                try {
+                    let reqBody = {
+                        contents: msgs,
+                        generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
+                    };
+                    
+                                        // 2. Try default stable aliases directly to bypass model deprecation errors
+                    let fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro', 'gemini-flash'];
+                    let data = null;
+                    let success = false;
+                    for (let m of fallbackModels) {
+                        try {
+                            let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(reqBody)
+                            });
+                            data = await res.json();
+                            if (!data.error) {
+                                success = true;
+                                break;
+                            }
+                        } catch(e) { continue; }
+                    }
+                    if(data.error) {
+                        window.aiChatHistory.push({role:'model', text: 'Error: ' + data.error.message});
+                    } else if(data.candidates && data.candidates.length > 0) {
+                        let aiTxt = data.candidates[0].content.parts[0].text;
+                        window.aiChatHistory.push({role:'model', text: aiTxt});
+                    } else {
+                        window.aiChatHistory.push({role:'model', text: 'No response received.'});
+                    }
+                } catch(e) {
+                    window.aiChatHistory.push({role:'model', text: 'Network Error: ' + e.message});
+                }
+                rAI();
+            };
+        }
+    }
     initAnm && initAnm();
 }
 
@@ -1093,15 +1205,15 @@ function rAcct() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.account}</span> ${t('account')}</h1></div>
         <div class="card" style="text-align:center;">
-            <div style="width:72px;height:72px;border-radius:50%;background:var(--am);color:#fff;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">ðŸ‘¤</div>
-            <h3>${user ? user.email : (L==='ar'?'ØºÙŠØ± Ù…Ø³Ø¬Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„':'Not logged in')}</h3>
-            <p style="color:var(--tx2);font-size:0.8rem;margin:8px 0 20px;">${L==='ar'?'Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ù†Ø´Ø·':'Active User'}</p>
+            <div style="width:72px;height:72px;border-radius:50%;background:var(--am);color:#fff;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">&#x1F464;</div>
+            <h3>${user ? user.email : (L==='ar'?TUI('Not logged in'):'Not logged in')}</h3>
+            <p style="color:var(--tx2);font-size:0.8rem;margin:8px 0 20px;">${L==='ar'?TUI('Active User'):'Active User'}</p>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
-                <div style="background:var(--bg3);padding:12px;border-radius:10px;"><div style="font-size:1.4rem;font-weight:bold;">${S.length}</div><div style="font-size:0.75rem;color:var(--tx2);">${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</div></div>
-                <div style="background:var(--bg3);padding:12px;border-radius:10px;"><div style="font-size:1.4rem;font-weight:bold;">${T.length}</div><div style="font-size:0.75rem;color:var(--tx2);">${L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯ÙØ§Øª':'Targets'}</div></div>
-                <div style="background:var(--bg3);padding:12px;border-radius:10px;"><div style="font-size:1.4rem;font-weight:bold;">${C.length}</div><div style="font-size:0.75rem;color:var(--tx2);">${L==='ar'?'Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª':'Collections'}</div></div>
+                <div style="background:var(--bg3);padding:12px;border-radius:10px;"><div style="font-size:1.4rem;font-weight:bold;">${S.length}</div><div style="font-size:0.75rem;color:var(--tx2);">${L==='ar'?TUI('Sales'):'Sales'}</div></div>
+                <div style="background:var(--bg3);padding:12px;border-radius:10px;"><div style="font-size:1.4rem;font-weight:bold;">${T.length}</div><div style="font-size:0.75rem;color:var(--tx2);">${L==='ar'?TUI('Targets'):'Targets'}</div></div>
+                <div style="background:var(--bg3);padding:12px;border-radius:10px;"><div style="font-size:1.4rem;font-weight:bold;">${C.length}</div><div style="font-size:0.75rem;color:var(--tx2);">${L==='ar'?TUI('Collections'):'Collections'}</div></div>
             </div>
-            <button class="btn btn-p" onclick="P='settings';buildNav();render();" style="width:100%;margin-bottom:10px;">ðŸ—ºï¸ ${t('settings')}</button>
+            <button class="btn btn-p" onclick="P='settings';buildNav();render();" style="width:100%;margin-bottom:10px;">${t('settings')}</button>
             <button class="btn" onclick="logout();" style="width:100%;background:var(--rd);color:#fff;border:none;">${t('logout')}</button>
         </div>
     `;
@@ -1112,17 +1224,17 @@ function rBk() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.backup}</span> ${t('backup')}</h1></div>
         <div class="card">
-            <h3 style="margin-bottom:12px;">ðŸ—ºï¸ ${L==='ar'?'ØªØµØ¯ÙŠØ± Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª':'Export Data'}</h3>
+            <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Export Data'):'Export Data'}</h3>
             <div style="display:flex;flex-direction:column;gap:10px;">
-                <button class="btn bg-g" id="bkSales" style="color:#fff;border:none;">ðŸ—ºï¸ ${L==='ar'?'ØªØµØ¯ÙŠØ± Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Export Sales'} (${S.length})</button>
-                <button class="btn bg-g" id="bkTgt" style="color:#fff;border:none;">ðŸ—ºï¸ ${L==='ar'?'ØªØµØ¯ÙŠØ± Ø§Ù„Ù…Ø³ØªÙ‡Ø¯ÙØ§Øª':'Export Targets'} (${T.length})</button>
-                <button class="btn bg-g" id="bkPay" style="color:#fff;border:none;">ðŸ—ºï¸ ${L==='ar'?'ØªØµØ¯ÙŠØ± Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª':'Export Collections'} (${C.length})</button>
+                <button class="btn bg-g" id="bkSales" style="color:#fff;border:none;">${L==='ar'?TUI('Export Sales'):'Export Sales'} (${S.length})</button>
+                <button class="btn bg-g" id="bkTgt" style="color:#fff;border:none;">${L==='ar'?TUI('Export Targets'):'Export Targets'} (${T.length})</button>
+                <button class="btn bg-g" id="bkPay" style="color:#fff;border:none;">${L==='ar'?TUI('Export Collections'):'Export Collections'} (${C.length})</button>
             </div>
         </div>
     `;
-    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data');
-    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data');
-    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data');
+    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?TUI('No data'):'No data');
+    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?TUI('No data'):'No data');
+    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?TUI('No data'):'No data');
 }
 
 
@@ -1132,29 +1244,29 @@ function rSetup() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.setup}</span> ${t('setup')}</h1></div>
         <div class="card">
-            <h3 style="margin-bottom:12px;">${L==='ar'?'Ø±ÙØ¹ Ù…Ù„ÙØ§Øª Ø¥ÙƒØ³ÙŠÙ„':'Upload Excel Files'}</h3>
-            <p style="margin-bottom:16px;color:var(--tx2);font-size:0.85rem;">${L==='ar'?'Ù‚Ù… Ø¨Ø±ÙØ¹ Ù…Ù„ÙØ§Øª Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª ÙˆØ§Ù„Ù…Ø³ØªÙ‡Ø¯ÙØ§Øª ÙˆØ§Ù„ØªØ­ØµÙŠÙ„Ø§Øª Ù„ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª.':'Upload your Sales, Target and Collections Excel files to update the data.'}</p>
+            <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Upload Excel Files'):'Upload Excel Files'}</h3>
+            <p style="margin-bottom:16px;color:var(--tx2);font-size:0.85rem;">${L==='ar'?TUI('Upload your Sales, Target and Collections Excel files to update the data.'):'Upload your Sales, Target and Collections Excel files to update the data.'}</p>
             <div style="background:var(--gn);color:#fff;padding:10px;border-radius:8px;margin-bottom:16px;font-size:0.9rem;display:flex;align-items:center;gap:8px;">
-                ðŸ—ºï¸ <strong>${L==='ar'?'Ø§Ù„Ù…Ø²Ø§Ù…Ù†Ø© Ø§Ù„Ø³Ø­Ø§Ø¨ÙŠØ© Ù†Ø´Ø·Ø©':'Cloud Sync Active'}</strong>
+                &#x2601;&#xFE0F; <strong>${L==='ar'?TUI('Cloud Sync Active'):'Cloud Sync Active'}</strong>
             </div>
             <div style="display:flex;flex-direction:column;gap:16px;">
                 <div style="background:var(--bg3);padding:16px;border-radius:12px;border:1px solid var(--bd);">
-                    <label for="fSales" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">ðŸ—ºï¸ ${L==='ar'?'Ù…Ù„Ù Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales File'}</label>
+                    <label for="fSales" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">${L==='ar'?TUI('Sales File'):'Sales File'}</label>
                     <input type="file" id="fSales" accept=".xlsx,.xls,.csv" style="display:block;width:100%;padding:10px;background:var(--bg);border:1px dashed var(--am);border-radius:8px;cursor:pointer;">
-                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${S.length} ${L==='ar'?'Ø³Ø¬Ù„ Ù…Ø­Ù…Ù„ Ø­Ø§Ù„ÙŠØ§Ù‹':'records currently loaded'}</p>
+                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${S.length} ${L==='ar'?TUI('records currently loaded'):'records currently loaded'}</p>
                 </div>
                 <div style="background:var(--bg3);padding:16px;border-radius:12px;border:1px solid var(--bd);">
-                    <label for="fTarget" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">ðŸ—ºï¸ ${L==='ar'?'Ù…Ù„Ù Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù':'Target File'}</label>
+                    <label for="fTarget" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">${L==='ar'?TUI('Target File'):'Target File'}</label>
                     <input type="file" id="fTarget" accept=".xlsx,.xls,.csv" style="display:block;width:100%;padding:10px;background:var(--bg);border:1px dashed var(--am);border-radius:8px;cursor:pointer;">
-                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${T.length} ${L==='ar'?'Ø³Ø¬Ù„ Ù…Ø­Ù…Ù„ Ø­Ø§Ù„ÙŠØ§Ù‹':'records currently loaded'}</p>
+                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${T.length} ${L==='ar'?TUI('records currently loaded'):'records currently loaded'}</p>
                 </div>
                 <div style="background:var(--bg3);padding:16px;border-radius:12px;border:1px solid var(--bd);">
-                    <label for="fPay" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">ðŸ—ºï¸ ${L==='ar'?'Ù…Ù„Ù Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª':'Collections File'}</label>
+                    <label for="fPay" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">${L==='ar'?TUI('Collections File'):'Collections File'}</label>
                     <input type="file" id="fPay" accept=".xlsx,.xls,.csv" style="display:block;width:100%;padding:10px;background:var(--bg);border:1px dashed var(--am);border-radius:8px;cursor:pointer;">
-                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${C.length} ${L==='ar'?'Ø³Ø¬Ù„ Ù…Ø­Ù…Ù„ Ø­Ø§Ù„ÙŠØ§Ù‹':'records currently loaded'}</p>
+                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${C.length} ${L==='ar'?TUI('records currently loaded'):'records currently loaded'}</p>
                 </div>
             </div>
-            <button id="bUpload" class="btn btn-p" style="margin-top:20px;width:100%;padding:12px;font-size:1.1rem;">ðŸ—ºï¸ ${L==='ar'?'Ø±ÙØ¹ ÙˆØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª':'Upload & Update Data'}</button>
+            <button id="bUpload" class="btn btn-p" style="margin-top:20px;width:100%;padding:12px;font-size:1.1rem;">${L==='ar'?TUI('Upload & Update Data'):'Upload & Update Data'}</button>
         </div>
     `;
     function parseFile(file, cb) {
@@ -1164,21 +1276,19 @@ function rSetup() {
                 let wb = XLSX.read(e.target.result, {type:'array'});
                 let ws = wb.Sheets[wb.SheetNames[0]];
                 cb(XLSX.utils.sheet_to_json(ws));
-            } catch(err) { toast('❌ Error reading file'); }
+            } catch(err) { toast(L==='ar'?TUI('? Error reading file'):'? Error reading file'); }
         };
         reader.readAsArrayBuffer(file);
     }
     $('bUpload').onclick = () => {
         let done = 0, total = 0;
         let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
-        if(!fS && !fT && !fP) { toast(L==='ar'?'Ø§Ø®ØªØ± Ù…Ù„ÙØ§Ù‹ Ø£ÙˆÙ„Ø§Ù‹!':'Choose a file first!'); return; }
-        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) { toast('✅ Done'); render(); } }); }
-        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) { toast('✅ Done'); render(); } }); }
-        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast('✅ Done'); render(); } }); }
+        if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
+        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
+        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
+        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
     };
 }
-
-
 
 
 
