@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<script>
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+    var err = document.createElement('div');
+    err.style.cssText = 'position:fixed;top:10%;left:10%;right:10%;padding:20px;background:red;color:white;z-index:9999;font-size:20px;word-wrap:break-word;';
+    err.innerHTML = '<h2>?? Javascript Error</h2><p>' + msg + '</p><p><b>File:</b> ' + url + '</p><p><b>Line:</b> ' + lineNo + ' <b>Col:</b> ' + columnNo + '</p>';
+    document.body.appendChild(err);
+    return false;
+};
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Sales Pro — نظام إدارة المبيعات</title>
@@ -92,9 +101,9 @@
 
 <script src="firebase-config.js"></script>
 <script src="data-store.js"></script>
-<script src="ui-components.js"></script>
-<script src="settings.js"></script>
-<script src="app.js"></script>
+<script src="ui-components.js?v=2"></script>
+<script src="settings.js?v=2"></script>
+<script src="app.js?v=2"></script>
 <script src="auth.js"></script>
 <script>
   // Hide loader when app is ready
@@ -122,3 +131,4 @@
 </script>
 </body>
 </html>
+
