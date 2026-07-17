@@ -1072,6 +1072,336 @@ function rAI() {
     let insights = [];
     let arr = Object.entries(cu).map(([n,d])=>({n,...d,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
     let today = new Date();
+    arr.slice(0,5).forEach(r => insights.push({icon:'?',color:'var(--gn)',text:${r.n}:  }));
+    arr.filter(r=>r.m<5&&r.s>10000).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:${r.n}:  () — }));
+    arr.filter(r=>{ let days=Math.floor((today-new Date(r.last))/86400000); return days>=45&&days<90; }).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:${r.n}:   }));
+    arr.filter(r=>r.accS===0&&r.hwS>0).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:${r.n}: }));
+    
+    M.innerHTML = 
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">+ICONS.ai+</span> +t('ai')+</h1></div>
+        <div class="card" style="margin-bottom:20px;">
+            <h3 style="margin-bottom:16px;">?? +(L==='ar'?'?????? ????':'Smart Insights')+</h3>
+            +(insights.length===0?<p style="color:var(--tx2);text-align:center;">+(L==='ar'?'???? ??????? ?????? ??? ??????':'Upload your data to get AI insights')+</p>:insights.map(i=><div style="display:flex;gap:12px;padding:12px;margin-bottom:10px;background:var(--bg3);border-radius:10px;border-left:3px solid ;"><span style="font-size:1.3rem;"></span><span style="font-size:0.85rem;line-height:1.5;"></span></div>).join(''))+
+        </div>
+    ;
+    initAnm && initAnm();
+}
+
+function rAcc() {
+    let ds = getFilteredSales().filter(r => isAcc(r['Item Class Name']));
+    let tot = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0),0);
+    let prof = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0),0);
+    let cats = {};
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(Number(r['Sales After Discount'])||0); });
+    let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.accessories}</span> ${t('accessories')}</h1></div>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?'????????':'Sales'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'?????':'Profit'}</div><div class="vl">${aFmt(prof)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'??????':'Margin'}</div><div class="vl">${aFmt(tot>0?prof/tot*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'???????':'Records'}</div><div class="vl">${aFmt(ds.length)}</div></div>
+        </div>
+        <div class="cg"><div class="cc"><h3>${L==='ar'?'??????':'Categories'}</h3><div class="cw"><canvas id="accC"></canvas></div></div></div>
+        <div class="tb"><div class="tbt"><h3>${t('accessories')}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?'?????':'Category'}</th><th>${L==='ar'?'????????':'Sales'}</th><th>%</th></tr></thead>
+        <tbody>${catArr.map(([n,v])=>`<tr><td>${n}</td><td>${fmt(v)}</td><td>${pc(tot>0?v/tot*100:0)}</td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+    dc('accC');
+    let ctx = $('accC');
+    if(ctx && catArr.length) { CH.accC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}}); }
+    initAnm && initAnm();
+}
+
+// Hardware
+function rHW() {
+    let ds = getFilteredSales().filter(r => isHW(r['Item Class Name']));
+    let tot = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0),0);
+    let prof = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0),0);
+    let cats = {};
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(Number(r['Sales After Discount'])||0); });
+    let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.hardware}</span> ${t('hardware')}</h1></div>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?'????????':'Sales'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'?????':'Profit'}</div><div class="vl">${aFmt(prof)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'??????':'Margin'}</div><div class="vl">${aFmt(tot>0?prof/tot*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'???????':'Records'}</div><div class="vl">${aFmt(ds.length)}</div></div>
+        </div>
+        <div class="cg"><div class="cc"><h3>${L==='ar'?'??????':'Categories'}</h3><div class="cw"><canvas id="hwC"></canvas></div></div></div>
+        <div class="tb"><div class="tbt"><h3>${t('hardware')}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?'?????':'Category'}</th><th>${L==='ar'?'????????':'Sales'}</th><th>%</th></tr></thead>
+        <tbody>${catArr.map(([n,v])=>`<tr><td>${n}</td><td>${fmt(v)}</td><td>${pc(tot>0?v/tot*100:0)}</td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+    dc('hwC');
+    let ctx = $('hwC');
+    if(ctx && catArr.length) { CH.hwC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}}); }
+    initAnm && initAnm();
+}
+
+// Collections
+function rCollections() {
+    let tot = C.reduce((s,r)=>s+(Number(r['Amount']||r['amount']||r['Collection']||0)),0);
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?'?????? ?????????':'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'???????':'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
+        </div>
+        ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
+        <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
+        <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?'?? ???? ?????? ???????. ???? ??? ?? ???? ?????????.':'No collections data. Upload a file from the Files page.'}</p></div>`}
+    `;
+    initAnm && initAnm();
+}
+
+// Key Accounts (top 20% customers)
+function rKey() {
+    let cu = {};
+    S.forEach(r => {
+        let c = r.Customer||'';
+        if(!cu[c]) cu[c] = {s:0,p:0,o:{}};
+        cu[c].s += Number(r['Sales After Discount'])||0;
+        cu[c].p += Number(r['Profit Margin'])||0;
+        cu[c].o[r['Order Nbr']] = 1;
+    });
+    let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
+    let totS = arr.reduce((s,x)=>s+x.s,0);
+    let cumS = 0, keyAcc = [];
+    for(let r of arr) { cumS+=r.s; keyAcc.push(r); if(cumS/totS>=0.8) break; }
+
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, keyAcc.length); i++) {
+        let ka = keyAcc[i];
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'???? ????':'VIP'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}">${ka.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'????????':'Sales'}</span>
+                    <strong style="font-size:0.9rem; color:${color}">${aFmt(ka.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'???????':'Profit'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(ka.p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'??? ?????????':'Orders'}</span>
+                    <span class="badge bg-g">${ka.o}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.keyacc}</span> ${t('keyacc')}</h1></div>
+        
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?'??????? ????????':'Key Accounts'}</div><div class="vl">${aFmt(keyAcc.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'????????':'Contribution'}</div><div class="vl">${aFmt(totS>0?keyAcc.reduce((s,x)=>s+x.s,0)/totS*100:0,true)}</div></div>
+        </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'???? 3 ????? ??????':'Top 3 VIPs'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'?? ????':'None'}</div>`}
+        </div>
+
+        <div class="tb"><div class="tbt"><h3>${t('keyacc')} ? ${L==='ar'?'80% ?? ????????':'80% of Sales'}</h3></div>
+        <div class="tbs"><table><thead><tr><th>#</th><th>${L==='ar'?'??????':'Customer'}</th><th>${L==='ar'?'????????':'Sales'}</th><th>${L==='ar'?'?????':'Profit'}</th><th>${L==='ar'?'??????':'Margin'}</th><th>${L==='ar'?'?????????':'Orders'}</th></tr></thead>
+        <tbody>${keyAcc.map((r,i)=>`<tr><td><span class="badge bg-g">${i+1}</span></td><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${r.o}</td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+    initAnm && initAnm();
+}
+
+// Dormant Customers (no purchase in 60+ days)
+function rDorm() {
+    let cu = {};
+    let maxDate = 0;
+    
+    S.forEach(r => {
+        let dStr = pd(r['Order Date']);
+        if(dStr) {
+            let t = new Date(dStr).getTime();
+            if(!isNaN(t) && t > maxDate) maxDate = t;
+        }
+    });
+    
+    let todayTime = maxDate > 0 ? maxDate : new Date().getTime();
+    
+    S.forEach(r => {
+        let c = r.Customer || '';
+        if(!c) return;
+        let dStr = pd(r['Order Date']);
+        let s = Number(r['Sales After Discount'])||0;
+        
+        if(!cu[c]) cu[c] = {last: dStr, s: 0};
+        else if (dStr && dStr > cu[c].last) cu[c].last = dStr;
+        
+        cu[c].s += s;
+    });
+
+    let dormant = Object.entries(cu).map(([n, data]) => {
+        let t = new Date(data.last).getTime();
+        let days = !isNaN(t) ? Math.floor((todayTime - t) / 86400000) : -1;
+        return {n, last: data.last, days, s: data.s};
+    }).filter(r => r.days >= 60).sort((a,b) => b.s - a.s); 
+    
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, dormant.length); i++) {
+        let d = dormant[i];
+        let color = '#e74c3c'; 
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.n}">${d.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?'?????? ????????':'Total Sales'}</span>
+                    <strong style="color:${color};">${aFmt(d.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2);">${L==='ar'?'????? ???':'Inactive for'}</span>
+                    <span class="badge" style="background:${color}; color:white;">${d.days} ${L==='ar'?'???':'days'}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dormant}</span> ${t('dormant')}</h1></div>
+        
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?'?????? ????????':'Dormant Customers'}</div><div class="vl">${aFmt(dormant.length)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'?????? ?????? ??????':'Lost Sales Potential'}</div><div class="vl" style="color:var(--rd);">${aFmt(dormant.reduce((sum,r)=>sum+r.s,0))}</div></div>
+        </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'???? ????? ???????':'Top Lost Accounts'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'?? ????':'None'}</div>`}
+        </div>
+
+        <div class="tb"><div class="tbt"><h3>${t('dormant')} - ${L==='ar'?'?? ????? ??? 60+ ???':'No purchase in 60+ days'}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?'??????':'Customer'}</th><th>${L==='ar'?'?????? ????????':'Total Sales'}</th><th>${L==='ar'?'??? ????':'Last Purchase'}</th><th>${L==='ar'?'???':'Days Ago'}</th><th>${L==='ar'?'??????':'Status'}</th></tr></thead>
+        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}">${r.days>=120?(L==='ar'?'?????':'Lost'):(L==='ar'?'????':'Dormant')}</span></td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+}
+
+// Prospects (customers in T but not in S)
+function rPros() {
+    let activeCustomers = new Set(S.map(r=>r.Customer||''));
+    let prospects = T.filter(r=>!activeCustomers.has(r.Customer));
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.prospects}</span> ${t('prospects')}</h1></div>
+        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?'???????':'Prospects'}</div><div class="vl">${aFmt(prospects.length)}</div></div></div>
+        <div class="tb"><div class="tbt"><h3>${t('prospects')}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?'??????':'Customer'}</th><th>${L==='ar'?'???????':'Target'}</th></tr></thead>
+        <tbody>${prospects.map(r=>`<tr><td><strong>${r.Customer}</strong></td><td>${fmt(Number(r.Target)||0)}</td></tr>`).join('')}${prospects.length===0?`<tr><td colspan="2" style="text-align:center;color:var(--tx2)">${L==='ar'?'?? ????':'None'}</td></tr>`:''}</tbody>
+        </table></div></div>
+    `;
+}
+
+// Opportunities (customers below 50% of target)
+function rPot() {
+    let cu = {};
+    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(Number(r['Sales After Discount'])||0); });
+    let opps = T.map(r => {
+        let tg = Number(r.Target)||0, ach = cu[r.Customer]||0, pct = tg>0?ach/tg*100:0;
+        return {n:r.Customer, tg, ach, pct, gap: tg-ach};
+    }).filter(r=>r.pct<80 && r.tg>0).sort((a,b)=>b.gap-a.gap);
+    
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, opps.length); i++) {
+        let o = opps[i];
+        let color = i===0 ? '#e74c3c' : i===1 ? '#e67e22' : '#f1c40f';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'??????':'Opportunity'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${o.n}">${o.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'????????':'Target'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(o.tg)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'??????':'Achieved'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(o.ach)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'?????? ???????':'Sales Gap'}</span>
+                    <strong style="color:${color}; font-size:1rem;">${aFmt(o.gap)}</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.potential}</span> ${t('potential')}</h1></div>
+        
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?'?????? ?????':'Total Opportunities'}</div><div class="vl">${aFmt(opps.length)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--p);"><div class="lb" style="color:var(--p);">${L==='ar'?'?????? ?????? ???????':'Total Gap Potential'}</div><div class="vl" style="color:var(--p);">${aFmt(opps.reduce((s,r)=>s+r.gap,0))}</div></div>
+        </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'???? 3 ??? ?????':'Top 3 Opportunities'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'?? ????':'None'}</div>`}
+        </div>
+
+        <div class="tb"><div class="tbt"><h3>${t('potential')}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?'??????':'Customer'}</th><th>${L==='ar'?'???????':'Target'}</th><th>${L==='ar'?'???????':'Achieved'}</th><th>%</th><th>${L==='ar'?'??????':'Gap'}</th></tr></thead>
+        <tbody>${opps.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.tg)}</td><td>${fmt(r.ach)}</td><td><span class="badge ${r.pct>=60?'bg-a':'bg-r'}">${pc(r.pct)}</span></td><td style="color:var(--rd);font-weight:bold;">${fmt(r.gap)}</td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+}
+
+// Alerts
+function rAl() {
+    let today = new Date();
+    let alerts = [];
+    // Dormant alerts
+    let cu = {};
+    S.forEach(r => { let c=r.Customer||''; let d=pd(r['Order Date']); if(!cu[c]||d>cu[c]) cu[c]=d; });
+    Object.entries(cu).forEach(([n,last]) => {
+        let days = Math.floor((today - new Date(last)) / 86400000);
+        if(days >= 60) alerts.push({type:'warn', icon:'??', msg:`${n} ? ${L==='ar'?'?? ???? ???':'No purchase since'} ${days} ${L==='ar'?'???':'days'}`});
+    });
+    // Low target alerts
+    let cuS = {};
+    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(Number(r['Sales After Discount'])||0); });
+    T.forEach(r => {
+        let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
+        if(pct<50 && tg>0) alerts.push({type:'danger', icon:'??', msg:`${r.Customer} ? ${L==='ar'?'???????':'Achievement'} ${pc(pct)}`});
+    });
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.alerts}</span> ${t('alerts')}</h1></div>
+        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?'?????????':'Alerts'}</div><div class="vl">${aFmt(alerts.length)}</div></div></div>
+        <div class="card">
+            ${alerts.length===0?`<p style="text-align:center;color:var(--tx2);">? ${L==='ar'?'?? ???? ???????':'No alerts'}</p>`:alerts.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:10px;margin-bottom:8px;background:var(--bg3);border-radius:8px;border-left:3px solid ${a.type==='danger'?'var(--rd)':'var(--am)'}"><span style="font-size:1.2rem;">${a.icon}</span><span style="font-size:0.85rem;">${a.msg}</span></div>`).join('')}
+        </div>
+    `;
+}
+
+// AI Recommendations
+function rAI() {
+    let ds = getFilteredSales();
+    let cu = {};
+    ds.forEach(r => {
+        let c=r.Customer||'';
+        if(!cu[c]) cu[c] = {s:0,p:0,o:{},last:'',accS:0,hwS:0};
+        cu[c].s += Number(r['Sales After Discount'])||0;
+        cu[c].p += Number(r['Profit Margin'])||0;
+        cu[c].o[r['Order Nbr']]=1;
+        let d=pd(r['Order Date']); if(d>cu[c].last) cu[c].last=d;
+        if(isAcc(r['Item Class Name'])) cu[c].accS+=Number(r['Sales After Discount'])||0;
+        else if(isHW(r['Item Class Name'])) cu[c].hwS+=Number(r['Sales After Discount'])||0;
+    });
+    let insights = [];
+    let arr = Object.entries(cu).map(([n,d])=>({n,...d,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
+    let today = new Date();
     arr.slice(0,5).forEach(r => insights.push({icon:'?',color:'var(--gn)',text:`${r.n}: ${L==='ar'?'???? ???? ???????':'Top customer with'} ${fmt(r.s)}`}));
     arr.filter(r=>r.m<5&&r.s>10000).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:`${r.n}: ${L==='ar'?'???? ??? ?????':'Low margin'} (${pc(r.m)}) ? ${L==='ar'?'????? ?????? ?????':'Review pricing'}`}));
     arr.filter(r=>{ let days=Math.floor((today-new Date(r.last))/86400000); return days>=45&&days<90; }).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:`${r.n}: ${L==='ar'?'????? ?????? ? ?? ???? ???':'Needs follow-up ? last purchase was'} ${Math.floor((today-new Date(r.last))/86400000)} ${L==='ar'?'???':'days ago'}`}));
@@ -1290,6 +1620,7 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast('? Done'); render(); } }); }
     };
 }
+
 
 
 

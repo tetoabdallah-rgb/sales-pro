@@ -55,3 +55,4 @@ function rSettings() {
         alert(L==='ar'?'تم الحفظ بنجاح!':'Saved successfully!');
     };
 }
+
