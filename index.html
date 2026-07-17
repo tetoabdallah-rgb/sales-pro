@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <script>
@@ -12,8 +12,8 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
 </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Sales Pro — نظام إدارة المبيعات</title>
-  <meta name="description" content="Sales Pro Enterprise — نظام متكامل لإدارة وتحليل المبيعات والتحصيلات والتارجت">
+  <title>Sales Pro â€” Ù†Ø¸Ø§Ù… Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</title>
+  <meta name="description" content="Sales Pro Enterprise â€” Ù†Ø¸Ø§Ù… Ù…ØªÙƒØ§Ù…Ù„ Ù„Ø¥Ø¯Ø§Ø±Ø© ÙˆØªØ­Ù„ÙŠÙ„ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª ÙˆØ§Ù„ØªØ­ØµÙŠÙ„Ø§Øª ÙˆØ§Ù„ØªØ§Ø±Ø¬Øª">
   <meta name="theme-color" content="#1e293b">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3214/3214746.png">
   <link rel="manifest" href="manifest.json">
@@ -25,7 +25,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
 <!-- Loading Overlay -->
 <div id="LOADER" class="loader-overlay">
   <div class="loader-content">
-    <div class="loader-icon">📊</div>
+    <div class="loader-icon">ðŸ“Š</div>
     <div class="loader-text">Sales Pro</div>
     <div class="loader-bar"><div class="loader-bar-fill"></div></div>
   </div>
@@ -35,33 +35,33 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
 <div id="AUTH" class="auth-bg">
   <div class="auth-card">
     <div class="auth-logo">
-      <div class="auth-logo-icon">📊</div>
+      <div class="auth-logo-icon">ðŸ“Š</div>
       <div class="auth-logo-glow"></div>
     </div>
     <h1>Sales Pro</h1>
-    <p class="ds">سجّل دخول أو اعمل حساب جديد</p>
+    <p class="ds">Ø³Ø¬Ù‘Ù„ Ø¯Ø®ÙˆÙ„ Ø£Ùˆ Ø§Ø¹Ù…Ù„ Ø­Ø³Ø§Ø¨ Ø¬Ø¯ÙŠØ¯</p>
     <div class="fg">
-      <label>الإيميل (Email)</label>
+      <label>Ø§Ù„Ø¥ÙŠÙ…ÙŠÙ„ (Email)</label>
       <div class="input-wrap">
         <input id="inE" type="email" placeholder="example@email.com">
-        <span class="input-icon">✉️</span>
+        <span class="input-icon">âœ‰ï¸</span>
       </div>
     </div>
     <div class="fg">
-      <label>كلمة المرور (Password)</label>
+      <label>ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ± (Password)</label>
       <div class="input-wrap">
-        <input id="inP" type="password" placeholder="••••••••">
-        <span class="input-icon toggle-pw" onclick="var p=document.getElementById('inP');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'👁️':'🙈';">👁️</span>
+        <input id="inP" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
+        <span class="input-icon toggle-pw" onclick="var p=document.getElementById('inP');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'ðŸ‘ï¸':'ðŸ™ˆ';">ðŸ‘ï¸</span>
       </div>
     </div>
     <div class="aerr" id="aErr"></div>
     <div class="abtns" style="flex-direction:column;gap:10px;">
       <button class="btn btn-p btn-login" id="bLog">
-        <span class="btn-login-text">دخول / إنشاء حساب</span>
-        <span class="btn-login-loader hidden">⏳</span>
+        <span class="btn-login-text">Ø¯Ø®ÙˆÙ„ / Ø¥Ù†Ø´Ø§Ø¡ Ø­Ø³Ø§Ø¨</span>
+        <span class="btn-login-loader hidden">â³</span>
       </button>
       <button class="btn btn-google" id="bLogG">
-        <img src="https://www.google.com/favicon.ico" width="16" alt="Google"> دخول بحساب جوجل
+        <img src="https://www.google.com/favicon.ico" width="16" alt="Google"> Ø¯Ø®ÙˆÙ„ Ø¨Ø­Ø³Ø§Ø¨ Ø¬ÙˆØ¬Ù„
       </button>
     </div>
   </div>
@@ -71,11 +71,11 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
 <div id="APP" class="hidden">
   <nav class="sidebar">
     <div class="sbt">
-      <span class="sbr">📊 Sales Pro</span>
+      <span class="sbr">ðŸ“Š Sales Pro</span>
       <div class="sbb">
-        <button id="bTh" title="تغيير الثيم">🌙</button>
-        <button id="bLn" title="تغيير اللغة">EN</button>
-        <button id="bOt" title="تسجيل الخروج">خروج</button>
+        <button id="bTh" title="ØªØºÙŠÙŠØ± Ø§Ù„Ø«ÙŠÙ…">ðŸŒ™</button>
+        <button id="bLn" title="ØªØºÙŠÙŠØ± Ø§Ù„Ù„ØºØ©">EN</button>
+        <button id="bOt" title="ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø®Ø±ÙˆØ¬">Ø®Ø±ÙˆØ¬</button>
       </div>
     </div>
     <div id="NV"></div>
@@ -101,7 +101,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
 
 <script src="firebase-config.js"></script>
 <script src="data-store.js"></script>
-<script src="ui-components.js?v=2"></script>
+<script src="ui-components.js?v=3"></script>
 <script src="settings.js?v=2"></script>
 <script src="app.js?v=2"></script>
 <script src="auth.js"></script>
