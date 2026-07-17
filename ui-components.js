@@ -119,26 +119,68 @@ function rSales() {
     window.sSortCol = ''; window.sSortAsc = true;
     let ds = getFilteredSales();
     pState.sales.page = 1; // reset on load
+
+    // Calculate Top 5 Selling Items
+    let items = {};
+    ds.forEach(r => {
+        let iName = r['Item Description'] || 'Unknown';
+        if(!items[iName]) items[iName] = {s:0, p:0, qty:0};
+        items[iName].s += Number(r['Sales After Discount'])||0;
+        items[iName].p += Number(r['Profit Margin'])||0;
+        items[iName].qty += Number(r.Quantity)||0;
+    });
+    
+    let topItemsArr = Object.entries(items).sort((a,b)=>b[1].s-a[1].s).slice(0, 5);
+    
+    let topItemsHtml = '';
+    topItemsArr.forEach((arrItem, i) => {
+        let n = arrItem[0], d = arrItem[1];
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : i===2 ? '#f39c12' : 'var(--tx2)';
+        topItemsHtml += `
+            <div class="card" style="flex:1; min-width:200px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'المركز':'Rank'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'المبيعات':'Sales'}</span>
+                    <strong style="color:${color}; font-size:0.9rem;">${aFmt(d.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'الكمية':'Qty'}</span>
+                    <strong style="font-size:0.9rem;">${fmt(d.qty)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'الأرباح':'Profit'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(d.p)}</strong>
+                </div>
+            </div>
+        `;
+    });
     
     $('M').innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.sales}</span> ${t('sales')}</h1>
             <div style="margin-left:auto;display:flex;gap:10px;">
-                <button id="bExSales" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">📊</span> Excel</button>
+                <button id="bExSales" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">⬇</span> Excel</button>
                 <button onclick="window.print()" class="btn btn-p"><span style="width:20px;height:20px;display:inline-flex">${ICONS.sales}</span> Print</button>
             </div>
         </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'أعلى 5 منتجات مبيعاً':'Top 5 Best-Sellers'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topItemsHtml}
+        </div>
+
         <div class="tb">
             <div class="tbt">
-                <h3>${L==='ar'?'الجدول':'Table'} (${fmt(ds.length)} ${L==='ar'?'عملية':'Records'})</h3>
-                <input class="sbox" id="ss" placeholder="...">
+                <h3>${L==='ar'?'جدول المبيعات':'Sales Table'} (${fmt(ds.length)} ${L==='ar'?'سجل':'Records'})</h3>
+                <input class="sbox" id="ss" placeholder="${L==='ar'?'بحث...':'Search...'}">
             </div>
             <div class="tbs">
                 <table>
                     <thead><tr>
-                        <th data-c="Date">Date ↕</th><th data-c="Nbr"># ↕</th><th data-c="Customer">Customer ↕</th>
-                        <th data-c="Region">Region ↕</th><th data-c="Class">Class ↕</th><th data-c="Product">Product ↕</th>
-                        <th data-c="Qty">Qty ↕</th><th data-c="Sales">Sales ↕</th><th data-c="Profit">Profit ↕</th>
+                        <th data-c="Date">Date ↕ </th><th data-c="Nbr"># ↕ </th><th data-c="Customer">Customer ↕ </th>
+                        <th data-c="Region">Region ↕ </th><th data-c="Class">Class ↕ </th><th data-c="Product">Product ↕ </th>
+                        <th data-c="Qty">Qty ↕ </th><th data-c="Sales">Sales ↕ </th><th data-c="Profit">Profit ↕ </th>
                     </tr></thead>
                     <tbody id="stb"></tbody>
                 </table>
@@ -244,20 +286,51 @@ function rTgt(){
 function rPers() {
     let myEmail = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.email : '';
     let myS = S, ts = 0, tp = 0;
-    let savedTarget = localStorage.getItem('personal_target');
-    let savedProfitTarget = localStorage.getItem('personal_profit_target');
+    let accS = 0, accP = 0, hwS = 0, hwP = 0;
     
     let defaultTT = 0, defaultTPT = 0;
     T.forEach(r => { defaultTT += Number(r.Target)||0; defaultTPT += Number(r['Profit Target'])||0; });
     
+    // Total targets
+    let savedTarget = localStorage.getItem('personal_target');
+    let savedProfitTarget = localStorage.getItem('personal_profit_target');
     let tt = savedTarget !== null ? Number(savedTarget) : defaultTT;
     let tpt = savedProfitTarget !== null ? Number(savedProfitTarget) : defaultTPT;
+
+    // Accessories Targets
+    let savedAccTarget = localStorage.getItem('personal_acc_target');
+    let savedAccProfitTarget = localStorage.getItem('personal_acc_profit_target');
+    let att = savedAccTarget !== null ? Number(savedAccTarget) : 0;
+    let atpt = savedAccProfitTarget !== null ? Number(savedAccProfitTarget) : 0;
+
+    // Hardware Targets
+    let savedHwTarget = localStorage.getItem('personal_hw_target');
+    let savedHwProfitTarget = localStorage.getItem('personal_hw_profit_target');
+    let htt = savedHwTarget !== null ? Number(savedHwTarget) : 0;
+    let htpt = savedHwProfitTarget !== null ? Number(savedHwProfitTarget) : 0;
     
-    myS.forEach(r => { ts += Number(r['Sales After Discount'])||0; tp += Number(r['Profit Margin'])||0; });
+    myS.forEach(r => { 
+        let s = Number(r['Sales After Discount'])||0;
+        let p = Number(r['Profit Margin'])||0;
+        ts += s; tp += p; 
+        if (isAcc(r['Item Class Name'])) {
+            accS += s; accP += p;
+        } else {
+            hwS += s; hwP += p;
+        }
+    });
     
     let ap = tt > 0 ? ts/tt*100 : 0, pp = tpt > 0 ? tp/tpt*100 : 0;
     let remS = Math.max(0, tt - ts);
     let remP = Math.max(0, tpt - tp);
+
+    let aap = att > 0 ? accS/att*100 : 0, app = atpt > 0 ? accP/atpt*100 : 0;
+    let aremS = Math.max(0, att - accS);
+    let aremP = Math.max(0, atpt - accP);
+
+    let hap = htt > 0 ? hwS/htt*100 : 0, hpp = htpt > 0 ? hwP/htpt*100 : 0;
+    let hremS = Math.max(0, htt - hwS);
+    let hremP = Math.max(0, htpt - hwP);
 
     // Monthly breakdown
     let monthly = {};
@@ -276,13 +349,32 @@ function rPers() {
         <div class="card" style="margin-bottom:24px; padding:20px; border-left:4px solid var(--p);">
             <h3 style="margin-bottom:16px;">${L==='ar'?'إعدادات التارجت الشخصي':'Personal Target Settings'}</h3>
             <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
-                <div style="flex:1; min-width:200px;">
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'تارجت المبيعات':'Sales Target'}</label>
+                <!-- Total -->
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'إجمالي التارجت':'Total Target'}</label>
                     <input type="number" id="inPTarget" value="${tt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
-                <div style="flex:1; min-width:200px;">
-                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'تارجت الأرباح':'Profit Target'}</label>
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'إجمالي الأرباح':'Total Profit Target'}</label>
                     <input type="number" id="inPProfit" value="${tpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <!-- Accessories -->
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'تارجت إكسسوارات':'Acc. Target'}</label>
+                    <input type="number" id="inAccTarget" value="${att}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'ربح إكسسوارات':'Acc. Profit'}</label>
+                    <input type="number" id="inAccProfit" value="${atpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <!-- Hardware -->
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'تارجت هاردوير':'HW Target'}</label>
+                    <input type="number" id="inHwTarget" value="${htt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'ربح هاردوير':'HW Profit'}</label>
+                    <input type="number" id="inHwProfit" value="${htpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <div style="min-width:120px;">
                     <button id="bSaveTarget" class="btn btn-p" style="width:100%; padding:10px; height:42px;">${L==='ar'?'حفظ':'Save'}</button>
@@ -290,6 +382,8 @@ function rPers() {
             </div>
         </div>
 
+        <!-- TOTALS -->
+        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'ملخص الإجمالي':'Overall Summary'}</h3>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?'المبيعات':'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'التارجت':'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
@@ -300,6 +394,33 @@ function rPers() {
             <div class="ki"><div class="lb">${L==='ar'?'النسبة':'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
             <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'المتبقي (أرباح)':'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(remP)}</div></div>
         </div>
+
+        <!-- ACCESSORIES -->
+        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px; margin-top:24px;">${L==='ar'?'الإكسسوارات':'Accessories'}</h3>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?'المبيعات':'Acc. Sales'}</div><div class="vl">${aFmt(accS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'التارجت':'Target'}</div><div class="vl">${aFmt(att)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'التحقيق':'Ach.'}</div><div class="vl">${aFmt(aap,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'المتبقي':'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(aremS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'الأرباح':'Acc. Profit'}</div><div class="vl">${aFmt(accP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'تارجت الربح':'Target'}</div><div class="vl">${aFmt(atpt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'النسبة':'Margin'}</div><div class="vl">${aFmt(accS>0?accP/accS*100:0,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'المتبقي':'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(aremP)}</div></div>
+        </div>
+
+        <!-- HARDWARE -->
+        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px; margin-top:24px;">${L==='ar'?'الهاردوير':'Hardware'}</h3>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?'المبيعات':'HW Sales'}</div><div class="vl">${aFmt(hwS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'التارجت':'Target'}</div><div class="vl">${aFmt(htt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'التحقيق':'Ach.'}</div><div class="vl">${aFmt(hap,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'المتبقي':'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'الأرباح':'HW Profit'}</div><div class="vl">${aFmt(hwP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'تارجت الربح':'Target'}</div><div class="vl">${aFmt(htpt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'النسبة':'Margin'}</div><div class="vl">${aFmt(hwS>0?hwP/hwS*100:0,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'المتبقي':'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremP)}</div></div>
+        </div>
+
         <div class="rg">${ring(L==='ar'?'المبيعات':'Sales', ap, tt)}${ring(L==='ar'?'الربح':'Profit', pp, tpt)}</div>
         <div class="tb"><div class="tbt"><h3>${L==='ar'?'شهري':'Monthly'}</h3></div>
         <div class="tbs"><table><thead><tr><th>${L==='ar'?'الشهر':'Month'}</th><th>${L==='ar'?'المبيعات':'Sales'}</th><th>${L==='ar'?'الربح':'Profit'}</th><th>${L==='ar'?'النسبة':'Margin'}</th></tr></thead>
@@ -310,6 +431,10 @@ function rPers() {
     $('bSaveTarget').onclick = () => {
         localStorage.setItem('personal_target', $('inPTarget').value);
         localStorage.setItem('personal_profit_target', $('inPProfit').value);
+        localStorage.setItem('personal_acc_target', $('inAccTarget').value);
+        localStorage.setItem('personal_acc_profit_target', $('inAccProfit').value);
+        localStorage.setItem('personal_hw_target', $('inHwTarget').value);
+        localStorage.setItem('personal_hw_profit_target', $('inHwProfit').value);
         toast(L==='ar'?'تم الحفظ!':'Saved!');
         rPers();
     };
@@ -336,19 +461,54 @@ function rCust() {
     let totS = arr.reduce((sum,r)=>sum+r.s,0), totP = arr.reduce((sum,r)=>sum+r.p,0);
     pState.customers.page = 1;
     
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, arr.length); i++) {
+        let n = arr[i].n;
+        let d = arr[i];
+        let contrib = totS > 0 ? (d.s/totS)*100 : 0;
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'المركز':'Rank'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?'المبيعات':'Sales'}</span>
+                    <strong style="color:${color};">${aFmt(d.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?'الأرباح':'Profit'}</span>
+                    <strong>${aFmt(d.p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2);">${L==='ar'?'المساهمة':'Contribution'}</span>
+                    <span class="badge" style="background:${color}; color:white;">${pc(contrib)}</span>
+                </div>
+            </div>
+        `;
+    }
+    
     $('M').innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.customers}</span> ${t('customers')}</h1>
-            <button id="bExCust" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">📊</span> Excel</button>
+            <button id="bExCust" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">⬇</span> Excel</button>
         </div>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?'العملاء':'Customers'}</div><div class="vl">${aFmt(arr.length)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'المبيعات':'Sales'}</div><div class="vl">${aFmt(totS)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'الربح':'Profit'}</div><div class="vl">${aFmt(totP)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'هامش':'Margin'}</div><div class="vl">${aFmt(totS>0?totP/totS*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'النسبة':'Margin'}</div><div class="vl">${aFmt(totS>0?totP/totS*100:0,true)}</div></div>
         </div>
+        
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'أعلى 3 عملاء':'Top 3 Buyers'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml}
+        </div>
+
         <div class="tb">
-            <div class="tbt"><h3>${L==='ar'?'العملاء':'Customers'}</h3><input class="sbox" id="cusr" placeholder="..."></div>
+            <div class="tbt" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>${L==='ar'?'تفاصيل العملاء':'Customers Details'}</h3>
+                <input class="sbox" id="cusr" placeholder="${L==='ar'?'بحث...':'Search...'}">
+            </div>
             <div class="tbs"><table><thead><tr><th>Customer</th><th>Region</th><th>Orders</th><th>Sales</th><th>Acc</th><th>HW</th><th>Profit</th><th>Margin</th><th>Target</th><th>Ach.</th><th>Last</th></tr></thead><tbody id="cutb"></tbody></table></div>
             <div id="cpg"></div>
         </div>
@@ -384,28 +544,102 @@ function rReset() {
 // Brands
 function rBrands() {
     let brands = {};
+    let tsTotal = 0;
     S.forEach(r => {
         let b = r['Brand'] || r['Item Class Name'] || 'Other';
         if(!brands[b]) brands[b] = {s:0,p:0,qty:0};
         brands[b].s += Number(r['Sales After Discount'])||0;
         brands[b].p += Number(r['Profit Margin'])||0;
         brands[b].qty += Number(r.Quantity)||0;
+        tsTotal += Number(r['Sales After Discount'])||0;
     });
     let arr = Object.entries(brands).sort((a,b)=>b[1].s-a[1].s);
+    
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, arr.length); i++) {
+        let n = arr[i][0];
+        let d = arr[i][1];
+        let contrib = tsTotal > 0 ? (d.s/tsTotal)*100 : 0;
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'المركز':'Rank'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.4rem;">${n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?'المبيعات':'Sales'}</span>
+                    <strong style="color:${color};">${aFmt(d.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?'الأرباح':'Profit'}</span>
+                    <strong>${aFmt(d.p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2);">${L==='ar'?'المساهمة':'Contribution'}</span>
+                    <span class="badge" style="background:${color}; color:white;">${pc(contrib)}</span>
+                </div>
+            </div>
+        `;
+    }
+
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.brands}</span> ${t('brands')}</h1></div>
+        
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'البراندات':'Brands'}</div><div class="vl">${aFmt(arr.length)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'المبيعات':'Sales'}</div><div class="vl">${aFmt(arr.reduce((s,x)=>s+x[1].s,0))}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'عدد البراندات':'Brands'}</div><div class="vl">${aFmt(arr.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'إجمالي المبيعات':'Sales'}</div><div class="vl">${aFmt(tsTotal)}</div></div>
         </div>
-        <div class="tb"><div class="tbt"><h3>${t('brands')}</h3><input class="sbox" id="bsr" placeholder="..."></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'البراند':'Brand'}</th><th>${L==='ar'?'المبيعات':'Sales'}</th><th>${L==='ar'?'الربح':'Profit'}</th><th>${L==='ar'?'الهامش':'Margin'}</th><th>${L==='ar'?'الكمية':'Qty'}</th></tr></thead>
-        <tbody id="brtb">${arr.map(([n,d])=>`<tr><td><strong>${n}</strong></td><td>${fmt(d.s)}</td><td>${fmt(d.p)}</td><td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}">${pc(d.s>0?d.p/d.s*100:0)}</span></td><td>${fmt(d.qty)}</td></tr>`).join('')}</tbody>
-        </table></div></div>
+
+        <!-- TOP 3 CARDS -->
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'أعلى 3 براندات':'Top 3 Brands'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml}
+        </div>
+
+        <div class="tb">
+            <div class="tbt" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>${L==='ar'?'تفاصيل البراندات':'Brands Details'}</h3>
+                <input class="sbox" id="bsr" placeholder="${L==='ar'?'بحث...':'Search...'}">
+            </div>
+            <div class="tbs">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>${L==='ar'?'البراند':'Brand'}</th>
+                            <th>${L==='ar'?'المبيعات':'Sales'}</th>
+                            <th>${L==='ar'?'الربح':'Profit'}</th>
+                            <th>${L==='ar'?'النسبة':'Margin'}</th>
+                            <th>${L==='ar'?'الكمية':'Qty'}</th>
+                            <th>${L==='ar'?'المساهمة':'Contr. %'}</th>
+                            <th>${L==='ar'?'متوسط السعر':'Avg Price'}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="brtb">
+                        ${arr.map(([n,d])=>`<tr>
+                            <td><strong>${n}</strong></td>
+                            <td>${fmt(d.s)}</td>
+                            <td>${fmt(d.p)}</td>
+                            <td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}">${pc(d.s>0?d.p/d.s*100:0)}</span></td>
+                            <td>${fmt(d.qty)}</td>
+                            <td>${pc(tsTotal>0?d.s/tsTotal*100:0)}</td>
+                            <td>${fmt(d.qty>0?d.s/d.qty:0)}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     `;
+    
     $('bsr').oninput = debounce(function() {
         let q = this.value.toLowerCase();
-        $('brtb').innerHTML = arr.filter(([n])=>n.toLowerCase().includes(q)).map(([n,d])=>`<tr><td><strong>${n}</strong></td><td>${fmt(d.s)}</td><td>${fmt(d.p)}</td><td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}">${pc(d.s>0?d.p/d.s*100:0)}</span></td><td>${fmt(d.qty)}</td></tr>`).join('');
+        $('brtb').innerHTML = arr.filter(([n])=>n.toLowerCase().includes(q)).map(([n,d])=>`<tr>
+            <td><strong>${n}</strong></td>
+            <td>${fmt(d.s)}</td>
+            <td>${fmt(d.p)}</td>
+            <td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}">${pc(d.s>0?d.p/d.s*100:0)}</span></td>
+            <td>${fmt(d.qty)}</td>
+            <td>${pc(tsTotal>0?d.s/tsTotal*100:0)}</td>
+            <td>${fmt(d.qty>0?d.s/d.qty:0)}</td>
+        </tr>`).join('');
     }, 200);
     initAnm && initAnm();
 }
@@ -475,12 +709,45 @@ function rProfit() {
         cu[c].p += Number(r['Profit Margin'])||0;
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.m-a.m);
+    
+    let topHtml = '';
+    let topProfit = [...arr].sort((a,b)=>b.p-a.p).slice(0, 3);
+    for(let i=0; i<topProfit.length; i++) {
+        let ka = topProfit[i];
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'المركز':'Rank'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}">${ka.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'الربح':'Profit'}</span>
+                    <strong style="font-size:0.9rem; color:${color}">${aFmt(ka.p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'المبيعات':'Sales'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(ka.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'الهامش':'Margin'}</span>
+                    <span class="badge ${ka.m>=10?'bg-g':ka.m>=5?'bg-a':'bg-r'}">${pc(ka.m)}</span>
+                </div>
+            </div>
+        `;
+    }
+
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.profit}</span> ${t('profit')}</h1></div>
+        
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?'إجمالي الربح':'Total Profit'}</div><div class="vl">${aFmt(arr.reduce((s,x)=>s+x.p,0))}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'متوسط الهامش':'Avg Margin'}</div><div class="vl">${aFmt(arr.length>0?arr.reduce((s,x)=>s+x.m,0)/arr.length:0,true)}</div></div>
         </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'أعلى 3 عملاء ربحية':'Top 3 Profitable'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'لا يوجد':'None'}</div>`}
+        </div>
+
         <div class="tb"><div class="tbt"><h3>${t('profit')}</h3></div>
         <div class="tbs"><table><thead><tr><th>${L==='ar'?'العميل':'Customer'}</th><th>${L==='ar'?'المبيعات':'Sales'}</th><th>${L==='ar'?'الربح':'Profit'}</th><th>${L==='ar'?'الهامش':'Margin'}</th></tr></thead>
         <tbody>${arr.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=10?'bg-g':r.m>=5?'bg-a':'bg-r'}">${pc(r.m)}</span></td></tr>`).join('')}</tbody>
@@ -576,12 +843,44 @@ function rKey() {
     let totS = arr.reduce((s,x)=>s+x.s,0);
     let cumS = 0, keyAcc = [];
     for(let r of arr) { cumS+=r.s; keyAcc.push(r); if(cumS/totS>=0.8) break; }
+
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, keyAcc.length); i++) {
+        let ka = keyAcc[i];
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'عميل مميز':'VIP'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}">${ka.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'المبيعات':'Sales'}</span>
+                    <strong style="font-size:0.9rem; color:${color}">${aFmt(ka.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'الأرباح':'Profit'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(ka.p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'عدد الأوردرات':'Orders'}</span>
+                    <span class="badge bg-g">${ka.o}</span>
+                </div>
+            </div>
+        `;
+    }
+
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.keyacc}</span> ${t('keyacc')}</h1></div>
+        
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?'العملاء المميزون':'Key Accounts'}</div><div class="vl">${aFmt(keyAcc.length)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'مساهمتهم':'Contribution'}</div><div class="vl">${aFmt(totS>0?keyAcc.reduce((s,x)=>s+x.s,0)/totS*100:0,true)}</div></div>
         </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'أكبر 3 عملاء مميزين':'Top 3 VIPs'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'لا يوجد':'None'}</div>`}
+        </div>
+
         <div class="tb"><div class="tbt"><h3>${t('keyacc')} — ${L==='ar'?'80% من المبيعات':'80% of Sales'}</h3></div>
         <div class="tbs"><table><thead><tr><th>#</th><th>${L==='ar'?'العميل':'Customer'}</th><th>${L==='ar'?'المبيعات':'Sales'}</th><th>${L==='ar'?'الربح':'Profit'}</th><th>${L==='ar'?'الهامش':'Margin'}</th><th>${L==='ar'?'الأوردرات':'Orders'}</th></tr></thead>
         <tbody>${keyAcc.map((r,i)=>`<tr><td><span class="badge bg-g">${i+1}</span></td><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${r.o}</td></tr>`).join('')}</tbody>
@@ -592,22 +891,72 @@ function rKey() {
 
 // Dormant Customers (no purchase in 60+ days)
 function rDorm() {
-    let today = new Date();
     let cu = {};
+    let maxDate = 0;
+    
     S.forEach(r => {
-        let c = r.Customer||''; let d = pd(r['Order Date']);
-        if(!cu[c] || d > cu[c]) cu[c] = d;
+        let dStr = pd(r['Order Date']);
+        if(dStr) {
+            let t = new Date(dStr).getTime();
+            if(!isNaN(t) && t > maxDate) maxDate = t;
+        }
     });
-    let dormant = Object.entries(cu).map(([n,last]) => {
-        let days = Math.floor((today - new Date(last)) / 86400000);
-        return {n, last, days};
-    }).filter(r=>r.days>=60).sort((a,b)=>b.days-a.days);
+    
+    let todayTime = maxDate > 0 ? maxDate : new Date().getTime();
+    
+    S.forEach(r => {
+        let c = r.Customer || '';
+        if(!c) return;
+        let dStr = pd(r['Order Date']);
+        let s = Number(r['Sales After Discount'])||0;
+        
+        if(!cu[c]) cu[c] = {last: dStr, s: 0};
+        else if (dStr && dStr > cu[c].last) cu[c].last = dStr;
+        
+        cu[c].s += s;
+    });
+
+    let dormant = Object.entries(cu).map(([n, data]) => {
+        let t = new Date(data.last).getTime();
+        let days = !isNaN(t) ? Math.floor((todayTime - t) / 86400000) : -1;
+        return {n, last: data.last, days, s: data.s};
+    }).filter(r => r.days >= 60).sort((a,b) => b.s - a.s); 
+    
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, dormant.length); i++) {
+        let d = dormant[i];
+        let color = '#e74c3c'; 
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.n}">${d.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?'إجمالي مسحوباته':'Total Sales'}</span>
+                    <strong style="color:${color};">${aFmt(d.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2);">${L==='ar'?'منقطع منذ':'Inactive for'}</span>
+                    <span class="badge" style="background:${color}; color:white;">${d.days} ${L==='ar'?'يوم':'days'}</span>
+                </div>
+            </div>
+        `;
+    }
+
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dormant}</span> ${t('dormant')}</h1></div>
-        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?'عملاء خاملون':'Dormant Customers'}</div><div class="vl">${aFmt(dormant.length)}</div></div></div>
-        <div class="tb"><div class="tbt"><h3>${t('dormant')} — ${L==='ar'?'لم يشتروا منذ 60+ يوم':'No purchase in 60+ days'}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'العميل':'Customer'}</th><th>${L==='ar'?'آخر شراء':'Last Purchase'}</th><th>${L==='ar'?'الأيام':'Days Ago'}</th><th>${L==='ar'?'الحالة':'Status'}</th></tr></thead>
-        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}">${r.days>=120?(L==='ar'?'غائب':'Lost'):(L==='ar'?'خامل':'Dormant')}</span></td></tr>`).join('')}</tbody>
+        
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?'إجمالي الخاملين':'Dormant Customers'}</div><div class="vl">${aFmt(dormant.length)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'إجمالي مبيعات مفقودة':'Lost Sales Potential'}</div><div class="vl" style="color:var(--rd);">${aFmt(dormant.reduce((sum,r)=>sum+r.s,0))}</div></div>
+        </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'أكبر عملاء مفقودين':'Top Lost Accounts'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'لا يوجد':'None'}</div>`}
+        </div>
+
+        <div class="tb"><div class="tbt"><h3>${t('dormant')} - ${L==='ar'?'لم يشتري منذ 60+ يوم':'No purchase in 60+ days'}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?'العميل':'Customer'}</th><th>${L==='ar'?'إجمالي مسحوباته':'Total Sales'}</th><th>${L==='ar'?'آخر شراء':'Last Purchase'}</th><th>${L==='ar'?'منذ':'Days Ago'}</th><th>${L==='ar'?'الحالة':'Status'}</th></tr></thead>
+        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}">${r.days>=120?(L==='ar'?'مفقود':'Lost'):(L==='ar'?'خامل':'Dormant')}</span></td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
 }
@@ -634,12 +983,44 @@ function rPot() {
         let tg = Number(r.Target)||0, ach = cu[r.Customer]||0, pct = tg>0?ach/tg*100:0;
         return {n:r.Customer, tg, ach, pct, gap: tg-ach};
     }).filter(r=>r.pct<80 && r.tg>0).sort((a,b)=>b.gap-a.gap);
+    
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, opps.length); i++) {
+        let o = opps[i];
+        let color = i===0 ? '#e74c3c' : i===1 ? '#e67e22' : '#f1c40f';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?'الفرصة':'Opportunity'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${o.n}">${o.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'المستهدف':'Target'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(o.tg)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'المحقق':'Achieved'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(o.ach)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'الفجوة البيعية':'Sales Gap'}</span>
+                    <strong style="color:${color}; font-size:1rem;">${aFmt(o.gap)}</strong>
+                </div>
+            </div>
+        `;
+    }
+
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.potential}</span> ${t('potential')}</h1></div>
+        
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'فرص':'Opportunities'}</div><div class="vl">${aFmt(opps.length)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'الفجوة':'Total Gap'}</div><div class="vl">${aFmt(opps.reduce((s,r)=>s+r.gap,0))}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'إجمالي الفرص':'Total Opportunities'}</div><div class="vl">${aFmt(opps.length)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--p);"><div class="lb" style="color:var(--p);">${L==='ar'?'إجمالي الفجوة البيعية':'Total Gap Potential'}</div><div class="vl" style="color:var(--p);">${aFmt(opps.reduce((s,r)=>s+r.gap,0))}</div></div>
         </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?'أكبر 3 فرص بيعية':'Top 3 Opportunities'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'لا يوجد':'None'}</div>`}
+        </div>
+
         <div class="tb"><div class="tbt"><h3>${t('potential')}</h3></div>
         <div class="tbs"><table><thead><tr><th>${L==='ar'?'العميل':'Customer'}</th><th>${L==='ar'?'التارجت':'Target'}</th><th>${L==='ar'?'التحقيق':'Achieved'}</th><th>%</th><th>${L==='ar'?'الفجوة':'Gap'}</th></tr></thead>
         <tbody>${opps.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.tg)}</td><td>${fmt(r.ach)}</td><td><span class="badge ${r.pct>=60?'bg-a':'bg-r'}">${pc(r.pct)}</span></td><td style="color:var(--rd);font-weight:bold;">${fmt(r.gap)}</td></tr>`).join('')}</tbody>
