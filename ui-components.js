@@ -881,7 +881,7 @@ function rKey() {
             ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?'?? ????':'None'}</div>`}
         </div>
 
-        <div class="tb"><div class="tbt"><h3>${t('keyacc')} — ${L==='ar'?'80% ?? ????????':'80% of Sales'}</h3></div>
+        <div class="tb"><div class="tbt"><h3>${t('keyacc')} ? ${L==='ar'?'80% ?? ????????':'80% of Sales'}</h3></div>
         <div class="tbs"><table><thead><tr><th>#</th><th>${L==='ar'?'??????':'Customer'}</th><th>${L==='ar'?'????????':'Sales'}</th><th>${L==='ar'?'?????':'Profit'}</th><th>${L==='ar'?'??????':'Margin'}</th><th>${L==='ar'?'?????????':'Orders'}</th></tr></thead>
         <tbody>${keyAcc.map((r,i)=>`<tr><td><span class="badge bg-g">${i+1}</span></td><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${r.o}</td></tr>`).join('')}</tbody>
         </table></div></div>
@@ -1037,14 +1037,14 @@ function rAl() {
     S.forEach(r => { let c=r.Customer||''; let d=pd(r['Order Date']); if(!cu[c]||d>cu[c]) cu[c]=d; });
     Object.entries(cu).forEach(([n,last]) => {
         let days = Math.floor((today - new Date(last)) / 86400000);
-        if(days >= 60) alerts.push({type:'warn', icon:'??', msg:`${n} — ${L==='ar'?'?? ???? ???':'No purchase since'} ${days} ${L==='ar'?'???':'days'}`});
+        if(days >= 60) alerts.push({type:'warn', icon:'??', msg:`${n} ? ${L==='ar'?'?? ???? ???':'No purchase since'} ${days} ${L==='ar'?'???':'days'}`});
     });
     // Low target alerts
     let cuS = {};
     S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(Number(r['Sales After Discount'])||0); });
     T.forEach(r => {
         let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
-        if(pct<50 && tg>0) alerts.push({type:'danger', icon:'??', msg:`${r.Customer} — ${L==='ar'?'???????':'Achievement'} ${pc(pct)}`});
+        if(pct<50 && tg>0) alerts.push({type:'danger', icon:'??', msg:`${r.Customer} ? ${L==='ar'?'???????':'Achievement'} ${pc(pct)}`});
     });
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.alerts}</span> ${t('alerts')}</h1></div>
@@ -1073,9 +1073,9 @@ function rAI() {
     let arr = Object.entries(cu).map(([n,d])=>({n,...d,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
     let today = new Date();
     arr.slice(0,5).forEach(r => insights.push({icon:'?',color:'var(--gn)',text:`${r.n}: ${L==='ar'?'???? ???? ???????':'Top customer with'} ${fmt(r.s)}`}));
-    arr.filter(r=>r.m<5&&r.s>10000).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:`${r.n}: ${L==='ar'?'???? ??? ?????':'Low margin'} (${pc(r.m)}) — ${L==='ar'?'????? ?????? ?????':'Review pricing'}`}));
-    arr.filter(r=>{ let days=Math.floor((today-new Date(r.last))/86400000); return days>=45&&days<90; }).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:`${r.n}: ${L==='ar'?'????? ?????? — ?? ???? ???':'Needs follow-up — last purchase was'} ${Math.floor((today-new Date(r.last))/86400000)} ${L==='ar'?'???':'days ago'}`}));
-    arr.filter(r=>r.accS===0&&r.hwS>0).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:`${r.n}: ${L==='ar'?'?? ???? ????????? — ???? ??? ??????':'No accessories — upsell opportunity'}`}));
+    arr.filter(r=>r.m<5&&r.s>10000).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:`${r.n}: ${L==='ar'?'???? ??? ?????':'Low margin'} (${pc(r.m)}) ? ${L==='ar'?'????? ?????? ?????':'Review pricing'}`}));
+    arr.filter(r=>{ let days=Math.floor((today-new Date(r.last))/86400000); return days>=45&&days<90; }).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:`${r.n}: ${L==='ar'?'????? ?????? ? ?? ???? ???':'Needs follow-up ? last purchase was'} ${Math.floor((today-new Date(r.last))/86400000)} ${L==='ar'?'???':'days ago'}`}));
+    arr.filter(r=>r.accS===0&&r.hwS>0).slice(0,3).forEach(r => insights.push({icon:'??',color:'var(--am)',text:`${r.n}: ${L==='ar'?'?? ???? ????????? ? ???? ??? ??????':'No accessories ? upsell opportunity'}`}));
     
     let key = ld('sp_gemini_key') || '';
     window.aiChatHistory = window.aiChatHistory || [];
@@ -1164,39 +1164,23 @@ function rAI() {
                         generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
                     };
                     
-                    // 1. Fetch available models for this key
-                    let modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-                    let modelsData = await modelsRes.json();
-                    
-                    if(modelsData.error) {
-                        window.aiChatHistory.push({role:'model', text: 'API Key Error: ' + modelsData.error.message});
-                        rAI();
-                        return;
-                    }
-
-                    // 2. Find a supported model
-                    let targetModelName = "models/gemini-1.5-flash";
+                                        // 2. Try default stable aliases directly to bypass model deprecation errors
+                    let fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro', 'gemini-flash'];
                     let data = null;
-                    if (modelsData.models) {
-                        let geminiModels = modelsData.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent") && m.name.includes("gemini"));
-                        // Sort descending so newer models (like 4.0, 3.5) are tried first
-                        geminiModels.sort((a,b) => b.name.localeCompare(a.name));
-                        
-                        let success = false;
-                        for(let m of geminiModels) {
-                            try {
-                                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${m.name}:generateContent?key=${key}`, {
-                                    method: 'POST',
-                                    headers: {'Content-Type': 'application/json'},
-                                    body: JSON.stringify(reqBody)
-                                });
-                                data = await res.json();
-                                if(!data.error) {
-                                    success = true;
-                                    break;
-                                }
-                            } catch(e) { continue; }
-                        }
+                    let success = false;
+                    for (let m of fallbackModels) {
+                        try {
+                            let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(reqBody)
+                            });
+                            data = await res.json();
+                            if (!data.error) {
+                                success = true;
+                                break;
+                            }
+                        } catch(e) { continue; }
                     }
                     if(data.error) {
                         window.aiChatHistory.push({role:'model', text: 'Error: ' + data.error.message});
@@ -1306,6 +1290,9 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast('? Done'); render(); } }); }
     };
 }
+
+
+
 
 
 
