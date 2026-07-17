@@ -243,10 +243,21 @@ function rTgt(){
 // 4. Personal Target
 function rPers() {
     let myEmail = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.email : '';
-    let myS = S, ts = 0, tp = 0, tt = 0, tpt = 0;
+    let myS = S, ts = 0, tp = 0;
+    let savedTarget = localStorage.getItem('personal_target');
+    let savedProfitTarget = localStorage.getItem('personal_profit_target');
+    
+    let defaultTT = 0, defaultTPT = 0;
+    T.forEach(r => { defaultTT += Number(r.Target)||0; defaultTPT += Number(r['Profit Target'])||0; });
+    
+    let tt = savedTarget !== null ? Number(savedTarget) : defaultTT;
+    let tpt = savedProfitTarget !== null ? Number(savedProfitTarget) : defaultTPT;
+    
     myS.forEach(r => { ts += Number(r['Sales After Discount'])||0; tp += Number(r['Profit Margin'])||0; });
-    T.forEach(r => { tt += Number(r.Target)||0; tpt += Number(r['Profit Target'])||0; });
+    
     let ap = tt > 0 ? ts/tt*100 : 0, pp = tpt > 0 ? tp/tpt*100 : 0;
+    let remS = Math.max(0, tt - ts);
+    let remP = Math.max(0, tpt - tp);
 
     // Monthly breakdown
     let monthly = {};
@@ -261,19 +272,47 @@ function rPers() {
 
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.personal}</span> ${t('personal')}</h1></div>
+        
+        <div class="card" style="margin-bottom:24px; padding:20px; border-left:4px solid var(--p);">
+            <h3 style="margin-bottom:16px;">${L==='ar'?'إعدادات التارجت الشخصي':'Personal Target Settings'}</h3>
+            <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
+                <div style="flex:1; min-width:200px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'تارجت المبيعات':'Sales Target'}</label>
+                    <input type="number" id="inPTarget" value="${tt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <div style="flex:1; min-width:200px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?'تارجت الأرباح':'Profit Target'}</label>
+                    <input type="number" id="inPProfit" value="${tpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <div style="min-width:120px;">
+                    <button id="bSaveTarget" class="btn btn-p" style="width:100%; padding:10px; height:42px;">${L==='ar'?'حفظ':'Save'}</button>
+                </div>
+            </div>
+        </div>
+
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?'المبيعات':'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'الربح':'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'الهامش':'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'التارجت':'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'التحقيق':'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'المتبقي (مبيعات)':'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(remS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'الربح':'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'تارجت الربح':'Target'}</div><div class="vl">${aFmt(tpt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'النسبة':'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'المتبقي (أرباح)':'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(remP)}</div></div>
         </div>
-        <div class="rg">${ring(L==='ar'?'مبيعات':'Sales', ap, tt)}${ring(L==='ar'?'ربح':'Profit', pp, tpt)}</div>
+        <div class="rg">${ring(L==='ar'?'المبيعات':'Sales', ap, tt)}${ring(L==='ar'?'الربح':'Profit', pp, tpt)}</div>
         <div class="tb"><div class="tbt"><h3>${L==='ar'?'شهري':'Monthly'}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?'الشهر':'Month'}</th><th>${L==='ar'?'المبيعات':'Sales'}</th><th>${L==='ar'?'الربح':'Profit'}</th><th>${L==='ar'?'الهامش':'Margin'}</th></tr></thead>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?'الشهر':'Month'}</th><th>${L==='ar'?'المبيعات':'Sales'}</th><th>${L==='ar'?'الربح':'Profit'}</th><th>${L==='ar'?'النسبة':'Margin'}</th></tr></thead>
         <tbody>${months.map(m => `<tr><td>${m}</td><td>${fmt(monthly[m].s)}</td><td>${fmt(monthly[m].p)}</td><td><span class="badge ${monthly[m].s>0&&monthly[m].p/monthly[m].s*100>=5?'bg-g':'bg-a'}">${pc(monthly[m].s>0?monthly[m].p/monthly[m].s*100:0)}</span></td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
+    
+    $('bSaveTarget').onclick = () => {
+        localStorage.setItem('personal_target', $('inPTarget').value);
+        localStorage.setItem('personal_profit_target', $('inPProfit').value);
+        toast(L==='ar'?'تم الحفظ!':'Saved!');
+        rPers();
+    };
     initAnm && initAnm();
 }
 
