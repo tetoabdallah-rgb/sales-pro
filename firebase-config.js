@@ -14,6 +14,9 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
+firebase.firestore().enablePersistence().catch(function(err) {
+    console.warn("Firebase persistence error: ", err);
+});
 const db = firebase.firestore();
 const auth = firebase.auth();
 let currentUser = null;

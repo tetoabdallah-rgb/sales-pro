@@ -99,15 +99,23 @@ function sv(k, v) {
                 let chks = [];
                 for(let i=0; i<arr.length; i+=cSz) chks.push(arr.slice(i, i+cSz));
                 
-                let batch = db.batch();
+                let batches = [db.batch()];
+                let opCount = 0;
+                
                 let mRef = db.collection('users').doc(u);
-                batch.set(mRef, { [k+'_meta']: chks.length }, {merge: true});
+                batches[batches.length-1].set(mRef, { [k+'_meta']: chks.length }, {merge: true});
+                opCount++;
                 
                 let coll = mRef.collection('chunks');
                 for(let i=0; i<chks.length; i++){
-                    batch.set(coll.doc(k+'_'+i), { data: chks[i] });
+                    batches[batches.length-1].set(coll.doc(k+'_'+i), { data: chks[i] });
+                    opCount++;
+                    if(opCount >= 400) {
+                        batches.push(db.batch());
+                        opCount = 0;
+                    }
                 }
-                proms.push(batch.commit());
+                batches.forEach(b => proms.push(b.commit()));
             }
             Promise.all(proms).then(() => syncUI('done')).catch(e => {
                 syncUI('error'); console.error(e);
