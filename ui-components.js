@@ -42,7 +42,8 @@ function rDash() {
             <input type="date" id="dfStart" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.start||''}">
             <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('To'):'To'}:</label>
             <input type="date" id="dfEnd" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.end||''}">
-            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">?</button>
+            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">&#x274C;</button>
+            <button id="bMailReport" class="btn bg-p" style="color:#fff;padding:6px 12px;font-size:0.8rem;margin-left:auto;">${L==='ar'?'إرسال تقرير':'Send Report'} &#x2709;&#xFE0F;</button>
         </div>
     `;
     
@@ -79,6 +80,14 @@ function rDash() {
         globalDateRange = { start: null, end: null };
         rDash();
     };
+    if ($('bMailReport')) {
+        $('bMailReport').onclick = () => {
+            let body = L==='ar' ? 
+                `مرحباً مدير الإدارة،\n\nإليك التقرير الحالي للمبيعات:\n\n- إجمالي المبيعات: ${fmt(ts)}\n- إجمالي الأرباح: ${fmt(tp)}\n- نسبة تحقيق التارجت: ${pc(ap)}\n- عدد العملاء: ${Object.keys(cu).length}\n\nتحياتي.` :
+                `Hello Admin Manager,\n\nHere is the current sales report:\n\n- Total Sales: ${fmt(ts)}\n- Total Profit: ${fmt(tp)}\n- Target Achievement: ${pc(ap)}\n- Total Customers: ${Object.keys(cu).length}\n\nRegards.`;
+            window.location.href = `mailto:?subject=${encodeURIComponent(L==='ar'?'تقرير المبيعات الحالي':'Current Sales Report')}&body=${encodeURIComponent(body)}`;
+        };
+    }
 
     // Charts
     let dl = {};
@@ -159,8 +168,18 @@ function rSales() {
     $('M').innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.sales}</span> ${t('sales')}</h1>
+            
+            <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);">
+                <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?'من':'From'}:</label>
+                <input type="datetime-local" id="sfStart" class="sbox" style="padding:6px;width:160px;" value="${globalDateRange.start||''}">
+                <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?'إلى':'To'}:</label>
+                <input type="datetime-local" id="sfEnd" class="sbox" style="padding:6px;width:160px;" value="${globalDateRange.end||''}">
+                <button id="sDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">&#x274C;</button>
+            </div>
+
             <div style="margin-left:auto;display:flex;gap:10px;">
-                <button id="bExSales" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">?</span> Excel</button>
+                <button id="bAddSale" class="btn bg-p" style="color:#fff;border:none;"><span style="font-size:1rem;">➕</span> ${L==='ar'?'إضافة':'Add'}</button>
+                <button id="bExSales" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
                 <button onclick="window.print()" class="btn btn-p"><span style="width:20px;height:20px;display:inline-flex">${ICONS.sales}</span> Print</button>
             </div>
         </div>
@@ -178,16 +197,31 @@ function rSales() {
             <div class="tbs">
                 <table>
                     <thead><tr>
-                        <th data-c="Date">Date ? </th><th data-c="Nbr"># ? </th><th data-c="Customer">Customer ? </th>
-                        <th data-c="Region">Region ? </th><th data-c="Class">Class ? </th><th data-c="Product">Product ? </th>
-                        <th data-c="Qty">Qty ? </th><th data-c="Sales">Sales ? </th><th data-c="Profit">Profit ? </th>
+                        <th data-c="Date">Date 📅</th><th data-c="Nbr"># 🔢</th><th data-c="Customer">Customer 👤</th>
+                        <th data-c="Region">Region 📍</th><th data-c="Class">Class 📦</th><th data-c="Product">Product 🛒</th>
+                        <th data-c="Qty">Qty 📊</th><th data-c="Sales">Sales 💰</th><th data-c="Profit">Profit 📈</th>
                     </tr></thead>
                     <tbody id="stb"></tbody>
                 </table>
             </div>
             <div id="spg"></div>
         </div>
-    `;
+        <div id="saleModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+            <div class="card" style="width:400px;max-width:90%;position:relative;background:var(--bg);">
+                <button class="btn" onclick="document.getElementById('saleModal').style.display='none'" style="position:absolute;top:10px;right:10px;background:transparent;border:none;">&#x274C;</button>
+                <h3 style="margin-bottom:20px;"></h3>
+                <input type="datetime-local" id="nSDt" class="sbox" style="width:100%;margin-bottom:10px;padding:8px;" value="">
+                <input type="text" id="nSCust" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
+                <input type="text" id="nSReg" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
+                <input type="text" id="nSCls" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
+                <input type="text" id="nSProd" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
+                <input type="number" id="nSQty" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
+                <input type="number" id="nSAmt" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
+                <input type="number" id="nSProf" class="sbox" placeholder="" style="width:100%;margin-bottom:20px;padding:8px;">
+                <button id="bSaveSale" class="btn bg-p" style="width:100%;color:#fff;padding:10px;justify-content:center;"></button>
+            </div>
+        </div>
+    ;
     
     $('bExSales').onclick = () => exportToExcel(ds, 'Sales_Report');
 
@@ -1219,26 +1253,97 @@ function rAcct() {
     `;
 }
 
-// Backup
 function rBk() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.backup}</span> ${t('backup')}</h1></div>
-        <div class="card">
-            <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Export Data'):'Export Data'}</h3>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-                <button class="btn bg-g" id="bkSales" style="color:#fff;border:none;">${L==='ar'?TUI('Export Sales'):'Export Sales'} (${S.length})</button>
-                <button class="btn bg-g" id="bkTgt" style="color:#fff;border:none;">${L==='ar'?TUI('Export Targets'):'Export Targets'} (${T.length})</button>
-                <button class="btn bg-g" id="bkPay" style="color:#fff;border:none;">${L==='ar'?TUI('Export Collections'):'Export Collections'} (${C.length})</button>
+        
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+            <div class="card" style="border-top: 4px solid var(--p);">
+                <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">&#x1F4BE; ${L==='ar'?'النسخ الاحتياطي المحلي':'Local Backup'}</h3>
+                <p style="font-size:0.85rem; color:var(--tx2); margin-bottom:16px;">${L==='ar'?'حفظ واستعادة كافة البيانات في ملف (JSON) على جهازك.':'Save and restore all data as a JSON file on your computer.'}</p>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button class="btn btn-p" id="bDownJSON" style="width:100%; justify-content:center;">${L==='ar'?'تنزيل نسخة احتياطية (JSON)':'Download Backup (JSON)'}</button>
+                    <div style="position:relative; width:100%;">
+                        <input type="file" id="fUpJSON" accept=".json" style="position:absolute; width:100%; height:100%; opacity:0; cursor:pointer; left:0; top:0;">
+                        <button class="btn" style="width:100%; justify-content:center;">${L==='ar'?'استعادة من ملف (JSON)':'Restore from JSON'}</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="border-top: 4px solid #2ecc71;">
+                <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">&#x2601;&#xFE0F; ${L==='ar'?'النسخ الاحتياطي السحابي':'Cloud Backup'}</h3>
+                <p style="font-size:0.85rem; color:var(--tx2); margin-bottom:16px;">${L==='ar'?'مزامنة البيانات فوراً مع السحابة (Firebase).':'Sync data instantly with the cloud (Firebase).'}</p>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button class="btn bg-g" id="bSyncUp" style="width:100%; justify-content:center; color:#fff; border:none;">${L==='ar'?'رفع ومزامنة للإنترنت':'Push to Cloud'}</button>
+                    <button class="btn" id="bSyncDown" style="width:100%; justify-content:center;">${L==='ar'?'استرداد من الإنترنت':'Fetch from Cloud'}</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom:12px;">${L==='ar'?'تصدير للإكسيل':'Export Excel'}</h3>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button class="btn" id="bkSales" style="width:100%; justify-content:center;">${L==='ar'?'مبيعات':'Sales'} (${S.length})</button>
+                    <button class="btn" id="bkTgt" style="width:100%; justify-content:center;">${L==='ar'?'تارجت':'Targets'} (${T.length})</button>
+                    <button class="btn" id="bkPay" style="width:100%; justify-content:center;">${L==='ar'?'تحصيلات':'Collections'} (${C.length})</button>
+                </div>
             </div>
         </div>
     `;
-    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?TUI('No data'):'No data');
-    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?TUI('No data'):'No data');
-    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?TUI('No data'):'No data');
+
+    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+
+    $('bDownJSON').onclick = () => {
+        let dump = { S, T, C, D, accCats, hwCats };
+        let blob = new Blob([JSON.stringify(dump)], {type: "application/json"});
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `SalesPro_Backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        toast(L==='ar'?'تم تنزيل النسخة!':'Backup Downloaded!');
+    };
+
+    $('fUpJSON').onchange = (e) => {
+        let f = e.target.files[0];
+        if(!f) return;
+        let reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                let d = JSON.parse(ev.target.result);
+                if(d.S) { S = d.S; sv('salesData', S); }
+                if(d.T) { T = d.T; sv('targetData', T); }
+                if(d.C) { C = d.C; sv('payData', C); }
+                if(d.D) { D = d.D; sv('duesData', D); }
+                if(d.accCats) { accCats = d.accCats; sv('accCats', accCats); }
+                if(d.hwCats) { hwCats = d.hwCats; sv('hwCats', hwCats); }
+                toast(L==='ar'?'تمت الاستعادة بنجاح!':'Restored Successfully!');
+                setTimeout(()=>location.reload(), 1000);
+            } catch(ex) {
+                toast(L==='ar'?'ملف غير صالح!':'Invalid File!');
+            }
+        };
+        reader.readAsText(f);
+    };
+
+    $('bSyncUp').onclick = () => {
+        if(!currentUser) return toast(L==='ar'?'يجب تسجيل الدخول':'Must login');
+        sv('salesData', S);
+        sv('targetData', T);
+        sv('payData', C);
+        toast(L==='ar'?'جاري الرفع...':'Pushing...');
+    };
+
+    $('bSyncDown').onclick = () => {
+        if(!currentUser) return toast(L==='ar'?'يجب تسجيل الدخول':'Must login');
+        toast(L==='ar'?'جاري التحديث...':'Fetching...');
+        if(typeof fetchUserData === 'function') {
+            fetchUserData();
+        } else {
+            location.reload();
+        }
+    };
 }
-
-
-
 
 function rSetup() {
     $('M').innerHTML = `
@@ -1289,6 +1394,8 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
     };
 }
+
+
 
 
 
