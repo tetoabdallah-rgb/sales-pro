@@ -1,4 +1,4 @@
-﻿// js/data-store.js
+// js/data-store.js
 
 // Global State
 function loadLS(k) { try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : []; } catch(e){ return []; } }
@@ -45,6 +45,28 @@ function $(id) { return document.getElementById(id); }
 function fmt(n) { return (n == null || isNaN(n)) ? '0' : Number(n).toLocaleString('en-US', {maximumFractionDigits: 0}); }
 function pc(n) { return (n == null || isNaN(n)) ? '0%' : Number(n).toFixed(1) + '%'; }
 function aFmt(n, isPc) { return `<span class="anm" data-v="${n}"${isPc ? ' data-p="1"' : ''}>${isPc ? '0%' : '0'}</span>`; }
+function pd(v) {
+    if (!v) return '';
+    if (typeof v === 'number') {
+        let d = new Date(Math.round((v - 25569) * 86400 * 1000));
+        let yy = d.getFullYear(), mm = ('0' + (d.getMonth() + 1)).slice(-2), dd = ('0' + d.getDate()).slice(-2);
+        return `${yy}-${mm}-${dd}`;
+    }
+    let d = new Date(v);
+    if (!isNaN(d.getTime())) {
+        let yy = d.getFullYear(), mm = ('0' + (d.getMonth() + 1)).slice(-2), dd = ('0' + d.getDate()).slice(-2);
+        return `${yy}-${mm}-${dd}`;
+    }
+    // Handle DD/MM/YYYY
+    if (typeof v === 'string') {
+        let p = v.split(/[\/\-]/);
+        if (p.length === 3) {
+            let y = p[2].length === 2 ? '20' + p[2] : p[2];
+            return `${y}-${('0'+p[1]).slice(-2)}-${('0'+p[0]).slice(-2)}`;
+        }
+    }
+    return '';
+}
 
 function debounce(fn, ms) {
     let timer;
