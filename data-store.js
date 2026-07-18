@@ -187,3 +187,5 @@ function getFilteredSales() {
     });
 }
 
+
+function dc(k) { if(CH[k]) { CH[k].destroy(); delete CH[k]; } }
