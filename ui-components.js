@@ -1,4 +1,4 @@
-﻿// js/ui-components.js
+// js/ui-components.js
 
 // Pagination State
 let pState = {
@@ -848,11 +848,20 @@ function rHW() {
 
 // Collections
 function rCollections() {
-    let tot = C.reduce((s,r)=>s+(Number(r['Amount']||r['amount']||r['Collection']||0)),0);
+    let tot = 0, totAcc = 0, totHW = 0;
+    C.forEach(r => {
+        let amt = Number(r['Amount']||r['amount']||r['Collection']||r['Value']||0);
+        tot += amt;
+        let cls = r['Item Class Name'] || r['Class'] || r['Category'] || r['Item Class'] || r['Department'] || '';
+        if (isAcc(cls)) totAcc += amt;
+        else if (isHW(cls)) totHW += amt;
+    });
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
-        <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
+        <div class="kg" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="ki"><div class="lb">${L==='ar'?'إجمالي التحصيلات':'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki" style="border-top: 3px solid #0fa87e;"><div class="lb">${L==='ar'?'تحصيلات أكسسوارات':'Acc. Collections'}</div><div class="vl" style="color:#0fa87e;">${aFmt(totAcc)}</div></div>
+            <div class="ki" style="border-top: 3px solid #5046e5;"><div class="lb">${L==='ar'?'تحصيلات هاردوير':'HW Collections'}</div><div class="vl" style="color:#5046e5;">${aFmt(totHW)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
         </div>
         ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
@@ -1267,6 +1276,7 @@ function rBk() {
                         <input type="file" id="fUpJSON" accept=".json" style="position:absolute; width:100%; height:100%; opacity:0; cursor:pointer; left:0; top:0;">
                         <button class="btn" style="width:100%; justify-content:center;">${L==='ar'?'استعادة من ملف (JSON)':'Restore from JSON'}</button>
                     </div>
+                    <button class="btn bg-r" id="bMailJSON" style="width:100%; justify-content:center; color:#fff; border:none; background:#ea4335;">&#x2709;&#xFE0F; ${L==='ar'?'النسخ إلى الإيميل (Gmail)':'Backup to Email (Gmail)'}</button>
                 </div>
             </div>
 
@@ -1303,6 +1313,16 @@ function rBk() {
         a.click();
         toast(L==='ar'?'تم تنزيل النسخة!':'Backup Downloaded!');
     };
+
+    if($('bMailJSON')) {
+        $('bMailJSON').onclick = () => {
+            $('bDownJSON').click();
+            toast(L==='ar'?'سيفتح الإيميل.. قم بإرفاق الملف الذي تم تنزيله!':'Opening Email.. Attach the downloaded file!');
+            setTimeout(() => {
+                window.location.href = `mailto:?subject=${encodeURIComponent('SalesPro Data Backup')}&body=${encodeURIComponent(L==='ar'?'يرجى إيجاد ملف النسخة الاحتياطية (JSON) مرفقاً.':'Please find the JSON backup file attached.')}`;
+            }, 2000);
+        };
+    }
 
     $('fUpJSON').onchange = (e) => {
         let f = e.target.files[0];
@@ -1394,6 +1414,8 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
     };
 }
+
+
 
 
 
