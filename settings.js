@@ -19,16 +19,6 @@ function rSettings() {
                 `).join('')}
             </div>
         </div>
-
-        <div class="card" style="margin-bottom:20px;">
-            <h3>🤖 ${L==='ar'?'إعدادات الذكاء الاصطناعي':'AI Settings'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفتاح Gemini API لتفعيل المساعد الشخصي':'Enter your Gemini API Key to enable the AI Co-pilot'}</p>
-            <div class="fg">
-                <input id="inGKey" type="password" class="sbox" style="width:100%;max-width:400px;margin-bottom:10px;" placeholder="AIzaSy..." value="${ld('sp_gemini_key') || ''}">
-                <button id="bSaveGKey" class="btn btn-p">${L==='ar'?'حفظ المفتاح':'Save Key'}</button>
-            </div>
-            <p style="font-size:0.75rem;color:var(--tx2); margin-top:8px;">${L==='ar'?'يتم حفظ المفتاح في متصفحك محلياً فقط ولا يتم إرساله لأي خادم آخر.':'Your key is securely saved in your browser storage and never sent to our servers.'}</p>
-        </div>
         
         <div class="card">
             <h3>👤 ${L==='ar'?'الملف الشخصي':'Profile'}</h3>
@@ -48,11 +38,4 @@ function rSettings() {
             btn.style.border = '2px solid var(--tx1)';
         };
     });
-
-    $('bSaveGKey').onclick = () => {
-        let val = $('inGKey').value.trim();
-        sv('sp_gemini_key', val);
-        alert(L==='ar'?'تم الحفظ بنجاح!':'Saved successfully!');
-    };
 }
-

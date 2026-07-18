@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Sales Pro — ???? ????? ????????</title>
-  <meta name="description" content="Sales Pro Enterprise — ???? ?????? ?????? ?????? ???????? ?????????? ?????? ???????">
+  <title>Sales Pro â€” ???? ????? ????????</title>
+  <meta name="description" content="Sales Pro Enterprise â€” ???? ?????? ?????? ?????? ???????? ?????????? ?????? ???????">
   <meta name="theme-color" content="#1e293b">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3214/3214746.png">
   <link rel="manifest" href="manifest.json">
@@ -22,44 +22,8 @@
   </div>
 </div>
 
-<!-- Auth Screen -->
-<div id="AUTH" class="auth-bg">
-  <div class="auth-card">
-    <div class="auth-logo">
-      <div class="auth-logo-icon">??</div>
-      <div class="auth-logo-glow"></div>
-    </div>
-    <h1>Sales Pro</h1>
-    <p class="ds">?????? ????? ?????? ?????? ??? ???? ??????</p>
-    <div class="fg">
-      <label>?????? ?????????? (Email)</label>
-      <div class="input-wrap">
-        <input id="inE" type="email" placeholder="example@email.com">
-        <span class="input-icon">??</span>
-      </div>
-    </div>
-    <div class="fg">
-      <label>???? ?????? (Password)</label>
-      <div class="input-wrap">
-        <input id="inP" type="password" placeholder="••••••••">
-        <span class="input-icon toggle-pw" onclick="var p=document.getElementById('inP');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'?????':'?????';">?????</span>
-      </div>
-    </div>
-    <div class="aerr" id="aErr"></div>
-    <div class="abtns" style="flex-direction:column;gap:10px;">
-      <button class="btn btn-p btn-login" id="bLog">
-        <span class="btn-login-text">????? / ????? ???? ????</span>
-        <span class="btn-login-loader hidden">????...</span>
-      </button>
-      <button class="btn btn-google" id="bLogG">
-        <img src="https://www.google.com/favicon.ico" width="16" alt="Google"> ????? ?????? ????
-      </button>
-    </div>
-  </div>
-</div>
-
 <!-- Main App -->
-<div id="APP" class="hidden">
+<div id="APP">
   <nav class="sidebar">
     <div class="sbt">
       <span class="sbr">?? Sales Pro</span>
@@ -85,25 +49,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer></script>
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
-
-<script src="firebase-config.js"></script>
-<script src="data-store.js?v=6"></script>
-<script src="ui-components.js?v=6"></script>
-<script src="settings.js?v=6"></script>
-<script src="app.js?v=6"></script>
-<script src="auth.js?v=6"></script>
+<script src="data-store.js?v=7"></script>
+<script src="ui-components.js?v=7"></script>
+<script src="settings.js?v=7"></script>
+<script src="app.js?v=7"></script>
 <script>
   // Hide loader when app is ready
   window.addEventListener('load', function() {
+    if(typeof init === 'function') init();
     setTimeout(function() {
       var loader = document.getElementById('LOADER');
       if (loader) {
         loader.classList.add('fade-out');
-        setTimeout(function() { loader.style.display = 'none'; }, 500);
+        if(typeof init === 'function') init();
+    setTimeout(function() { loader.style.display = 'none'; }, 500);
       }
     }, 800);
   });
@@ -122,5 +81,7 @@
 </script>
 </body>
 </html>
+
+
 
 

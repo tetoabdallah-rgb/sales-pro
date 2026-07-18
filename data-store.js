@@ -76,83 +76,11 @@ function debounce(fn, ms) {
     };
 }
 
-function syncUI(st) {
-    let el = $('syncST');
-    if(!el) {
-        el = document.createElement('div');
-        el.id = 'syncST';
-        el.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:9999;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:bold;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:none;transition:all 0.3s;';
-        document.body.appendChild(el);
-    }
-    if (st === 'syncing') {
-        el.style.background = 'var(--am)';
-        el.innerHTML = '☁️ ' + (L === 'ar' ? 'جاري المزامنة...' : 'Syncing...');
-        el.style.display = 'block';
-    } else if (st === 'done') {
-        el.style.background = 'var(--gn)';
-        el.innerHTML = '✅ ' + (L === 'ar' ? 'تم التحديث' : 'Synced');
-        setTimeout(() => el.style.display = 'none', 2500);
-    } else if (st === 'error') {
-        el.style.background = 'var(--rd)';
-        el.innerHTML = '❌ ' + (L === 'ar' ? 'خطأ بالاتصال' : 'Error');
-    }
-}
 
-let _svQ = Promise.resolve();
+
 function sv(k, v) {
     _cache[k] = v;
     try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){}
-    if (!currentUser) return Promise.resolve();
-    
-    syncUI('syncing');
-    
-    let exec = () => new Promise(resolve => {
-        if (Array.isArray(v) && ['salesData','targetData','payData','duesData'].includes(k)) {
-            try {
-                let g = {};
-                for(let i=0; i<v.length; i++){
-                    let u = v[i]._uid || currentUser.uid;
-                    if(!g[u]) g[u] = [];
-                    let c = JSON.parse(JSON.stringify(v[i]));
-                    delete c._uid;
-                    g[u].push(c);
-                }
-                let proms = [];
-                for(let u in g) {
-                    let arr = g[u];
-                    let cSz = 100;
-                    let chks = [];
-                    for(let i=0; i<arr.length; i+=cSz) chks.push(arr.slice(i, i+cSz));
-                    
-                    let batches = [db.batch()];
-                    let opCount = 0;
-                    let mRef = db.collection('users').doc(u);
-                    batches[batches.length-1].set(mRef, { [k+'_meta']: chks.length }, {merge: true});
-                    opCount++;
-                    
-                    let coll = mRef.collection('chunks');
-                    for(let i=0; i<chks.length; i++){
-                        batches[batches.length-1].set(coll.doc(k+'_'+i), { data: chks[i] });
-                        opCount++;
-                        if(opCount >= 400) {
-                            batches.push(db.batch());
-                            opCount = 0;
-                        }
-                    }
-                    batches.forEach(b => proms.push(b.commit()));
-                }
-                Promise.all(proms).then(() => { syncUI('done'); resolve(); }).catch(e => {
-                    syncUI('error'); console.error(e); resolve();
-                });
-            } catch(ex){ syncUI('error'); console.error(ex); resolve(); }
-        } else {
-            db.collection('users').doc(currentUser.uid).set({ [k]: JSON.parse(JSON.stringify(v)) }, {merge: true})
-            .then(() => { syncUI('done'); resolve(); }).catch(e => { syncUI('error'); console.error(e); resolve(); });
-        }
-    });
-
-    _svQ = _svQ.then(exec);
-    return _svQ;
 }
 
 function ring(ti, pct, tot) {
@@ -161,28 +89,7 @@ function ring(ti, pct, tot) {
     return `<div class="rc2"><h4>${ti}</h4><div class="rw2"><svg viewBox="0 0 88 88"><circle class="trk" cx="44" cy="44" r="40"/><circle class="fl" cx="44" cy="44" r="40" stroke="${col}" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg><div class="rce"><div class="p">${pct.toFixed(0)}%</div><div class="s">${fmt(tot)}</div></div></div></div>`;
 }
 
-function chkAsm() {
-    ['salesData','targetData','payData','duesData'].forEach(k => {
-        let ct = _mtC[k+'_meta'];
-        if(ct !== undefined) {
-            let asm = [];
-            let cmp = true;
-            for(let i=0; i<ct; i++) {
-                if(_chkC[k+'_'+i]) asm = asm.concat(_chkC[k+'_'+i]);
-                else { cmp = false; break; }
-            }
-            if(cmp && asm.length > 0) {
-                _cache[k] = asm;
-                if(k === 'salesData') S = asm;
-                else if(k === 'targetData') T = asm;
-                else if(k === 'payData') C = asm;
-                else if(k === 'duesData') D = asm;
-                try { localStorage.setItem(k, JSON.stringify(asm)); } catch(e){}
-            }
-        }
-    });
-    if (typeof render === 'function') render();
-}
+
 
 function exportToExcel(data, filename) {
     try {

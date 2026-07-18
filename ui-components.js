@@ -37,22 +37,22 @@ function rDash() {
     let pp = tpt > 0 ? tp / tpt * 100 : 0;
     
     let dateFilterUI = `
-        <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--bg3);padding:12px 16px;border-radius:12px;border:1px solid var(--bd);width:100%;">
             <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('From'):'From'}:</label>
             <input type="date" id="dfStart" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.start||''}">
             <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('To'):'To'}:</label>
             <input type="date" id="dfEnd" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.end||''}">
             <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">&#x274C;</button>
-            <button id="bMailReport" class="btn bg-p" style="color:#fff;padding:6px 12px;font-size:0.8rem;margin-left:auto;">${L==='ar'?'إرسال تقرير':'Send Report'} &#x2709;&#xFE0F;</button>
+            <button id="bMailReport" class="btn bg-p" style="color:#fff;padding:6px 12px;font-size:0.8rem;margin-left:auto;">${L==='ar'?'Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„ØªÙ‚Ø±ÙŠØ±':'Send Report'} &#x2709;&#xFE0F;</button>
         </div>
     `;
     
     $('M').innerHTML = `
-        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+        <div class="ph" style="display:flex;flex-direction:column;align-items:flex-start;gap:16px;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
             ${dateFilterUI}
         </div>
-        <div class="kg">
+        <div class="kg" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:20px;">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
@@ -62,9 +62,9 @@ function rDash() {
         </div>
         <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, tt)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tpt)}</div>
         
-        <div class="cg">
-            <div class="cc"><h3>${L==='ar'?TUI('Daily'):'Daily'}</h3><div class="cw"><canvas id="cD"></canvas></div></div>
-            <div class="cc"><h3>${L==='ar'?TUI('Cats'):'Cats'}</h3><div class="cw"><canvas id="cC"></canvas></div></div>
+        <div class="cg" style="align-items:stretch;">
+            <div class="cc" style="display:flex;flex-direction:column;min-height:350px;"><h3>${L==='ar'?TUI('Daily'):'Daily'}</h3><div class="cw" style="flex:1;position:relative;"><canvas id="cD"></canvas></div></div>
+            <div class="cc" style="display:flex;flex-direction:column;min-height:350px;"><h3>${L==='ar'?TUI('Cats'):'Cats'}</h3><div class="cw" style="flex:1;position:relative;"><canvas id="cC"></canvas></div></div>
         </div>
     `;
     
@@ -83,9 +83,9 @@ function rDash() {
     if ($('bMailReport')) {
         $('bMailReport').onclick = () => {
             let body = L==='ar' ? 
-                `مرحباً مدير الإدارة،\n\nإليك التقرير الحالي للمبيعات:\n\n- إجمالي المبيعات: ${fmt(ts)}\n- إجمالي الأرباح: ${fmt(tp)}\n- نسبة تحقيق التارجت: ${pc(ap)}\n- عدد العملاء: ${Object.keys(cu).length}\n\nتحياتي.` :
+                `Ù…Ø±Ø­Ø¨Ø§Ù‹ Ù…Ø¯ÙŠØ± Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©ØŒ\n\nØ¥Ù„ÙŠÙƒ Ø§Ù„ØªÙ‚Ø±ÙŠØ± Ø§Ù„Ø­Ø§Ù„ÙŠ Ù„Ù„Ù…Ø¨ÙŠØ¹Ø§Øª:\n\n- Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª: ${fmt(ts)}\n- Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­: ${fmt(tp)}\n- Ù†Ø³Ø¨Ø© ØªØ­Ù‚ÙŠÙ‚ Ø§Ù„ØªØ§Ø±Ø¬Øª: ${pc(ap)}\n- Ø¹Ø¯Ø¯ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡: ${Object.keys(cu).length}\n\nØªØ­ÙŠØ§ØªÙŠ.` :
                 `Hello Admin Manager,\n\nHere is the current sales report:\n\n- Total Sales: ${fmt(ts)}\n- Total Profit: ${fmt(tp)}\n- Target Achievement: ${pc(ap)}\n- Total Customers: ${Object.keys(cu).length}\n\nRegards.`;
-            window.location.href = `mailto:?subject=${encodeURIComponent(L==='ar'?'تقرير المبيعات الحالي':'Current Sales Report')}&body=${encodeURIComponent(body)}`;
+            window.location.href = `mailto:?subject=${encodeURIComponent(L==='ar'?'ØªÙ‚Ø±ÙŠØ± Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„Ø­Ø§Ù„ÙŠ':'Current Sales Report')}&body=${encodeURIComponent(body)}`;
         };
     }
 
@@ -170,15 +170,15 @@ function rSales() {
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.sales}</span> ${t('sales')}</h1>
             
             <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);">
-                <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?'من':'From'}:</label>
+                <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?'Ù…Ù†':'From'}:</label>
                 <input type="datetime-local" id="sfStart" class="sbox" style="padding:6px;width:160px;" value="${globalDateRange.start||''}">
-                <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?'إلى':'To'}:</label>
+                <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?'Ø¥Ù„Ù‰':'To'}:</label>
                 <input type="datetime-local" id="sfEnd" class="sbox" style="padding:6px;width:160px;" value="${globalDateRange.end||''}">
                 <button id="sDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">&#x274C;</button>
             </div>
 
             <div style="margin-left:auto;display:flex;gap:10px;">
-                <button id="bAddSale" class="btn bg-p" style="color:#fff;border:none;"><span style="font-size:1rem;">➕</span> ${L==='ar'?'إضافة':'Add'}</button>
+                <button id="bAddSale" class="btn bg-p" style="color:#fff;border:none;"><span style="font-size:1rem;">âž•</span> ${L==='ar'?'Ø¥Ø¶Ø§ÙØ©':'Add'}</button>
                 <button id="bExSales" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
                 <button onclick="window.print()" class="btn btn-p"><span style="width:20px;height:20px;display:inline-flex">${ICONS.sales}</span> Print</button>
             </div>
@@ -197,9 +197,9 @@ function rSales() {
             <div class="tbs">
                 <table>
                     <thead><tr>
-                        <th data-c="Date">Date 📅</th><th data-c="Nbr"># 🔢</th><th data-c="Customer">Customer 👤</th>
-                        <th data-c="Region">Region 📍</th><th data-c="Class">Class 📦</th><th data-c="Product">Product 🛒</th>
-                        <th data-c="Qty">Qty 📊</th><th data-c="Sales">Sales 💰</th><th data-c="Profit">Profit 📈</th>
+                        <th data-c="Date">Date ðŸ“…</th><th data-c="Nbr"># ðŸ”¢</th><th data-c="Customer">Customer ðŸ‘¤</th>
+                        <th data-c="Region">Region ðŸ“</th><th data-c="Class">Class ðŸ“¦</th><th data-c="Product">Product ðŸ›’</th>
+                        <th data-c="Qty">Qty ðŸ“Š</th><th data-c="Sales">Sales ðŸ’°</th><th data-c="Profit">Profit ðŸ“ˆ</th>
                     </tr></thead>
                     <tbody id="stb"></tbody>
                 </table>
@@ -218,7 +218,7 @@ function rSales() {
                 <input type="number" id="nSQty" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
                 <input type="number" id="nSAmt" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
                 <input type="number" id="nSProf" class="sbox" placeholder="" style="width:100%;margin-bottom:20px;padding:8px;">
-                <button id="bSaveSale" class="btn bg-p" style="width:100%;color:#fff;padding:10px;justify-content:center;">${L==='ar'?'حفظ المبيعات':'Save Sale'}</button>
+                <button id="bSaveSale" class="btn bg-p" style="width:100%;color:#fff;padding:10px;justify-content:center;">${L==='ar'?'Ø­ÙØ¸ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Save Sale'}</button>
             </div>
         </div>
     `;
@@ -859,9 +859,9 @@ function rCollections() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
         <div class="kg" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-            <div class="ki"><div class="lb">${L==='ar'?'إجمالي التحصيلات':'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
-            <div class="ki" style="border-top: 3px solid #0fa87e;"><div class="lb">${L==='ar'?'تحصيلات أكسسوارات':'Acc. Collections'}</div><div class="vl" style="color:#0fa87e;">${aFmt(totAcc)}</div></div>
-            <div class="ki" style="border-top: 3px solid #5046e5;"><div class="lb">${L==='ar'?'تحصيلات هاردوير':'HW Collections'}</div><div class="vl" style="color:#5046e5;">${aFmt(totHW)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª':'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki" style="border-top: 3px solid #0fa87e;"><div class="lb">${L==='ar'?'ØªØ­ØµÙŠÙ„Ø§Øª Ø£ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Acc. Collections'}</div><div class="vl" style="color:#0fa87e;">${aFmt(totAcc)}</div></div>
+            <div class="ki" style="border-top: 3px solid #5046e5;"><div class="lb">${L==='ar'?'ØªØ­ØµÙŠÙ„Ø§Øª Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'HW Collections'}</div><div class="vl" style="color:#5046e5;">${aFmt(totHW)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
         </div>
         ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
@@ -1206,7 +1206,6 @@ Provide business insights and actionable recommendations.`;
                         generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
                     };
                     
-                                        // 2. Try default stable aliases directly to bypass model deprecation errors
                     let fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro', 'gemini-flash'];
                     let data = null;
                     let success = false;
@@ -1268,41 +1267,32 @@ function rBk() {
         
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
             <div class="card" style="border-top: 4px solid var(--p);">
-                <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">&#x1F4BE; ${L==='ar'?'النسخ الاحتياطي المحلي':'Local Backup'}</h3>
-                <p style="font-size:0.85rem; color:var(--tx2); margin-bottom:16px;">${L==='ar'?'حفظ واستعادة كافة البيانات في ملف (JSON) على جهازك.':'Save and restore all data as a JSON file on your computer.'}</p>
+                <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">&#x1F4BE; ${L==='ar'?'Ø§Ù„Ù†Ø³Ø® Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠ Ø§Ù„Ù…Ø­Ù„ÙŠ':'Local Backup'}</h3>
+                <p style="font-size:0.85rem; color:var(--tx2); margin-bottom:16px;">${L==='ar'?'Ø­ÙØ¸ ÙˆØ§Ø³ØªØ¹Ø§Ø¯Ø© Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª ÙÙŠ Ù…Ù„Ù (JSON) Ø¹Ù„Ù‰ Ø¬Ù‡Ø§Ø²Ùƒ.':'Save and restore all data as a JSON file on your computer.'}</p>
                 <div style="display:flex;flex-direction:column;gap:10px;">
-                    <button class="btn btn-p" id="bDownJSON" style="width:100%; justify-content:center;">${L==='ar'?'تنزيل نسخة احتياطية (JSON)':'Download Backup (JSON)'}</button>
+                    <button class="btn btn-p" id="bDownJSON" style="width:100%; justify-content:center;">${L==='ar'?'ØªØ­Ù…ÙŠÙ„ Ù…Ù„Ù Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª (JSON)':'Download Backup (JSON)'}</button>
                     <div style="position:relative; width:100%;">
                         <input type="file" id="fUpJSON" accept=".json" style="position:absolute; width:100%; height:100%; opacity:0; cursor:pointer; left:0; top:0;">
-                        <button class="btn" style="width:100%; justify-content:center;">${L==='ar'?'استعادة من ملف (JSON)':'Restore from JSON'}</button>
+                        <button class="btn" style="width:100%; justify-content:center;">${L==='ar'?'Ø§Ø³ØªØ±Ø¬Ø§Ø¹ Ù…Ù† Ù…Ù„Ù (JSON)':'Restore from JSON'}</button>
                     </div>
-                    <button class="btn bg-r" id="bMailJSON" style="width:100%; justify-content:center; color:#fff; border:none; background:#ea4335;">&#x2709;&#xFE0F; ${L==='ar'?'النسخ إلى الإيميل (Gmail)':'Backup to Email (Gmail)'}</button>
-                </div>
-            </div>
-
-            <div class="card" style="border-top: 4px solid #2ecc71;">
-                <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">&#x2601;&#xFE0F; ${L==='ar'?'النسخ الاحتياطي السحابي':'Cloud Backup'}</h3>
-                <p style="font-size:0.85rem; color:var(--tx2); margin-bottom:16px;">${L==='ar'?'مزامنة البيانات فوراً مع السحابة (Firebase).':'Sync data instantly with the cloud (Firebase).'}</p>
-                <div style="display:flex;flex-direction:column;gap:10px;">
-                    <button class="btn bg-g" id="bSyncUp" style="width:100%; justify-content:center; color:#fff; border:none;">${L==='ar'?'رفع ومزامنة للإنترنت':'Push to Cloud'}</button>
-                    <button class="btn" id="bSyncDown" style="width:100%; justify-content:center;">${L==='ar'?'استرداد من الإنترنت':'Fetch from Cloud'}</button>
+                    <button class="btn bg-r" id="bMailJSON" style="width:100%; justify-content:center; color:#fff; border:none; background:#ea4335;">&#x2709;&#xFE0F; ${L==='ar'?'Ù†Ø³Ø®Ø© Ø¹Ø¨Ø± Ø§Ù„Ø¥ÙŠÙ…ÙŠÙ„ (Gmail)':'Backup to Email (Gmail)'}</button>
                 </div>
             </div>
 
             <div class="card">
-                <h3 style="margin-bottom:12px;">${L==='ar'?'تصدير للإكسيل':'Export Excel'}</h3>
+                <h3 style="margin-bottom:12px;">${L==='ar'?'ØªØµØ¯ÙŠØ± Ù„Ù„Ø¥ÙƒØ³ÙŠÙ„':'Export Excel'}</h3>
                 <div style="display:flex;flex-direction:column;gap:10px;">
-                    <button class="btn" id="bkSales" style="width:100%; justify-content:center;">${L==='ar'?'مبيعات':'Sales'} (${S.length})</button>
-                    <button class="btn" id="bkTgt" style="width:100%; justify-content:center;">${L==='ar'?'تارجت':'Targets'} (${T.length})</button>
-                    <button class="btn" id="bkPay" style="width:100%; justify-content:center;">${L==='ar'?'تحصيلات':'Collections'} (${C.length})</button>
+                    <button class="btn" id="bkSales" style="width:100%; justify-content:center;">${L==='ar'?'Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'} (${S.length})</button>
+                    <button class="btn" id="bkTgt" style="width:100%; justify-content:center;">${L==='ar'?'ØªØ§Ø±Ø¬Øª':'Targets'} (${T.length})</button>
+                    <button class="btn" id="bkPay" style="width:100%; justify-content:center;">${L==='ar'?'ØªØ­ØµÙŠÙ„Ø§Øª':'Collections'} (${C.length})</button>
                 </div>
             </div>
         </div>
     `;
 
-    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
-    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
-    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data');
+    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data');
+    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data');
 
     $('bDownJSON').onclick = () => {
         let dump = { S, T, C, D, accCats, hwCats };
@@ -1311,15 +1301,15 @@ function rBk() {
         a.href = URL.createObjectURL(blob);
         a.download = `SalesPro_Backup_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
-        toast(L==='ar'?'تم تنزيل النسخة!':'Backup Downloaded!');
+        toast(L==='ar'?'ØªÙ… ØªÙ†Ø²ÙŠÙ„ Ø§Ù„Ù†Ø³Ø®Ø©!':'Backup Downloaded!');
     };
 
     if($('bMailJSON')) {
         $('bMailJSON').onclick = () => {
             $('bDownJSON').click();
-            toast(L==='ar'?'سيفتح الإيميل.. قم بإرفاق الملف الذي تم تنزيله!':'Opening Email.. Attach the downloaded file!');
+            toast(L==='ar'?'Ø³ÙŠÙØªØ­ Ø§Ù„Ø¥ÙŠÙ…ÙŠÙ„.. Ù‚Ù… Ø¨Ø¥Ø±ÙØ§Ù‚ Ø§Ù„Ù…Ù„Ù Ø§Ù„Ø°ÙŠ ØªÙ… ØªÙ†Ø²ÙŠÙ„Ù‡!':'Opening Email.. Attach the downloaded file!');
             setTimeout(() => {
-                window.location.href = `mailto:?subject=${encodeURIComponent('SalesPro Data Backup')}&body=${encodeURIComponent(L==='ar'?'يرجى إيجاد ملف النسخة الاحتياطية (JSON) مرفقاً.':'Please find the JSON backup file attached.')}`;
+                window.location.href = `mailto:?subject=${encodeURIComponent('SalesPro Data Backup')}&body=${encodeURIComponent(L==='ar'?'ÙŠØ±Ø¬Ù‰ Ø¥ÙŠØ¬Ø§Ø¯ Ù…Ù„Ù Ø§Ù„Ù†Ø³Ø®Ø© Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠØ© (JSON) Ù…Ø±ÙÙ‚Ø§Ù‹.':'Please find the JSON backup file attached.')}`;
             }, 2000);
         };
     }
@@ -1337,26 +1327,20 @@ function rBk() {
                 if(d.D) { D = d.D; sv('duesData', D); }
                 if(d.accCats) { accCats = d.accCats; sv('accCats', accCats); }
                 if(d.hwCats) { hwCats = d.hwCats; sv('hwCats', hwCats); }
-                toast(L==='ar'?'تمت الاستعادة بنجاح!':'Restored Successfully!');
+                toast(L==='ar'?'ØªÙ…Øª Ø§Ù„Ø§Ø³ØªØ¹Ø§Ø¯Ø© Ø¨Ù†Ø¬Ø§Ø­!':'Restored Successfully!');
                 render();
             } catch(ex) {
-                toast(L==='ar'?'ملف غير صالح!':'Invalid File!');
+                toast(L==='ar'?'Ù…Ù„Ù ØºÙŠØ± ØµØ§Ù„Ø­!':'Invalid File!');
             }
         };
         reader.readAsText(f);
     };
-
-    $('bSyncUp').onclick = () => {
-        if(!currentUser) return toast(L==='ar'?'يجب تسجيل الدخول':'Must login');
-        sv('salesData', S);
-        sv('targetData', T);
-        sv('payData', C);
-        toast(L==='ar'?'جاري الرفع...':'Pushing...');
+        toast(L==='ar'?'Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø±ÙØ¹...':'Pushing...');
     };
 
     $('bSyncDown').onclick = () => {
-        if(!currentUser) return toast(L==='ar'?'يجب تسجيل الدخول':'Must login');
-        toast(L==='ar'?'جاري التحديث...':'Fetching...');
+        if(!currentUser) return toast(L==='ar'?'ÙŠØ¬Ø¨ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„':'Must login');
+        toast(L==='ar'?'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ø¯ÙŠØ«...':'Fetching...');
         if(typeof fetchUserData === 'function') {
             fetchUserData();
         } else {
