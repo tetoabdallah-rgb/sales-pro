@@ -1,4 +1,5 @@
-// js/data-store.js
+const sv = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const ld = k => { let v = localStorage.getItem(k); if(!v) return null; try { return JSON.parse(v); } catch(e) { return v; } };// js/data-store.js
 
 // Global State
 const sv = (k, v) => localStorage.setItem(k, JSON.stringify(v));
