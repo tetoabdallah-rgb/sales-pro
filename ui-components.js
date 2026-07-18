@@ -1220,9 +1220,8 @@ function rAcct() {
 }
 
 // Backup
-// Backup
 function rBk() {
-    $('M').innerHTML = `
+    $('M').innerHTML = `;
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.backup}</span> ${t('backup')}</h1></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
             <div class="card">
@@ -1255,11 +1254,9 @@ function rBk() {
             </div>
         </div>
     `;
-
     $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
     $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
     $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
-
     $('bDownJSON').onclick = () => {
         let dump = { S, T, C, D, accCats, hwCats };
         let blob = new Blob([JSON.stringify(dump)], {type: "application/json"});
@@ -1269,7 +1266,6 @@ function rBk() {
         a.click();
         toast(L==='ar'?'تم تنزيل النسخة!':'Backup Downloaded!');
     };
-
     if($('bDriveJSON')) {
         $('bDriveJSON').onclick = () => {
             if(typeof window.backupToGoogleDrive === 'function') {
@@ -1279,7 +1275,6 @@ function rBk() {
             }
         };
     }
-
     if($('bMailJSON')) {
         $('bMailJSON').onclick = () => {
             $('bDownJSON').click();
@@ -1289,7 +1284,6 @@ function rBk() {
             }, 2000);
         };
     }
-
     $('fUpJSON').onchange = (e) => {
         let f = e.target.files[0];
         if(!f) return;
@@ -1312,22 +1306,6 @@ function rBk() {
         reader.readAsText(f);
     };
 }
-    $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.backup}</span> ${t('backup')}</h1></div>
-        <div class="card">
-            <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Export Data'):'Export Data'}</h3>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-                <button class="btn bg-g" id="bkSales" style="color:#fff;border:none;">${L==='ar'?TUI('Export Sales'):'Export Sales'} (${S.length})</button>
-                <button class="btn bg-g" id="bkTgt" style="color:#fff;border:none;">${L==='ar'?TUI('Export Targets'):'Export Targets'} (${T.length})</button>
-                <button class="btn bg-g" id="bkPay" style="color:#fff;border:none;">${L==='ar'?TUI('Export Collections'):'Export Collections'} (${C.length})</button>
-            </div>
-        </div>
-    `;
-    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?TUI('No data'):'No data');
-    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?TUI('No data'):'No data');
-    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?TUI('No data'):'No data');
-}
-
 
 
 
