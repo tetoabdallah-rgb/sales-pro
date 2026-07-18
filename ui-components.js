@@ -1,5 +1,13 @@
-﻿// js/ui-components.js
+﻿const ld = k => localStorage.getItem(k);
+// js/ui-components.js
 
+function toast(m, ty='info') {
+    let tt = $('TT');
+    if(!tt) return;
+    tt.textContent = m;
+    tt.className = 'toast show ' + ty;
+    setTimeout(()=>tt.className='toast', 3000);
+}
 // Pagination State
 let pState = {
     sales: { page: 1, limit: 50 },
@@ -1335,18 +1343,6 @@ function rBk() {
         };
         reader.readAsText(f);
     };
-        toast(L==='ar'?'Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø±ÙØ¹...':'Pushing...');
-    };
-
-    $('bSyncDown').onclick = () => {
-        if(!currentUser) return toast(L==='ar'?'ÙŠØ¬Ø¨ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„':'Must login');
-        toast(L==='ar'?'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ø¯ÙŠØ«...':'Fetching...');
-        if(typeof fetchUserData === 'function') {
-            fetchUserData();
-        } else {
-            location.reload();
-        }
-    };
 }
 
 function rSetup() {
@@ -1398,6 +1394,11 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
     };
 }
+
+
+
+
+
 
 
 
