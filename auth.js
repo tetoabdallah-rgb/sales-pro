@@ -126,18 +126,18 @@ auth.onAuthStateChanged(user => {
 if ($('bLog')) {
     $('bLog').onclick = () => {
         let e = $('inE').value.trim(), p = $('inP').value.trim();
-        if(!e || !p) { $('aErr').textContent = 'اكتب الإيميل والباسورد'; return; }
+        if(!e || !p) { $('aErr').textContent = 'يرجى إدخال البيانات'; return; }
         
-        $('bLog').textContent = 'جاري...';
+        $('bLog').textContent = 'جاري التحميل...';
         auth.signInWithEmailAndPassword(e, p).catch(err => {
             if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'){
                 auth.createUserWithEmailAndPassword(e, p).catch(err2 => {
                     $('aErr').textContent = err2.message;
-                    $('bLog').textContent = 'دخول / إنشاء حساب';
+                    $('bLog').textContent = 'دخول / حساب جديد';
                 });
             } else {
                 $('aErr').textContent = err.message;
-                $('bLog').textContent = 'دخول / إنشاء حساب';
+                $('bLog').textContent = 'دخول / حساب جديد';
             }
         });
     };

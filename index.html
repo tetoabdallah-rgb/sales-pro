@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Sales Pro — ???? ????? ????????</title>
-  <meta name="description" content="Sales Pro Enterprise — ???? ?????? ?????? ?????? ???????? ?????????? ?????? ???????">
+  <title>Sales Pro</title>
   <meta name="theme-color" content="#1e293b">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3214/3214746.png">
   <link rel="manifest" href="manifest.json">
@@ -16,21 +15,35 @@
 <!-- Loading Overlay -->
 <div id="LOADER" class="loader-overlay">
   <div class="loader-content">
-    <div class="loader-icon">??</div>
+    <div class="loader-icon">⚙️</div>
     <div class="loader-text">Sales Pro</div>
     <div class="loader-bar"><div class="loader-bar-fill"></div></div>
   </div>
 </div>
 
+<!-- Authentication Screen -->
+<div id="AUTH" class="auth-wrap">
+  <div class="auth-box">
+    <h2 style="margin-bottom:20px;text-align:center;">Sales Pro Login</h2>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <input type="email" id="inE" placeholder="Email" class="sbox" style="padding:12px;border:1px solid var(--bd);border-radius:8px;">
+      <input type="password" id="inP" placeholder="Password" class="sbox" style="padding:12px;border:1px solid var(--bd);border-radius:8px;">
+      <button id="bLog" class="btn btn-p" style="justify-content:center;padding:12px;">Login / Register</button>
+      <button id="bLogG" class="btn" style="justify-content:center;padding:12px;background:white;color:black;">Sign in with Google</button>
+      <p id="aErr" style="color:var(--rd);text-align:center;font-size:0.9rem;"></p>
+    </div>
+  </div>
+</div>
+
 <!-- Main App -->
-<div id="APP">
+<div id="APP" class="hidden" style="display:none;">
   <nav class="sidebar">
     <div class="sbt">
-      <span class="sbr">?? Sales Pro</span>
+      <span class="sbr">⚙️ Sales Pro</span>
       <div class="sbb">
-        <button id="bTh" title="????? ??????">??</button>
-        <button id="bLn" title="????? ?????">EN</button>
-        <button id="bOt" title="????? ??????">????</button>
+        <button id="bTh" title="Theme">🌗</button>
+        <button id="bLn" title="Language">EN</button>
+        <button id="bOt" title="Logout">خروج</button>
       </div>
     </div>
     <div id="NV"></div>
@@ -49,10 +62,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer></script>
-<script src="data-store.js?v=7"></script>
-<script src="ui-components.js?v=7"></script>
-<script src="settings.js?v=7"></script>
-<script src="app.js?v=7"></script>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="firebase-config.js?v=8"></script>
+<script src="auth.js?v=8"></script>
+
+<script src="data-store.js?v=8"></script>
+<script src="ui-components.js?v=8"></script>
+<script src="settings.js?v=8"></script>
+<script src="app.js?v=8"></script>
+<script src="gdrive.js?v=8"></script>
 <script>
   // Hide loader when app is ready
   window.addEventListener('load', function() {
@@ -61,8 +83,7 @@
       var loader = document.getElementById('LOADER');
       if (loader) {
         loader.classList.add('fade-out');
-        if(typeof init === 'function') init();
-    setTimeout(function() { loader.style.display = 'none'; }, 500);
+        setTimeout(function() { loader.style.display = 'none'; }, 500);
       }
     }, 800);
   });
@@ -81,7 +102,3 @@
 </script>
 </body>
 </html>
-
-
-
-
