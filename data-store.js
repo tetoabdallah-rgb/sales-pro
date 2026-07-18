@@ -1,6 +1,6 @@
-const ld = k => { let v = localStorage.getItem(k); if(!v) return null; try { return JSON.parse(v); } catch(e) { return v; } };
+// js/data-store.js
+
 // Global State
-const sv = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const ld = k => { let v = localStorage.getItem(k); if(!v) return null; try { return JSON.parse(v); } catch(e) { return v; } };
 function loadLS(k) { try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : []; } catch(e){ return []; } }
 let S = loadLS('salesData'); // Sales
@@ -27,17 +27,17 @@ function isAcc(c) { return accCats.length ? accCats.includes(c) : DEF_ACC.includ
 function isHW(c) { return hwCats.length ? hwCats.includes(c) : DEF_HW.includes(c); }
 
 const I = {
-    collections:{ar:'التحصيلات',en:'Collections'},dash:{ar:'لوحة التحكم',en:'Dashboard'},
-    sales:{ar:'المبيعات',en:'Sales'},targets:{ar:'تارجت العميل',en:'Targets'},
-    personal:{ar:'التارجت الشخصي',en:'Personal'},customers:{ar:'العملاء',en:'Customers'},
-    brands:{ar:'البراندات',en:'Brands'},analytics:{ar:'تحليلات',en:'Analytics'},
-    potential:{ar:'فرص التحقيق',en:'Opportunities'},profit:{ar:'هامش الربح',en:'Profit'},
-    accessories:{ar:'الأكسسوارات',en:'Accessories'},hardware:{ar:'الهاردوير',en:'Hardware'},
-    keyacc:{ar:'المميزين',en:'Key Accounts'},dormant:{ar:'الخاملين',en:'Dormant'},
-    prospects:{ar:'محتملين',en:'Prospects'},alerts:{ar:'التنبيهات',en:'Alerts'},
-    ai:{ar:'توصيات AI',en:'AI'},account:{ar:'الحساب',en:'Account'},
-    backup:{ar:'نسخ احتياطي',en:'Backup'},setup:{ar:'رفع الملفات',en:'Files'},
-    logout:{ar:'خروج',en:'Logout'},reset:{ar:'مسح البيانات',en:'Reset App'},
+    collections:{ar:'التحصيلات',en:'Collections'},dash:{ar:'لوحة القيادة',en:'Dashboard'},
+    sales:{ar:'المبيعات',en:'Sales'},targets:{ar:'المستهدفات',en:'Targets'},
+    personal:{ar:'الشخصي',en:'Personal'},customers:{ar:'العملاء',en:'Customers'},
+    brands:{ar:'العلامات التجارية',en:'Brands'},analytics:{ar:'التحليلات',en:'Analytics'},
+    potential:{ar:'الفرص',en:'Opportunities'},profit:{ar:'الأرباح',en:'Profit'},
+    accessories:{ar:'الإكسسوارات',en:'Accessories'},hardware:{ar:'الأجهزة',en:'Hardware'},
+    keyacc:{ar:'العملاء المميزين',en:'Key Accounts'},dormant:{ar:'الخاملة',en:'Dormant'},
+    prospects:{ar:'المتوقعين',en:'Prospects'},alerts:{ar:'التنبيهات',en:'Alerts'},
+    ai:{ar:'الذكاء الاصطناعي',en:'AI'},account:{ar:'الحساب',en:'Account'},
+    backup:{ar:'النسخ الاحتياطي',en:'Backup'},setup:{ar:'إعدادات الملفات',en:'Files'},
+    logout:{ar:'خروج',en:'Logout'},reset:{ar:'إعادة ضبط',en:'Reset App'},
     settings:{ar:'الإعدادات',en:'Settings'}
 };
 
@@ -77,8 +77,6 @@ function debounce(fn, ms) {
     };
 }
 
-
-
 function sv(k, v) {
     _cache[k] = v;
     try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){}
@@ -90,14 +88,12 @@ function ring(ti, pct, tot) {
     return `<div class="rc2"><h4>${ti}</h4><div class="rw2"><svg viewBox="0 0 88 88"><circle class="trk" cx="44" cy="44" r="40"/><circle class="fl" cx="44" cy="44" r="40" stroke="${col}" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg><div class="rce"><div class="p">${pct.toFixed(0)}%</div><div class="s">${fmt(tot)}</div></div></div></div>`;
 }
 
-
-
 function exportToExcel(data, filename) {
     try {
         let wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), 'Data');
         XLSX.writeFile(wb, filename + '.xlsx');
-        toast('✅ ' + (L === 'ar' ? 'تم التصدير' : 'Exported'));
+        toast('✔️ ' + (L === 'ar' ? 'تم التصدير' : 'Exported'));
     } catch(err) {
         console.error(err);
         toast('❌ Error');
@@ -116,6 +112,5 @@ function getFilteredSales() {
         return pass;
     });
 }
-
 
 function dc(k) { if(CH[k]) { CH[k].destroy(); delete CH[k]; } }
