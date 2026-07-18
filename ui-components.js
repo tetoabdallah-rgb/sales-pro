@@ -1,4 +1,4 @@
-﻿const ld = k => localStorage.getItem(k);
+
 // js/ui-components.js
 
 function toast(m, ty='info') {
