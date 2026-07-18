@@ -218,10 +218,10 @@ function rSales() {
                 <input type="number" id="nSQty" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
                 <input type="number" id="nSAmt" class="sbox" placeholder="" style="width:100%;margin-bottom:10px;padding:8px;">
                 <input type="number" id="nSProf" class="sbox" placeholder="" style="width:100%;margin-bottom:20px;padding:8px;">
-                <button id="bSaveSale" class="btn bg-p" style="width:100%;color:#fff;padding:10px;justify-content:center;"></button>
+                <button id="bSaveSale" class="btn bg-p" style="width:100%;color:#fff;padding:10px;justify-content:center;">${L==='ar'?'حفظ المبيعات':'Save Sale'}</button>
             </div>
         </div>
-    ;
+    `;
     
     $('bExSales').onclick = () => exportToExcel(ds, 'Sales_Report');
 
@@ -1394,6 +1394,8 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
     };
 }
+
+
 
 
 
