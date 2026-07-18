@@ -1,4 +1,4 @@
-// js/ui-components.js
+﻿// js/ui-components.js
 
 // Pagination State
 let pState = {
@@ -1338,7 +1338,7 @@ function rBk() {
                 if(d.accCats) { accCats = d.accCats; sv('accCats', accCats); }
                 if(d.hwCats) { hwCats = d.hwCats; sv('hwCats', hwCats); }
                 toast(L==='ar'?'تمت الاستعادة بنجاح!':'Restored Successfully!');
-                setTimeout(()=>location.reload(), 1000);
+                render();
             } catch(ex) {
                 toast(L==='ar'?'ملف غير صالح!':'Invalid File!');
             }
@@ -1414,6 +1414,7 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
     };
 }
+
 
 
 
