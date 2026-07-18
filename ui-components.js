@@ -247,18 +247,37 @@ function rSales() {
 }
 
 // 3. Targets
-function rTgt(){
+function rTgt() {
+    let sData = typeof getFilteredSales === 'function' ? getFilteredSales() : S;
+    let sMap = {}, accSMap = {}, hwSMap = {};
+    let pMap = {}, accPMap = {}, hwPMap = {};
+    sData.forEach(r => {
+        let c = r.Customer;
+        if(!c) return;
+        let s = Number(r['Sales After Discount']) || 0;
+        let p = Number(r['Profit Margin']) || 0;
+        let isA = isAcc(r['Item Class Name']);
+        let isH = isHW(r['Item Class Name']);
+        sMap[c] = (sMap[c] || 0) + s;
+        pMap[c] = (pMap[c] || 0) + p;
+        if (isA) { accSMap[c] = (accSMap[c] || 0) + s; accPMap[c] = (accPMap[c] || 0) + p; }
+        if (isH) { hwSMap[c] = (hwSMap[c] || 0) + s; hwPMap[c] = (hwPMap[c] || 0) + p; }
+    });
+    let cS = (c) => sMap[c] || 0;
+    let cSF = (c, f) => f === isAcc ? (accSMap[c] || 0) : (hwSMap[c] || 0);
+    let cPF = (c, f) => f === isAcc ? (accPMap[c] || 0) : (hwPMap[c] || 0);
+
     let tt=0, ta=0;
     T.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
     $('M').innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">$"{ICONS.targets}"</span> $"{t('targets')}"</h1>
             <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
         </div>
         <div class="kg">
-            <div class="ki"><div class="lb">Target</div><div class="vl">${aFmt(tt)}</div></div>
-            <div class="ki"><div class="lb">Achieved</div><div class="vl">${aFmt(ta)}</div></div>
-            <div class="ki"><div class="lb">%</div><div class="vl">${aFmt(tt>0?ta/tt*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">Target</div><div class="vl">$"{aFmt(tt)}"</div></div>
+            <div class="ki"><div class="lb">Achieved</div><div class="vl">$"{aFmt(ta)}"</div></div>
+            <div class="ki"><div class="lb">%</div><div class="vl">$"{aFmt(tt>0?ta/tt*100:0,true)}"</div></div>
         </div>
         <div class="tb">
             <div class="tbt"><h3>Targets</h3><input class="sbox" id="tsr" placeholder="..."></div>
@@ -271,18 +290,17 @@ function rTgt(){
     function fTg(d){
         $('ttb').innerHTML = d.map(r => {
             let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
-            return `<tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>`;
+            return `<tr><td>$"{r.Customer}"</td><td>$"{fmt(tg)}"</td><td>$"{fmt(a)}"</td><td>$"{pc(p)}"</td><td>$"{fmt(cSF(r.Customer,isAcc))}"</td><td>$"{fmt(cPF(r.Customer,isAcc))}"</td><td>$"{fmt(cSF(r.Customer,isHW))}"</td><td>$"{fmt(cPF(r.Customer,isHW))}"</td><td><span class="badge $"{p>=100?'bg-g':p>=60?'bg-a':'bg-r'}"">$"{p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}"</span></td></tr>`;
         }).join('');
     }
-    
     fTg(T);
-    $('tsr').oninput = debounce(function(){
-        let q = this.value.toLowerCase();
-        fTg(T.filter(r => (r.Customer||'').toLowerCase().includes(q)));
-    }, 200);
+    
+    $('tsr').oninput = debounce(e => {
+        let v = e.target.value.toLowerCase();
+        fTg(v ? T.filter(r => (r.Customer||'').toLowerCase().includes(v)) : T);
+    });
+    initAnm && initAnm();
 }
-
-// 4. Personal Target
 function rPers() {
     let myEmail = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.email : '';
     let myS = S, ts = 0, tp = 0;
@@ -814,21 +832,55 @@ function rHW() {
 
 // Collections
 function rCollections() {
-    let tot = C.reduce((s,r)=>s+(Number(r['Amount']||r['amount']||r['Collection']||0)),0);
+    let tot = 0, accTot = 0, hwTot = 0;
+    let cAccMap = {}, cHWMap = {};
+    if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'])) {
+        S.forEach(s => {
+            let c = s['Customer'];
+            if(c) {
+                let v = Number(s['Sales After Discount'] || 0);
+                if(isAcc(s['Item Class Name'])) cAccMap[c] = (cAccMap[c]||0) + v;
+                if(isHW(s['Item Class Name'])) cHWMap[c] = (cHWMap[c]||0) + v;
+            }
+        });
+    }
+
+    C.forEach(r => {
+        let val = Number(r['Amount']||r['amount']||r['Collection']||0);
+        let cat = r['Item Class Name'] || r['Item Group'] || r['category'] || r['Category'];
+        let cName = r['Customer Name'] || r['Customer'] || r['customer'] || '';
+        
+        tot += val;
+        if (cat) {
+            if (isAcc(cat)) accTot += val;
+            else if (isHW(cat)) hwTot += val;
+        } else {
+            let a = cAccMap[cName]||0;
+            let h = cHWMap[cName]||0;
+            if (a > 0 || h > 0) {
+                if (a >= h) accTot += val;
+                else hwTot += val;
+            } else {
+                accTot += val; 
+            }
+        }
+    });
+
     $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">$"{ICONS.collections}"</span> $"{t('collections')}"</h1></div>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
+            <div class="ki"><div class="lb">$"{L==='ar'?TUI('Total Collections'):'Total Collections'}"</div><div class="vl">$"{aFmt(tot)}"</div></div>
+            <div class="ki"><div class="lb">$"{L==='ar'?'إكسسوارات':'Accessories'}"</div><div class="vl">$"{aFmt(accTot)}"</div></div>
+            <div class="ki"><div class="lb">$"{L==='ar'?'هاردوير':'Hardware'}"</div><div class="vl">$"{aFmt(hwTot)}"</div></div>
+            <div class="ki"><div class="lb">$"{L==='ar'?TUI('Records'):'Records'}"</div><div class="vl">$"{aFmt(C.length)}"</div></div>
         </div>
-        ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
-        <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
-        <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
-        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}
+        $"{C.length>0 ? `<div class="tb"><div class="tbt"><h3>$"{t('collections')}"</h3></div>
+        <div class="tbs"><table><thead><tr>$"{Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>$"{k}"</th>`).join('')}"</tr></thead>
+        <tbody>$"{C.slice(0,100).map(r=>`<tr>$"{Object.keys(C[0]).slice(0,6).map(k=>`<td>$"{r[k]||''}"</td>`).join('')}"</tr>`).join('')}"</tbody>
+        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">$"{L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}"</p></div>`}"
     `;
     initAnm && initAnm();
 }
-
 // Key Accounts (top 20% customers)
 function rKey() {
     let cu = {};
