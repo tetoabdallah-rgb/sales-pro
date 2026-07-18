@@ -1220,7 +1220,98 @@ function rAcct() {
 }
 
 // Backup
+// Backup
 function rBk() {
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.backup}</span> ${t('backup')}</h1></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div class="card">
+                <h3 style="margin-bottom:12px;text-align:center;">${L==='ar'?'تصدير للإكسيل':'Export to Excel'}</h3>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button class="btn" id="bkSales" style="width:100%; justify-content:center;">${L==='ar'?'مبيعات':'Sales'} (${S.length})</button>
+                    <button class="btn" id="bkTgt" style="width:100%; justify-content:center;">${L==='ar'?'تارجت':'Targets'} (${T.length})</button>
+                    <button class="btn" id="bkPay" style="width:100%; justify-content:center;">${L==='ar'?'تحصيلات':'Collections'} (${C.length})</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom:12px;text-align:center;">النسخ الاحتياطي الشامل 💾</h3>
+                <p style="text-align:center;color:var(--tx2);font-size:0.85rem;margin-bottom:15px;">
+                    يقوم بتصدير كافة بيانات المبيعات والتارجت والتحصيلات في ملف واحد (JSON) لاسترجاعها لاحقاً.
+                </p>
+                <button class="btn btn-p" id="bDownJSON" style="width:100%; justify-content:center; margin-bottom:10px;">
+                    تنزيل ملف النسخة الاحتياطية (JSON)
+                </button>
+                <label for="fUpJSON" class="btn" style="width:100%; justify-content:center; display:flex; margin-bottom:10px; cursor:pointer;">
+                    استرجاع نسخة من ملف (JSON)
+                </label>
+                <input type="file" id="fUpJSON" accept=".json" style="display:none;">
+                
+                <button class="btn" id="bMailJSON" style="width:100%; justify-content:center; margin-bottom:10px; background:#ea4335; color:white; border:none;">
+                    إرسال نسخة بالإيميل ✉️ (Gmail)
+                </button>
+                <button class="btn" id="bDriveJSON" style="width:100%; justify-content:center; background:#0f9d58; color:white; border:none;">
+                    نسخ احتياطي إلى (Google Drive) ☁️
+                </button>
+            </div>
+        </div>
+    `;
+
+    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+
+    $('bDownJSON').onclick = () => {
+        let dump = { S, T, C, D, accCats, hwCats };
+        let blob = new Blob([JSON.stringify(dump)], {type: "application/json"});
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `SalesPro_Backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        toast(L==='ar'?'تم تنزيل النسخة!':'Backup Downloaded!');
+    };
+
+    if($('bDriveJSON')) {
+        $('bDriveJSON').onclick = () => {
+            if(typeof window.backupToGoogleDrive === 'function') {
+                window.backupToGoogleDrive();
+            } else {
+                toast(L==='ar'?'خدمة Google Drive غير متوفرة':'Google Drive service is not available', 'error');
+            }
+        };
+    }
+
+    if($('bMailJSON')) {
+        $('bMailJSON').onclick = () => {
+            $('bDownJSON').click();
+            toast(L==='ar'?'سيفتح الإيميل.. قم بإرفاق الملف الذي تم تنزيله!':'Opening Email.. Attach the downloaded file!');
+            setTimeout(() => {
+                window.location.href = `mailto:?subject=${encodeURIComponent('SalesPro Data Backup')}&body=${encodeURIComponent(L==='ar'?'يرجى إيجاد ملف النسخة الاحتياطية (JSON) مرفقاً.':'Please find the JSON backup file attached.')}`;
+            }, 2000);
+        };
+    }
+
+    $('fUpJSON').onchange = (e) => {
+        let f = e.target.files[0];
+        if(!f) return;
+        let reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                let d = JSON.parse(ev.target.result);
+                if(d.S) { S = d.S; sv('salesData', S); }
+                if(d.T) { T = d.T; sv('targetData', T); }
+                if(d.C) { C = d.C; sv('payData', C); }
+                if(d.D) { D = d.D; sv('duesData', D); }
+                if(d.accCats) { accCats = d.accCats; sv('accCats', accCats); }
+                if(d.hwCats) { hwCats = d.hwCats; sv('hwCats', hwCats); }
+                toast(L==='ar'?'تمت الاستعادة بنجاح!':'Restored Successfully!');
+                render();
+            } catch(ex) {
+                toast(L==='ar'?'ملف غير صالح!':'Invalid File!');
+            }
+        };
+        reader.readAsText(f);
+    };
+}
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.backup}</span> ${t('backup')}</h1></div>
         <div class="card">
