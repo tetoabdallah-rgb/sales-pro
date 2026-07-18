@@ -1,4 +1,4 @@
-// js/data-store.js
+﻿// js/data-store.js
 
 // Global State
 function loadLS(k) { try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : []; } catch(e){ return []; } }
@@ -76,84 +76,62 @@ function syncUI(st) {
     }
 }
 
+let _svQ = Promise.resolve();
 function sv(k, v) {
     _cache[k] = v;
     try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){}
-    if (!currentUser) return;
+    if (!currentUser) return Promise.resolve();
     
     syncUI('syncing');
-    if (Array.isArray(v) && ['salesData','targetData','payData','duesData'].includes(k)) {
-        try {
-            let g = {};
-            for(let i=0; i<v.length; i++){
-                let u = v[i]._uid || currentUser.uid;
-                if(!g[u]) g[u] = [];
-                let c = JSON.parse(JSON.stringify(v[i]));
-                delete c._uid;
-                g[u].push(c);
-            }
-            let proms = [];
-            for(let u in g) {
-                let arr = g[u];
-                let cSz = 100;
-                let chks = [];
-                for(let i=0; i<arr.length; i+=cSz) chks.push(arr.slice(i, i+cSz));
-                
-                let batches = [db.batch()];
-                let opCount = 0;
-                
-                let mRef = db.collection('users').doc(u);
-                batches[batches.length-1].set(mRef, { [k+'_meta']: chks.length }, {merge: true});
-                opCount++;
-                
-                let coll = mRef.collection('chunks');
-                for(let i=0; i<chks.length; i++){
-                    batches[batches.length-1].set(coll.doc(k+'_'+i), { data: chks[i] });
-                    opCount++;
-                    if(opCount >= 400) {
-                        batches.push(db.batch());
-                        opCount = 0;
-                    }
+    
+    let exec = () => new Promise(resolve => {
+        if (Array.isArray(v) && ['salesData','targetData','payData','duesData'].includes(k)) {
+            try {
+                let g = {};
+                for(let i=0; i<v.length; i++){
+                    let u = v[i]._uid || currentUser.uid;
+                    if(!g[u]) g[u] = [];
+                    let c = JSON.parse(JSON.stringify(v[i]));
+                    delete c._uid;
+                    g[u].push(c);
                 }
-                batches.forEach(b => proms.push(b.commit()));
-            }
-            Promise.all(proms).then(() => syncUI('done')).catch(e => {
-                syncUI('error'); console.error(e);
-            });
-        } catch(ex){ syncUI('error'); console.error(ex); }
-    } else {
-        db.collection('users').doc(currentUser.uid).set({ [k]: JSON.parse(JSON.stringify(v)) }, {merge: true})
-        .then(() => syncUI('done')).catch(e => { syncUI('error'); console.error(e); });
-    }
+                let proms = [];
+                for(let u in g) {
+                    let arr = g[u];
+                    let cSz = 100;
+                    let chks = [];
+                    for(let i=0; i<arr.length; i+=cSz) chks.push(arr.slice(i, i+cSz));
+                    
+                    let batches = [db.batch()];
+                    let opCount = 0;
+                    let mRef = db.collection('users').doc(u);
+                    batches[batches.length-1].set(mRef, { [k+'_meta']: chks.length }, {merge: true});
+                    opCount++;
+                    
+                    let coll = mRef.collection('chunks');
+                    for(let i=0; i<chks.length; i++){
+                        batches[batches.length-1].set(coll.doc(k+'_'+i), { data: chks[i] });
+                        opCount++;
+                        if(opCount >= 400) {
+                            batches.push(db.batch());
+                            opCount = 0;
+                        }
+                    }
+                    batches.forEach(b => proms.push(b.commit()));
+                }
+                Promise.all(proms).then(() => { syncUI('done'); resolve(); }).catch(e => {
+                    syncUI('error'); console.error(e); resolve();
+                });
+            } catch(ex){ syncUI('error'); console.error(ex); resolve(); }
+        } else {
+            db.collection('users').doc(currentUser.uid).set({ [k]: JSON.parse(JSON.stringify(v)) }, {merge: true})
+            .then(() => { syncUI('done'); resolve(); }).catch(e => { syncUI('error'); console.error(e); resolve(); });
+        }
+    });
+
+    _svQ = _svQ.then(exec);
+    return _svQ;
 }
-
-function ld(k) {
-    if (_cache[k] !== undefined) return _cache[k];
-    try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : null; } catch(e){ return null; }
-}
-
-function toast(m) {
-    let el = $('TT');
-    if(!el) return;
-    el.textContent = m;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-function pd(d) {
-    if (d instanceof Date) return d.toISOString().split('T')[0];
-    if (typeof d === 'string') return d.split('T')[0];
-    if (typeof d === 'number') return new Date((d - 25569) * 86400000).toISOString().split('T')[0];
-    return '';
-}
-
-function cS(n) { return S.filter(r => r.Customer === n).reduce((sum, r) => sum + (Number(r['Sales After Discount'])||0), 0); }
-function cP(n) { return S.filter(r => r.Customer === n).reduce((sum, r) => sum + (Number(r['Profit Margin'])||0), 0); }
-function cO(n) { let o={}; S.forEach(r => { if(r.Customer === n) o[r['Order Nbr']]=1; }); return Object.keys(o).length; }
-function cSF(n, fn) { return S.filter(r => r.Customer === n && fn(r['Item Class Name'])).reduce((sum, r) => sum + (Number(r['Sales After Discount'])||0), 0); }
-function cPF(n, fn) { return S.filter(r => r.Customer === n && fn(r['Item Class Name'])).reduce((sum, r) => sum + (Number(r['Profit Margin'])||0), 0); }
-
-function dc(k) { if(CH[k]){ CH[k].destroy(); delete CH[k]; } }
 
 function ring(ti, pct, tot) {
     let c = 251.2, off = c - (Math.min(pct, 100) / 100 * c);
@@ -208,3 +186,4 @@ function getFilteredSales() {
         return pass;
     });
 }
+
