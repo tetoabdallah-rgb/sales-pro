@@ -98,7 +98,7 @@ function rDash() {
     let lb = Object.keys(dl).sort();
     dc('d');
     let ctx = $('cD');
-    if(ctx && lb.length) {
+    if(typeof Chart !== 'undefined' && ctx && lb.length) {
         let g = ctx.getContext('2d').createLinearGradient(0,0,0,400);
         g.addColorStop(0, 'rgba(80,70,229,.8)'); g.addColorStop(1, 'rgba(80,70,229,.1)');
         CH.d = new Chart(ctx, {
@@ -115,7 +115,7 @@ function rDash() {
     let cs2 = Object.entries(ca).sort((a,b)=>b[1]-a[1]).slice(0,8);
     dc('c');
     let ctx2 = $('cC');
-    if(ctx2 && cs2.length) {
+    if(typeof Chart !== 'undefined' && ctx2 && cs2.length) {
         CH.c = new Chart(ctx2, {
             type:'doughnut', data:{labels:cs2.map(x=>x[0]), datasets:[{data:cs2.map(x=>x[1]), backgroundColor:CL, borderWidth:0}]},
             options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}}}
@@ -716,14 +716,14 @@ function rAn() {
     `;
     dc('anM'); dc('anC');
     let ctxM = $('anM');
-    if(ctxM && months.length) {
+    if(typeof Chart !== 'undefined' && ctxM && months.length) {
         CH.anM = new Chart(ctxM, {
             type:'line', data:{labels:months.map(x=>x.slice(5)), datasets:[{label:'Sales',data:months.map(m=>monthly[m].s),borderColor:'#5046e5',backgroundColor:'rgba(80,70,229,.1)',fill:true,tension:0.4},{label:'Profit',data:months.map(m=>monthly[m].p),borderColor:'#0fa87e',backgroundColor:'rgba(15,168,126,.1)',fill:true,tension:0.4}]},
             options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}}}
         });
     }
     let ctxC = $('anC');
-    if(ctxC && topCats.length) {
+    if(typeof Chart !== 'undefined' && ctxC && topCats.length) {
         CH.anC = new Chart(ctxC, {
             type:'doughnut', data:{labels:topCats.map(x=>x[0]), datasets:[{data:topCats.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},
             options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}
@@ -814,7 +814,7 @@ function rAcc() {
     `;
     dc('accC');
     let ctx = $('accC');
-    if(ctx && catArr.length) { CH.accC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}}); }
+    if(typeof Chart !== 'undefined' && ctx && catArr.length) { CH.accC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}}); }
     initAnm && initAnm();
 }
 
@@ -842,7 +842,7 @@ function rHW() {
     `;
     dc('hwC');
     let ctx = $('hwC');
-    if(ctx && catArr.length) { CH.hwC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}}); }
+    if(typeof Chart !== 'undefined' && ctx && catArr.length) { CH.hwC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}}); }
     initAnm && initAnm();
 }
 
@@ -1414,6 +1414,7 @@ function rSetup() {
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
     };
 }
+
 
 
 
