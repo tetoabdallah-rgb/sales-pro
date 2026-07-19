@@ -269,28 +269,28 @@ function rTgt() {
 
     let tt=0, ta=0;
     T.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
-    $('M').innerHTML = `
+    $('M').innerHTML = 
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">$"{ICONS.targets}"</span> $"{t('targets')}"</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}</h1>
             <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
         </div>
         <div class="kg">
-            <div class="ki"><div class="lb">Target</div><div class="vl">$"{aFmt(tt)}"</div></div>
-            <div class="ki"><div class="lb">Achieved</div><div class="vl">$"{aFmt(ta)}"</div></div>
-            <div class="ki"><div class="lb">%</div><div class="vl">$"{aFmt(tt>0?ta/tt*100:0,true)}"</div></div>
+            <div class="ki"><div class="lb">Target</div><div class="vl">${aFmt(tt)}</div></div>
+            <div class="ki"><div class="lb">Achieved</div><div class="vl">${aFmt(ta)}</div></div>
+            <div class="ki"><div class="lb">%</div><div class="vl">${aFmt(tt>0?ta/tt*100:0,true)}</div></div>
         </div>
         <div class="tb">
             <div class="tbt"><h3>Targets</h3><input class="sbox" id="tsr" placeholder="..."></div>
             <div class="tbs"><table><thead><tr><th>Customer</th><th>Target</th><th>Achieved</th><th>%</th><th>Acc</th><th>Acc P</th><th>HW</th><th>HW P</th><th>St</th></tr></thead><tbody id="ttb"></tbody></table></div>
         </div>
-    `;
+    ;
     
     $('bExTgt').onclick = () => exportToExcel(T.map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
 
     function fTg(d){
         $('ttb').innerHTML = d.map(r => {
             let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
-            return `<tr><td>$"{r.Customer}"</td><td>$"{fmt(tg)}"</td><td>$"{fmt(a)}"</td><td>$"{pc(p)}"</td><td>$"{fmt(cSF(r.Customer,isAcc))}"</td><td>$"{fmt(cPF(r.Customer,isAcc))}"</td><td>$"{fmt(cSF(r.Customer,isHW))}"</td><td>$"{fmt(cPF(r.Customer,isHW))}"</td><td><span class="badge $"{p>=100?'bg-g':p>=60?'bg-a':'bg-r'}"">$"{p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}"</span></td></tr>`;
+            return <tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>;
         }).join('');
     }
     fTg(T);
@@ -866,19 +866,19 @@ function rCollections() {
         }
     });
 
-    $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">$"{ICONS.collections}"</span> $"{t('collections')}"</h1></div>
+    $('M').innerHTML = 
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
         <div class="kg">
-            <div class="ki"><div class="lb">$"{L==='ar'?TUI('Total Collections'):'Total Collections'}"</div><div class="vl">$"{aFmt(tot)}"</div></div>
-            <div class="ki"><div class="lb">$"{L==='ar'?'إكسسوارات':'Accessories'}"</div><div class="vl">$"{aFmt(accTot)}"</div></div>
-            <div class="ki"><div class="lb">$"{L==='ar'?'هاردوير':'Hardware'}"</div><div class="vl">$"{aFmt(hwTot)}"</div></div>
-            <div class="ki"><div class="lb">$"{L==='ar'?TUI('Records'):'Records'}"</div><div class="vl">$"{aFmt(C.length)}"</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'هاردوير':'Hardware'}</div><div class="vl">${aFmt(hwTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
         </div>
-        $"{C.length>0 ? `<div class="tb"><div class="tbt"><h3>$"{t('collections')}"</h3></div>
-        <div class="tbs"><table><thead><tr>$"{Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>$"{k}"</th>`).join('')}"</tr></thead>
-        <tbody>$"{C.slice(0,100).map(r=>`<tr>$"{Object.keys(C[0]).slice(0,6).map(k=>`<td>$"{r[k]||''}"</td>`).join('')}"</tr>`).join('')}"</tbody>
-        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">$"{L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}"</p></div>`}"
-    `;
+        ${C.length>0 ? <div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
+        <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=><th>${k}</th>).join('')}</tr></thead>
+        <tbody>${C.slice(0,100).map(r=><tr>${Object.keys(C[0]).slice(0,6).map(k=><td>${r[k]||''}</td>).join('')}</tr>).join('')}</tbody>
+        </table></div></div> : <div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>}
+    ;
     initAnm && initAnm();
 }
 // Key Accounts (top 20% customers)
