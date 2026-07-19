@@ -269,7 +269,7 @@ function rTgt() {
 
     let tt=0, ta=0;
     T.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
-    $('M').innerHTML = `
+    $('M').innerHTML = 
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}</h1>
             <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
@@ -283,14 +283,14 @@ function rTgt() {
             <div class="tbt"><h3>Targets</h3><input class="sbox" id="tsr" placeholder="..."></div>
             <div class="tbs"><table><thead><tr><th>Customer</th><th>Target</th><th>Achieved</th><th>%</th><th>Acc</th><th>Acc P</th><th>HW</th><th>HW P</th><th>St</th></tr></thead><tbody id="ttb"></tbody></table></div>
         </div>
-    `;
+    ;
     
     $('bExTgt').onclick = () => exportToExcel(T.map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
 
     function fTg(d){
         $('ttb').innerHTML = d.map(r => {
             let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
-            return `<tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>`;
+            return <tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>;
         }).join('');
     }
     fTg(T);
@@ -866,7 +866,7 @@ function rCollections() {
         }
     });
 
-    $('M').innerHTML = `
+    $('M').innerHTML = 
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
@@ -874,11 +874,11 @@ function rCollections() {
             <div class="ki"><div class="lb">${L==='ar'?'هاردوير':'Hardware'}</div><div class="vl">${aFmt(hwTot)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
         </div>
-        ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
-        <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
-        <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
-        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}
-    `;
+        ${C.length>0 ? <div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
+        <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=><th>${k}</th>).join('')}</tr></thead>
+        <tbody>${C.slice(0,100).map(r=><tr>${Object.keys(C[0]).slice(0,6).map(k=><td>${r[k]||''}</td>).join('')}</tr>).join('')}</tbody>
+        </table></div></div> : <div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>}
+    ;
     initAnm && initAnm();
 }
 // Key Accounts (top 20% customers)
@@ -1297,11 +1297,15 @@ function rBk() {
                 </label>
                 <input type="file" id="fUpJSON" accept=".json" style="display:none;">
                 
-                <button class="btn" id="bMailJSON" style="width:100%; justify-content:center; margin-bottom:10px; background:#ea4335; color:white; border:none;">
+                <button class="btn" id="bDriveJSON" style="width:100%; justify-content:center; background:#0f9d58; color:white; border:none; margin-bottom:10px;">
+                      الرفع وحفظ البيانات في السحابة (Cloud Sync) ☁️
+                  </button>
+                  <button class="btn" id="bRestoreCloud" style="width:100%; justify-content:center; background:#4285f4; color:white; border:none;">
+                      استرجاع البيانات من السحابة (Restore Cloud) 🔄
+                  </button>
+                
+                <button class="btn" id="bMailJSON" style="width:100%; justify-content:center; margin-bottom:10px; background:#ea4335; color:white; border:none; display:none;">
                     إرسال نسخة بالإيميل ✉️ (Gmail)
-                </button>
-                <button class="btn" id="bDriveJSON" style="width:100%; justify-content:center; background:#0f9d58; color:white; border:none;">
-                    نسخ احتياطي إلى (Google Drive) ☁️
                 </button>
             </div>
         </div>
@@ -1319,14 +1323,23 @@ function rBk() {
         toast(L==='ar'?'تم تنزيل النسخة!':'Backup Downloaded!');
     };
     if($('bDriveJSON')) {
-        $('bDriveJSON').onclick = () => {
-            if(typeof window.backupToGoogleDrive === 'function') {
-                window.backupToGoogleDrive();
-            } else {
-                toast(L==='ar'?'خدمة Google Drive غير متوفرة':'Google Drive service is not available', 'error');
-            }
-        };
-    }
+          $('bDriveJSON').onclick = () => {
+              if(typeof window.backupToGoogleDrive === 'function') {
+                  window.backupToGoogleDrive();
+              } else {
+                  toast(L==='ar'?'خدمة السحابة غير متوفرة':'Cloud service is not available', 'error');
+              }
+          };
+      }
+      if($('bRestoreCloud')) {
+          $('bRestoreCloud').onclick = () => {
+              if(typeof window.restoreFromGoogleDrive === 'function') {
+                  window.restoreFromGoogleDrive();
+              } else {
+                  toast(L==='ar'?'خدمة الاسترجاع غير متوفرة':'Restore service is not available', 'error');
+              }
+          };
+      }
     if($('bMailJSON')) {
         $('bMailJSON').onclick = () => {
             $('bDownJSON').click();
@@ -1402,14 +1415,16 @@ function rSetup() {
         reader.readAsArrayBuffer(file);
     }
     $('bUpload').onclick = () => {
-        let done = 0, total = 0;
         let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
         if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
-        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
-        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
-        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
+        toast(L==='ar'?'جاري التحميل...':'Loading files...');
+        if(fS) { parseFile(fS, d => { S = d; sv('salesData', d); toast(L==='ar'?'تم رفع المبيعات':'Sales Loaded'); render(); }); }
+        if(fT) { parseFile(fT, d => { T = d; sv('targetData', d); toast(L==='ar'?'تم رفع التارجت':'Target Loaded'); render(); }); }
+        if(fP) { parseFile(fP, d => { C = d; sv('payData', d); toast(L==='ar'?'تم رفع التحصيلات':'Collections Loaded'); render(); }); }
     };
 }
+
+
 
 
 
