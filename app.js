@@ -18,11 +18,32 @@ const NAV = [
 
 const BNV = ['dash','customers','brands','analytics','settings'];
 
+const F_URL = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/';
+const getImg = (name) => `<img src="${F_URL}${name}" style="width:1.4em;height:1.4em;vertical-align:middle;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.15));">`;
+
 const ICONS = {
-    dash:'🏠', sales:'💰', targets:'🎯', personal:'👤', customers:'🏪', brands:'📦',
-    accessories:'🎧', hardware:'📱', analytics:'🧠', potential:'🚀', profit:'💵',
-    keyacc:'⭐', dormant:'💤', prospects:'🔍', ai:'🤖', alerts:'🔔', account:'👤',
-    backup:'💾', setup:'📂', reset:'🗑️', settings:'⚙️', collections:'💰'
+    dash: getImg('Bar%20chart/3D/bar_chart_3d.png'),
+    sales: getImg('Chart%20increasing/3D/chart_increasing_3d.png'),
+    targets: getImg('Bullseye/3D/bullseye_3d.png'),
+    personal: getImg('Man%20office%20worker/3D/man_office_worker_3d.png'),
+    customers: getImg('Busts%20in%20silhouette/3D/busts_in_silhouette_3d.png'),
+    brands: getImg('Label/3D/label_3d.png'),
+    accessories: getImg('Headphone/3D/headphone_3d.png'),
+    hardware: getImg('Laptop/3D/laptop_3d.png'),
+    analytics: getImg('Chart%20decreasing/3D/chart_decreasing_3d.png'),
+    potential: getImg('Star/3D/star_3d.png'),
+    profit: getImg('Money%20bag/3D/money_bag_3d.png'),
+    keyacc: getImg('Crown/3D/crown_3d.png'),
+    dormant: getImg('Sleeping%20face/3D/sleeping_face_3d.png'),
+    prospects: getImg('Magnifying%20glass%20tilted%20right/3D/magnifying_glass_tilted_right_3d.png'),
+    ai: getImg('Robot/3D/robot_3d.png'),
+    alerts: getImg('Bell/3D/bell_3d.png'),
+    account: getImg('Bust%20in%20silhouette/3D/bust_in_silhouette_3d.png'),
+    backup: getImg('Floppy%20disk/3D/floppy_disk_3d.png'),
+    setup: getImg('Gear/3D/gear_3d.png'),
+    reset: getImg('Wastebasket/3D/wastebasket_3d.png'),
+    settings: getImg('Artist%20palette/3D/artist_palette_3d.png'),
+    collections: getImg('Coin/3D/coin_3d.png')
 };
 
 function buildNav() {
