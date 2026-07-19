@@ -1402,6 +1402,13 @@ function rSetup() {
             </div>
             <button id="bUpload" class="btn btn-p" style="margin-top:20px;width:100%;padding:12px;font-size:1.1rem;">${L==='ar'?TUI('Upload & Update Data'):'Upload & Update Data'}</button>
         </div>
+        
+        <div class="card" style="margin-top:20px;">
+            <h3 style="margin-bottom:12px;">إدارة فئات الإكسسوارات (Accessories Categories)</h3>
+            <p style="margin-bottom:16px;color:var(--tx2);font-size:0.85rem;">يمكنك تعديل أو إضافة الفئات التي يتم اعتبارها إكسسوارات، افصل بين كل فئة وأخرى بفاصلة (,)</p>
+            <textarea id="inAccCats" rows="4" style="width:100%;padding:12px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;resize:vertical;font-family:inherit;font-size:0.95rem;">${accCats.length ? accCats.join(', ') : (typeof DEF_ACC !== 'undefined' ? DEF_ACC.join(', ') : '')}</textarea>
+            <button id="bSaveCats" class="btn btn-p" style="margin-top:16px;width:100%;padding:12px;font-size:1rem;">حفظ الفئات والتحديث / Save & Update</button>
+        </div>
     `;
     function parseFile(file, cb) {
         let reader = new FileReader();
@@ -1421,6 +1428,18 @@ function rSetup() {
         if(fS) { parseFile(fS, d => { S = d; sv('salesData', d); toast(L==='ar'?'تم رفع المبيعات':'Sales Loaded'); render(); }); }
         if(fT) { parseFile(fT, d => { T = d; sv('targetData', d); toast(L==='ar'?'تم رفع التارجت':'Target Loaded'); render(); }); }
         if(fP) { parseFile(fP, d => { C = d; sv('payData', d); toast(L==='ar'?'تم رفع التحصيلات':'Collections Loaded'); render(); }); }
+    };
+    
+    $('bSaveCats').onclick = () => {
+        let vals = $('inAccCats').value.split(',').map(s => s.trim()).filter(s => s);
+        if(vals.length > 0) {
+            accCats = vals;
+            sv('accCats', accCats);
+            toast(L==='ar'?'تم حفظ فئات الإكسسوارات بنجاح!':'Categories Saved!');
+            render();
+        } else {
+            toast(L==='ar'?'لا يمكن ترك الفئات فارغة!':'Categories cannot be empty!');
+        }
     };
 }
 
