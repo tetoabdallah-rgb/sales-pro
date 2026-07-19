@@ -95,7 +95,11 @@
 <script>
   // Hide loader when app is ready
   window.addEventListener('load', function() {
-    if(typeof init === 'function') init();
+    try {
+      if(typeof init === 'function') init();
+    } catch(e) {
+      alert('Error during init: ' + e.message + '\n' + e.stack);
+    }
     setTimeout(function() {
       var loader = document.getElementById('LOADER');
       if (loader) {
@@ -119,4 +123,5 @@
 </script>
 </body>
 </html>
+
 
