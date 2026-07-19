@@ -1526,6 +1526,21 @@ function debounce(fn, ms) {
 
 
 
+function ld(k) {
+    if (typeof _cache !== 'undefined' && _cache[k] !== undefined) return _cache[k];
+    try {
+        let v = localStorage.getItem(k);
+        if (v !== null) {
+            try {
+                v = JSON.parse(v);
+            } catch(e) {}
+            if (typeof _cache !== 'undefined') _cache[k] = v;
+            return v;
+        }
+    } catch(e) {}
+    return null;
+}
+
 function sv(k, v) {
     _cache[k] = v;
     try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){}
