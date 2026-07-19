@@ -5,9 +5,9 @@
 /* ---------- CSS Variables (Light Theme) ---------- */
 :root {
   --bg: #f0f2f5;
-  --bg2: rgba(255, 255, 255, 0.85);
+  --bg2: rgba(255, 255, 255, 0.6);
   --glass: blur(16px);
-  --bg-g: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+  --bg-g: linear-gradient(-45deg, #e0e7ff, #f3e8ff, #f0fdfa, #fdf4ff);
   --bg3: #f8f9fa;
   --bg4: #e9ecef;
   --tx1: #1a1d21;
@@ -38,9 +38,9 @@
 /* ---------- Dark Theme ---------- */
 html[data-theme="dark"] {
   --bg: #0f172a;
-  --bg2: rgba(30, 41, 59, 0.85);
+  --bg2: rgba(15, 23, 42, 0.6);
   --glass: blur(16px);
-  --bg-g: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --bg-g: linear-gradient(-45deg, #1e1b4b, #312e81, #064e3b, #4c1d95);
   --bg3: #334155;
   --bg4: #475569;
   --tx1: #f1f5f9;
@@ -81,7 +81,14 @@ body {
   font-size: 15px;
   line-height: 1.6;
   transition: background 0.4s ease, color 0.4s ease;
-  background-attachment: fixed;
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 body.en {
