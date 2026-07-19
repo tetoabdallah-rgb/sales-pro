@@ -5,8 +5,9 @@
 /* ---------- CSS Variables (Light Theme) ---------- */
 :root {
   --bg: #f0f2f5;
-  --bg-g: linear-gradient(135deg, #f0f2f5 0%, #e8ecf1 100%);
-  --bg2: #ffffff;
+  --bg2: rgba(255, 255, 255, 0.85);
+  --glass: blur(16px);
+  --bg-g: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
   --bg3: #f8f9fa;
   --bg4: #e9ecef;
   --tx1: #1a1d21;
@@ -37,8 +38,9 @@
 /* ---------- Dark Theme ---------- */
 html[data-theme="dark"] {
   --bg: #0f172a;
+  --bg2: rgba(30, 41, 59, 0.85);
+  --glass: blur(16px);
   --bg-g: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  --bg2: #1e293b;
   --bg3: #334155;
   --bg4: #475569;
   --tx1: #f1f5f9;
@@ -422,6 +424,8 @@ html[dir="ltr"] .input-wrap input#inP {
   z-index: 100;
   overflow-y: auto;
   padding: 20px 14px;
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   transition: background 0.4s;
 }
 
@@ -645,6 +649,8 @@ body.en .mw {
   box-shadow: var(--sh);
   position: relative;
   overflow: hidden;
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -703,6 +709,8 @@ body.en .mw {
   padding: 24px;
   text-align: center;
   box-shadow: var(--sh);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   transition: all 0.3s;
 }
 
@@ -779,6 +787,8 @@ body.en .mw {
   border-radius: var(--r);
   padding: 24px;
   box-shadow: var(--sh);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   transition: all 0.3s;
 }
 
@@ -806,6 +816,8 @@ body.en .mw {
   overflow: hidden;
   margin-bottom: 24px;
   box-shadow: var(--sh);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   animation: fadeUp 0.8s ease forwards;
 }
 
@@ -913,6 +925,8 @@ tbody tr:last-child td {
   padding: 24px;
   margin-bottom: 16px;
   box-shadow: var(--sh);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   animation: fadeUp 0.4s ease forwards;
 }
 
@@ -960,6 +974,8 @@ tbody tr:last-child td {
   border-radius: var(--r);
   padding: 20px;
   box-shadow: var(--sh);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   transition: all 0.25s;
 }
 
