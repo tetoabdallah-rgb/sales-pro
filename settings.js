@@ -1,9 +1,6 @@
 // js/settings.js
 
 function rSettings() {
-    let savedClient = localStorage.getItem('sp_gdrive_client') || '';
-    let savedApi = localStorage.getItem('sp_gdrive_api') || '';
-
     $('M').innerHTML = `
         <div class="ph">
             <h1 style="display:flex;align-items:center;gap:12px;">
@@ -22,25 +19,31 @@ function rSettings() {
                 `).join('')}
             </div>
         </div>
+        
+        <div class="card" style="margin-bottom:20px;">
+            <h3>☁️ ${L==='ar'?'إعدادات المزامنة السحابية (Google Drive)':'Cloud Sync Settings (Google Drive)'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفاتيح API لتفعيل المزامنة مع جوجل درايف':'Enter API keys to enable cloud sync'}</p>
+            <div class="fg">
+                <input type="text" id="gdriveClientId" placeholder="${L==='ar'?'Google Client ID':'Google Client ID'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
+            </div>
+            <div class="fg">
+                <input type="text" id="gdriveApiKey" placeholder="${L==='ar'?'Google API Key':'Google API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
+            </div>
+            <button class="btn btn-p" onclick="saveDriveKeys()">${L==='ar'?'حفظ المفاتيح':'Save Keys'}</button>
+        </div>
 
         <div class="card" style="margin-bottom:20px;">
-            <h3>☁️ ${L==='ar'?'إعدادات Google Drive':'Google Drive Settings'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفاتيح الربط لتفعيل المزامنة السحابية':'Enter API keys to enable cloud sync'}</p>
-            
-            <div style="margin-bottom:12px;">
-                <label style="display:block;margin-bottom:5px;font-size:0.9rem;">Client ID</label>
-                <input type="text" id="gClientInp" class="sbox" style="width:100%;font-size:0.85rem;" placeholder="123456...apps.googleusercontent.com" value="${savedClient}">
+            <h3>🤖 ${L==='ar'?'إعدادات الذكاء الاصطناعي (Gemini AI)':'Gemini AI Settings'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفتاح Gemini API لتفعيل المساعد الذكي':'Enter Gemini API key to enable smart assistant'}</p>
+            <div class="fg">
+                <input type="text" id="geminiApiKey" placeholder="${L==='ar'?'Gemini API Key':'Gemini API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gemini_api_key') || ''}">
             </div>
-            <div style="margin-bottom:12px;">
-                <label style="display:block;margin-bottom:5px;font-size:0.9rem;">API Key</label>
-                <input type="text" id="gApiInp" class="sbox" style="width:100%;font-size:0.85rem;" placeholder="AIzaSy..." value="${savedApi}">
-            </div>
-            <button class="btn btn-p" id="bSaveG" style="width:100%; background:var(--gn);">${L==='ar'?'حفظ إعدادات المزامنة':'Save Sync Settings'}</button>
+            <button class="btn btn-p" onclick="saveGeminiKey()">${L==='ar'?'حفظ المفتاح':'Save Key'}</button>
         </div>
         
         <div class="card">
             <h3>👤 ${L==='ar'?'الملف الشخصي':'Profile'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${(typeof currentUser !== 'undefined' && currentUser) ? currentUser.email : 'Not logged in'}</p>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${currentUser ? currentUser.email : 'Not logged in'}</p>
             <button class="btn btn-p" onclick="logout()" style="background:var(--rd)">${t('logout')}</button>
         </div>
     `;
@@ -56,16 +59,27 @@ function rSettings() {
             btn.style.border = '2px solid var(--tx1)';
         };
     });
-
-    $('bSaveG').onclick = () => {
-        let c = $('gClientInp').value.trim();
-        let a = $('gApiInp').value.trim();
-        localStorage.setItem('sp_gdrive_client', c);
-        localStorage.setItem('sp_gdrive_api', a);
-        if(typeof toast === 'function') toast(L==='ar'?'تم الحفظ بنجاح!':'Saved successfully!', 'success');
-        
-        // Re-initialize gapi immediately if they were loaded
-        if (typeof initializeGapiClient === 'function') initializeGapiClient();
-        if (typeof gisLoaded === 'function') gisLoaded();
-    };
 }
+
+window.saveDriveKeys = function() {
+    const cId = document.getElementById('gdriveClientId').value.trim();
+    const aKey = document.getElementById('gdriveApiKey').value.trim();
+    if (cId && aKey) {
+        localStorage.setItem('gdrive_client_id', cId);
+        localStorage.setItem('gdrive_api_key', aKey);
+        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفاتيح جوجل درايف بنجاح. أعد تحميل الصفحة.':'Google Drive keys saved. Please reload.', 'success');
+        setTimeout(() => window.location.reload(), 1500);
+    } else {
+        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال كلا المفتاحين':'Please enter both keys', 'error');
+    }
+};
+
+window.saveGeminiKey = function() {
+    const gKey = document.getElementById('geminiApiKey').value.trim();
+    if (gKey) {
+        localStorage.setItem('gemini_api_key', gKey);
+        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفتاح Gemini بنجاح':'Gemini key saved', 'success');
+    } else {
+        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال المفتاح':'Please enter the key', 'error');
+    }
+};
