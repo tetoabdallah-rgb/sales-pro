@@ -1,5 +1,10 @@
 // js/gdrive.js
 
+const CLIENT_ID = localStorage.getItem('gdrive_client_id') || 'YOUR_GOOGLE_CLIENT_ID_HERE';
+const API_KEY = localStorage.getItem('gdrive_api_key') || 'YOUR_GOOGLE_API_KEY_HERE';
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
 let tokenClient;
 let gapiInited = false;
 let gisInited = false;
@@ -10,12 +15,10 @@ function gapiLoaded() {
 }
 
 async function initializeGapiClient() {
-    let API_KEY = localStorage.getItem('sp_gdrive_api') || '';
-    if (!API_KEY) return;
     try {
         await gapi.client.init({
             apiKey: API_KEY,
-            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+            discoveryDocs: [DISCOVERY_DOC],
         });
         gapiInited = true;
     } catch (err) {
@@ -24,11 +27,9 @@ async function initializeGapiClient() {
 }
 
 function gisLoaded() {
-    let CLIENT_ID = localStorage.getItem('sp_gdrive_client') || '';
-    if (!CLIENT_ID) return;
     tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
-        scope: 'https://www.googleapis.com/auth/drive.file',
+        scope: SCOPES,
         callback: '', // defined later
     });
     gisInited = true;
@@ -40,23 +41,13 @@ if (typeof google !== 'undefined') gisLoaded();
 
 // Helper: Backup Data to Google Drive
 window.backupToGoogleDrive = async function() {
-    let CLIENT_ID = localStorage.getItem('sp_gdrive_client') || '';
-    let API_KEY = localStorage.getItem('sp_gdrive_api') || '';
-
-    if (!CLIENT_ID || !API_KEY) {
-        if(typeof toast === 'function') toast(L==='ar'?'يرجى إضافة Client ID و API Key في الإعدادات':'Please add Client ID and API Key in Settings', 'error');
+    if (!gapiInited || !gisInited) {
+        if(typeof toast === 'function') toast("Google Drive غير جاهز بعد", "error");
         return;
     }
-
-    if (!gapiInited) {
-        await initializeGapiClient();
-    }
-    if (!gisInited) {
-        gisLoaded();
-    }
-
-    if (!gapiInited || !gisInited) {
-        if(typeof toast === 'function') toast(L==='ar'?'خدمة Google Drive غير جاهزة، تأكد من المفاتيح أو الاتصال بالإنترنت':'Google Drive is not ready, check keys or internet', 'error');
+    
+    if (CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+        if(typeof toast === 'function') toast("يرجى إضافة Client ID في ملف gdrive.js", "error");
         return;
     }
 
@@ -65,9 +56,9 @@ window.backupToGoogleDrive = async function() {
             throw (resp);
         }
         
-        if(typeof toast === 'function') toast(L==='ar'?'جاري الرفع إلى Google Drive...':'Uploading to Google Drive...', 'info');
+        if(typeof toast === 'function') toast("جاري الرفع إلى Google Drive...", "info");
         
-        let dump = { S: (typeof S !== 'undefined'?S:[]), T: (typeof T !== 'undefined'?T:[]), C: (typeof C !== 'undefined'?C:[]), D: (typeof D !== 'undefined'?D:[]), accCats: (typeof accCats !== 'undefined'?accCats:[]), hwCats: (typeof hwCats !== 'undefined'?hwCats:[]) };
+        let dump = { S, T, C, D, accCats, hwCats };
         const fileContent = JSON.stringify(dump);
         const file = new Blob([fileContent], { type: 'application/json' });
         const metadata = {
@@ -87,13 +78,13 @@ window.backupToGoogleDrive = async function() {
             });
             const data = await res.json();
             if (data.id) {
-                if(typeof toast === 'function') toast(L==='ar'?'تم الرفع بنجاح! تفقد Google Drive':'Uploaded successfully! Check Google Drive', 'success');
+                if(typeof toast === 'function') toast("تم الرفع بنجاح! تفقد Google Drive", "success");
             } else {
                 throw new Error("لم يتم إرجاع معرف الملف");
             }
         } catch (err) {
             console.error("Upload error", err);
-            if(typeof toast === 'function') toast(L==='ar'?'فشل الرفع':'Upload failed', 'error');
+            if(typeof toast === 'function') toast("فشل الرفع", "error");
         }
     };
 
