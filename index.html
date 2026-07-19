@@ -1785,10 +1785,10 @@ function rDash() {
     let dateFilterUI = `
         <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);">
             <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('From'):'From'}:</label>
-            <input type="date" id="dfStart" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.start||''}>
+            <input type="date" id="dfStart" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.start||''}">
             <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('To'):'To'}:</label>
-            <input type="date" id="dfEnd" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.end||''}>
-            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">?</button>
+            <input type="date" id="dfEnd" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.end||''}">
+            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">&#x274C;</button>
         </div>
     `;
     
