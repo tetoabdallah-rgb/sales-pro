@@ -1581,7 +1581,7 @@ function getFilteredSales() {
 
 
 function dc(k) { if(CH[k]) { CH[k].destroy(); delete CH[k]; } }
-// Append this to data-store.js to have a robust row getter globally
+// Robust row value getter - matches column by name (case insensitive, ignores spaces)
 function getRowVal(row, possibleNames) {
     let keys = Object.keys(row);
     let k = keys.find(k => possibleNames.some(p => k.toLowerCase().replace(/\s+/g, '') === p.toLowerCase().replace(/\s+/g, '')));
@@ -1591,6 +1591,29 @@ function getRowVal(row, possibleNames) {
         return Number(v) || 0;
     }
     return 0;
+}
+
+// Get sales value - works with OLD format (Sales After Discount) AND NEW format (Sales Without Tax)
+function getSalesVal(row) {
+    return getRowVal(row, ['Sales After Discount', 'Sales Without Tax', 'Sales', 'Amount']);
+}
+
+// Get profit value
+function getProfitVal(row) {
+    return getRowVal(row, ['Profit Margin', 'Profit']);
+}
+
+// Get payment amount from Collections sheet
+function getPayVal(row) {
+    return getRowVal(row, ['Amount', 'Collection']);
+}
+
+// Get Payment Ref type from Collections sheet: returns 'acc', 'hw', or ''
+function getPayRef(row) {
+    let ref = (row['Payment Ref.'] || row['Payment Ref'] || row['PaymentRef'] || '').toString().trim().toLowerCase();
+    if (ref.startsWith('acc')) return 'acc';
+    if (ref.startsWith('hw'))  return 'hw';
+    return '';
 }
 
 </script>
@@ -1785,7 +1808,7 @@ function rDash() {
     let ds = getFilteredSales();
     let ts = 0, tp = 0, tt = 0, tpt = 0;
     
-    ds.forEach(r => { ts += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']); tp += getRowVal(r, ['Profit Margin', 'Profit']); });
+    ds.forEach(r => { ts += getSalesVal(r); tp += getProfitVal(r); });
     T.forEach(r => { tt += Number(r.Target)||0; tpt += Number(r['Profit Target'])||0; });
     
     let cu = {}, or = {};
@@ -1842,7 +1865,7 @@ function rDash() {
     let dl = {};
     ds.forEach(r => {
         let d = pd(r['Invoice Date'] || r['Order Date']);
-        if(d) dl[d] = (dl[d]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
+        if(d) dl[d] = (dl[d]||0) + (getSalesVal(r));
     });
     let lb = Object.keys(dl).sort();
     dc('d');
@@ -1859,7 +1882,7 @@ function rDash() {
     let ca = {};
     ds.forEach(r => {
         let c = r['Item Class Name'] || 'Other';
-        ca[c] = (ca[c]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
+        ca[c] = (ca[c]||0) + (getSalesVal(r));
     });
     let cs2 = Object.entries(ca).sort((a,b)=>b[1]-a[1]).slice(0,8);
     dc('c');
@@ -1883,8 +1906,8 @@ function rSales() {
     ds.forEach(r => {
         let iName = r['Item Description'] || 'Unknown';
         if(!items[iName]) items[iName] = {s:0, p:0, qty:0};
-        items[iName].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        items[iName].p += getRowVal(r, ['Profit Margin', 'Profit']);
+        items[iName].s += getSalesVal(r);
+        items[iName].p += getProfitVal(r);
         items[iName].qty += Number(r.Quantity)||0;
     });
     
@@ -1955,7 +1978,7 @@ function rSales() {
         let paged = data.slice(start, start + st.limit);
         
         $('stb').innerHTML = paged.map(r => {
-            let s = getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']), pr = getRowVal(r, ['Profit Margin', 'Profit']), pm = s>0 ? pr/s*100 : 0;
+            let s = getSalesVal(r), pr = getProfitVal(r), pm = s>0 ? pr/s*100 : 0;
             let b = pm>20 ? '<span class="badge bg-g">High</span>' : pm>10 ? '<span class="badge bg-a">Med</span>' : '<span class="badge bg-r">Low</span>';
             return `<tr><td>${pd(r['Order Date'])}</td><td>${r['Order Nbr']||''}</td><td>${r.Customer||''}</td><td>${r['Customer Class']||''}</td><td>${r['Item Class Name']||''}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r['Item Description']||''}">${r['Item Description']||''}</td><td>${r.Quantity||0}</td><td>${fmt(s)}</td><td>${fmt(pr)} ${b}</td></tr>`;
         }).join('');
@@ -2086,8 +2109,8 @@ function rPers() {
     let htpt = savedHwProfitTarget !== null ? Number(savedHwProfitTarget) : 0;
     
     myS.forEach(r => { 
-        let s = getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        let p = getRowVal(r, ['Profit Margin', 'Profit']);
+        let s = getSalesVal(r);
+        let p = getProfitVal(r);
         ts += s; tp += p; 
         if (isAcc(r['Item Class Name'])) {
             accS += s; accP += p;
@@ -2114,8 +2137,8 @@ function rPers() {
         let d = pd(r['Order Date']); if(!d) return;
         let m = d.slice(0,7);
         if(!monthly[m]) monthly[m] = {s:0,p:0};
-        monthly[m].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        monthly[m].p += getRowVal(r, ['Profit Margin', 'Profit']);
+        monthly[m].s += getSalesVal(r);
+        monthly[m].p += getProfitVal(r);
     });
     let months = Object.keys(monthly).sort();
 
@@ -2224,9 +2247,9 @@ function rCust() {
         let c = r.Customer || '';
         if(!cu[c]) cu[c] = {rg:r['Customer Class']||'', o:{}, s:0, p:0, accS:0, hwS:0, l:''};
         cu[c].o[r['Order Nbr']] = 1;
-        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
-        if(isAcc(r['Item Class Name'])) cu[c].accS += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']); else cu[c].hwS += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
+        if(isAcc(r['Item Class Name'])) cu[c].accS += getSalesVal(r); else cu[c].hwS += getSalesVal(r);
         let d = pd(r['Order Date']); if(d > cu[c].l) cu[c].l = d;
     });
     let arr = Object.keys(cu).map(n => {
@@ -2324,10 +2347,10 @@ function rBrands() {
     S.forEach(r => {
         let b = r['Brand'] || r['Item Class Name'] || 'Other';
         if(!brands[b]) brands[b] = {s:0,p:0,qty:0};
-        brands[b].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        brands[b].p += getRowVal(r, ['Profit Margin', 'Profit']);
+        brands[b].s += getSalesVal(r);
+        brands[b].p += getProfitVal(r);
         brands[b].qty += Number(r.Quantity)||0;
-        tsTotal += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        tsTotal += getSalesVal(r);
     });
     let arr = Object.entries(brands).sort((a,b)=>b[1].s-a[1].s);
     
@@ -2428,12 +2451,12 @@ function rAn() {
         let d = pd(r['Order Date']); if(!d) return;
         let m = d.slice(0,7);
         if(!monthly[m]) monthly[m] = {s:0,p:0};
-        monthly[m].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        monthly[m].p += getRowVal(r, ['Profit Margin', 'Profit']);
+        monthly[m].s += getSalesVal(r);
+        monthly[m].p += getProfitVal(r);
         let c = r['Item Class Name']||'Other';
-        cats[c] = (cats[c]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
+        cats[c] = (cats[c]||0) + (getSalesVal(r));
         let rg = r['Customer Class']||'Other';
-        regions[rg] = (regions[rg]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
+        regions[rg] = (regions[rg]||0) + (getSalesVal(r));
     });
     let months = Object.keys(monthly).sort();
     let topCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,8);
@@ -2481,8 +2504,8 @@ function rProfit() {
     ds.forEach(r => {
         let c = r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0};
-        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.m-a.m);
     
@@ -2537,10 +2560,10 @@ function rAcc() {
     // Always use DEF_ACC as base; accCats overrides only if user saved custom ones
     let _accList = (accCats && accCats.length) ? accCats : DEF_ACC;
     let ds = getFilteredSales().filter(r => _accList.includes(r['Item Class Name']));
-    let tot = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])),0);
-    let prof = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])),0);
+    let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
+    let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.accessories}</span> ${t('accessories')}</h1></div>
@@ -2565,10 +2588,10 @@ function rAcc() {
 // Hardware
 function rHW() {
     let ds = getFilteredSales().filter(r => isHW(r['Item Class Name']));
-    let tot = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])),0);
-    let prof = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])),0);
+    let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
+    let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.hardware}</span> ${t('hardware')}</h1></div>
@@ -2669,8 +2692,8 @@ function rKey() {
     S.forEach(r => {
         let c = r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0,o:{}};
-        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
         cu[c].o[r['Order Nbr']] = 1;
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
@@ -2742,7 +2765,7 @@ function rDorm() {
         let c = r.Customer || '';
         if(!c) return;
         let dStr = pd(r['Order Date']);
-        let s = getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        let s = getSalesVal(r);
         
         if(!cu[c]) cu[c] = {last: dStr, s: 0};
         else if (dStr && dStr > cu[c].last) cu[c].last = dStr;
@@ -2812,7 +2835,7 @@ function rPros() {
 // Opportunities (customers below 50% of target)
 function rPot() {
     let cu = {};
-    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
+    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(getSalesVal(r)); });
     let opps = T.map(r => {
         let tg = Number(r.Target)||0, ach = cu[r.Customer]||0, pct = tg>0?ach/tg*100:0;
         return {n:r.Customer, tg, ach, pct, gap: tg-ach};
@@ -2875,7 +2898,7 @@ function rAl() {
     });
     // Low target alerts
     let cuS = {};
-    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
+    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getSalesVal(r)); });
     T.forEach(r => {
         let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
         if(pct<50 && tg>0) alerts.push({type:'danger', icon:'&#x26A0;&#xFE0F;', msg:`${r.Customer} ? ${L==='ar'?TUI('Achievement'):'Achievement'} ${pc(pct)}`});
@@ -2896,12 +2919,12 @@ function rAI() {
     ds.forEach(r => {
         let c=r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0,o:{},last:'',accS:0,hwS:0};
-        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
         cu[c].o[r['Order Nbr']]=1;
         let d=pd(r['Order Date']); if(d>cu[c].last) cu[c].last=d;
-        if(isAcc(r['Item Class Name'])) cu[c].accS+=getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-        else if(isHW(r['Item Class Name'])) cu[c].hwS+=getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        if(isAcc(r['Item Class Name'])) cu[c].accS+=getSalesVal(r);
+        else if(isHW(r['Item Class Name'])) cu[c].hwS+=getSalesVal(r);
     });
     let insights = [];
     let arr = Object.entries(cu).map(([n,d])=>({n,...d,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
@@ -2969,8 +2992,8 @@ function rAI() {
                 sendBtn.innerHTML = '?';
                 rAI(); 
 
-                let totalSales = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])), 0);
-                let totalProfit = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])), 0);
+                let totalSales = ds.reduce((s,r)=>s+(getSalesVal(r)), 0);
+                let totalProfit = ds.reduce((s,r)=>s+(getProfitVal(r)), 0);
                 let ctx = {
                     totalSales,
                     totalProfit,
