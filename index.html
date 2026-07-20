@@ -1734,6 +1734,28 @@ auth.onAuthStateChanged(user => {
             loadOwnDoc();
         }
         
+        // Auto-restore from cloud if local data is completely empty
+        if ((!S || S.length === 0) && (!T || T.length === 0) && (!C || C.length === 0)) {
+            console.log('Local data is empty, attempting auto-restore from cloud...');
+            db.collection('cloud_backups').doc(user.uid).get().then(doc => {
+                if (doc.exists && doc.data().backupData) {
+                    let p = JSON.parse(doc.data().backupData);
+                    let changed = false;
+                    if (p.salesData && p.salesData.length > 0)  { S = p.salesData;  sv('salesData',  S); changed = true; }
+                    if (p.targetData && p.targetData.length > 0){ T = p.targetData; sv('targetData', T); changed = true; }
+                    if (p.payData && p.payData.length > 0)      { C = p.payData;    sv('payData',    C); changed = true; }
+                    if (p.duesData)     { D = p.duesData;   sv('duesData',   D); }
+                    if (p.accCats)      { accCats = p.accCats; sv('accCats', accCats); }
+                    if (p.hwCats)       { hwCats = p.hwCats;   sv('hwCats', hwCats); }
+                    
+                    if (changed) {
+                        if (typeof toast === 'function') toast(L === 'ar' ? '? ?? ??????? ?????? ??????? ????????' : '? Cloud data auto-restored', 'success');
+                        setTimeout(() => { window.location.reload(); }, 1500);
+                    }
+                }
+            }).catch(err => console.error('Auto-restore failed:', err));
+        }
+        
         if(typeof init === 'function') init();
     } else {
         currentUser = null;
@@ -3624,7 +3646,7 @@ window.restoreFromGoogleDrive = async function() {
         if (typeof toast === 'function')
             toast(`✅ ${L === 'ar' ? 'تم الاسترجاع! آخر حفظ: ' : 'Restored! Last saved: '} ${updatedAt}`, 'success');
 
-        setTimeout(() => { if (typeof render === 'function') render(); }, 800);
+        setTimeout(() => { window.location.reload(); }, 1500);
     } catch(e) {
         console.error('Cloud Restore Error:', e);
         if (typeof toast === 'function') toast(L === 'ar' ? 'خطأ أثناء الاسترجاع' : 'Error restoring', 'error');
