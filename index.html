@@ -2593,28 +2593,73 @@ function rHW() {
 // Collections
 function rCollections() {
     let tot = 0, accTot = 0, hwTot = 0;
+    let cAccMap = {}, cHWMap = {};
+    if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
+        S.forEach(s => {
+            let c = s['Customer'];
+            if(c) {
+                let v = Number(s['Sales Without Tax'] || 0);
+                if(isAcc(s['Item Class Name'])) cAccMap[c] = (cAccMap[c]||0) + v;
+                if(isHW(s['Item Class Name'])) cHWMap[c] = (cHWMap[c]||0) + v;
+            }
+        });
+    }
 
-    // Read acc/hw from Payment Ref. column in Collections sheet
-    C.forEach(function(r) {
-        let amt = getRowVal(r, ['Amount', 'Collection']);
-        let ref = (r['Payment Ref.'] || r['Payment Ref'] || r['PaymentRef'] || '').toString().trim().toLowerCase();
-        tot += amt;
-        if (ref === 'acc' || ref.startsWith('acc')) accTot += amt;
-        else if (ref === 'hw' || ref.startsWith('hw')) hwTot += amt;
+    C.forEach(r => {
+        let keys = Object.keys(r);
+        let getVal = (possibleNames) => {
+            let k = keys.find(k => possibleNames.some(pn => k.toLowerCase().replace(/\s+/g, '') === pn.toLowerCase().replace(/\s+/g, '')));
+            return k ? r[k] : undefined;
+        };
+        
+        let rawVal = getVal(['Amount', 'Collection']) || 0;
+        let val = Number(rawVal.toString().replace(/,/g, '')) || 0;
+        let cat = getVal(['Item Class Name', 'Item Group', 'Category']);
+        let ahRaw = getVal(['acc-hw', 'acchw', 'acc - hw']);
+        let ah = ahRaw ? ahRaw.toString().trim().toLowerCase() : '';
+        let cName = getVal(['Customer Name', 'Customer']) || '';
+        
+        tot += val;
+          // Payment Ref. column takes priority: acc=accessories, hw=hardware
+          let payRef = (r['Payment Ref.'] || r['Payment Ref'] || r['PaymentRef'] || '').toString().trim().toLowerCase();
+          if (payRef.startsWith('acc')) {
+              accTot += val;
+          } else if (payRef.startsWith('hw')) {
+              hwTot += val;
+          } else if (ah.includes('acc') || ah.includes('اكسسوار')) {
+            accTot += val;
+        } else if (ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
+            hwTot += val;
+        } else if (cat) {
+            if (isAcc(cat)) accTot += val;
+            else if (isHW(cat)) hwTot += val;
+        } else if (cat) {
+            if (isAcc(cat)) accTot += val;
+            else if (isHW(cat)) hwTot += val;
+        } else {
+            let a = cAccMap[cName]||0;
+            let h = cHWMap[cName]||0;
+            if (a > 0 || h > 0) {
+                if (a >= h) accTot += val;
+                else hwTot += val;
+            } else {
+                accTot += val; 
+            }
+        }
     });
 
     $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}"</h1></div>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'?????????':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'???????':'Hardware'}</div><div class="vl">${aFmt(hwTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'هاردوير':'Hardware'}</div><div class="vl">${aFmt(hwTot)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
         </div>
-        ${C.length > 0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
-        <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
-        <tbody>${C.slice(0,200).map(r=>`<tr>${Object.keys(C[0]).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
-        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}
+        ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
+        <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
+        <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}"
     `;
     initAnm && initAnm();
 }
