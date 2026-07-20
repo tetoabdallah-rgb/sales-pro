@@ -1735,7 +1735,6 @@ auth.onAuthStateChanged(user => {
         }
         
         // Auto-restore from cloud if local data is completely empty
-                // Auto-restore from cloud if local data is completely empty
         if ((!S || S.length === 0) && (!T || T.length === 0) && (!C || C.length === 0)) {
             console.log('Local data is empty, attempting auto-restore from cloud...');
             db.collection('users').doc(user.uid).get().then(async doc => {
@@ -1758,13 +1757,12 @@ auth.onAuthStateChanged(user => {
                         if (p.hwCats)       { hwCats = p.hwCats;   sv('hwCats', hwCats); }
                         
                         if (changed) {
-                            if (typeof toast === 'function') toast(L === 'ar' ? '? ?? ??????? ?????? ??????? ????????' : '? Cloud data auto-restored', 'success');
+                            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم استرجاع بيانات السحابة تلقائياً' : '✅ Cloud data auto-restored', 'success');
                             setTimeout(() => { window.location.reload(); }, 1500);
                         }
                     }
                 }
             }).catch(err => console.error('Auto-restore failed:', err));
-        }).catch(err => console.error('Auto-restore failed:', err));
         }
         
         if(typeof init === 'function') init();
