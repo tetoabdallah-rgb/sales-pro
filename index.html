@@ -3287,10 +3287,9 @@ function rSettings() {
         </div>
         
         <div class="card" style="margin-bottom:20px;">
-            <h3>☁️ ${L==='ar'?'إعدادات المزامنة السحابية (Google Drive)':'Cloud Sync Settings (Google Drive)'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفاتيح API لتفعيل المزامنة مع جوجل درايف':'Enter API keys to enable cloud sync'}</p>
-            <div class="fg">
-            <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;">⏳ ${L==='ar'?'جاري التحقق من السحابة...':'Checking cloud...'}</div>
+            <h3>☁️ ${L==='ar'?'المزامنة السحابية':'Cloud Sync'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'ارفع ملفاتك مرة واحدة وافتح البيانات من أي جهاز':'Upload once, access from any device'}</p>
+            <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;padding:10px;background:var(--bg3);border-radius:8px;">⏳ ${L==='ar'?'جاري التحقق من السحابة...':'Checking cloud...'}</div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
                 <button class="btn btn-p" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;">
                     ☁️ ${L==='ar'?'حفظ في السحابة':'Save to Cloud'}
