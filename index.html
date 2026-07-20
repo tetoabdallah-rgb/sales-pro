@@ -2534,7 +2534,9 @@ function rProfit() {
 
 // Accessories
 function rAcc() {
-    let ds = getFilteredSales().filter(r => isAcc(r['Item Class Name']));
+    // Always use DEF_ACC as base; accCats overrides only if user saved custom ones
+    let _accList = (accCats && accCats.length) ? accCats : DEF_ACC;
+    let ds = getFilteredSales().filter(r => _accList.includes(r['Item Class Name']));
     let tot = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])),0);
     let prof = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])),0);
     let cats = {};
@@ -2590,6 +2592,16 @@ function rHW() {
 
 // Collections
 function rCollections() {
+    // Read Accessories/Hardware from Sales sheet (not from Collections)
+    let _accList2 = (accCats && accCats.length) ? accCats : DEF_ACC;
+    let _hwList2  = (hwCats  && hwCats.length)  ? hwCats  : DEF_HW;
+    let accTot_s = 0, hwTot_s = 0;
+    S.forEach(function(s) {
+        let v = getRowVal(s, ['Sales After Discount', 'Sales']);
+        if (_accList2.includes(s['Item Class Name'])) accTot_s += v;
+        if (_hwList2.includes(s['Item Class Name']))  hwTot_s  += v;
+    });
+
     let tot = 0, accTot = 0, hwTot = 0;
     let cAccMap = {}, cHWMap = {};
     if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
@@ -2612,13 +2624,8 @@ function rCollections() {
         
         let rawVal = getVal(['Amount', 'Collection']) || 0;
         let val = Number(rawVal.toString().replace(/,/g, '')) || 0;
-        let cat = getVal(['Item Class Name', 'Item Group', 'Category']);
-        let ahRaw = getVal(['acc-hw', 'acchw', 'acc - hw']);
-        let ah = ahRaw ? ahRaw.toString().trim().toLowerCase() : '';
-        let cName = getVal(['Customer Name', 'Customer']) || '';
-        
         tot += val;
-        if (ah.includes('acc') || ah.includes('اكسسوار')) {
+        if (false && ah.includes('اكسسوار')) {
             accTot += val;
         } else if (ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
             hwTot += val;
@@ -2644,8 +2651,8 @@ function rCollections() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}"</h1></div>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'هاردوير':'Hardware'}</div><div class="vl">${aFmt(hwTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot_s)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'هاردوير':'Hardware'}</div><div class="vl">${aFmt(hwTot_s)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
         </div>
         ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
