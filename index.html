@@ -2592,17 +2592,17 @@ function rHW() {
 
 // Collections
 function rCollections() {
-    // Read Accessories/Hardware from Sales sheet (not from Collections)
-    let _accList2 = (accCats && accCats.length) ? accCats : DEF_ACC;
-    let _hwList2  = (hwCats  && hwCats.length)  ? hwCats  : DEF_HW;
-    let accTot_s = 0, hwTot_s = 0;
-    S.forEach(function(s) {
-        let v = getRowVal(s, ['Sales After Discount', 'Sales']);
-        if (_accList2.includes(s['Item Class Name'])) accTot_s += v;
-        if (_hwList2.includes(s['Item Class Name']))  hwTot_s  += v;
-    });
 
-    let tot = 0, accTot = 0, hwTot = 0;
+    // Read acc/hw from Payment sheet using "Payment Ref." column
+    let accTot_s = 0, hwTot_s = 0, tot_all = 0;
+    C.forEach(function(r) {
+        let amt = getRowVal(r, ['Amount', 'Collection']);
+        let ref = (r['Payment Ref.'] || r['Payment Ref'] || r['PaymentRef'] || '').toString().trim().toLowerCase();
+        tot_all += amt;
+        if (ref === 'acc' || ref.includes('acc')) accTot_s += amt;
+        else if (ref === 'hw' || ref.includes('hw')) hwTot_s += amt;
+    });
+let tot = 0, accTot = 0, hwTot = 0;
     let cAccMap = {}, cHWMap = {};
     if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
         S.forEach(s => {
@@ -2650,7 +2650,7 @@ function rCollections() {
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}"</h1></div>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot_all || tot)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot_s)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'هاردوير':'Hardware'}</div><div class="vl">${aFmt(hwTot_s)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
