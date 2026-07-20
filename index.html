@@ -1737,7 +1737,7 @@ auth.onAuthStateChanged(user => {
         // Auto-restore from cloud if local data is completely empty
         if ((!S || S.length === 0) && (!T || T.length === 0) && (!C || C.length === 0)) {
             console.log('Local data is empty, attempting auto-restore from cloud...');
-            db.collection('cloud_backups').doc(user.uid).get().then(async doc => {
+            db.collection('users').doc(user.uid).collection('backup').doc('main').get().then(async doc => {
                 if (doc.exists) {
                     let d = doc.data();
                     let fullStr = "";
@@ -1746,7 +1746,7 @@ auth.onAuthStateChanged(user => {
                     } else {
                         let numChunks = d.chunks || 1;
                         for(let i=0; i<numChunks; i++){
-                            let c = await db.collection('cloud_backups').doc(user.uid).collection('data').doc('chunk_'+i).get();
+                            let c = await db.collection('users').doc(user.uid).collection('backup').doc('main').collection('data').doc('chunk_'+i).get();
                             if(c.exists) fullStr += c.data().data;
                         }
                     }
@@ -3604,7 +3604,7 @@ window.cloudAutoSave = async function(label) {
         let numChunks = Math.ceil(str.length / chunkSize);
         
         // Save metadata
-        await db.collection('cloud_backups').doc(currentUser.uid).set({
+        await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').set({
             chunks: numChunks,
             timestamp:  firebase.firestore.FieldValue.serverTimestamp(),
             lastUpdated: dump.lastUpdated,
@@ -3614,7 +3614,7 @@ window.cloudAutoSave = async function(label) {
         // Save chunks
         for(let i = 0; i < numChunks; i++) {
             let part = str.substring(i * chunkSize, (i + 1) * chunkSize);
-            await db.collection('cloud_backups').doc(currentUser.uid).collection('data').doc('chunk_'+i).set({ data: part });
+            await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').collection('data').doc('chunk_'+i).set({ data: part });
         }
 
         let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
@@ -3645,7 +3645,7 @@ window.restoreFromGoogleDrive = async function() {
 
     try {
         if (typeof toast === 'function') toast(L === 'ar' ? '???? ?????????...' : 'Restoring...', 'info');
-        let doc = await db.collection('cloud_backups').doc(currentUser.uid).get();
+        let doc = await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').get();
         if (!doc.exists) {
             if (typeof toast === 'function') toast(L === 'ar' ? '?? ???? ???? ???????? ?? ???????!' : 'No cloud backup found!', 'error');
             return;
@@ -3661,7 +3661,7 @@ window.restoreFromGoogleDrive = async function() {
             // Chunked format
             let numChunks = d.chunks || 1;
             for(let i=0; i<numChunks; i++){
-                let c = await db.collection('cloud_backups').doc(currentUser.uid).collection('data').doc('chunk_'+i).get();
+                let c = await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').collection('data').doc('chunk_'+i).get();
                 if(c.exists) fullStr += c.data().data;
             }
         }
@@ -3692,7 +3692,7 @@ window.restoreFromGoogleDrive = async function() {
 window.getCloudInfo = async function() {
     if (!currentUser || !db) return null;
     try {
-        let doc = await db.collection('cloud_backups').doc(currentUser.uid).get();
+        let doc = await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').get();
         if (!doc.exists) return null;
         let d = doc.data();
         
@@ -3702,7 +3702,7 @@ window.getCloudInfo = async function() {
         } else {
             let numChunks = d.chunks || 1;
             for(let i=0; i<numChunks; i++){
-                let c = await db.collection('cloud_backups').doc(currentUser.uid).collection('data').doc('chunk_'+i).get();
+                let c = await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').collection('data').doc('chunk_'+i).get();
                 if(c.exists) fullStr += c.data().data;
             }
         }
