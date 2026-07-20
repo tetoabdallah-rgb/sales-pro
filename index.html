@@ -1788,7 +1788,7 @@ function rDash() {
             <input type="date" id="dfStart" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.start||''}">
             <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('To'):'To'}:</label>
             <input type="date" id="dfEnd" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.end||''}">
-            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">&#x274C;</button>
+            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">?</button>
         </div>
     `;
     
@@ -1885,7 +1885,7 @@ function rSales() {
         topItemsHtml += `
             <div class="card" style="flex:1; min-width:200px; border-top:4px solid ${color}; padding:16px;">
                 <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
-                <h3 style="margin:8px 0; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}>${n}</h3>
+                <h3 style="margin:8px 0; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                     <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales'):'Sales'}</span>
                     <strong style="color:${color}; font-size:0.9rem;">${aFmt(d.s)}</strong>
@@ -1919,7 +1919,7 @@ function rSales() {
         <div class="tb">
             <div class="tbt">
                 <h3>${L==='ar'?TUI('Sales Table'):'Sales Table'} (${fmt(ds.length)} ${L==='ar'?TUI('Records'):'Records'})</h3>
-                <input class="sbox" id="ss" placeholder="${L==='ar'?TUI('Search...'):'Search...'}>
+                <input class="sbox" id="ss" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
             </div>
             <div class="tbs">
                 <table>
@@ -1945,7 +1945,7 @@ function rSales() {
         $('stb').innerHTML = paged.map(r => {
             let s = Number(r['Sales After Discount'])||0, pr = Number(r['Profit Margin'])||0, pm = s>0 ? pr/s*100 : 0;
             let b = pm>20 ? '<span class="badge bg-g">High</span>' : pm>10 ? '<span class="badge bg-a">Med</span>' : '<span class="badge bg-r">Low</span>';
-            return `<tr><td>${pd(r['Order Date'])}</td><td>${r['Order Nbr']||''}</td><td>${r.Customer||''}</td><td>${r['Customer Class']||''}</td><td>${r['Item Class Name']||''}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r['Item Description']||''}>${r['Item Description']||''}</td><td>${r.Quantity||0}</td><td>${fmt(s)}</td><td>${fmt(pr)} ${b}</td></tr>`;
+            return `<tr><td>${pd(r['Order Date'])}</td><td>${r['Order Nbr']||''}</td><td>${r.Customer||''}</td><td>${r['Customer Class']||''}</td><td>${r['Item Class Name']||''}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r['Item Description']||''}">${r['Item Description']||''}</td><td>${r.Quantity||0}</td><td>${fmt(s)}</td><td>${fmt(pr)} ${b}</td></tr>`;
         }).join('');
         
         $('spg').innerHTML = renderPagination(data.length, 'sales', 'window.doSalesSearch');
@@ -2017,7 +2017,7 @@ function rTgt() {
     T.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
     $('M').innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}"</h1>
             <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
         </div>
         <div class="kg">
@@ -2116,29 +2116,29 @@ function rPers() {
                 <!-- Total -->
                 <div style="flex:1; min-width:150px;">
                     <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Total Target'):'Total Target'}</label>
-                    <input type="number" id="inPTarget" value="${tt} style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                    <input type="number" id="inPTarget" value="${tt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <div style="flex:1; min-width:150px;">
                     <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Total Profit Target'):'Total Profit Target'}</label>
-                    <input type="number" id="inPProfit" value="${tpt} style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                    <input type="number" id="inPProfit" value="${tpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <!-- Accessories -->
                 <div style="flex:1; min-width:150px;">
                     <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Acc. Target'):'Acc. Target'}</label>
-                    <input type="number" id="inAccTarget" value="${att} style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                    <input type="number" id="inAccTarget" value="${att}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <div style="flex:1; min-width:150px;">
                     <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Acc. Profit'):'Acc. Profit'}</label>
-                    <input type="number" id="inAccProfit" value="${atpt} style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                    <input type="number" id="inAccProfit" value="${atpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <!-- Hardware -->
                 <div style="flex:1; min-width:150px;">
                     <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('HW Target'):'HW Target'}</label>
-                    <input type="number" id="inHwTarget" value="${htt} style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                    <input type="number" id="inHwTarget" value="${htt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <div style="flex:1; min-width:150px;">
                     <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('HW Profit'):'HW Profit'}</label>
-                    <input type="number" id="inHwProfit" value="${htpt} style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                    <input type="number" id="inHwProfit" value="${htpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
                 </div>
                 <div style="min-width:120px;">
                     <button id="bSaveTarget" class="btn btn-p" style="width:100%; padding:10px; height:42px;">${L==='ar'?TUI('Save'):'Save'}</button>
@@ -2188,7 +2188,7 @@ function rPers() {
         <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, tt)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tpt)}</div>
         <div class="tb"><div class="tbt"><h3>${L==='ar'?TUI('Monthly'):'Monthly'}</h3></div>
         <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Month'):'Month'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th></tr></thead>
-        <tbody>${months.map(m => `<tr><td>${m}</td><td>${fmt(monthly[m].s)}</td><td>${fmt(monthly[m].p)}</td><td><span class="badge ${monthly[m].s>0&&monthly[m].p/monthly[m].s*100>=5?'bg-g':'bg-a'}>${pc(monthly[m].s>0?monthly[m].p/monthly[m].s*100:0)}</span></td></tr>`).join('')}</tbody>
+        <tbody>${months.map(m => `<tr><td>${m}</td><td>${fmt(monthly[m].s)}</td><td>${fmt(monthly[m].p)}</td><td><span class="badge ${monthly[m].s>0&&monthly[m].p/monthly[m].s*100>=5?'bg-g':'bg-a'}">${pc(monthly[m].s>0?monthly[m].p/monthly[m].s*100:0)}</span></td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
     
@@ -2234,7 +2234,7 @@ function rCust() {
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
                 <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
-                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}>${n}</h3>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                     <span style="color:var(--tx2);">${L==='ar'?TUI('Sales'):'Sales'}</span>
                     <strong style="color:${color};">${aFmt(d.s)}</strong>
@@ -2271,7 +2271,7 @@ function rCust() {
         <div class="tb">
             <div class="tbt" style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>${L==='ar'?TUI('Customers Details'):'Customers Details'}</h3>
-                <input class="sbox" id="cusr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}>
+                <input class="sbox" id="cusr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
             </div>
             <div class="tbs"><table><thead><tr><th>Customer</th><th>Region</th><th>Orders</th><th>Sales</th><th>Acc</th><th>HW</th><th>Profit</th><th>Margin</th><th>Target</th><th>Ach.</th><th>Last</th></tr></thead><tbody id="cutb"></tbody></table></div>
             <div id="cpg"></div>
@@ -2287,7 +2287,7 @@ function rCust() {
         let start = (st.page - 1) * st.limit;
         let paged = filtered.slice(start, start + st.limit);
         
-        $('cutb').innerHTML = paged.map(r => `<tr><td><strong>${r.n}</strong></td><td>${r.rg}</td><td>${r.o}</td><td>${fmt(r.s)}</td><td>${fmt(r.accS)}</td><td>${fmt(r.hwS)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}>${pc(r.m)}</span></td><td>${fmt(r.tg)}</td><td>${r.tg>0?`<span class="badge ${r.ach>=100?'bg-g':r.ach>=60?'bg-a':'bg-r'}>${pc(r.ach)}</span>`:'-'}</td><td>${r.l}</td></tr>`).join('');
+        $('cutb').innerHTML = paged.map(r => `<tr><td><strong>${r.n}</strong></td><td>${r.rg}</td><td>${r.o}</td><td>${fmt(r.s)}</td><td>${fmt(r.accS)}</td><td>${fmt(r.hwS)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${fmt(r.tg)}</td><td>${r.tg>0?`<span class="badge ${r.ach>=100?'bg-g':r.ach>=60?'bg-a':'bg-r'}">${pc(r.ach)}</span>`:'-'}</td><td>${r.l}</td></tr>`).join('');
         $('cpg').innerHTML = renderPagination(filtered.length, 'customers', 'window.doCustSearch');
     };
     
@@ -2362,7 +2362,7 @@ function rBrands() {
         <div class="tb">
             <div class="tbt" style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>${L==='ar'?TUI('Brands Details'):'Brands Details'}</h3>
-                <input class="sbox" id="bsr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}>
+                <input class="sbox" id="bsr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
             </div>
             <div class="tbs">
                 <table>
@@ -2382,7 +2382,7 @@ function rBrands() {
                             <td><strong>${n}</strong></td>
                             <td>${fmt(d.s)}</td>
                             <td>${fmt(d.p)}</td>
-                            <td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}>${pc(d.s>0?d.p/d.s*100:0)}</span></td>
+                            <td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}">${pc(d.s>0?d.p/d.s*100:0)}</span></td>
                             <td>${fmt(d.qty)}</td>
                             <td>${pc(tsTotal>0?d.s/tsTotal*100:0)}</td>
                             <td>${fmt(d.qty>0?d.s/d.qty:0)}</td>
@@ -2399,7 +2399,7 @@ function rBrands() {
             <td><strong>${n}</strong></td>
             <td>${fmt(d.s)}</td>
             <td>${fmt(d.p)}</td>
-            <td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}>${pc(d.s>0?d.p/d.s*100:0)}</span></td>
+            <td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}">${pc(d.s>0?d.p/d.s*100:0)}</span></td>
             <td>${fmt(d.qty)}</td>
             <td>${pc(tsTotal>0?d.s/tsTotal*100:0)}</td>
             <td>${fmt(d.qty>0?d.s/d.qty:0)}</td>
@@ -2482,10 +2482,10 @@ function rProfit() {
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
                 <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
-                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}>${ka.n}</h3>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}">${ka.n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                     <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Profit'):'Profit'}</span>
-                    <strong style="font-size:0.9rem; color:${color}>${aFmt(ka.p)}</strong>
+                    <strong style="font-size:0.9rem; color:${color}">${aFmt(ka.p)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                     <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales'):'Sales'}</span>
@@ -2493,7 +2493,7 @@ function rProfit() {
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Margin'):'Margin'}</span>
-                    <span class="badge ${ka.m>=10?'bg-g':ka.m>=5?'bg-a':'bg-r'}>${pc(ka.m)}</span>
+                    <span class="badge ${ka.m>=10?'bg-g':ka.m>=5?'bg-a':'bg-r'}">${pc(ka.m)}</span>
                 </div>
             </div>
         `;
@@ -2514,7 +2514,7 @@ function rProfit() {
 
         <div class="tb"><div class="tbt"><h3>${t('profit')}</h3></div>
         <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th></tr></thead>
-        <tbody>${arr.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=10?'bg-g':r.m>=5?'bg-a':'bg-r'}>${pc(r.m)}</span></td></tr>`).join('')}</tbody>
+        <tbody>${arr.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=10?'bg-g':r.m>=5?'bg-a':'bg-r'}">${pc(r.m)}</span></td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
     initAnm && initAnm();
@@ -2613,7 +2613,7 @@ function rCollections() {
     });
 
     $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}"</h1></div>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
@@ -2623,7 +2623,7 @@ function rCollections() {
         ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
         <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
         <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
-        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}
+        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}"
     `;
     initAnm && initAnm();
 }
@@ -2649,10 +2649,10 @@ function rKey() {
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
                 <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('VIP'):'VIP'} #${i+1}</div>
-                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}>${ka.n}</h3>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}">${ka.n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                     <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales'):'Sales'}</span>
-                    <strong style="font-size:0.9rem; color:${color}>${aFmt(ka.s)}</strong>
+                    <strong style="font-size:0.9rem; color:${color}">${aFmt(ka.s)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                     <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Profit'):'Profit'}</span>
@@ -2681,7 +2681,7 @@ function rKey() {
 
         <div class="tb"><div class="tbt"><h3>${t('keyacc')} ? ${L==='ar'?TUI('80% of Sales'):'80% of Sales'}</h3></div>
         <div class="tbs"><table><thead><tr><th>#</th><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th><th>${L==='ar'?TUI('Orders'):'Orders'}</th></tr></thead>
-        <tbody>${keyAcc.map((r,i)=>`<tr><td><span class="badge bg-g">${i+1}</span></td><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}>${pc(r.m)}</span></td><td>${r.o}</td></tr>`).join('')}</tbody>
+        <tbody>${keyAcc.map((r,i)=>`<tr><td><span class="badge bg-g">${i+1}</span></td><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${r.o}</td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
     initAnm && initAnm();
@@ -2726,7 +2726,7 @@ function rDorm() {
         let color = '#e74c3c'; 
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
-                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.n}>${d.n}</h3>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.n}">${d.n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                     <span style="color:var(--tx2);">${L==='ar'?TUI('Total Sales'):'Total Sales'}</span>
                     <strong style="color:${color};">${aFmt(d.s)}</strong>
@@ -2754,7 +2754,7 @@ function rDorm() {
 
         <div class="tb"><div class="tbt"><h3>${t('dormant')} - ${L==='ar'?TUI('No purchase in 60+ days'):'No purchase in 60+ days'}</h3></div>
         <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Total Sales'):'Total Sales'}</th><th>${L==='ar'?TUI('Last Purchase'):'Last Purchase'}</th><th>${L==='ar'?TUI('Days Ago'):'Days Ago'}</th><th>${L==='ar'?TUI('Status'):'Status'}</th></tr></thead>
-        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}>${r.days>=120?(L==='ar'?TUI('Lost'):'Lost'):(L==='ar'?TUI('Dormant'):'Dormant')}</span></td></tr>`).join('')}</tbody>
+        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}">${r.days>=120?(L==='ar'?TUI('Lost'):'Lost'):(L==='ar'?TUI('Dormant'):'Dormant')}</span></td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
 }
@@ -2789,7 +2789,7 @@ function rPot() {
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
                 <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Opportunity'):'Opportunity'} #${i+1}</div>
-                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${o.n}>${o.n}</h3>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${o.n}">${o.n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                     <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Target'):'Target'}</span>
                     <strong style="font-size:0.9rem;">${aFmt(o.tg)}</strong>
@@ -2821,7 +2821,7 @@ function rPot() {
 
         <div class="tb"><div class="tbt"><h3>${t('potential')}</h3></div>
         <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Target'):'Target'}</th><th>${L==='ar'?TUI('Achieved'):'Achieved'}</th><th>%</th><th>${L==='ar'?TUI('Gap'):'Gap'}</th></tr></thead>
-        <tbody>${opps.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.tg)}</td><td>${fmt(r.ach)}</td><td><span class="badge ${r.pct>=60?'bg-a':'bg-r'}>${pc(r.pct)}</span></td><td style="color:var(--rd);font-weight:bold;">${fmt(r.gap)}</td></tr>`).join('')}</tbody>
+        <tbody>${opps.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.tg)}</td><td>${fmt(r.ach)}</td><td><span class="badge ${r.pct>=60?'bg-a':'bg-r'}">${pc(r.pct)}</span></td><td style="color:var(--rd);font-weight:bold;">${fmt(r.gap)}</td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
 }
@@ -2848,7 +2848,7 @@ function rAl() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.alerts}</span> ${t('alerts')}</h1></div>
         <div class="kg"><div class="ki"><div class="lb">${L==='ar'?TUI('Alerts'):'Alerts'}</div><div class="vl">${aFmt(alerts.length)}</div></div></div>
         <div class="card">
-            ${alerts.length===0?`<p style="text-align:center;color:var(--tx2);">? ${L==='ar'?TUI('No alerts'):'No alerts'}</p>`:alerts.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:10px;margin-bottom:8px;background:var(--bg3);border-radius:8px;border-left:3px solid ${a.type==='danger'?'var(--rd)':'var(--am)'}><span style="font-size:1.2rem;">${a.icon}</span><span style="font-size:0.85rem;">${a.msg}</span></div>`).join('')}
+            ${alerts.length===0?`<p style="text-align:center;color:var(--tx2);">? ${L==='ar'?TUI('No alerts'):'No alerts'}</p>`:alerts.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:10px;margin-bottom:8px;background:var(--bg3);border-radius:8px;border-left:3px solid ${a.type==='danger'?'var(--rd)':'var(--am)'}"><span style="font-size:1.2rem;">${a.icon}</span><span style="font-size:0.85rem;">${a.msg}</span></div>`).join('')}
         </div>
     `;
 }
@@ -2908,7 +2908,7 @@ function rAI() {
                     `).join('')}
                 </div>
                 <div style="display:flex; gap:8px;">
-                    <input id="aiInput" type="text" class="sbox" style="flex:1;" placeholder="${L==='ar'?TUI('Ask the AI assistant...'):'Ask the AI assistant...'} onkeypress="if(event.key==='Enter') document.getElementById('aiSend').click()">
+                    <input id="aiInput" type="text" class="sbox" style="flex:1;" placeholder="${L==='ar'?TUI('Ask the AI assistant...'):'Ask the AI assistant...'}" onkeypress="if(event.key==='Enter') document.getElementById('aiSend').click()">
                     <button id="aiSend" class="btn btn-p" style="padding:0 24px;">${L==='ar'?TUI('Send'):'Send'}</button>
                 </div>
             `}
@@ -3175,6 +3175,11 @@ function rSetup() {
         }
     };
 }
+
+
+
+
+
 
 
 
