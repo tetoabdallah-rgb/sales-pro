@@ -1735,20 +1735,17 @@ auth.onAuthStateChanged(user => {
         }
         
         // Auto-restore from cloud if local data is completely empty
+                // Auto-restore from cloud if local data is completely empty
         if ((!S || S.length === 0) && (!T || T.length === 0) && (!C || C.length === 0)) {
             console.log('Local data is empty, attempting auto-restore from cloud...');
-            db.collection('users').doc(user.uid).collection('backup').doc('main').get().then(async doc => {
-                if (doc.exists) {
+            db.collection('users').doc(user.uid).get().then(async doc => {
+                if (doc.exists && doc.data().backup_chunks) {
                     let d = doc.data();
                     let fullStr = "";
-                    if (d.backupData) {
-                        fullStr = d.backupData;
-                    } else {
-                        let numChunks = d.chunks || 1;
-                        for(let i=0; i<numChunks; i++){
-                            let c = await db.collection('users').doc(user.uid).collection('backup').doc('main').collection('data').doc('chunk_'+i).get();
-                            if(c.exists) fullStr += c.data().data;
-                        }
+                    let numChunks = d.backup_chunks || 1;
+                    for(let i=0; i<numChunks; i++){
+                        let c = await db.collection('users').doc(user.uid).collection('chunks').doc('backup_chunk_'+i).get();
+                        if(c.exists) fullStr += c.data().data;
                     }
                     if (fullStr) {
                         let p = JSON.parse(fullStr);
@@ -1767,6 +1764,7 @@ auth.onAuthStateChanged(user => {
                     }
                 }
             }).catch(err => console.error('Auto-restore failed:', err));
+        }).catch(err => console.error('Auto-restore failed:', err));
         }
         
         if(typeof init === 'function') init();
@@ -3583,7 +3581,7 @@ window.TUI = function(enStr) {
 };
 </script>
 <script>
-// js/gdrive.js - Firebase Cloud Sync (with Chunking for large files)
+// js/gdrive.js - Firebase Cloud Sync (Using allowed /users/uid/chunks paths)
 
 window.cloudAutoSave = async function(label) {
     if (!currentUser || !db) return;
@@ -3603,18 +3601,18 @@ window.cloudAutoSave = async function(label) {
         const chunkSize = 800000;
         let numChunks = Math.ceil(str.length / chunkSize);
         
-        // Save metadata
-        await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').set({
-            chunks: numChunks,
-            timestamp:  firebase.firestore.FieldValue.serverTimestamp(),
-            lastUpdated: dump.lastUpdated,
-            savedBy: dump.savedBy
-        });
+        // Save metadata directly to the main users document (which is definitely allowed)
+        await db.collection('users').doc(currentUser.uid).set({
+            backup_chunks: numChunks,
+            backup_timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            backup_lastUpdated: dump.lastUpdated,
+            backup_savedBy: dump.savedBy
+        }, { merge: true }); // Merge so we don't overwrite their other settings
         
-        // Save chunks
+        // Save chunks to the existing chunks subcollection
         for(let i = 0; i < numChunks; i++) {
             let part = str.substring(i * chunkSize, (i + 1) * chunkSize);
-            await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').collection('data').doc('chunk_'+i).set({ data: part });
+            await db.collection('users').doc(currentUser.uid).collection('chunks').doc('backup_chunk_'+i).set({ data: part });
         }
 
         let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
@@ -3623,7 +3621,7 @@ window.cloudAutoSave = async function(label) {
         if (ds) ds.innerHTML = `? <strong>${L === 'ar' ? '??? ??????:' : 'Last sync:'}</strong> ${tme}`;
     } catch(e) {
         console.warn('Cloud auto-save failed:', e);
-        if (typeof toast === 'function') toast(L === 'ar' ? '??? ??? ????? ????? (???? ????? ???? ????)' : 'Save failed', 'error');
+        if (typeof toast === 'function') toast(L === 'ar' ? '??? ??? ????? ????? (???? ?? ?????? ?????????)' : 'Save failed', 'error');
     }
 };
 
@@ -3645,25 +3643,19 @@ window.restoreFromGoogleDrive = async function() {
 
     try {
         if (typeof toast === 'function') toast(L === 'ar' ? '???? ?????????...' : 'Restoring...', 'info');
-        let doc = await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').get();
-        if (!doc.exists) {
+        let doc = await db.collection('users').doc(currentUser.uid).get();
+        if (!doc.exists || !doc.data().backup_chunks) {
             if (typeof toast === 'function') toast(L === 'ar' ? '?? ???? ???? ???????? ?? ???????!' : 'No cloud backup found!', 'error');
             return;
         }
         
         let d = doc.data();
         let fullStr = "";
+        let numChunks = d.backup_chunks || 1;
         
-        if (d.backupData) {
-            // Old format
-            fullStr = d.backupData;
-        } else {
-            // Chunked format
-            let numChunks = d.chunks || 1;
-            for(let i=0; i<numChunks; i++){
-                let c = await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').collection('data').doc('chunk_'+i).get();
-                if(c.exists) fullStr += c.data().data;
-            }
+        for(let i=0; i<numChunks; i++){
+            let c = await db.collection('users').doc(currentUser.uid).collection('chunks').doc('backup_chunk_'+i).get();
+            if(c.exists) fullStr += c.data().data;
         }
         
         if (!fullStr) {
@@ -3692,26 +3684,23 @@ window.restoreFromGoogleDrive = async function() {
 window.getCloudInfo = async function() {
     if (!currentUser || !db) return null;
     try {
-        let doc = await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').get();
-        if (!doc.exists) return null;
+        let doc = await db.collection('users').doc(currentUser.uid).get();
+        if (!doc.exists || !doc.data().backup_chunks) return null;
         let d = doc.data();
         
         let fullStr = "";
-        if (d.backupData) {
-            fullStr = d.backupData;
-        } else {
-            let numChunks = d.chunks || 1;
-            for(let i=0; i<numChunks; i++){
-                let c = await db.collection('users').doc(currentUser.uid).collection('backup').doc('main').collection('data').doc('chunk_'+i).get();
-                if(c.exists) fullStr += c.data().data;
-            }
+        let numChunks = d.backup_chunks || 1;
+        
+        for(let i=0; i<numChunks; i++){
+            let c = await db.collection('users').doc(currentUser.uid).collection('chunks').doc('backup_chunk_'+i).get();
+            if(c.exists) fullStr += c.data().data;
         }
         
         if(!fullStr) return null;
         let p = JSON.parse(fullStr);
         return {
-            lastUpdated: p.lastUpdated || d.lastUpdated,
-            savedBy: p.savedBy || d.savedBy,
+            lastUpdated: p.lastUpdated || d.backup_lastUpdated,
+            savedBy: p.savedBy || d.backup_savedBy,
             salesCount: (p.salesData || []).length,
             payCount: (p.payData || []).length
         };
