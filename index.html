@@ -1412,6 +1412,7 @@ input[type=file] {
 <!-- CDN Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script src="https://accounts.google.com/gsi/client?onload=gisLoaded" async defer></script>
 <script src="https://apis.google.com/js/api.js?onload=gapiLoaded" async defer></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -1465,7 +1466,7 @@ let _chkC = {};
 let _mtC = {};
 let globalDateRange = { start: null, end: null }; // Global Date Filter
 
-const DEF_ACC = ['Mobile Accessories','Mobile Power','Accessories Commission','Laptop Accessories','TWS Earbuds','Headphone','Keyboard','Wearables','Imported Bags','Factory Bags','Mouse','Gaming Accessories'];
+const DEF_ACC = ['Mobile Accessories','Mobile Power','Accessories Commission','Laptop Accessories','TWS Earbuds','Headphone','Keyboard','Wearables','Imported Bags','Factory Bags','Mouse','Gaming Accessories','A/V Accessories'];
 const DEF_HW = ['Mobile Devices','Gaming Devices','TVs','Laptops'];
 const CL = ['#5046e5','#0fa87e','#2b8dea','#e5930f','#e5484d','#8b5cf6','#06b6d4','#f59e0b'];
 
@@ -1580,6 +1581,17 @@ function getFilteredSales() {
 
 
 function dc(k) { if(CH[k]) { CH[k].destroy(); delete CH[k]; } }
+// Append this to data-store.js to have a robust row getter globally
+function getRowVal(row, possibleNames) {
+    let keys = Object.keys(row);
+    let k = keys.find(k => possibleNames.some(p => k.toLowerCase().replace(/\s+/g, '') === p.toLowerCase().replace(/\s+/g, '')));
+    if (k) {
+        let v = row[k];
+        if (typeof v === 'string') return Number(v.replace(/,/g, '')) || 0;
+        return Number(v) || 0;
+    }
+    return 0;
+}
 
 </script>
 <script>
@@ -1773,7 +1785,7 @@ function rDash() {
     let ds = getFilteredSales();
     let ts = 0, tp = 0, tt = 0, tpt = 0;
     
-    ds.forEach(r => { ts += Number(r['Sales After Discount'])||0; tp += Number(r['Profit Margin'])||0; });
+    ds.forEach(r => { ts += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']); tp += getRowVal(r, ['Profit Margin', 'Profit']); });
     T.forEach(r => { tt += Number(r.Target)||0; tpt += Number(r['Profit Target'])||0; });
     
     let cu = {}, or = {};
@@ -1830,7 +1842,7 @@ function rDash() {
     let dl = {};
     ds.forEach(r => {
         let d = pd(r['Invoice Date'] || r['Order Date']);
-        if(d) dl[d] = (dl[d]||0) + (Number(r['Sales After Discount'])||0);
+        if(d) dl[d] = (dl[d]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
     });
     let lb = Object.keys(dl).sort();
     dc('d');
@@ -1847,7 +1859,7 @@ function rDash() {
     let ca = {};
     ds.forEach(r => {
         let c = r['Item Class Name'] || 'Other';
-        ca[c] = (ca[c]||0) + (Number(r['Sales After Discount'])||0);
+        ca[c] = (ca[c]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
     });
     let cs2 = Object.entries(ca).sort((a,b)=>b[1]-a[1]).slice(0,8);
     dc('c');
@@ -1871,8 +1883,8 @@ function rSales() {
     ds.forEach(r => {
         let iName = r['Item Description'] || 'Unknown';
         if(!items[iName]) items[iName] = {s:0, p:0, qty:0};
-        items[iName].s += Number(r['Sales After Discount'])||0;
-        items[iName].p += Number(r['Profit Margin'])||0;
+        items[iName].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        items[iName].p += getRowVal(r, ['Profit Margin', 'Profit']);
         items[iName].qty += Number(r.Quantity)||0;
     });
     
@@ -1943,7 +1955,7 @@ function rSales() {
         let paged = data.slice(start, start + st.limit);
         
         $('stb').innerHTML = paged.map(r => {
-            let s = Number(r['Sales After Discount'])||0, pr = Number(r['Profit Margin'])||0, pm = s>0 ? pr/s*100 : 0;
+            let s = getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']), pr = getRowVal(r, ['Profit Margin', 'Profit']), pm = s>0 ? pr/s*100 : 0;
             let b = pm>20 ? '<span class="badge bg-g">High</span>' : pm>10 ? '<span class="badge bg-a">Med</span>' : '<span class="badge bg-r">Low</span>';
             return `<tr><td>${pd(r['Order Date'])}</td><td>${r['Order Nbr']||''}</td><td>${r.Customer||''}</td><td>${r['Customer Class']||''}</td><td>${r['Item Class Name']||''}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r['Item Description']||''}">${r['Item Description']||''}</td><td>${r.Quantity||0}</td><td>${fmt(s)}</td><td>${fmt(pr)} ${b}</td></tr>`;
         }).join('');
@@ -2074,8 +2086,8 @@ function rPers() {
     let htpt = savedHwProfitTarget !== null ? Number(savedHwProfitTarget) : 0;
     
     myS.forEach(r => { 
-        let s = Number(r['Sales After Discount'])||0;
-        let p = Number(r['Profit Margin'])||0;
+        let s = getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        let p = getRowVal(r, ['Profit Margin', 'Profit']);
         ts += s; tp += p; 
         if (isAcc(r['Item Class Name'])) {
             accS += s; accP += p;
@@ -2102,8 +2114,8 @@ function rPers() {
         let d = pd(r['Order Date']); if(!d) return;
         let m = d.slice(0,7);
         if(!monthly[m]) monthly[m] = {s:0,p:0};
-        monthly[m].s += Number(r['Sales After Discount'])||0;
-        monthly[m].p += Number(r['Profit Margin'])||0;
+        monthly[m].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        monthly[m].p += getRowVal(r, ['Profit Margin', 'Profit']);
     });
     let months = Object.keys(monthly).sort();
 
@@ -2212,9 +2224,9 @@ function rCust() {
         let c = r.Customer || '';
         if(!cu[c]) cu[c] = {rg:r['Customer Class']||'', o:{}, s:0, p:0, accS:0, hwS:0, l:''};
         cu[c].o[r['Order Nbr']] = 1;
-        cu[c].s += Number(r['Sales After Discount'])||0;
-        cu[c].p += Number(r['Profit Margin'])||0;
-        if(isAcc(r['Item Class Name'])) cu[c].accS += Number(r['Sales After Discount'])||0; else cu[c].hwS += Number(r['Sales After Discount'])||0;
+        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
+        if(isAcc(r['Item Class Name'])) cu[c].accS += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']); else cu[c].hwS += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
         let d = pd(r['Order Date']); if(d > cu[c].l) cu[c].l = d;
     });
     let arr = Object.keys(cu).map(n => {
@@ -2312,10 +2324,10 @@ function rBrands() {
     S.forEach(r => {
         let b = r['Brand'] || r['Item Class Name'] || 'Other';
         if(!brands[b]) brands[b] = {s:0,p:0,qty:0};
-        brands[b].s += Number(r['Sales After Discount'])||0;
-        brands[b].p += Number(r['Profit Margin'])||0;
+        brands[b].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        brands[b].p += getRowVal(r, ['Profit Margin', 'Profit']);
         brands[b].qty += Number(r.Quantity)||0;
-        tsTotal += Number(r['Sales After Discount'])||0;
+        tsTotal += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
     });
     let arr = Object.entries(brands).sort((a,b)=>b[1].s-a[1].s);
     
@@ -2416,12 +2428,12 @@ function rAn() {
         let d = pd(r['Order Date']); if(!d) return;
         let m = d.slice(0,7);
         if(!monthly[m]) monthly[m] = {s:0,p:0};
-        monthly[m].s += Number(r['Sales After Discount'])||0;
-        monthly[m].p += Number(r['Profit Margin'])||0;
+        monthly[m].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        monthly[m].p += getRowVal(r, ['Profit Margin', 'Profit']);
         let c = r['Item Class Name']||'Other';
-        cats[c] = (cats[c]||0) + (Number(r['Sales After Discount'])||0);
+        cats[c] = (cats[c]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
         let rg = r['Customer Class']||'Other';
-        regions[rg] = (regions[rg]||0) + (Number(r['Sales After Discount'])||0);
+        regions[rg] = (regions[rg]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
     });
     let months = Object.keys(monthly).sort();
     let topCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,8);
@@ -2469,8 +2481,8 @@ function rProfit() {
     ds.forEach(r => {
         let c = r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0};
-        cu[c].s += Number(r['Sales After Discount'])||0;
-        cu[c].p += Number(r['Profit Margin'])||0;
+        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.m-a.m);
     
@@ -2523,10 +2535,10 @@ function rProfit() {
 // Accessories
 function rAcc() {
     let ds = getFilteredSales().filter(r => isAcc(r['Item Class Name']));
-    let tot = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0),0);
-    let prof = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0),0);
+    let tot = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])),0);
+    let prof = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(Number(r['Sales After Discount'])||0); });
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.accessories}</span> ${t('accessories')}</h1></div>
@@ -2551,10 +2563,10 @@ function rAcc() {
 // Hardware
 function rHW() {
     let ds = getFilteredSales().filter(r => isHW(r['Item Class Name']));
-    let tot = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0),0);
-    let prof = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0),0);
+    let tot = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])),0);
+    let prof = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(Number(r['Sales After Discount'])||0); });
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.hardware}</span> ${t('hardware')}</h1></div>
@@ -2580,7 +2592,7 @@ function rHW() {
 function rCollections() {
     let tot = 0, accTot = 0, hwTot = 0;
     let cAccMap = {}, cHWMap = {};
-    if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'])) {
+    if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
         S.forEach(s => {
             let c = s['Customer'];
             if(c) {
@@ -2592,12 +2604,28 @@ function rCollections() {
     }
 
     C.forEach(r => {
-        let val = Number(r['Amount']||r['amount']||r['Collection']||0);
-        let cat = r['Item Class Name'] || r['Item Group'] || r['category'] || r['Category'];
-        let cName = r['Customer Name'] || r['Customer'] || r['customer'] || '';
+        let keys = Object.keys(r);
+        let getVal = (possibleNames) => {
+            let k = keys.find(k => possibleNames.some(pn => k.toLowerCase().replace(/\s+/g, '') === pn.toLowerCase().replace(/\s+/g, '')));
+            return k ? r[k] : undefined;
+        };
+        
+        let rawVal = getVal(['Amount', 'Collection']) || 0;
+        let val = Number(rawVal.toString().replace(/,/g, '')) || 0;
+        let cat = getVal(['Item Class Name', 'Item Group', 'Category']);
+        let ahRaw = getVal(['acc-hw', 'acchw', 'acc - hw']);
+        let ah = ahRaw ? ahRaw.toString().trim().toLowerCase() : '';
+        let cName = getVal(['Customer Name', 'Customer']) || '';
         
         tot += val;
-        if (cat) {
+        if (ah.includes('acc') || ah.includes('اكسسوار')) {
+            accTot += val;
+        } else if (ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
+            hwTot += val;
+        } else if (cat) {
+            if (isAcc(cat)) accTot += val;
+            else if (isHW(cat)) hwTot += val;
+        } else if (cat) {
             if (isAcc(cat)) accTot += val;
             else if (isHW(cat)) hwTot += val;
         } else {
@@ -2633,8 +2661,8 @@ function rKey() {
     S.forEach(r => {
         let c = r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0,o:{}};
-        cu[c].s += Number(r['Sales After Discount'])||0;
-        cu[c].p += Number(r['Profit Margin'])||0;
+        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
         cu[c].o[r['Order Nbr']] = 1;
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
@@ -2706,7 +2734,7 @@ function rDorm() {
         let c = r.Customer || '';
         if(!c) return;
         let dStr = pd(r['Order Date']);
-        let s = Number(r['Sales After Discount'])||0;
+        let s = getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
         
         if(!cu[c]) cu[c] = {last: dStr, s: 0};
         else if (dStr && dStr > cu[c].last) cu[c].last = dStr;
@@ -2776,7 +2804,7 @@ function rPros() {
 // Opportunities (customers below 50% of target)
 function rPot() {
     let cu = {};
-    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(Number(r['Sales After Discount'])||0); });
+    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
     let opps = T.map(r => {
         let tg = Number(r.Target)||0, ach = cu[r.Customer]||0, pct = tg>0?ach/tg*100:0;
         return {n:r.Customer, tg, ach, pct, gap: tg-ach};
@@ -2839,7 +2867,7 @@ function rAl() {
     });
     // Low target alerts
     let cuS = {};
-    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(Number(r['Sales After Discount'])||0); });
+    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
     T.forEach(r => {
         let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
         if(pct<50 && tg>0) alerts.push({type:'danger', icon:'&#x26A0;&#xFE0F;', msg:`${r.Customer} ? ${L==='ar'?TUI('Achievement'):'Achievement'} ${pc(pct)}`});
@@ -2860,12 +2888,12 @@ function rAI() {
     ds.forEach(r => {
         let c=r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0,o:{},last:'',accS:0,hwS:0};
-        cu[c].s += Number(r['Sales After Discount'])||0;
-        cu[c].p += Number(r['Profit Margin'])||0;
+        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
         cu[c].o[r['Order Nbr']]=1;
         let d=pd(r['Order Date']); if(d>cu[c].last) cu[c].last=d;
-        if(isAcc(r['Item Class Name'])) cu[c].accS+=Number(r['Sales After Discount'])||0;
-        else if(isHW(r['Item Class Name'])) cu[c].hwS+=Number(r['Sales After Discount'])||0;
+        if(isAcc(r['Item Class Name'])) cu[c].accS+=getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        else if(isHW(r['Item Class Name'])) cu[c].hwS+=getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
     });
     let insights = [];
     let arr = Object.entries(cu).map(([n,d])=>({n,...d,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
@@ -2933,8 +2961,8 @@ function rAI() {
                 sendBtn.innerHTML = '?';
                 rAI(); 
 
-                let totalSales = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0), 0);
-                let totalProfit = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0), 0);
+                let totalSales = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])), 0);
+                let totalProfit = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])), 0);
                 let ctx = {
                     totalSales,
                     totalProfit,
@@ -3143,12 +3171,18 @@ function rSetup() {
             <button id="bSaveCats" class="btn btn-p" style="margin-top:16px;width:100%;padding:12px;font-size:1rem;">حفظ الفئات والتحديث / Save & Update</button>
         </div>
     `;
-    function parseFile(file, cb) {
+    function parseFile(file, cb, sheetName) {
         let reader = new FileReader();
         reader.onload = e => {
             try {
-                let wb = XLSX.read(e.target.result, {type:'array'});
-                let ws = wb.Sheets[wb.SheetNames[0]];
+                let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+                let ws;
+                if (sheetName) {
+                    let sName = wb.SheetNames.find(s => s.trim().toLowerCase() === sheetName.trim().toLowerCase());
+                    ws = sName ? wb.Sheets[sName] : wb.Sheets[wb.SheetNames[0]];
+                } else {
+                    ws = wb.Sheets[wb.SheetNames[0]];
+                }
                 cb(XLSX.utils.sheet_to_json(ws));
             } catch(err) { toast(L==='ar'?TUI('? Error reading file'):'? Error reading file'); }
         };
@@ -3160,7 +3194,7 @@ function rSetup() {
         if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
         if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
         if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
-        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
+        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }, 'Payment Ref'); }
     };
     
     $('bSaveCats').onclick = () => {
