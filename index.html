@@ -3223,10 +3223,18 @@ function rSetup() {
         let done = 0, total = 0;
         let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
         if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
-        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
-        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
-        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }, 'Payment Ref'); }
+        let onAllDone = () => {
+            toast(L==='ar' ? '✅ تم تحديث البيانات!' : '✅ Data Updated!');
+            render();
+            if (typeof window.cloudAutoSave === 'function') {
+                window.cloudAutoSave(L==='ar' ? 'رفع ملفات' : 'File Upload');
+            }
+        };
+        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) onAllDone(); }); }
+        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) onAllDone(); }); }
+        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) onAllDone(); }, 'Payment Ref'); }
     };
+
     
     $('bSaveCats').onclick = () => {
         let vals = $('inAccCats').value.split(',').map(s => s.trim()).filter(s => s);
@@ -3282,12 +3290,15 @@ function rSettings() {
             <h3>☁️ ${L==='ar'?'إعدادات المزامنة السحابية (Google Drive)':'Cloud Sync Settings (Google Drive)'}</h3>
             <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفاتيح API لتفعيل المزامنة مع جوجل درايف':'Enter API keys to enable cloud sync'}</p>
             <div class="fg">
-                <input type="text" id="gdriveClientId" placeholder="${L==='ar'?'Google Client ID':'Google Client ID'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
+            <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;">⏳ ${L==='ar'?'جاري التحقق من السحابة...':'Checking cloud...'}</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-p" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;">
+                    ☁️ ${L==='ar'?'حفظ في السحابة':'Save to Cloud'}
+                </button>
+                <button class="btn" onclick="restoreFromGoogleDrive()" style="flex:1;min-width:140px;background:var(--bg3);">
+                    📥 ${L==='ar'?'استرجاع من السحابة':'Restore from Cloud'}
+                </button>
             </div>
-            <div class="fg">
-                <input type="text" id="gdriveApiKey" placeholder="${L==='ar'?'Google API Key':'Google API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
-            </div>
-            <button class="btn btn-p" onclick="saveDriveKeys()">${L==='ar'?'حفظ المفاتيح':'Save Keys'}</button>
         </div>
 
         <div class="card" style="margin-bottom:20px;">
@@ -3311,25 +3322,31 @@ function rSettings() {
             let col = btn.getAttribute('data-color');
             sv('sp_primary', col);
             document.documentElement.style.setProperty('--am', col);
-            
-            // update selection UI
             document.querySelectorAll('.color-btn').forEach(b => b.style.border = '2px solid transparent');
             btn.style.border = '2px solid var(--tx1)';
         };
     });
+
+    // Load cloud backup info
+    if (typeof window.getCloudInfo === 'function') {
+        window.getCloudInfo().then(info => {
+            let ds = document.getElementById('driveStatus');
+            if (!ds) return;
+            if (!info) {
+                ds.innerHTML = L==='ar' ? '⚠️ لا توجد نسخة سحابية بعد. اضغط “حفظ في السحابة”' : '⚠️ No cloud backup yet. Press “Save to Cloud”';
+                return;
+            }
+            let d = new Date(info.lastUpdated).toLocaleString(L==='ar'?'ar-EG':'en-US');
+            ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${d}
+                &nbsp;|&nbsp; 📄 ${L==='ar'?'مبيعات:':'Sales:'} ${info.salesCount}
+                &nbsp;|&nbsp; 💰 ${L==='ar'?'تحصيلات:':'Collections:'} ${info.payCount}`;
+        });
+    }
 }
 
+// saveDriveKeys kept for compatibility but no longer needed
 window.saveDriveKeys = function() {
-    const cId = document.getElementById('gdriveClientId').value.trim();
-    const aKey = document.getElementById('gdriveApiKey').value.trim();
-    if (cId && aKey) {
-        localStorage.setItem('gdrive_client_id', cId);
-        localStorage.setItem('gdrive_api_key', aKey);
-        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفاتيح جوجل درايف بنجاح. أعد تحميل الصفحة.':'Google Drive keys saved. Please reload.', 'success');
-        setTimeout(() => window.location.reload(), 1500);
-    } else {
-        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال كلا المفتاحين':'Please enter both keys', 'error');
-    }
+    if(typeof toast === 'function') toast(L==='ar'?'المزامنة تعمل تلقائياً عبر Firebase':'Sync works automatically via Firebase', 'info');
 };
 
 window.saveGeminiKey = function() {
@@ -3532,90 +3549,105 @@ window.TUI = function(enStr) {
 };
 </script>
 <script>
-// js/gdrive.js (Now using Firebase Cloud Sync)
+// js/gdrive.js - Firebase Cloud Sync
 
-window.backupToGoogleDrive = async function() {
-    if (!currentUser) {
-        if(typeof toast === 'function') toast(L==='ar'?'يجب تسجيل الدخول أولاً للنسخ الاحتياطي':'You must be logged in to backup', 'error');
-        return;
-    }
-
+// ─── Auto-save to Firebase after any data upload ───────────────────────────
+window.cloudAutoSave = async function(label) {
+    if (!currentUser || !db) return;
     try {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري الرفع إلى السحابة...':'Uploading to Cloud...', 'info');
-        
         let dump = {
-            salesData: S || [],
-            targetData: T || [],
-            accCats: accCats || [],
-            hwCats: hwCats || [],
-            payData: C || [],
-            duesData: D || [],
-            lastUpdated: new Date().toISOString()
+            salesData:  S        || [],
+            targetData: T        || [],
+            accCats:    accCats  || [],
+            hwCats:     hwCats   || [],
+            payData:    C        || [],
+            duesData:   D        || [],
+            lastUpdated: new Date().toISOString(),
+            savedBy: currentUser.email || currentUser.uid
         };
-
         await db.collection('cloud_backups').doc(currentUser.uid).set({
             backupData: JSON.stringify(dump),
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            timestamp:  firebase.firestore.FieldValue.serverTimestamp()
         });
-
-        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ نسختك الاحتياطية في السحابة بنجاح! ☁️':'Cloud backup saved successfully! ☁️', 'success');
-        
-        // Update UI status if exists
+        let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
+        if (typeof toast === 'function')
+            toast((L === 'ar' ? '☁️ تم الحفظ في السحابة: ' : '☁️ Cloud saved: ') + (label || ''), 'success');
+        // update status element if visible
         let ds = document.getElementById('driveStatus');
-        if (ds) {
-            let tme = new Date().toLocaleString(L==='ar'?'ar-EG':'en-US');
-            ds.innerHTML = `&#x2705; <strong>${L==='ar'?'آخر نسخة سحابية:':'Last cloud backup:'}</strong> ${tme}`;
-        }
-
-    } catch (error) {
-        console.error('Cloud Backup Error:', error);
-        if(typeof toast === 'function') toast(L==='ar'?'حدث خطأ أثناء الرفع للسحابة':'Error uploading to cloud', 'error');
+        if (ds) ds.innerHTML = `✅ <strong>${L === 'ar' ? 'آخر مزامنة:' : 'Last sync:'}</strong> ${tme}`;
+    } catch(e) {
+        console.warn('Cloud auto-save failed:', e);
     }
 };
 
+// ─── Manual backup button ───────────────────────────────────────────────────
+window.backupToGoogleDrive = async function() {
+    if (!currentUser) {
+        if (typeof toast === 'function') toast(L === 'ar' ? 'يجب تسجيل الدخول أولاً' : 'Login required', 'error');
+        return;
+    }
+    if (typeof toast === 'function') toast(L === 'ar' ? 'جاري الحفظ في السحابة...' : 'Saving to cloud...', 'info');
+    await window.cloudAutoSave(L === 'ar' ? 'يدوي' : 'Manual');
+};
+
+// ─── Restore from Firebase (any device) ────────────────────────────────────
 window.restoreFromGoogleDrive = async function() {
     if (!currentUser) {
-        if(typeof toast === 'function') toast(L==='ar'?'يجب تسجيل الدخول أولاً لاسترجاع البيانات':'You must be logged in to restore', 'error');
+        if (typeof toast === 'function') toast(L === 'ar' ? 'يجب تسجيل الدخول أولاً' : 'Login required', 'error');
         return;
     }
-
-    if (!confirm(L==='ar'?'تحذير: هذا سيقوم بمسح بياناتك الحالية واستبدالها بالنسخة السحابية. هل أنت متأكد؟':'WARNING: This will replace current data with the cloud backup. Are you sure?')) {
-        return;
-    }
+    if (!confirm(L === 'ar'
+        ? 'سيتم استبدال البيانات الحالية ببيانات السحابة. متأكد؟'
+        : 'This will replace current data with the cloud backup. Sure?')) return;
 
     try {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري استرجاع البيانات...':'Restoring data...', 'info');
-        
+        if (typeof toast === 'function') toast(L === 'ar' ? 'جاري الاسترجاع...' : 'Restoring...', 'info');
         let doc = await db.collection('cloud_backups').doc(currentUser.uid).get();
         if (!doc.exists) {
-            if(typeof toast === 'function') toast(L==='ar'?'لم يتم العثور على أي نسخة احتياطية لك في السحابة!':'No cloud backup found for your account!', 'error');
+            if (typeof toast === 'function') toast(L === 'ar' ? 'لا توجد نسخة احتياطية في السحابة!' : 'No cloud backup found!', 'error');
             return;
         }
-
-        let dbData = doc.data();
-        if (!dbData || !dbData.backupData) {
-            if(typeof toast === 'function') toast(L==='ar'?'النسخة الاحتياطية تالفة أو فارغة':'Backup is corrupted or empty', 'error');
+        let d = doc.data();
+        if (!d || !d.backupData) {
+            if (typeof toast === 'function') toast(L === 'ar' ? 'النسخة تالفة أو فارغة' : 'Backup corrupted or empty', 'error');
             return;
         }
+        let p = JSON.parse(d.backupData);
+        if (p.salesData)  { S       = p.salesData;  sv('salesData',  S); }
+        if (p.targetData) { T       = p.targetData; sv('targetData', T); }
+        if (p.accCats)    { accCats = p.accCats;    sv('accCats',    accCats); }
+        if (p.hwCats)     { hwCats  = p.hwCats;     sv('hwCats',     hwCats); }
+        if (p.payData)    { C       = p.payData;    sv('payData',    C); }
+        if (p.duesData)   { D       = p.duesData;   sv('duesData',   D); }
 
-        let parsed = JSON.parse(dbData.backupData);
-        if(parsed.salesData) sv('salesData', parsed.salesData);
-        if(parsed.targetData) sv('targetData', parsed.targetData);
-        if(parsed.accCats) sv('accCats', parsed.accCats);
-        if(parsed.hwCats) sv('hwCats', parsed.hwCats);
-        if(parsed.payData) sv('payData', parsed.payData);
-        if(parsed.duesData) sv('duesData', parsed.duesData);
+        let savedBy = p.savedBy || '';
+        let updatedAt = p.lastUpdated ? new Date(p.lastUpdated).toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US') : '';
+        if (typeof toast === 'function')
+            toast(`✅ ${L === 'ar' ? 'تم الاسترجاع! آخر حفظ: ' : 'Restored! Last saved: '} ${updatedAt}`, 'success');
 
-        if(typeof toast === 'function') toast(L==='ar'?'تم استرجاع البيانات بنجاح! سيتم تحديث الصفحة.':'Data restored successfully! Reloading...', 'success');
-        
-        setTimeout(() => {
-            window.location.reload();
-        }, 1500);
-
-    } catch (error) {
-        console.error('Cloud Restore Error:', error);
-        if(typeof toast === 'function') toast(L==='ar'?'حدث خطأ أثناء استرجاع البيانات':'Error restoring data', 'error');
+        setTimeout(() => { if (typeof render === 'function') render(); }, 800);
+    } catch(e) {
+        console.error('Cloud Restore Error:', e);
+        if (typeof toast === 'function') toast(L === 'ar' ? 'خطأ أثناء الاسترجاع' : 'Error restoring', 'error');
     }
+};
+
+// ─── Get cloud backup info (for UI display) ────────────────────────────────
+window.getCloudInfo = async function() {
+    if (!currentUser || !db) return null;
+    try {
+        let doc = await db.collection('cloud_backups').doc(currentUser.uid).get();
+        if (!doc.exists) return null;
+        let d = doc.data();
+        if (!d || !d.backupData) return null;
+        let p = JSON.parse(d.backupData);
+        return {
+            lastUpdated: p.lastUpdated,
+            savedBy: p.savedBy,
+            salesCount: (p.salesData || []).length,
+            payCount: (p.payData || []).length
+        };
+    } catch(e) { return null; }
 };
 
 </script>
