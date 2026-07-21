@@ -3310,15 +3310,23 @@ function rSettings() {
         </div>
         
         <div class="card" style="margin-bottom:20px;">
-            <h3>💾 ${L==='ar'?'النسخ الاحتياطي اليدوي (ملف)':'Local Manual Backup'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'قم بتنزيل ملف الداتا على جهازك أو استرجاع بياناتك من ملف سابق بكل أمان وبدون إنترنت.':'Download your data file to your device or restore from a previous file safely and offline.'}</p>
+            <h3>☁️ ${L==='ar'?'النسخ الاحتياطي السحابي (Google Drive)':'Cloud Sync (Google Drive)'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'حفظ البيانات واسترجاعها مباشرة من حسابك في جوجل درايف.':'Backup and restore data directly from your Google Drive.'}</p>
+            
+            <div style="background:var(--bg3);padding:10px;border-radius:8px;margin-bottom:15px;">
+                <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:10px;">${L==='ar'?'تحتاج إلى إدخال مفاتيح Google API لكي تعمل المزامنة:':'You must enter Google API keys for sync to work:'}</p>
+                <input type="text" id="gdriveClientId" placeholder="Google Client ID" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
+                <input type="text" id="gdriveApiKey" placeholder="Google API Key" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
+                <button class="btn btn-p" onclick="saveDriveKeys()" style="width:100%;">${L==='ar'?'حفظ مفاتيح جوجل':'Save Google Keys'}</button>
+            </div>
+
             <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;padding:10px;background:var(--bg3);border-radius:8px;">⏳ ${L==='ar'?'جاري التحقق...':'Checking...'}</div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
                 <button class="btn btn-p" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;background:var(--ok);">
-                    ⬇️ ${L==='ar'?'تنزيل ملف الداتا':'Download Backup'}
+                    ☁️ ${L==='ar'?'حفظ في درايف':'Save to Drive'}
                 </button>
                 <button class="btn" onclick="restoreFromGoogleDrive()" style="flex:1;min-width:140px;background:var(--bg3);">
-                    📂 ${L==='ar'?'استرجاع من ملف':'Restore from File'}
+                    📂 ${L==='ar'?'استرجاع من درايف':'Restore from Drive'}
                 </button>
             </div>
         </div>
@@ -3355,15 +3363,28 @@ function rSettings() {
             let ds = document.getElementById('driveStatus');
             if (!ds) return;
             if (!info) {
-                ds.innerHTML = L==='ar' ? '⚠️ لم يتم تنزيل أي نسخة احتياطية من هذا الجهاز بعد.' : '⚠️ No manual backup downloaded yet.';
+                ds.innerHTML = L==='ar' ? '⚠️ لم تقم بعمل مزامنة في جوجل درايف مؤخراً.' : '⚠️ No recent Google Drive sync.';
                 return;
             }
-            ds.innerHTML = `✅ <strong>${L==='ar'?'آخر تنزيل لملف النسخة الاحتياطية:':'Last manual backup:'}</strong> ${info.lastUpdated}
+            ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${info.lastUpdated}
                 &nbsp;|&nbsp; 📊 ${L==='ar'?'المبيعات:':'Sales:'} ${info.salesCount}
                 &nbsp;|&nbsp; 💰 ${L==='ar'?'التحصيلات:':'Collections:'} ${info.payCount}`;
         });
     }
 }
+
+window.saveDriveKeys = function() {
+    const cId = document.getElementById('gdriveClientId').value.trim();
+    const aKey = document.getElementById('gdriveApiKey').value.trim();
+    if (cId && aKey) {
+        localStorage.setItem('gdrive_client_id', cId);
+        localStorage.setItem('gdrive_api_key', aKey);
+        if(typeof toast === 'function') toast(L==='ar'?'✅ تم حفظ مفاتيح جوجل درايف بنجاح.','Google Drive keys saved', 'success');
+        setTimeout(() => window.location.reload(), 1500);
+    } else {
+        if(typeof toast === 'function') toast(L==='ar'?'❌ يرجى إدخال المفتاحين (Client ID و API Key)':'Please enter both keys', 'error');
+    }
+};
 
 window.saveGeminiKey = function() {
     const gKey = document.getElementById('geminiApiKey').value.trim();
@@ -3573,92 +3594,219 @@ window.toast = function(msg, type = 'info') {
 
 </script>
 <script>
-// js/gdrive.js - Replaced with Local File Backup & Restore (100% Offline Reliable)
+// js/gdrive.js - Full Google Drive API Integration
 
-window.backupToGoogleDrive = async function() {
-    if (typeof toast === 'function') toast(L === 'ar' ? 'جاري تجهيز النسخة الاحتياطية...' : 'Preparing backup...', 'info');
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
+
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
+
+window.gapiLoaded = function() {
+    gapi.load('client', initializeGapiClient);
+};
+
+async function initializeGapiClient() {
+    try {
+        const API_KEY = localStorage.getItem('gdrive_api_key');
+        if (!API_KEY) return; // Wait for user to enter key
+        await gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: [DISCOVERY_DOC],
+        });
+        gapiInited = true;
+    } catch (err) {
+        console.warn("Error initializing GAPI client: ", err);
+    }
+}
+
+window.gisLoaded = function() {
+    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
+    if (!CLIENT_ID) return; // Wait for user to enter ID
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: '', 
+    });
+    gisInited = true;
+};
+
+// Auto-run if script tags loaded before this script
+if (typeof gapi !== 'undefined' && gapi.client) window.gapiLoaded();
+if (typeof google !== 'undefined' && google.accounts) window.gisLoaded();
+
+function requireAuth(callback) {
+    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
+    const API_KEY = localStorage.getItem('gdrive_api_key');
     
-    let dump = {
-        salesData:  S        || [],
-        targetData: T        || [],
-        accCats:    accCats  || [],
-        hwCats:     hwCats   || [],
-        payData:    C        || [],
-        duesData:   D        || [],
-        lastUpdated: new Date().toISOString()
+    if (!CLIENT_ID || !API_KEY) {
+        if(typeof toast === 'function') toast(L==='ar'?'يجب إدخال Google Client ID و API Key في الإعدادات':'Please enter Google Client ID and API Key in Settings', 'error');
+        return;
+    }
+
+    // Re-init if they just saved the keys
+    if (!gapiInited) initializeGapiClient();
+    if (!gisInited) window.gisLoaded();
+
+    if (!gapiInited || !gisInited) {
+        setTimeout(() => requireAuth(callback), 500); // retry
+        return;
+    }
+
+    tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+            if(typeof toast === 'function') toast(L==='ar'?'خطأ في تسجيل الدخول لجوجل':'Google Login Error', 'error');
+            console.error(resp);
+            return;
+        }
+        callback();
     };
-    
-    let str = JSON.stringify(dump);
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(str);
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    
-    let dateStr = new Date().toISOString().split('T')[0];
-    downloadAnchorNode.setAttribute("download", `SalesPro_Backup_${dateStr}.json`);
-    
-    document.body.appendChild(downloadAnchorNode); // required for firefox
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-    
-    let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
-    localStorage.setItem('last_local_backup', tme);
 
-    if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم تنزيل الملف بنجاح! احتفظ به في مكان آمن.' : '✅ File downloaded successfully!', 'success');
-    
-    let ds = document.getElementById('driveStatus');
-    if (ds) ds.innerHTML = `✅ <strong>${L === 'ar' ? 'آخر تنزيل لملف النسخة الاحتياطية:' : 'Last manual backup:'}</strong> ${tme}`;
+    if (gapi.client.getToken() === null) {
+        tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+        tokenClient.requestAccessToken({prompt: ''});
+    }
+}
+
+window.backupToGoogleDrive = function() {
+    requireAuth(async () => {
+        if(typeof toast === 'function') toast(L==='ar'?'جاري الحفظ في جوجل درايف...':'Saving to Google Drive...', 'info');
+        
+        let ds = document.getElementById('driveStatus');
+        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري الرفع...':'Uploading...'}</span>`;
+
+        let dump = {
+            salesData:  S        || [],
+            targetData: T        || [],
+            accCats:    accCats  || [],
+            hwCats:     hwCats   || [],
+            payData:    C        || [],
+            duesData:   D        || [],
+            lastUpdated: new Date().toISOString()
+        };
+        const fileContent = JSON.stringify(dump);
+        const file = new Blob([fileContent], { type: 'application/json' });
+        const metadata = {
+            'name': `SalesPro_Backup.json`,
+            'mimeType': 'application/json'
+        };
+
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', file);
+
+        try {
+            // First check if file already exists to overwrite it
+            let existingFileId = null;
+            const search = await gapi.client.drive.files.list({
+                q: "name='SalesPro_Backup.json' and trashed=false",
+                spaces: 'drive',
+                fields: 'files(id, name)'
+            });
+            if (search.result.files && search.result.files.length > 0) {
+                existingFileId = search.result.files[0].id;
+            }
+
+            let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+            let method = 'POST';
+            if (existingFileId) {
+                url = `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=multipart`;
+                method = 'PATCH';
+            }
+
+            const res = await fetch(url, {
+                method: method,
+                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }),
+                body: form
+            });
+            
+            const data = await res.json();
+            if (data.id) {
+                let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
+                localStorage.setItem('last_gdrive_sync', tme);
+                if(typeof toast === 'function') toast(L==='ar'?'✅ تم الحفظ في جوجل درايف!':'✅ Saved to Google Drive!', 'success');
+                if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${tme}`;
+            } else {
+                throw new Error("Invalid response from Google Drive");
+            }
+        } catch (err) {
+            console.error("Upload error", err);
+            if(ds) ds.innerHTML = `<span style="color:red">Upload Error</span>`;
+            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل الحفظ في السحابة':'❌ Cloud save failed', 'error');
+        }
+    });
 };
 
 window.restoreFromGoogleDrive = function() {
-    if (!confirm(L === 'ar' ? 'تحذير: سيتم استبدال جميع البيانات الحالية بالبيانات الموجودة في الملف. هل أنت متأكد؟' : 'Warning: Current data will be replaced. Sure?')) return;
+    if (!confirm(L === 'ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالنسخة الموجودة في جوجل درايف. متأكد؟' : 'Warning: Current data will be replaced with Google Drive backup. Sure?')) return;
     
-    let input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,application/json';
-    
-    input.onchange = e => {
-        let file = e.target.files[0];
-        if (!file) return;
-        
-        let reader = new FileReader();
-        reader.readAsText(file,'UTF-8');
-        
-        reader.onload = readerEvent => {
-            try {
-                let content = readerEvent.target.result;
-                let p = JSON.parse(content);
-                
-                if (p.salesData)  { S       = p.salesData;  sv('salesData',  S); }
-                if (p.targetData) { T       = p.targetData; sv('targetData', T); }
-                if (p.accCats)    { accCats = p.accCats;    sv('accCats',    accCats); }
-                if (p.hwCats)     { hwCats  = p.hwCats;     sv('hwCats',     hwCats); }
-                if (p.payData)    { C       = p.payData;    sv('payData',    C); }
-                if (p.duesData)   { D       = p.duesData;   sv('duesData',   D); }
+    requireAuth(async () => {
+        if(typeof toast === 'function') toast(L==='ar'?'جاري البحث عن النسخة...':'Searching for backup...', 'info');
+        let ds = document.getElementById('driveStatus');
+        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري التنزيل...':'Downloading...'}</span>`;
 
-                if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم استرجاع البيانات بنجاح!' : '✅ Data restored successfully!', 'success');
-                setTimeout(() => window.location.reload(), 1500);
-            } catch (err) {
-                if (typeof toast === 'function') toast(L === 'ar' ? '❌ خطأ: الملف تالف أو غير صالح.' : '❌ Error: Invalid file.', 'error');
-                console.error(err);
+        try {
+            const search = await gapi.client.drive.files.list({
+                q: "name='SalesPro_Backup.json' and trashed=false",
+                spaces: 'drive',
+                fields: 'files(id, name, modifiedTime)',
+                orderBy: 'modifiedTime desc'
+            });
+
+            if (!search.result.files || search.result.files.length === 0) {
+                if(typeof toast === 'function') toast(L==='ar'?'❌ لا يوجد نسخة احتياطية في جوجل درايف!':'❌ No backup found in Google Drive!', 'error');
+                if(ds) ds.innerHTML = `<span style="color:red">No backup found!</span>`;
+                return;
             }
+
+            const fileId = search.result.files[0].id;
+            
+            // Download file content
+            const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token })
+            });
+            
+            const content = await res.text();
+            let p = JSON.parse(content);
+            
+            if (p.salesData)  { S       = p.salesData;  sv('salesData',  S); }
+            if (p.targetData) { T       = p.targetData; sv('targetData', T); }
+            if (p.accCats)    { accCats = p.accCats;    sv('accCats',    accCats); }
+            if (p.hwCats)     { hwCats  = p.hwCats;     sv('hwCats',     hwCats); }
+            if (p.payData)    { C       = p.payData;    sv('payData',    C); }
+            if (p.duesData)   { D       = p.duesData;   sv('duesData',   D); }
+
+            let tme = new Date(search.result.files[0].modifiedTime).toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
+            localStorage.setItem('last_gdrive_sync', tme);
+
+            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم الاسترجاع بنجاح!' : '✅ Restored successfully!', 'success');
+            if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'تم الاسترجاع!':'Restored!'}</strong>`;
+            
+            setTimeout(() => window.location.reload(), 1500);
+
+        } catch (err) {
+            console.error("Restore error", err);
+            if(ds) ds.innerHTML = `<span style="color:red">Restore Error</span>`;
+            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل استرجاع البيانات':'❌ Restore failed', 'error');
         }
-    }
-    input.click();
+    });
+};
+
+window.cloudAutoSave = function() {
+    // Disable automatic background sync for Google Drive because it requires OAuth consent popup
+    // We only want manual sync for Google Drive.
 };
 
 window.getCloudInfo = async function() {
-    let lastB = localStorage.getItem('last_local_backup');
-    if (!lastB) return null;
+    let lastS = localStorage.getItem('last_gdrive_sync');
+    if(!lastS) return null;
     return {
-        lastUpdated: lastB,
+        lastUpdated: lastS,
         salesCount: (S || []).length,
         payCount: (C || []).length
     };
-};
-
-// Disable the cloud auto-save entirely so it doesn't try to use Firebase offline
-window.cloudAutoSave = async function(label) {
-    console.log("Cloud Auto Save disabled. Using Local File Backup.");
 };
 
 </script>
