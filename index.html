@@ -3604,13 +3604,23 @@ let gapiInited = false;
 let gisInited = false;
 
 window.gapiLoaded = function() {
-    gapi.load('client', initializeGapiClient);
+    if (typeof gapi !== 'undefined' && !gapi.client) {
+        gapi.load('client', initializeGapiClient);
+    } else if (typeof gapi !== 'undefined' && gapi.client) {
+        initializeGapiClient();
+    }
 };
 
 async function initializeGapiClient() {
     try {
         const API_KEY = localStorage.getItem('gdrive_api_key');
-        if (!API_KEY) return; // Wait for user to enter key
+        if (!API_KEY) return;
+        
+        // Ensure gapi.client is loaded
+        if (typeof gapi !== 'undefined' && !gapi.client) {
+            await new Promise((resolve) => gapi.load('client', resolve));
+        }
+
         await gapi.client.init({
             apiKey: API_KEY,
             discoveryDocs: [DISCOVERY_DOC],
@@ -3618,12 +3628,15 @@ async function initializeGapiClient() {
         gapiInited = true;
     } catch (err) {
         console.warn("Error initializing GAPI client: ", err);
+        throw err;
     }
 }
 
 window.gisLoaded = function() {
     const CLIENT_ID = localStorage.getItem('gdrive_client_id');
-    if (!CLIENT_ID) return; // Wait for user to enter ID
+    if (!CLIENT_ID) return;
+    if (typeof google === 'undefined' || !google.accounts) return;
+    
     tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
@@ -3633,8 +3646,8 @@ window.gisLoaded = function() {
 };
 
 // Auto-run if script tags loaded before this script
-if (typeof gapi !== 'undefined' && gapi.client) window.gapiLoaded();
-if (typeof google !== 'undefined' && google.accounts) window.gisLoaded();
+if (typeof gapi !== 'undefined') window.gapiLoaded();
+if (typeof google !== 'undefined') window.gisLoaded();
 
 let isInitializing = false;
 
