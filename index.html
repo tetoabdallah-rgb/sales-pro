@@ -3579,7 +3579,11 @@ window.toast = function(msg, type = 'info') {
 // js/gdrive.js - Firebase Cloud Sync (Using allowed /users/uid/chunks paths)
 
 window.cloudAutoSave = async function(label) {
-    if (!currentUser || !db) return;
+    let ds = document.getElementById('driveStatus');
+    if (!currentUser || !db) {
+        if (ds) ds.innerHTML = `<span style="color:red">Error: Not logged in or DB not initialized</span>`;
+        return;
+    }
     try {
         let dump = {
             salesData:  S        || [],
@@ -3596,6 +3600,8 @@ window.cloudAutoSave = async function(label) {
         const chunkSize = 800000;
         let numChunks = Math.ceil(str.length / chunkSize);
         
+        if (ds) ds.innerHTML = `<span style="color:blue">Uploading ${numChunks} parts to Cloud...</span>`;
+
         // Save metadata directly to the main users document (which is definitely allowed)
         await db.collection('users').doc(currentUser.uid).set({
             backup_chunks: numChunks,
@@ -3612,11 +3618,10 @@ window.cloudAutoSave = async function(label) {
 
         let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
         if (typeof toast === 'function') toast((L === 'ar' ? '✅ تم الحفظ في السحابة: ' : '✅ Cloud saved: ') + (label || ''), 'success');
-        let ds = document.getElementById('driveStatus');
         if (ds) ds.innerHTML = `✅ <strong>${L === 'ar' ? 'آخر مزامنة:' : 'Last sync:'}</strong> ${tme}`;
     } catch(e) {
         console.warn('Cloud auto-save failed:', e); 
-        alert('Sync Error: ' + e.message); 
+        if (ds) ds.innerHTML = `<span style="color:red;font-weight:bold;">Firebase Sync Error: ${e.message}</span>`;
         if (typeof toast === 'function') toast(L === 'ar' ? '❌ فشل الحفظ: ' + e.message : 'Save failed: ' + e.message, 'error');
     }
 };
@@ -3631,6 +3636,7 @@ window.backupToGoogleDrive = async function() {
 };
 
 window.restoreFromGoogleDrive = async function() {
+    let ds = document.getElementById('driveStatus');
     if (!currentUser) {
         if (typeof toast === 'function') toast(L === 'ar' ? 'يجب تسجيل الدخول أولاً' : 'Login required', 'error');
         return;
@@ -3639,9 +3645,12 @@ window.restoreFromGoogleDrive = async function() {
 
     try {
         if (typeof toast === 'function') toast(L === 'ar' ? 'جاري الاسترجاع...' : 'Restoring...', 'info');
+        if (ds) ds.innerHTML = `<span style="color:blue">Fetching data from Cloud...</span>`;
+
         let doc = await db.collection('users').doc(currentUser.uid).get();
         if (!doc.exists || !doc.data().backup_chunks) {
             if (typeof toast === 'function') toast(L === 'ar' ? 'لا يوجد نسخة احتياطية في السحابة!' : 'No cloud backup found!', 'error');
+            if (ds) ds.innerHTML = `<span style="color:red">No cloud backup found!</span>`;
             return;
         }
         
@@ -3656,6 +3665,7 @@ window.restoreFromGoogleDrive = async function() {
         
         if (!fullStr) {
             if (typeof toast === 'function') toast(L === 'ar' ? 'النسخة الاحتياطية تالفة أو فارغة' : 'Backup corrupted or empty', 'error');
+            if (ds) ds.innerHTML = `<span style="color:red">Backup corrupted or empty!</span>`;
             return;
         }
         
@@ -3669,10 +3679,12 @@ window.restoreFromGoogleDrive = async function() {
 
         let updatedAt = p.lastUpdated ? new Date(p.lastUpdated).toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US') : '';
         if (typeof toast === 'function') toast(`✅ ${L === 'ar' ? 'تم الاسترجاع! آخر حفظ: ' : 'Restored! Last saved: '} ${updatedAt}`, 'success');
+        if (ds) ds.innerHTML = `<span style="color:green">Restored successfully! Reloading...</span>`;
 
         setTimeout(() => { window.location.reload(); }, 1500);
     } catch(e) {
         console.error('Cloud Restore Error:', e);
+        if (ds) ds.innerHTML = `<span style="color:red;font-weight:bold;">Firebase Restore Error: ${e.message}</span>`;
         if (typeof toast === 'function') toast(L === 'ar' ? 'خطأ في الاسترجاع' : 'Error restoring', 'error');
     }
 };
