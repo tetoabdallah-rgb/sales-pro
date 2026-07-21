@@ -3618,8 +3618,7 @@ window.cloudAutoSave = async function(label) {
         let ds = document.getElementById('driveStatus');
         if (ds) ds.innerHTML = `? <strong>${L === 'ar' ? '??? ??????:' : 'Last sync:'}</strong> ${tme}`;
     } catch(e) {
-        console.warn('Cloud auto-save failed:', e);
-        if (typeof toast === 'function') toast(L === 'ar' ? '??? ??? ????? ????? (???? ?? ?????? ?????????)' : 'Save failed', 'error');
+        console.warn('Cloud auto-save failed:', e); alert('Sync Error: ' + e.message); if (typeof toast === 'function') toast(L === 'ar' ? '??? ?????: ' + e.message : 'Save failed: ' + e.message, 'error');
     }
 };
 
