@@ -1641,7 +1641,6 @@ auth.onAuthStateChanged(user => {
                     accCats = d['accCats'] || accCats;
                     hwCats = d['hwCats'] || hwCats;
                     for(let k in d){ try{ localStorage.setItem(k, JSON.stringify(d[k])); }catch(e){} }
-                    chkAsm();
                     syncUI('done');
                 } else {
                     let md = { accCats: ld('accCats')||[], hwCats: ld('hwCats')||[] };
@@ -1651,17 +1650,7 @@ auth.onAuthStateChanged(user => {
                 syncUI('error'); console.error('Sync Error: ' + err.message);
             });
             
-            db.collection('users').doc(user.uid).collection('chunks').onSnapshot(snap => {
-                snap.docChanges().forEach(change => {
-                    if (change.type === "added" || change.type === "modified") {
-                        _chkC[change.doc.id] = change.doc.data().data;
-                    }
-                    if (change.type === "removed") {
-                        delete _chkC[change.doc.id];
-                    }
-                });
-                chkAsm();
-            });
+            
         }
         
         if (window.isAppAdmin) {
@@ -3577,6 +3566,14 @@ window.TUI = function(enStr) {
   };
   return map[enStr] || enStr;
 };
+window.toast = function(msg, type = 'info') {
+    let t = document.getElementById('TT');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3000);
+};
+
 </script>
 <script>
 // js/gdrive.js - Firebase Cloud Sync (Using allowed /users/uid/chunks paths)
