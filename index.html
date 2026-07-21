@@ -1420,7 +1420,8 @@ input[type=file] {
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <!-- ALL LOCAL JS INLINED BELOW -->
-<script>const firebaseConfig = {
+<script>// js/firebase-config.js
+const firebaseConfig = {
     apiKey: "AIzaSyAxXU5MePdVP1OcOyzitl0Jy5jMGrWtTSE",
     authDomain: "salesproapp-ba56b.firebaseapp.com",
     projectId: "salesproapp-ba56b",
@@ -1430,11 +1431,18 @@ input[type=file] {
     measurementId: "G-FPFPWB7VV5"
 };
 
+// Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
 const db = firebase.firestore();
+
+// Force long-polling to bypass strict Antiviruses or Firewalls that block WebSockets
+db.settings({
+    experimentalForceLongPolling: true
+});
+
 const auth = firebase.auth();
 let currentUser = null;
 
