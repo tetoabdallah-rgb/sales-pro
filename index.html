@@ -3578,12 +3578,28 @@ window.toast = function(msg, type = 'info') {
 <script>
 // js/gdrive.js - Firebase Cloud Sync (Using allowed /users/uid/chunks paths)
 
+// Helper to timeout firebase requests if offline
+const withTimeout = (promise, ms, msg) => {
+    let timeout = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(msg || 'Network timeout (Client might be offline)')), ms);
+    });
+    return Promise.race([promise, timeout]);
+};
+
 window.cloudAutoSave = async function(label) {
     let ds = document.getElementById('driveStatus');
     if (!currentUser || !db) {
         if (ds) ds.innerHTML = `<span style="color:red">Error: Not logged in or DB not initialized</span>`;
         return;
     }
+    
+    // Check basic browser connectivity first
+    if (!navigator.onLine) {
+        if (ds) ds.innerHTML = `<span style="color:red;font-weight:bold;">Error: You are completely offline. Check your internet.</span>`;
+        if (typeof toast === 'function') toast(L === 'ar' ? 'أنت غير متصل بالإنترنت' : 'You are offline', 'error');
+        return;
+    }
+
     try {
         let dump = {
             salesData:  S        || [],
@@ -3602,18 +3618,26 @@ window.cloudAutoSave = async function(label) {
         
         if (ds) ds.innerHTML = `<span style="color:blue">Uploading ${numChunks} parts to Cloud...</span>`;
 
-        // Save metadata directly to the main users document (which is definitely allowed)
-        await db.collection('users').doc(currentUser.uid).set({
-            backup_chunks: numChunks,
-            backup_timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            backup_lastUpdated: dump.lastUpdated,
-            backup_savedBy: dump.savedBy
-        }, { merge: true }); // Merge so we don't overwrite their other settings
+        // Save metadata
+        await withTimeout(
+            db.collection('users').doc(currentUser.uid).set({
+                backup_chunks: numChunks,
+                backup_timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                backup_lastUpdated: dump.lastUpdated,
+                backup_savedBy: dump.savedBy
+            }, { merge: true }),
+            10000, 
+            'Timeout: Could not reach Firebase server. Your internet might be unstable or a firewall/adblocker is blocking the connection.'
+        );
         
-        // Save chunks to the existing chunks subcollection
+        // Save chunks
         for(let i = 0; i < numChunks; i++) {
             let part = str.substring(i * chunkSize, (i + 1) * chunkSize);
-            await db.collection('users').doc(currentUser.uid).collection('chunks').doc('backup_chunk_'+i).set({ data: part });
+            await withTimeout(
+                db.collection('users').doc(currentUser.uid).collection('chunks').doc('backup_chunk_'+i).set({ data: part }),
+                10000,
+                'Timeout: Failed to upload chunk ' + (i+1) + '. Client might be offline.'
+            );
         }
 
         let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
@@ -3643,11 +3667,22 @@ window.restoreFromGoogleDrive = async function() {
     }
     if (!confirm(L === 'ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالنسخة السحابية. هل أنت متأكد؟' : 'This will replace current data with the cloud backup. Sure?')) return;
 
+    if (!navigator.onLine) {
+        if (ds) ds.innerHTML = `<span style="color:red;font-weight:bold;">Error: You are completely offline. Check your internet.</span>`;
+        if (typeof toast === 'function') toast(L === 'ar' ? 'أنت غير متصل بالإنترنت' : 'You are offline', 'error');
+        return;
+    }
+
     try {
         if (typeof toast === 'function') toast(L === 'ar' ? 'جاري الاسترجاع...' : 'Restoring...', 'info');
         if (ds) ds.innerHTML = `<span style="color:blue">Fetching data from Cloud...</span>`;
 
-        let doc = await db.collection('users').doc(currentUser.uid).get();
+        let doc = await withTimeout(
+            db.collection('users').doc(currentUser.uid).get(),
+            10000,
+            'Timeout: Could not reach Firebase to download backup.'
+        );
+
         if (!doc.exists || !doc.data().backup_chunks) {
             if (typeof toast === 'function') toast(L === 'ar' ? 'لا يوجد نسخة احتياطية في السحابة!' : 'No cloud backup found!', 'error');
             if (ds) ds.innerHTML = `<span style="color:red">No cloud backup found!</span>`;
@@ -3659,7 +3694,11 @@ window.restoreFromGoogleDrive = async function() {
         let numChunks = d.backup_chunks || 1;
         
         for(let i=0; i<numChunks; i++){
-            let c = await db.collection('users').doc(currentUser.uid).collection('chunks').doc('backup_chunk_'+i).get();
+            let c = await withTimeout(
+                db.collection('users').doc(currentUser.uid).collection('chunks').doc('backup_chunk_'+i).get(),
+                10000,
+                'Timeout: Failed to download chunk ' + (i+1)
+            );
             if(c.exists) fullStr += c.data().data;
         }
         
@@ -3692,7 +3731,7 @@ window.restoreFromGoogleDrive = async function() {
 window.getCloudInfo = async function() {
     if (!currentUser || !db) return null;
     try {
-        let doc = await db.collection('users').doc(currentUser.uid).get();
+        let doc = await withTimeout(db.collection('users').doc(currentUser.uid).get(), 5000, 'Timeout');
         if (!doc.exists || !doc.data().backup_chunks) return null;
         let d = doc.data();
         
@@ -3700,7 +3739,7 @@ window.getCloudInfo = async function() {
         let numChunks = d.backup_chunks || 1;
         
         for(let i=0; i<numChunks; i++){
-            let c = await db.collection('users').doc(currentUser.uid).collection('chunks').doc('backup_chunk_'+i).get();
+            let c = await withTimeout(db.collection('users').doc(currentUser.uid).collection('chunks').doc('backup_chunk_'+i).get(), 5000, 'Timeout');
             if(c.exists) fullStr += c.data().data;
         }
         
