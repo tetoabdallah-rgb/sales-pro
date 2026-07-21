@@ -3611,35 +3611,37 @@ window.cloudAutoSave = async function(label) {
         }
 
         let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
-        if (typeof toast === 'function') toast((L === 'ar' ? '?? ?? ????? ?? ???????: ' : '?? Cloud saved: ') + (label || ''), 'success');
+        if (typeof toast === 'function') toast((L === 'ar' ? '✅ تم الحفظ في السحابة: ' : '✅ Cloud saved: ') + (label || ''), 'success');
         let ds = document.getElementById('driveStatus');
-        if (ds) ds.innerHTML = `? <strong>${L === 'ar' ? '??? ??????:' : 'Last sync:'}</strong> ${tme}`;
+        if (ds) ds.innerHTML = `✅ <strong>${L === 'ar' ? 'آخر مزامنة:' : 'Last sync:'}</strong> ${tme}`;
     } catch(e) {
-        console.warn('Cloud auto-save failed:', e); alert('Sync Error: ' + e.message); if (typeof toast === 'function') toast(L === 'ar' ? '??? ?????: ' + e.message : 'Save failed: ' + e.message, 'error');
+        console.warn('Cloud auto-save failed:', e); 
+        alert('Sync Error: ' + e.message); 
+        if (typeof toast === 'function') toast(L === 'ar' ? '❌ فشل الحفظ: ' + e.message : 'Save failed: ' + e.message, 'error');
     }
 };
 
 window.backupToGoogleDrive = async function() {
     if (!currentUser) {
-        if (typeof toast === 'function') toast(L === 'ar' ? '??? ????? ?????? ?????' : 'Login required', 'error');
+        if (typeof toast === 'function') toast(L === 'ar' ? 'يجب تسجيل الدخول أولاً' : 'Login required', 'error');
         return;
     }
-    if (typeof toast === 'function') toast(L === 'ar' ? '???? ????? ?? ???????...' : 'Saving to cloud...', 'info');
-    await window.cloudAutoSave(L === 'ar' ? '????' : 'Manual');
+    if (typeof toast === 'function') toast(L === 'ar' ? 'جاري الحفظ في السحابة...' : 'Saving to cloud...', 'info');
+    await window.cloudAutoSave(L === 'ar' ? 'يدوي' : 'Manual');
 };
 
 window.restoreFromGoogleDrive = async function() {
     if (!currentUser) {
-        if (typeof toast === 'function') toast(L === 'ar' ? '??? ????? ?????? ?????' : 'Login required', 'error');
+        if (typeof toast === 'function') toast(L === 'ar' ? 'يجب تسجيل الدخول أولاً' : 'Login required', 'error');
         return;
     }
-    if (!confirm(L === 'ar' ? '???? ??????? ???????? ??????? ??????? ???????. ??????' : 'This will replace current data with the cloud backup. Sure?')) return;
+    if (!confirm(L === 'ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالنسخة السحابية. هل أنت متأكد؟' : 'This will replace current data with the cloud backup. Sure?')) return;
 
     try {
-        if (typeof toast === 'function') toast(L === 'ar' ? '???? ?????????...' : 'Restoring...', 'info');
+        if (typeof toast === 'function') toast(L === 'ar' ? 'جاري الاسترجاع...' : 'Restoring...', 'info');
         let doc = await db.collection('users').doc(currentUser.uid).get();
         if (!doc.exists || !doc.data().backup_chunks) {
-            if (typeof toast === 'function') toast(L === 'ar' ? '?? ???? ???? ???????? ?? ???????!' : 'No cloud backup found!', 'error');
+            if (typeof toast === 'function') toast(L === 'ar' ? 'لا يوجد نسخة احتياطية في السحابة!' : 'No cloud backup found!', 'error');
             return;
         }
         
@@ -3653,7 +3655,7 @@ window.restoreFromGoogleDrive = async function() {
         }
         
         if (!fullStr) {
-            if (typeof toast === 'function') toast(L === 'ar' ? '?????? ????? ?? ?????' : 'Backup corrupted or empty', 'error');
+            if (typeof toast === 'function') toast(L === 'ar' ? 'النسخة الاحتياطية تالفة أو فارغة' : 'Backup corrupted or empty', 'error');
             return;
         }
         
@@ -3666,12 +3668,12 @@ window.restoreFromGoogleDrive = async function() {
         if (p.duesData)   { D       = p.duesData;   sv('duesData',   D); }
 
         let updatedAt = p.lastUpdated ? new Date(p.lastUpdated).toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US') : '';
-        if (typeof toast === 'function') toast(`? ${L === 'ar' ? '?? ?????????! ??? ???: ' : 'Restored! Last saved: '} ${updatedAt}`, 'success');
+        if (typeof toast === 'function') toast(`✅ ${L === 'ar' ? 'تم الاسترجاع! آخر حفظ: ' : 'Restored! Last saved: '} ${updatedAt}`, 'success');
 
         setTimeout(() => { window.location.reload(); }, 1500);
     } catch(e) {
         console.error('Cloud Restore Error:', e);
-        if (typeof toast === 'function') toast(L === 'ar' ? '??? ????? ?????????' : 'Error restoring', 'error');
+        if (typeof toast === 'function') toast(L === 'ar' ? 'خطأ في الاسترجاع' : 'Error restoring', 'error');
     }
 };
 
