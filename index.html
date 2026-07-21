@@ -3379,7 +3379,7 @@ window.saveDriveKeys = function() {
     if (cId && aKey) {
         localStorage.setItem('gdrive_client_id', cId);
         localStorage.setItem('gdrive_api_key', aKey);
-        if(typeof toast === 'function') toast(L==='ar'?'✅ تم حفظ مفاتيح جوجل درايف بنجاح.','Google Drive keys saved', 'success');
+        if(typeof toast === 'function') toast(L==='ar'?'✅ تم حفظ مفاتيح جوجل درايف بنجاح.':'Google Drive keys saved', 'success');
         setTimeout(() => window.location.reload(), 1500);
     } else {
         if(typeof toast === 'function') toast(L==='ar'?'❌ يرجى إدخال المفتاحين (Client ID و API Key)':'Please enter both keys', 'error');
