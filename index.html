@@ -1833,28 +1833,7 @@ function renderPagination(total, stateKey, onPageChange) {
     
     html += `</div>`;
     return html;
-// js/ui-components.js
-
-// Pagination State
-let pState = {
-    sales: { page: 1, limit: 50 },
-    customers: { page: 1, limit: 50 },
-    analytics: { page: 1, limit: 50 }
-};
-
-function renderPagination(total, stateKey, onPageChange) {
-    let state = pState[stateKey];
-    let totalPages = Math.ceil(total / state.limit);
-    if (totalPages <= 1) return '';
-    
-    let html = `<div style="display:flex;justify-content:center;gap:8px;padding:12px;border-top:1px solid var(--bd-s)">`;
-    
-    html += `<button class="btn" ${state.page === 1 ? 'disabled' : ''} onclick="pState['${stateKey}'].page--; ${onPageChange}()">&#x2B05;&#xFE0F;</button>`;
-    html += `<span style="font-size:0.75rem;font-weight:bold;align-self:center;">&#x1F4C4; ${state.page} ${totalPages}</span>`;
-    html += `<button class="btn" ${state.page === totalPages ? 'disabled' : ''} onclick="pState['${stateKey}'].page++; ${onPageChange}()">&#x27A1;&#xFE0F;</button>`;
-    
-    html += `</div>`;
-    return html;
+}
 }
 
 // 1. Dashboard
