@@ -1393,6 +1393,7 @@ input[type=file] {
     <div class="sbt">
       <span class="sbr">&#x2699;&#xFE0F; Sales Pro</span>
       <div class="sbb">
+        <button id="bAlBell" title="Alerts" onclick="P='alerts';if(typeof buildNav==='function')buildNav();render();" style="position:relative;">&#x1F514;<span id="alBadge" style="display:none;position:absolute;top:-5px;right:-5px;background:var(--rd);color:#fff;border-radius:50%;padding:2px 5px;font-size:0.5rem;font-weight:bold;">0</span></button>
         <button id="bTh" title="Theme">&#x1F317;</button>
         <button id="bLn" title="Language">EN</button>
         <button id="bOt" title="Logout">&#x062E;&#x0631;&#x0648;&#x062C;</button>
@@ -1436,13 +1437,10 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-const db = firebase.firestore();
-
-// Force long-polling to bypass strict Antiviruses or Firewalls that block WebSockets
-db.settings({
-    experimentalForceLongPolling: true
+firebase.firestore().enablePersistence().catch(function(err) {
+    console.warn("Firebase persistence error: ", err);
 });
-
+const db = firebase.firestore();
 const auth = firebase.auth();
 let currentUser = null;
 
@@ -1584,7 +1582,7 @@ function getFilteredSales() {
 
 
 function dc(k) { if(CH[k]) { CH[k].destroy(); delete CH[k]; } }
-// Robust row value getter - matches column by name (case insensitive, ignores spaces)
+// Append this to data-store.js to have a robust row getter globally
 function getRowVal(row, possibleNames) {
     let keys = Object.keys(row);
     let k = keys.find(k => possibleNames.some(p => k.toLowerCase().replace(/\s+/g, '') === p.toLowerCase().replace(/\s+/g, '')));
@@ -1594,29 +1592,6 @@ function getRowVal(row, possibleNames) {
         return Number(v) || 0;
     }
     return 0;
-}
-
-// Get sales value - works with OLD format (Sales After Discount) AND NEW format (Sales Without Tax)
-function getSalesVal(row) {
-    return getRowVal(row, ['Sales After Discount', 'Sales Without Tax', 'Sales', 'Amount']);
-}
-
-// Get profit value
-function getProfitVal(row) {
-    return getRowVal(row, ['Profit Margin', 'Profit']);
-}
-
-// Get payment amount from Collections sheet
-function getPayVal(row) {
-    return getRowVal(row, ['Amount', 'Collection']);
-}
-
-// Get Payment Ref type from Collections sheet: returns 'acc', 'hw', or ''
-function getPayRef(row) {
-    let ref = (row['Payment Ref.'] || row['Payment Ref'] || row['PaymentRef'] || '').toString().trim().toLowerCase();
-    if (ref.startsWith('acc')) return 'acc';
-    if (ref.startsWith('hw'))  return 'hw';
-    return '';
 }
 
 </script>
@@ -1644,6 +1619,7 @@ auth.onAuthStateChanged(user => {
                     accCats = d['accCats'] || accCats;
                     hwCats = d['hwCats'] || hwCats;
                     for(let k in d){ try{ localStorage.setItem(k, JSON.stringify(d[k])); }catch(e){} }
+                    chkAsm();
                     syncUI('done');
                 } else {
                     let md = { accCats: ld('accCats')||[], hwCats: ld('hwCats')||[] };
@@ -1653,7 +1629,17 @@ auth.onAuthStateChanged(user => {
                 syncUI('error'); console.error('Sync Error: ' + err.message);
             });
             
-            
+            db.collection('users').doc(user.uid).collection('chunks').onSnapshot(snap => {
+                snap.docChanges().forEach(change => {
+                    if (change.type === "added" || change.type === "modified") {
+                        _chkC[change.doc.id] = change.doc.data().data;
+                    }
+                    if (change.type === "removed") {
+                        delete _chkC[change.doc.id];
+                    }
+                });
+                chkAsm();
+            });
         }
         
         if (window.isAppAdmin) {
@@ -1726,37 +1712,6 @@ auth.onAuthStateChanged(user => {
             loadOwnDoc();
         }
         
-        // Auto-restore from cloud if local data is completely empty
-        if ((!S || S.length === 0) && (!T || T.length === 0) && (!C || C.length === 0)) {
-            console.log('Local data is empty, attempting auto-restore from cloud...');
-            db.collection('users').doc(user.uid).get().then(async doc => {
-                if (doc.exists && doc.data().backup_chunks) {
-                    let d = doc.data();
-                    let fullStr = "";
-                    let numChunks = d.backup_chunks || 1;
-                    for(let i=0; i<numChunks; i++){
-                        let c = await db.collection('users').doc(user.uid).collection('chunks').doc('backup_chunk_'+i).get();
-                        if(c.exists) fullStr += c.data().data;
-                    }
-                    if (fullStr) {
-                        let p = JSON.parse(fullStr);
-                        let changed = false;
-                        if (p.salesData && p.salesData.length > 0)  { S = p.salesData;  sv('salesData',  S); changed = true; }
-                        if (p.targetData && p.targetData.length > 0){ T = p.targetData; sv('targetData', T); changed = true; }
-                        if (p.payData && p.payData.length > 0)      { C = p.payData;    sv('payData',    C); changed = true; }
-                        if (p.duesData)     { D = p.duesData;   sv('duesData',   D); }
-                        if (p.accCats)      { accCats = p.accCats; sv('accCats', accCats); }
-                        if (p.hwCats)       { hwCats = p.hwCats;   sv('hwCats', hwCats); }
-                        
-                        if (changed) {
-                            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم استرجاع بيانات السحابة تلقائياً' : '✅ Cloud data auto-restored', 'success');
-                            setTimeout(() => { window.location.reload(); }, 1500);
-                        }
-                    }
-                }
-            }).catch(err => console.error('Auto-restore failed:', err));
-        }
-        
         if(typeof init === 'function') init();
     } else {
         currentUser = null;
@@ -1827,59 +1782,6 @@ function renderPagination(total, stateKey, onPageChange) {
 }
 
 // 1. Dashboard
-function rDash() {
-    let ds = getFilteredSales();
-    let ts = 0, tp = 0, tt = 0, tpt = 0;
-    
-    ds.forEach(r => { ts += getSalesVal(r); tp += getProfitVal(r); });
-    T.forEach(r => { tt += Number(r.Target)||0; tpt += Number(r['Profit Target'])||0; });
-    
-    let cu = {}, or = {};
-    ds.forEach(r => { cu[r.Customer] = 1; or[r['Order Nbr']] = 1; });
-    
-    let ap = tt > 0 ? ts / tt * 100 : 0;
-    let pp = tpt > 0 ? tp / tpt * 100 : 0;
-    
-    let dateFilterUI = `
-        <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);">
-            <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('From'):'From'}:</label>
-            <input type="date" id="dfStart" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.start||''}">
-            <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('To'):'To'}:</label>
-            <input type="date" id="dfEnd" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.end||''}">
-            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">?</button>
-        </div>
-    `;
-    
-    $('M').innerHTML = `
-        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
-            ${dateFilterUI}
-        </div>
-        <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Cust.'):'Cust.'}</div><div class="vl">${aFmt(Object.keys(cu).length)}</div></div>
-        </div>
-        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, tt)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tpt)}</div>
-        
-        <div class="cg">
-            <div class="cc"><h3>${L==='ar'?TUI('Daily'):'Daily'}</h3><div class="cw"><canvas id="cD"></canvas></div></div>
-            <div class="cc"><h3>${L==='ar'?TUI('Cats'):'Cats'}</h3><div class="cw"><canvas id="cC"></canvas></div></div>
-        </div>
-    `;
-    
-    // Attach date filter events
-    ['dfStart', 'dfEnd'].forEach(id => {
-        $(id).onchange = () => {
-            globalDateRange.start = $('dfStart').value;
-            globalDateRange.end = $('dfEnd').value;
-            rDash(); // Re-render with new data
-        };
-    });
-    $('bDateClear').onclick = () => {
         globalDateRange = { start: null, end: null };
         rDash();
     };
@@ -1888,7 +1790,7 @@ function rDash() {
     let dl = {};
     ds.forEach(r => {
         let d = pd(r['Invoice Date'] || r['Order Date']);
-        if(d) dl[d] = (dl[d]||0) + (getSalesVal(r));
+        if(d) dl[d] = (dl[d]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
     });
     let lb = Object.keys(dl).sort();
     dc('d');
@@ -1905,7 +1807,7 @@ function rDash() {
     let ca = {};
     ds.forEach(r => {
         let c = r['Item Class Name'] || 'Other';
-        ca[c] = (ca[c]||0) + (getSalesVal(r));
+        ca[c] = (ca[c]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
     });
     let cs2 = Object.entries(ca).sort((a,b)=>b[1]-a[1]).slice(0,8);
     dc('c');
@@ -1929,8 +1831,8 @@ function rSales() {
     ds.forEach(r => {
         let iName = r['Item Description'] || 'Unknown';
         if(!items[iName]) items[iName] = {s:0, p:0, qty:0};
-        items[iName].s += getSalesVal(r);
-        items[iName].p += getProfitVal(r);
+        items[iName].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        items[iName].p += getRowVal(r, ['Profit Margin', 'Profit']);
         items[iName].qty += Number(r.Quantity)||0;
     });
     
@@ -2001,7 +1903,7 @@ function rSales() {
         let paged = data.slice(start, start + st.limit);
         
         $('stb').innerHTML = paged.map(r => {
-            let s = getSalesVal(r), pr = getProfitVal(r), pm = s>0 ? pr/s*100 : 0;
+            let s = getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']), pr = getRowVal(r, ['Profit Margin', 'Profit']), pm = s>0 ? pr/s*100 : 0;
             let b = pm>20 ? '<span class="badge bg-g">High</span>' : pm>10 ? '<span class="badge bg-a">Med</span>' : '<span class="badge bg-r">Low</span>';
             return `<tr><td>${pd(r['Order Date'])}</td><td>${r['Order Nbr']||''}</td><td>${r.Customer||''}</td><td>${r['Customer Class']||''}</td><td>${r['Item Class Name']||''}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r['Item Description']||''}">${r['Item Description']||''}</td><td>${r.Quantity||0}</td><td>${fmt(s)}</td><td>${fmt(pr)} ${b}</td></tr>`;
         }).join('');
@@ -2132,8 +2034,8 @@ function rPers() {
     let htpt = savedHwProfitTarget !== null ? Number(savedHwProfitTarget) : 0;
     
     myS.forEach(r => { 
-        let s = getSalesVal(r);
-        let p = getProfitVal(r);
+        let s = getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        let p = getRowVal(r, ['Profit Margin', 'Profit']);
         ts += s; tp += p; 
         if (isAcc(r['Item Class Name'])) {
             accS += s; accP += p;
@@ -2160,8 +2062,8 @@ function rPers() {
         let d = pd(r['Order Date']); if(!d) return;
         let m = d.slice(0,7);
         if(!monthly[m]) monthly[m] = {s:0,p:0};
-        monthly[m].s += getSalesVal(r);
-        monthly[m].p += getProfitVal(r);
+        monthly[m].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        monthly[m].p += getRowVal(r, ['Profit Margin', 'Profit']);
     });
     let months = Object.keys(monthly).sort();
 
@@ -2270,9 +2172,9 @@ function rCust() {
         let c = r.Customer || '';
         if(!cu[c]) cu[c] = {rg:r['Customer Class']||'', o:{}, s:0, p:0, accS:0, hwS:0, l:''};
         cu[c].o[r['Order Nbr']] = 1;
-        cu[c].s += getSalesVal(r);
-        cu[c].p += getProfitVal(r);
-        if(isAcc(r['Item Class Name'])) cu[c].accS += getSalesVal(r); else cu[c].hwS += getSalesVal(r);
+        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
+        if(isAcc(r['Item Class Name'])) cu[c].accS += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']); else cu[c].hwS += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
         let d = pd(r['Order Date']); if(d > cu[c].l) cu[c].l = d;
     });
     let arr = Object.keys(cu).map(n => {
@@ -2370,10 +2272,10 @@ function rBrands() {
     S.forEach(r => {
         let b = r['Brand'] || r['Item Class Name'] || 'Other';
         if(!brands[b]) brands[b] = {s:0,p:0,qty:0};
-        brands[b].s += getSalesVal(r);
-        brands[b].p += getProfitVal(r);
+        brands[b].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        brands[b].p += getRowVal(r, ['Profit Margin', 'Profit']);
         brands[b].qty += Number(r.Quantity)||0;
-        tsTotal += getSalesVal(r);
+        tsTotal += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
     });
     let arr = Object.entries(brands).sort((a,b)=>b[1].s-a[1].s);
     
@@ -2474,12 +2376,12 @@ function rAn() {
         let d = pd(r['Order Date']); if(!d) return;
         let m = d.slice(0,7);
         if(!monthly[m]) monthly[m] = {s:0,p:0};
-        monthly[m].s += getSalesVal(r);
-        monthly[m].p += getProfitVal(r);
+        monthly[m].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        monthly[m].p += getRowVal(r, ['Profit Margin', 'Profit']);
         let c = r['Item Class Name']||'Other';
-        cats[c] = (cats[c]||0) + (getSalesVal(r));
+        cats[c] = (cats[c]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
         let rg = r['Customer Class']||'Other';
-        regions[rg] = (regions[rg]||0) + (getSalesVal(r));
+        regions[rg] = (regions[rg]||0) + (getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']));
     });
     let months = Object.keys(monthly).sort();
     let topCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,8);
@@ -2527,8 +2429,8 @@ function rProfit() {
     ds.forEach(r => {
         let c = r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0};
-        cu[c].s += getSalesVal(r);
-        cu[c].p += getProfitVal(r);
+        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.m-a.m);
     
@@ -2580,13 +2482,11 @@ function rProfit() {
 
 // Accessories
 function rAcc() {
-    // Always use DEF_ACC as base; accCats overrides only if user saved custom ones
-    let _accList = (accCats && accCats.length) ? accCats : DEF_ACC;
-    let ds = getFilteredSales().filter(r => _accList.includes(r['Item Class Name']));
-    let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
-    let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
+    let ds = getFilteredSales().filter(r => isAcc(r['Item Class Name']));
+    let tot = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])),0);
+    let prof = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.accessories}</span> ${t('accessories')}</h1></div>
@@ -2611,10 +2511,10 @@ function rAcc() {
 // Hardware
 function rHW() {
     let ds = getFilteredSales().filter(r => isHW(r['Item Class Name']));
-    let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
-    let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
+    let tot = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])),0);
+    let prof = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.hardware}</span> ${t('hardware')}</h1></div>
@@ -2644,7 +2544,7 @@ function rCollections() {
         S.forEach(s => {
             let c = s['Customer'];
             if(c) {
-                let v = Number(s['Sales Without Tax'] || 0);
+                let v = Number(s['Sales After Discount'] || 0);
                 if(isAcc(s['Item Class Name'])) cAccMap[c] = (cAccMap[c]||0) + v;
                 if(isHW(s['Item Class Name'])) cHWMap[c] = (cHWMap[c]||0) + v;
             }
@@ -2666,13 +2566,7 @@ function rCollections() {
         let cName = getVal(['Customer Name', 'Customer']) || '';
         
         tot += val;
-          // Payment Ref. column takes priority: acc=accessories, hw=hardware
-          let payRef = (r['Payment Ref.'] || r['Payment Ref'] || r['PaymentRef'] || '').toString().trim().toLowerCase();
-          if (payRef.startsWith('acc')) {
-              accTot += val;
-          } else if (payRef.startsWith('hw')) {
-              hwTot += val;
-          } else if (ah.includes('acc') || ah.includes('اكسسوار')) {
+        if (ah.includes('acc') || ah.includes('اكسسوار')) {
             accTot += val;
         } else if (ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
             hwTot += val;
@@ -2715,8 +2609,8 @@ function rKey() {
     S.forEach(r => {
         let c = r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0,o:{}};
-        cu[c].s += getSalesVal(r);
-        cu[c].p += getProfitVal(r);
+        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
         cu[c].o[r['Order Nbr']] = 1;
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
@@ -2788,7 +2682,7 @@ function rDorm() {
         let c = r.Customer || '';
         if(!c) return;
         let dStr = pd(r['Order Date']);
-        let s = getSalesVal(r);
+        let s = getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
         
         if(!cu[c]) cu[c] = {last: dStr, s: 0};
         else if (dStr && dStr > cu[c].last) cu[c].last = dStr;
@@ -2858,7 +2752,7 @@ function rPros() {
 // Opportunities (customers below 50% of target)
 function rPot() {
     let cu = {};
-    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(getSalesVal(r)); });
+    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
     let opps = T.map(r => {
         let tg = Number(r.Target)||0, ach = cu[r.Customer]||0, pct = tg>0?ach/tg*100:0;
         return {n:r.Customer, tg, ach, pct, gap: tg-ach};
@@ -2921,7 +2815,7 @@ function rAl() {
     });
     // Low target alerts
     let cuS = {};
-    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getSalesVal(r)); });
+    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
     T.forEach(r => {
         let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
         if(pct<50 && tg>0) alerts.push({type:'danger', icon:'&#x26A0;&#xFE0F;', msg:`${r.Customer} ? ${L==='ar'?TUI('Achievement'):'Achievement'} ${pc(pct)}`});
@@ -2942,12 +2836,12 @@ function rAI() {
     ds.forEach(r => {
         let c=r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0,o:{},last:'',accS:0,hwS:0};
-        cu[c].s += getSalesVal(r);
-        cu[c].p += getProfitVal(r);
+        cu[c].s += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        cu[c].p += getRowVal(r, ['Profit Margin', 'Profit']);
         cu[c].o[r['Order Nbr']]=1;
         let d=pd(r['Order Date']); if(d>cu[c].last) cu[c].last=d;
-        if(isAcc(r['Item Class Name'])) cu[c].accS+=getSalesVal(r);
-        else if(isHW(r['Item Class Name'])) cu[c].hwS+=getSalesVal(r);
+        if(isAcc(r['Item Class Name'])) cu[c].accS+=getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+        else if(isHW(r['Item Class Name'])) cu[c].hwS+=getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
     });
     let insights = [];
     let arr = Object.entries(cu).map(([n,d])=>({n,...d,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
@@ -3015,8 +2909,8 @@ function rAI() {
                 sendBtn.innerHTML = '?';
                 rAI(); 
 
-                let totalSales = ds.reduce((s,r)=>s+(getSalesVal(r)), 0);
-                let totalProfit = ds.reduce((s,r)=>s+(getProfitVal(r)), 0);
+                let totalSales = ds.reduce((s,r)=>s+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])), 0);
+                let totalProfit = ds.reduce((s,r)=>s+(getRowVal(r, ['Profit Margin', 'Profit'])), 0);
                 let ctx = {
                     totalSales,
                     totalProfit,
@@ -3246,18 +3140,10 @@ function rSetup() {
         let done = 0, total = 0;
         let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
         if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
-        let onAllDone = () => {
-            toast(L==='ar' ? '✅ تم تحديث البيانات!' : '✅ Data Updated!');
-            render();
-            if (typeof window.cloudAutoSave === 'function') {
-                window.cloudAutoSave(L==='ar' ? 'رفع ملفات' : 'File Upload');
-            }
-        };
-        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) onAllDone(); }); }
-        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) onAllDone(); }); }
-        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) onAllDone(); }, 'Payment Ref'); }
+        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
+        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
+        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }, 'Payment Ref'); }
     };
-
     
     $('bSaveCats').onclick = () => {
         let vals = $('inAccCats').value.split(',').map(s => s.trim()).filter(s => s);
@@ -3295,12 +3181,12 @@ function rSettings() {
             <h1 style="display:flex;align-items:center;gap:12px;">
                 <span style="width:32px;height:32px;display:flex;">⚙️</span> ${t('settings')}
             </h1>
-            <p>${L==='ar'?'تخصيص ألوان التطبيق، والواجهة، وإعدادات المزامنة':'Customize app colors, interface, and sync settings'}</p>
+            <p>${L==='ar'?'تخصيص ألوان وواجهة التطبيق وإعدادات المزامنة':'Customize app colors, interface, and sync settings'}</p>
         </div>
         
         <div class="card" style="margin-bottom:20px;">
             <h3>🎨 ${L==='ar'?'اللون الأساسي':'Primary Color'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'اختر اللون الذي يناسب ذوقك':'Choose the color that fits you'}</p>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'اختر اللون الذي يريح عينيك':'Choose the color that fits you'}</p>
             
             <div style="display:flex;gap:12px;flex-wrap:wrap;" id="colorPicker">
                 ${CL.map((color, i) => `
@@ -3310,29 +3196,19 @@ function rSettings() {
         </div>
         
         <div class="card" style="margin-bottom:20px;">
-            <h3>☁️ ${L==='ar'?'النسخ الاحتياطي السحابي (Google Drive)':'Cloud Sync (Google Drive)'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'حفظ البيانات واسترجاعها مباشرة من حسابك في جوجل درايف.':'Backup and restore data directly from your Google Drive.'}</p>
-            
-            <div style="background:var(--bg3);padding:10px;border-radius:8px;margin-bottom:15px;">
-                <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:10px;">${L==='ar'?'تحتاج إلى إدخال مفاتيح Google API لكي تعمل المزامنة:':'You must enter Google API keys for sync to work:'}</p>
-                <input type="text" id="gdriveClientId" placeholder="Google Client ID" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
-                <input type="text" id="gdriveApiKey" placeholder="Google API Key" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
-                <button class="btn btn-p" onclick="saveDriveKeys()" style="width:100%;">${L==='ar'?'حفظ مفاتيح جوجل':'Save Google Keys'}</button>
+            <h3>☁️ ${L==='ar'?'إعدادات المزامنة السحابية (Google Drive)':'Cloud Sync Settings (Google Drive)'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفاتيح API لتفعيل المزامنة مع جوجل درايف':'Enter API keys to enable cloud sync'}</p>
+            <div class="fg">
+                <input type="text" id="gdriveClientId" placeholder="${L==='ar'?'Google Client ID':'Google Client ID'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
             </div>
-
-            <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;padding:10px;background:var(--bg3);border-radius:8px;">⏳ ${L==='ar'?'جاري التحقق...':'Checking...'}</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button class="btn btn-p" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;background:var(--ok);">
-                    ☁️ ${L==='ar'?'حفظ في درايف':'Save to Drive'}
-                </button>
-                <button class="btn" onclick="restoreFromGoogleDrive()" style="flex:1;min-width:140px;background:var(--bg3);">
-                    📂 ${L==='ar'?'استرجاع من درايف':'Restore from Drive'}
-                </button>
+            <div class="fg">
+                <input type="text" id="gdriveApiKey" placeholder="${L==='ar'?'Google API Key':'Google API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
             </div>
+            <button class="btn btn-p" onclick="saveDriveKeys()">${L==='ar'?'حفظ المفاتيح':'Save Keys'}</button>
         </div>
 
         <div class="card" style="margin-bottom:20px;">
-            <h3>🤖 ${L==='ar'?'إعدادات المساعد الذكي (Gemini AI)':'Gemini AI Settings'}</h3>
+            <h3>🤖 ${L==='ar'?'إعدادات الذكاء الاصطناعي (Gemini AI)':'Gemini AI Settings'}</h3>
             <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفتاح Gemini API لتفعيل المساعد الذكي':'Enter Gemini API key to enable smart assistant'}</p>
             <div class="fg">
                 <input type="text" id="geminiApiKey" placeholder="${L==='ar'?'Gemini API Key':'Gemini API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gemini_api_key') || ''}">
@@ -3352,25 +3228,12 @@ function rSettings() {
             let col = btn.getAttribute('data-color');
             sv('sp_primary', col);
             document.documentElement.style.setProperty('--am', col);
+            
+            // update selection UI
             document.querySelectorAll('.color-btn').forEach(b => b.style.border = '2px solid transparent');
             btn.style.border = '2px solid var(--tx1)';
         };
     });
-
-    // Load cloud backup info
-    if (typeof window.getCloudInfo === 'function') {
-        window.getCloudInfo().then(info => {
-            let ds = document.getElementById('driveStatus');
-            if (!ds) return;
-            if (!info) {
-                ds.innerHTML = L==='ar' ? '⚠️ لم تقم بعمل مزامنة في جوجل درايف مؤخراً.' : '⚠️ No recent Google Drive sync.';
-                return;
-            }
-            ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${info.lastUpdated}
-                &nbsp;|&nbsp; 📊 ${L==='ar'?'المبيعات:':'Sales:'} ${info.salesCount}
-                &nbsp;|&nbsp; 💰 ${L==='ar'?'التحصيلات:':'Collections:'} ${info.payCount}`;
-        });
-    }
 }
 
 window.saveDriveKeys = function() {
@@ -3379,10 +3242,10 @@ window.saveDriveKeys = function() {
     if (cId && aKey) {
         localStorage.setItem('gdrive_client_id', cId);
         localStorage.setItem('gdrive_api_key', aKey);
-        if(typeof toast === 'function') toast(L==='ar'?'✅ تم حفظ مفاتيح جوجل درايف بنجاح.':'Google Drive keys saved', 'success');
+        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفاتيح جوجل درايف بنجاح. أعد تحميل الصفحة.':'Google Drive keys saved. Please reload.', 'success');
         setTimeout(() => window.location.reload(), 1500);
     } else {
-        if(typeof toast === 'function') toast(L==='ar'?'❌ يرجى إدخال المفتاحين (Client ID و API Key)':'Please enter both keys', 'error');
+        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال كلا المفتاحين':'Please enter both keys', 'error');
     }
 };
 
@@ -3392,7 +3255,7 @@ window.saveGeminiKey = function() {
         localStorage.setItem('gemini_api_key', gKey);
         if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفتاح Gemini بنجاح':'Gemini key saved', 'success');
     } else {
-        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال المفتاح أولاً':'Please enter the key', 'error');
+        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال المفتاح':'Please enter the key', 'error');
     }
 };
 
@@ -3544,6 +3407,34 @@ function initAnm() {
     });
 }
 
+function updateAlertBadge() {
+    if(!$('alBadge')) return;
+    let alertsCount = 0;
+    let today = new Date();
+    let cu = {};
+    if(typeof S !== 'undefined' && S) {
+        S.forEach(r => { let c=r.Customer||''; let d=pd(r['Order Date']); if(!cu[c]||d>cu[c]) cu[c]=d; });
+        Object.entries(cu).forEach(([n,last]) => {
+            let days = Math.floor((today - new Date(last)) / 86400000);
+            if(days >= 60) alertsCount++;
+        });
+        let cuS = {};
+        S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
+        if(typeof T !== 'undefined' && T) {
+            T.forEach(r => {
+                let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
+                if(pct<50 && tg>0) alertsCount++;
+            });
+        }
+    }
+    if(alertsCount > 0) {
+        $('alBadge').style.display = 'block';
+        $('alBadge').textContent = alertsCount;
+    } else {
+        $('alBadge').style.display = 'none';
+    }
+}
+
 function render() {
     let fn = {
         dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
@@ -3554,6 +3445,7 @@ function render() {
     };
     if (fn[P]) fn[P]();
     initAnm();
+    updateAlertBadge();
 }
 
 window.TUI = function(enStr) {
@@ -3584,254 +3476,92 @@ window.TUI = function(enStr) {
   };
   return map[enStr] || enStr;
 };
-window.toast = function(msg, type = 'info') {
-    let t = document.getElementById('TT');
-    if (!t) return;
-    t.textContent = msg;
-    t.className = 'toast show ' + type;
-    setTimeout(() => { t.className = 'toast'; }, 3000);
-};
-
 </script>
 <script>
-// js/gdrive.js - Full Google Drive API Integration
+// js/gdrive.js (Now using Firebase Cloud Sync)
 
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
-
-let tokenClient;
-let gapiInited = false;
-let gisInited = false;
-
-window.gapiLoaded = function() {
-    if (typeof gapi !== 'undefined' && !gapi.client) {
-        gapi.load('client', initializeGapiClient);
-    } else if (typeof gapi !== 'undefined' && gapi.client) {
-        initializeGapiClient();
+window.backupToGoogleDrive = async function() {
+    if (!currentUser) {
+        if(typeof toast === 'function') toast(L==='ar'?'يجب تسجيل الدخول أولاً للنسخ الاحتياطي':'You must be logged in to backup', 'error');
+        return;
     }
-};
 
-async function initializeGapiClient() {
     try {
-        const API_KEY = localStorage.getItem('gdrive_api_key');
-        if (!API_KEY) return;
+        if(typeof toast === 'function') toast(L==='ar'?'جاري الرفع إلى السحابة...':'Uploading to Cloud...', 'info');
         
-        // Ensure gapi.client is loaded
-        if (typeof gapi !== 'undefined' && !gapi.client) {
-            await new Promise((resolve) => gapi.load('client', resolve));
-        }
-
-        await gapi.client.init({
-            apiKey: API_KEY,
-            discoveryDocs: [DISCOVERY_DOC],
-        });
-        gapiInited = true;
-    } catch (err) {
-        console.warn("Error initializing GAPI client: ", err);
-        throw err;
-    }
-}
-
-window.gisLoaded = function() {
-    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
-    if (!CLIENT_ID) return;
-    if (typeof google === 'undefined' || !google.accounts) return;
-    
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: '', 
-    });
-    gisInited = true;
-};
-
-// Auto-run if script tags loaded before this script
-if (typeof gapi !== 'undefined') window.gapiLoaded();
-if (typeof google !== 'undefined') window.gisLoaded();
-
-let isInitializing = false;
-
-async function requireAuth(callback) {
-    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
-    const API_KEY = localStorage.getItem('gdrive_api_key');
-    
-    if (!CLIENT_ID || !API_KEY) {
-        if(typeof toast === 'function') toast(L==='ar'?'يجب إدخال Google Client ID و API Key في الإعدادات':'Please enter Google Client ID and API Key in Settings', 'error');
-        return;
-    }
-
-    if (isInitializing) {
-        setTimeout(() => requireAuth(callback), 500);
-        return;
-    }
-
-    isInitializing = true;
-    try {
-        if (!gapiInited) await initializeGapiClient();
-        if (!gisInited) window.gisLoaded();
-    } catch(e) {
-        console.error(e);
-    }
-    isInitializing = false;
-
-    if (!gapiInited || !gisInited) {
-        if(typeof toast === 'function') toast(L==='ar'?'فشل الاتصال بخوادم جوجل. تأكد من صحة المفاتيح.':'Failed to connect to Google. Check keys.', 'error');
-        return;
-    }
-
-    tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) {
-            if(typeof toast === 'function') toast(L==='ar'?'خطأ في تسجيل الدخول لجوجل':'Google Login Error', 'error');
-            console.error(resp);
-            return;
-        }
-        callback();
-    };
-
-    if (gapi.client.getToken() === null) {
-        tokenClient.requestAccessToken({prompt: 'consent'});
-    } else {
-        tokenClient.requestAccessToken({prompt: ''});
-    }
-}
-
-window.backupToGoogleDrive = function() {
-    requireAuth(async () => {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري الحفظ في جوجل درايف...':'Saving to Google Drive...', 'info');
-        
-        let ds = document.getElementById('driveStatus');
-        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري الرفع...':'Uploading...'}</span>`;
-
         let dump = {
-            salesData:  S        || [],
-            targetData: T        || [],
-            accCats:    accCats  || [],
-            hwCats:     hwCats   || [],
-            payData:    C        || [],
-            duesData:   D        || [],
+            salesData: S || [],
+            targetData: T || [],
+            accCats: accCats || [],
+            hwCats: hwCats || [],
+            payData: C || [],
+            duesData: D || [],
             lastUpdated: new Date().toISOString()
         };
-        const fileContent = JSON.stringify(dump);
-        const file = new Blob([fileContent], { type: 'application/json' });
-        const metadata = {
-            'name': `SalesPro_Backup.json`,
-            'mimeType': 'application/json'
-        };
 
-        const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        form.append('file', file);
+        await db.collection('cloud_backups').doc(currentUser.uid).set({
+            backupData: JSON.stringify(dump),
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-        try {
-            // First check if file already exists to overwrite it
-            let existingFileId = null;
-            const search = await gapi.client.drive.files.list({
-                q: "name='SalesPro_Backup.json' and trashed=false",
-                spaces: 'drive',
-                fields: 'files(id, name)'
-            });
-            if (search.result.files && search.result.files.length > 0) {
-                existingFileId = search.result.files[0].id;
-            }
-
-            let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-            let method = 'POST';
-            if (existingFileId) {
-                url = `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=multipart`;
-                method = 'PATCH';
-            }
-
-            const res = await fetch(url, {
-                method: method,
-                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }),
-                body: form
-            });
-            
-            const data = await res.json();
-            if (data.id) {
-                let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
-                localStorage.setItem('last_gdrive_sync', tme);
-                if(typeof toast === 'function') toast(L==='ar'?'✅ تم الحفظ في جوجل درايف!':'✅ Saved to Google Drive!', 'success');
-                if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${tme}`;
-            } else {
-                throw new Error("Invalid response from Google Drive");
-            }
-        } catch (err) {
-            console.error("Upload error", err);
-            if(ds) ds.innerHTML = `<span style="color:red">Upload Error</span>`;
-            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل الحفظ في السحابة':'❌ Cloud save failed', 'error');
-        }
-    });
-};
-
-window.restoreFromGoogleDrive = function() {
-    if (!confirm(L === 'ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالنسخة الموجودة في جوجل درايف. متأكد؟' : 'Warning: Current data will be replaced with Google Drive backup. Sure?')) return;
-    
-    requireAuth(async () => {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري البحث عن النسخة...':'Searching for backup...', 'info');
+        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ نسختك الاحتياطية في السحابة بنجاح! ☁️':'Cloud backup saved successfully! ☁️', 'success');
+        
+        // Update UI status if exists
         let ds = document.getElementById('driveStatus');
-        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري التنزيل...':'Downloading...'}</span>`;
-
-        try {
-            const search = await gapi.client.drive.files.list({
-                q: "name='SalesPro_Backup.json' and trashed=false",
-                spaces: 'drive',
-                fields: 'files(id, name, modifiedTime)',
-                orderBy: 'modifiedTime desc'
-            });
-
-            if (!search.result.files || search.result.files.length === 0) {
-                if(typeof toast === 'function') toast(L==='ar'?'❌ لا يوجد نسخة احتياطية في جوجل درايف!':'❌ No backup found in Google Drive!', 'error');
-                if(ds) ds.innerHTML = `<span style="color:red">No backup found!</span>`;
-                return;
-            }
-
-            const fileId = search.result.files[0].id;
-            
-            // Download file content
-            const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token })
-            });
-            
-            const content = await res.text();
-            let p = JSON.parse(content);
-            
-            if (p.salesData)  { S       = p.salesData;  sv('salesData',  S); }
-            if (p.targetData) { T       = p.targetData; sv('targetData', T); }
-            if (p.accCats)    { accCats = p.accCats;    sv('accCats',    accCats); }
-            if (p.hwCats)     { hwCats  = p.hwCats;     sv('hwCats',     hwCats); }
-            if (p.payData)    { C       = p.payData;    sv('payData',    C); }
-            if (p.duesData)   { D       = p.duesData;   sv('duesData',   D); }
-
-            let tme = new Date(search.result.files[0].modifiedTime).toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
-            localStorage.setItem('last_gdrive_sync', tme);
-
-            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم الاسترجاع بنجاح!' : '✅ Restored successfully!', 'success');
-            if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'تم الاسترجاع!':'Restored!'}</strong>`;
-            
-            setTimeout(() => window.location.reload(), 1500);
-
-        } catch (err) {
-            console.error("Restore error", err);
-            if(ds) ds.innerHTML = `<span style="color:red">Restore Error</span>`;
-            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل استرجاع البيانات':'❌ Restore failed', 'error');
+        if (ds) {
+            let tme = new Date().toLocaleString(L==='ar'?'ar-EG':'en-US');
+            ds.innerHTML = `&#x2705; <strong>${L==='ar'?'آخر نسخة سحابية:':'Last cloud backup:'}</strong> ${tme}`;
         }
-    });
+
+    } catch (error) {
+        console.error('Cloud Backup Error:', error);
+        if(typeof toast === 'function') toast(L==='ar'?'حدث خطأ أثناء الرفع للسحابة':'Error uploading to cloud', 'error');
+    }
 };
 
-window.cloudAutoSave = function() {
-    // Disable automatic background sync for Google Drive because it requires OAuth consent popup
-    // We only want manual sync for Google Drive.
-};
+window.restoreFromGoogleDrive = async function() {
+    if (!currentUser) {
+        if(typeof toast === 'function') toast(L==='ar'?'يجب تسجيل الدخول أولاً لاسترجاع البيانات':'You must be logged in to restore', 'error');
+        return;
+    }
 
-window.getCloudInfo = async function() {
-    let lastS = localStorage.getItem('last_gdrive_sync');
-    if(!lastS) return null;
-    return {
-        lastUpdated: lastS,
-        salesCount: (S || []).length,
-        payCount: (C || []).length
-    };
+    if (!confirm(L==='ar'?'تحذير: هذا سيقوم بمسح بياناتك الحالية واستبدالها بالنسخة السحابية. هل أنت متأكد؟':'WARNING: This will replace current data with the cloud backup. Are you sure?')) {
+        return;
+    }
+
+    try {
+        if(typeof toast === 'function') toast(L==='ar'?'جاري استرجاع البيانات...':'Restoring data...', 'info');
+        
+        let doc = await db.collection('cloud_backups').doc(currentUser.uid).get();
+        if (!doc.exists) {
+            if(typeof toast === 'function') toast(L==='ar'?'لم يتم العثور على أي نسخة احتياطية لك في السحابة!':'No cloud backup found for your account!', 'error');
+            return;
+        }
+
+        let dbData = doc.data();
+        if (!dbData || !dbData.backupData) {
+            if(typeof toast === 'function') toast(L==='ar'?'النسخة الاحتياطية تالفة أو فارغة':'Backup is corrupted or empty', 'error');
+            return;
+        }
+
+        let parsed = JSON.parse(dbData.backupData);
+        if(parsed.salesData) sv('salesData', parsed.salesData);
+        if(parsed.targetData) sv('targetData', parsed.targetData);
+        if(parsed.accCats) sv('accCats', parsed.accCats);
+        if(parsed.hwCats) sv('hwCats', parsed.hwCats);
+        if(parsed.payData) sv('payData', parsed.payData);
+        if(parsed.duesData) sv('duesData', parsed.duesData);
+
+        if(typeof toast === 'function') toast(L==='ar'?'تم استرجاع البيانات بنجاح! سيتم تحديث الصفحة.':'Data restored successfully! Reloading...', 'success');
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+
+    } catch (error) {
+        console.error('Cloud Restore Error:', error);
+        if(typeof toast === 'function') toast(L==='ar'?'حدث خطأ أثناء استرجاع البيانات':'Error restoring data', 'error');
+    }
 };
 
 </script>
