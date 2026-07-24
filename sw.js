@@ -1,27 +1,23 @@
-const CACHE_NAME = 'salespro-cache-v1';
-const urlsToCache = [
-  './index.html',
-  'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
-  'https://cdn.jsdelivr.net/npm/chart.js'
-];
+const CACHE_NAME = 'salespro-cache-v2-clear';
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
 
-self.addEventListener('install', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => {
+      self.clients.claim();
+    })
   );
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
-  );
+self.addEventListener('fetch', (event) => {
+  // Always fetch from network to bust cache
+  event.respondWith(fetch(event.request));
 });
