@@ -1,10 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Sales Pro Enterprise - Sales Pro</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <title>Sales Pro Enterprise - Sales Pro</title>
   <meta name="theme-color" content="#1e293b">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3214/3214746.png">
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1840,41 +1839,7 @@ function rDash() {
     let ds = getFilteredSales();
     let ts = 0, tp = 0, tt = 0, tpt = 0;
     
-    ds.forEach(r => { ts += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']); tp += getRowVal(r, ['Profit Margin', 'Profit']); });
-
-    let prevSales = 0;
-    if(S && S.length > 0) {
-        if (globalDateRange.start && globalDateRange.end) {
-            let sDate = new Date(globalDateRange.start);
-            let eDate = new Date(globalDateRange.end);
-            let pEnd = new Date(sDate.getTime() - 86400000);
-            let pStart = new Date(pEnd.getTime() - (eDate - sDate));
-            let pStartStr = `${pStart.getFullYear()}-${String(pStart.getMonth()+1).padStart(2,'0')}-${String(pStart.getDate()).padStart(2,'0')}`;
-            let pEndStr = `${pEnd.getFullYear()}-${String(pEnd.getMonth()+1).padStart(2,'0')}-${String(pEnd.getDate()).padStart(2,'0')}`;
-            S.forEach(r => {
-                let d = pd(r['Order Date']);
-                if(d && d >= pStartStr && d <= pEndStr) prevSales += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-            });
-        } else {
-            let now = new Date();
-            let pEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-            let pStart = new Date(pEnd.getFullYear(), pEnd.getMonth(), 1);
-            let pStartStr = `${pStart.getFullYear()}-${String(pStart.getMonth()+1).padStart(2,'0')}-${String(pStart.getDate()).padStart(2,'0')}`;
-            let pEndStr = `${pEnd.getFullYear()}-${String(pEnd.getMonth()+1).padStart(2,'0')}-${String(pEnd.getDate()).padStart(2,'0')}`;
-            S.forEach(r => {
-                let d = pd(r['Order Date']);
-                if(d && d >= pStartStr && d <= pEndStr) prevSales += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
-            });
-        }
-    }
-    let trendHtml = '';
-    if (ts > 0 && prevSales > 0) {
-        let diffPct = ((ts - prevSales) / prevSales) * 100;
-        let c = diffPct >= 0 ? 'var(--gn)' : 'var(--rd)';
-        let a = diffPct >= 0 ? '&#x25B2;' : '&#x25BC;';
-        trendHtml = `<span style="color:${c};font-size:0.6rem;margin-left:5px;background:var(--bg3);padding:2px 4px;border-radius:4px;">${a} ${Math.abs(diffPct).toFixed(1)}%</span>`;
-    }
-
+    ds.forEach(r => { ts += getSalesVal(r); tp += getProfitVal(r); });
     T.forEach(r => { tt += Number(r.Target)||0; tpt += Number(r['Profit Target'])||0; });
     
     let cu = {}, or = {};
@@ -1895,14 +1860,11 @@ function rDash() {
     
     $('M').innerHTML = `
         <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
-                <button id="bPdfExport" class="btn" style="padding:4px 8px;font-size:0.7rem;" title="${L==='ar'?'تصدير PDF':'Export PDF'}">&#x1F4C4; PDF</button>
-            </div>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
             ${dateFilterUI}
         </div>
         <div class="kg">
-            <div class="ki"><div class="lb" style="display:flex;align-items:center;">${L==='ar'?TUI('Sales'):'Sales'}${trendHtml}</div><div class="vl">${aFmt(ts)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
@@ -1925,17 +1887,6 @@ function rDash() {
             rDash(); // Re-render with new data
         };
     });
-    if($('bPdfExport')) $('bPdfExport').onclick = () => {
-        let element = $('M');
-        html2pdf().set({
-            margin: 10,
-            filename: 'Sales_Dashboard.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        }).from(element).save();
-    };
-
     $('bDateClear').onclick = () => {
         globalDateRange = { start: null, end: null };
         rDash();
@@ -3293,6 +3244,43 @@ function rSetup() {
                     ws = sName ? wb.Sheets[sName] : wb.Sheets[wb.SheetNames[0]];
                 } else {
                     ws = wb.Sheets[wb.SheetNames[0]];
+                }
+                cb(XLSX.utils.sheet_to_json(ws));
+            } catch(err) { toast(L==='ar'?TUI('? Error reading file'):'? Error reading file'); }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    $('bUpload').onclick = () => {
+        let done = 0, total = 0;
+        let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
+        if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
+        let onAllDone = () => {
+            toast(L==='ar' ? '✅ تم تحديث البيانات!' : '✅ Data Updated!');
+            render();
+            if (typeof window.cloudAutoSave === 'function') {
+                window.cloudAutoSave(L==='ar' ? 'رفع ملفات' : 'File Upload');
+            }
+        };
+        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) onAllDone(); }); }
+        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) onAllDone(); }); }
+        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) onAllDone(); }, 'Payment Ref'); }
+    };
+
+    
+    $('bSaveCats').onclick = () => {
+        let vals = $('inAccCats').value.split(',').map(s => s.trim()).filter(s => s);
+        if(vals.length > 0) {
+            accCats = vals;
+            sv('accCats', accCats);
+            toast(L==='ar'?'تم حفظ فئات الإكسسوارات بنجاح!':'Categories Saved!');
+            render();
+        } else {
+            toast(L==='ar'?'لا يمكن ترك الفئات فارغة!':'Categories cannot be empty!');
+        }
+    };
+}
+
+
 
 
 
