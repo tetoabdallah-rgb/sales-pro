@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3214/3214746.png">
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>/* ============================================
-   Sales Pro — Premium Design System
+   Sales Pro â€” Premium Design System
    ============================================ */
 
 /* ---------- CSS Variables (Light Theme) ---------- */
@@ -272,7 +272,7 @@ body.en table td {
 }
 /* RTL Support for wide text in password toggle */
 html[dir="rtl"] .input-wrap input#inP {
-  padding-right: 65px; /* Extra padding for "إظهار" word */
+  padding-right: 65px; /* Extra padding for "Ø¥Ø¸Ù‡Ø§Ø±" word */
 }
 html[dir="ltr"] .input-wrap input#inP {
   padding-right: 65px; /* Extra padding for "Show" word */
@@ -1480,18 +1480,18 @@ function isAcc(c) { return accCats.length ? accCats.includes(c) : DEF_ACC.includ
 function isHW(c) { return hwCats.length ? hwCats.includes(c) : DEF_HW.includes(c); }
 
 const I = {
-    collections:{ar:'التحصيلات',en:'Collections'},dash:{ar:'لوحة التحكم',en:'Dashboard'},
-    sales:{ar:'المبيعات',en:'Sales'},targets:{ar:'تارجت العميل',en:'Targets'},
-    personal:{ar:'التارجت الشخصي',en:'Personal'},customers:{ar:'العملاء',en:'Customers'},
-    brands:{ar:'البراندات',en:'Brands'},analytics:{ar:'تحليلات',en:'Analytics'},
-    potential:{ar:'فرص التحقيق',en:'Opportunities'},profit:{ar:'هامش الربح',en:'Profit'},
-    accessories:{ar:'الأكسسوارات',en:'Accessories'},hardware:{ar:'الهاردوير',en:'Hardware'},
-    keyacc:{ar:'المميزين',en:'Key Accounts'},dormant:{ar:'الخاملين',en:'Dormant'},
-    prospects:{ar:'محتملين',en:'Prospects'},alerts:{ar:'التنبيهات',en:'Alerts'},
-    ai:{ar:'توصيات AI',en:'AI'},account:{ar:'الحساب',en:'Account'},
-    backup:{ar:'نسخ احتياطي',en:'Backup'},setup:{ar:'رفع الملفات',en:'Files'},
-    logout:{ar:'خروج',en:'Logout'},reset:{ar:'مسح البيانات',en:'Reset App'},
-    settings:{ar:'الإعدادات',en:'Settings'}
+    collections:{ar:'Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª',en:'Collections'},dash:{ar:'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…',en:'Dashboard'},
+    sales:{ar:'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª',en:'Sales'},targets:{ar:'ØªØ§Ø±Ø¬Øª Ø§Ù„Ø¹Ù…ÙŠÙ„',en:'Targets'},
+    personal:{ar:'Ø§Ù„ØªØ§Ø±Ø¬Øª Ø§Ù„Ø´Ø®ØµÙŠ',en:'Personal'},customers:{ar:'Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡',en:'Customers'},
+    brands:{ar:'Ø§Ù„Ø¨Ø±Ø§Ù†Ø¯Ø§Øª',en:'Brands'},analytics:{ar:'ØªØ­Ù„ÙŠÙ„Ø§Øª',en:'Analytics'},
+    potential:{ar:'ÙØ±Øµ Ø§Ù„ØªØ­Ù‚ÙŠÙ‚',en:'Opportunities'},profit:{ar:'Ù‡Ø§Ù…Ø´ Ø§Ù„Ø±Ø¨Ø­',en:'Profit'},
+    accessories:{ar:'Ø§Ù„Ø£ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª',en:'Accessories'},hardware:{ar:'Ø§Ù„Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±',en:'Hardware'},
+    keyacc:{ar:'Ø§Ù„Ù…Ù…ÙŠØ²ÙŠÙ†',en:'Key Accounts'},dormant:{ar:'Ø§Ù„Ø®Ø§Ù…Ù„ÙŠÙ†',en:'Dormant'},
+    prospects:{ar:'Ù…Ø­ØªÙ…Ù„ÙŠÙ†',en:'Prospects'},alerts:{ar:'Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª',en:'Alerts'},
+    ai:{ar:'ØªÙˆØµÙŠØ§Øª AI',en:'AI'},account:{ar:'Ø§Ù„Ø­Ø³Ø§Ø¨',en:'Account'},
+    backup:{ar:'Ù†Ø³Ø® Ø§Ø­ØªÙŠØ§Ø·ÙŠ',en:'Backup'},setup:{ar:'Ø±ÙØ¹ Ø§Ù„Ù…Ù„ÙØ§Øª',en:'Files'},
+    logout:{ar:'Ø®Ø±ÙˆØ¬',en:'Logout'},reset:{ar:'Ù…Ø³Ø­ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª',en:'Reset App'},
+    settings:{ar:'Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª',en:'Settings'}
 };
 
 function t(k) { return I[k] ? I[k][L] : k; }
@@ -1571,10 +1571,10 @@ function exportToExcel(data, filename) {
         let wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), 'Data');
         XLSX.writeFile(wb, filename + '.xlsx');
-        toast('✅ ' + (L === 'ar' ? 'تم التصدير' : 'Exported'));
+        toast('âœ… ' + (L === 'ar' ? 'ØªÙ… Ø§Ù„ØªØµØ¯ÙŠØ±' : 'Exported'));
     } catch(err) {
         console.error(err);
-        toast('❌ Error');
+        toast('âŒ Error');
     }
 }
 
@@ -1758,7 +1758,7 @@ auth.onAuthStateChanged(user => {
                         if (p.hwCats)       { hwCats = p.hwCats;   sv('hwCats', hwCats); }
                         
                         if (changed) {
-                            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم استرجاع بيانات السحابة تلقائياً' : '✅ Cloud data auto-restored', 'success');
+                            if (typeof toast === 'function') toast(L === 'ar' ? 'âœ… ØªÙ… Ø§Ø³ØªØ±Ø¬Ø§Ø¹ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø³Ø­Ø§Ø¨Ø© ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹' : 'âœ… Cloud data auto-restored', 'success');
                             setTimeout(() => { window.location.reload(); }, 1500);
                         }
                     }
@@ -1778,18 +1778,18 @@ auth.onAuthStateChanged(user => {
 if ($('bLog')) {
     $('bLog').onclick = () => {
         let e = $('inE').value.trim(), p = $('inP').value.trim();
-        if(!e || !p) { $('aErr').textContent = 'يرجى إدخال البيانات'; return; }
+        if(!e || !p) { $('aErr').textContent = 'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª'; return; }
         
-        $('bLog').textContent = 'جاري التحميل...';
+        $('bLog').textContent = 'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...';
         auth.signInWithEmailAndPassword(e, p).catch(err => {
             if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'){
                 auth.createUserWithEmailAndPassword(e, p).catch(err2 => {
                     $('aErr').textContent = err2.message;
-                    $('bLog').textContent = 'دخول / حساب جديد';
+                    $('bLog').textContent = 'Ø¯Ø®ÙˆÙ„ / Ø­Ø³Ø§Ø¨ Ø¬Ø¯ÙŠØ¯';
                 });
             } else {
                 $('aErr').textContent = err.message;
-                $('bLog').textContent = 'دخول / حساب جديد';
+                $('bLog').textContent = 'Ø¯Ø®ÙˆÙ„ / Ø­Ø³Ø§Ø¨ Ø¬Ø¯ÙŠØ¯';
             }
         });
     };
@@ -1919,7 +1919,7 @@ function rDash() {
         <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
             <div style="display:flex;align-items:center;gap:12px;">
                 <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
-                <button id="bPdfExport" class="btn" style="padding:4px 8px;font-size:0.7rem;" title="${L==='ar'?'تصدير PDF':'Export PDF'}">&#x1F5C4; PDF</button>
+                <button id="bPdfExport" class="btn" style="padding:4px 8px;font-size:0.7rem;" title="${L==='ar'?'ØªØµØ¯ÙŠØ± PDF':'Export PDF'}">&#x1F5C4; PDF</button>
             </div>
             ${dateFilterUI}
         </div>
@@ -2751,9 +2751,9 @@ function rCollections() {
               accTot += val;
           } else if (payRef.startsWith('hw')) {
               hwTot += val;
-          } else if (ah.includes('acc') || ah.includes('اكسسوار')) {
+          } else if (ah.includes('acc') || ah.includes('Ø§ÙƒØ³Ø³ÙˆØ§Ø±')) {
             accTot += val;
-        } else if (ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
+        } else if (ah.includes('hw') || ah.includes('Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±') || ah.includes('Ù‡Ø§Ø±Ø¯')) {
             hwTot += val;
         } else if (cat) {
             if (isAcc(cat)) accTot += val;
@@ -2777,8 +2777,8 @@ function rCollections() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}"</h1></div>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'هاردوير':'Hardware'}</div><div class="vl">${aFmt(hwTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'Hardware'}</div><div class="vl">${aFmt(hwTot)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
         </div>
         ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
@@ -3184,38 +3184,38 @@ function rBk() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.backup}</span> ${t('backup')}</h1></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
             <div class="card">
-                <h3 style="margin-bottom:12px;text-align:center;">${L==='ar'?'تصدير للإكسيل':'Export to Excel'}</h3>
+                <h3 style="margin-bottom:12px;text-align:center;">${L==='ar'?'ØªØµØ¯ÙŠØ± Ù„Ù„Ø¥ÙƒØ³ÙŠÙ„':'Export to Excel'}</h3>
                 <div style="display:flex;flex-direction:column;gap:10px;">
-                    <button class="btn" id="bkSales" style="width:100%; justify-content:center;">${L==='ar'?'مبيعات':'Sales'} (${S.length})</button>
-                    <button class="btn" id="bkTgt" style="width:100%; justify-content:center;">${L==='ar'?'تارجت':'Targets'} (${T.length})</button>
-                    <button class="btn" id="bkPay" style="width:100%; justify-content:center;">${L==='ar'?'تحصيلات':'Collections'} (${C.length})</button>
+                    <button class="btn" id="bkSales" style="width:100%; justify-content:center;">${L==='ar'?'Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'} (${S.length})</button>
+                    <button class="btn" id="bkTgt" style="width:100%; justify-content:center;">${L==='ar'?'ØªØ§Ø±Ø¬Øª':'Targets'} (${T.length})</button>
+                    <button class="btn" id="bkPay" style="width:100%; justify-content:center;">${L==='ar'?'ØªØ­ØµÙŠÙ„Ø§Øª':'Collections'} (${C.length})</button>
                 </div>
             </div>
             <div class="card">
-                <h3 style="margin-bottom:12px;text-align:center;">النسخ الاحتياطي الشامل 💾</h3>
+                <h3 style="margin-bottom:12px;text-align:center;">Ø§Ù„Ù†Ø³Ø® Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠ Ø§Ù„Ø´Ø§Ù…Ù„ ðŸ’¾</h3>
                 <p style="text-align:center;color:var(--tx2);font-size:0.85rem;margin-bottom:15px;">
-                    يقوم بتصدير كافة بيانات المبيعات والتارجت والتحصيلات في ملف واحد (JSON) لاسترجاعها لاحقاً.
+                    ÙŠÙ‚ÙˆÙ… Ø¨ØªØµØ¯ÙŠØ± ÙƒØ§ÙØ© Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª ÙˆØ§Ù„ØªØ§Ø±Ø¬Øª ÙˆØ§Ù„ØªØ­ØµÙŠÙ„Ø§Øª ÙÙŠ Ù…Ù„Ù ÙˆØ§Ø­Ø¯ (JSON) Ù„Ø§Ø³ØªØ±Ø¬Ø§Ø¹Ù‡Ø§ Ù„Ø§Ø­Ù‚Ø§Ù‹.
                 </p>
                 <button class="btn btn-p" id="bDownJSON" style="width:100%; justify-content:center; margin-bottom:10px;">
-                    تنزيل ملف النسخة الاحتياطية (JSON)
+                    ØªÙ†Ø²ÙŠÙ„ Ù…Ù„Ù Ø§Ù„Ù†Ø³Ø®Ø© Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠØ© (JSON)
                 </button>
                 <label for="fUpJSON" class="btn" style="width:100%; justify-content:center; display:flex; margin-bottom:10px; cursor:pointer;">
-                    استرجاع نسخة من ملف (JSON)
+                    Ø§Ø³ØªØ±Ø¬Ø§Ø¹ Ù†Ø³Ø®Ø© Ù…Ù† Ù…Ù„Ù (JSON)
                 </label>
                 <input type="file" id="fUpJSON" accept=".json" style="display:none;">
                 
                 <button class="btn" id="bMailJSON" style="width:100%; justify-content:center; margin-bottom:10px; background:#ea4335; color:white; border:none;">
-                    إرسال نسخة بالإيميل ✉️ (Gmail)
+                    Ø¥Ø±Ø³Ø§Ù„ Ù†Ø³Ø®Ø© Ø¨Ø§Ù„Ø¥ÙŠÙ…ÙŠÙ„ âœ‰ï¸ (Gmail)
                 </button>
                 <button class="btn" id="bDriveJSON" style="width:100%; justify-content:center; background:#0f9d58; color:white; border:none;">
-                    نسخ احتياطي إلى (Google Drive) ☁️
+                    Ù†Ø³Ø® Ø§Ø­ØªÙŠØ§Ø·ÙŠ Ø¥Ù„Ù‰ (Google Drive) â˜ï¸
                 </button>
             </div>
         </div>
     `;
-    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
-    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
-    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data');
+    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data');
+    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data');
     $('bDownJSON').onclick = () => {
         let dump = { S, T, C, D, accCats, hwCats };
         let blob = new Blob([JSON.stringify(dump)], {type: "application/json"});
@@ -3223,23 +3223,23 @@ function rBk() {
         a.href = URL.createObjectURL(blob);
         a.download = `SalesPro_Backup_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
-        toast(L==='ar'?'تم تنزيل النسخة!':'Backup Downloaded!');
+        toast(L==='ar'?'ØªÙ… ØªÙ†Ø²ÙŠÙ„ Ø§Ù„Ù†Ø³Ø®Ø©!':'Backup Downloaded!');
     };
     if($('bDriveJSON')) {
         $('bDriveJSON').onclick = () => {
             if(typeof window.backupToGoogleDrive === 'function') {
                 window.backupToGoogleDrive();
             } else {
-                toast(L==='ar'?'خدمة Google Drive غير متوفرة':'Google Drive service is not available', 'error');
+                toast(L==='ar'?'Ø®Ø¯Ù…Ø© Google Drive ØºÙŠØ± Ù…ØªÙˆÙØ±Ø©':'Google Drive service is not available', 'error');
             }
         };
     }
     if($('bMailJSON')) {
         $('bMailJSON').onclick = () => {
             $('bDownJSON').click();
-            toast(L==='ar'?'سيفتح الإيميل.. قم بإرفاق الملف الذي تم تنزيله!':'Opening Email.. Attach the downloaded file!');
+            toast(L==='ar'?'Ø³ÙŠÙØªØ­ Ø§Ù„Ø¥ÙŠÙ…ÙŠÙ„.. Ù‚Ù… Ø¨Ø¥Ø±ÙØ§Ù‚ Ø§Ù„Ù…Ù„Ù Ø§Ù„Ø°ÙŠ ØªÙ… ØªÙ†Ø²ÙŠÙ„Ù‡!':'Opening Email.. Attach the downloaded file!');
             setTimeout(() => {
-                window.location.href = `mailto:?subject=${encodeURIComponent('SalesPro Data Backup')}&body=${encodeURIComponent(L==='ar'?'يرجى إيجاد ملف النسخة الاحتياطية (JSON) مرفقاً.':'Please find the JSON backup file attached.')}`;
+                window.location.href = `mailto:?subject=${encodeURIComponent('SalesPro Data Backup')}&body=${encodeURIComponent(L==='ar'?'ÙŠØ±Ø¬Ù‰ Ø¥ÙŠØ¬Ø§Ø¯ Ù…Ù„Ù Ø§Ù„Ù†Ø³Ø®Ø© Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠØ© (JSON) Ù…Ø±ÙÙ‚Ø§Ù‹.':'Please find the JSON backup file attached.')}`;
             }, 2000);
         };
     }
@@ -3256,10 +3256,10 @@ function rBk() {
                 if(d.D) { D = d.D; sv('duesData', D); }
                 if(d.accCats) { accCats = d.accCats; sv('accCats', accCats); }
                 if(d.hwCats) { hwCats = d.hwCats; sv('hwCats', hwCats); }
-                toast(L==='ar'?'تمت الاستعادة بنجاح!':'Restored Successfully!');
+                toast(L==='ar'?'ØªÙ…Øª Ø§Ù„Ø§Ø³ØªØ¹Ø§Ø¯Ø© Ø¨Ù†Ø¬Ø§Ø­!':'Restored Successfully!');
                 render();
             } catch(ex) {
-                toast(L==='ar'?'ملف غير صالح!':'Invalid File!');
+                toast(L==='ar'?'Ù…Ù„Ù ØºÙŠØ± ØµØ§Ù„Ø­!':'Invalid File!');
             }
         };
         reader.readAsText(f);
@@ -3298,10 +3298,10 @@ function rSetup() {
         </div>
         
         <div class="card" style="margin-top:20px;">
-            <h3 style="margin-bottom:12px;">إدارة فئات الإكسسوارات (Accessories Categories)</h3>
-            <p style="margin-bottom:16px;color:var(--tx2);font-size:0.85rem;">يمكنك تعديل أو إضافة الفئات التي يتم اعتبارها إكسسوارات، افصل بين كل فئة وأخرى بفاصلة (,)</p>
+            <h3 style="margin-bottom:12px;">Ø¥Ø¯Ø§Ø±Ø© ÙØ¦Ø§Øª Ø§Ù„Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª (Accessories Categories)</h3>
+            <p style="margin-bottom:16px;color:var(--tx2);font-size:0.85rem;">ÙŠÙ…ÙƒÙ†Ùƒ ØªØ¹Ø¯ÙŠÙ„ Ø£Ùˆ Ø¥Ø¶Ø§ÙØ© Ø§Ù„ÙØ¦Ø§Øª Ø§Ù„ØªÙŠ ÙŠØªÙ… Ø§Ø¹ØªØ¨Ø§Ø±Ù‡Ø§ Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§ØªØŒ Ø§ÙØµÙ„ Ø¨ÙŠÙ† ÙƒÙ„ ÙØ¦Ø© ÙˆØ£Ø®Ø±Ù‰ Ø¨ÙØ§ØµÙ„Ø© (,)</p>
             <textarea id="inAccCats" rows="4" style="width:100%;padding:12px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;resize:vertical;font-family:inherit;font-size:0.95rem;">${(accCats && accCats.length) ? accCats.join(', ') : (typeof DEF_ACC !== 'undefined' ? DEF_ACC.join(', ') : '')}</textarea>
-            <button id="bSaveCats" class="btn btn-p" style="margin-top:16px;width:100%;padding:12px;font-size:1rem;">حفظ الفئات والتحديث / Save & Update</button>
+            <button id="bSaveCats" class="btn btn-p" style="margin-top:16px;width:100%;padding:12px;font-size:1rem;">Ø­ÙØ¸ Ø§Ù„ÙØ¦Ø§Øª ÙˆØ§Ù„ØªØ­Ø¯ÙŠØ« / Save & Update</button>
         </div>
     `;
     function parseFile(file, cb, sheetName) {
@@ -3335,14 +3335,14 @@ function rSettings() {
     $('M').innerHTML = `
         <div class="ph">
             <h1 style="display:flex;align-items:center;gap:12px;">
-                <span style="width:32px;height:32px;display:flex;">⚙️</span> ${t('settings')}
+                <span style="width:32px;height:32px;display:flex;">âš™ï¸</span> ${t('settings')}
             </h1>
-            <p>${L==='ar'?'تخصيص ألوان التطبيق، والواجهة، وإعدادات المزامنة':'Customize app colors, interface, and sync settings'}</p>
+            <p>${L==='ar'?'ØªØ®ØµÙŠØµ Ø£Ù„ÙˆØ§Ù† Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ØŒ ÙˆØ§Ù„ÙˆØ§Ø¬Ù‡Ø©ØŒ ÙˆØ¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ù…Ø²Ø§Ù…Ù†Ø©':'Customize app colors, interface, and sync settings'}</p>
         </div>
         
         <div class="card" style="margin-bottom:20px;">
-            <h3>🎨 ${L==='ar'?'اللون الأساسي':'Primary Color'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'اختر اللون الذي يناسب ذوقك':'Choose the color that fits you'}</p>
+            <h3>ðŸŽ¨ ${L==='ar'?'Ø§Ù„Ù„ÙˆÙ† Ø§Ù„Ø£Ø³Ø§Ø³ÙŠ':'Primary Color'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'Ø§Ø®ØªØ± Ø§Ù„Ù„ÙˆÙ† Ø§Ù„Ø°ÙŠ ÙŠÙ†Ø§Ø³Ø¨ Ø°ÙˆÙ‚Ùƒ':'Choose the color that fits you'}</p>
             
             <div style="display:flex;gap:12px;flex-wrap:wrap;" id="colorPicker">
                 ${CL.map((color, i) => `
@@ -3352,38 +3352,38 @@ function rSettings() {
         </div>
         
         <div class="card" style="margin-bottom:20px;">
-            <h3>☁️ ${L==='ar'?'النسخ الاحتياطي السحابي (Google Drive)':'Cloud Sync (Google Drive)'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'حفظ البيانات واسترجاعها مباشرة من حسابك في جوجل درايف.':'Backup and restore data directly from your Google Drive.'}</p>
+            <h3>â˜ï¸ ${L==='ar'?'Ø§Ù„Ù†Ø³Ø® Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠ Ø§Ù„Ø³Ø­Ø§Ø¨ÙŠ (Google Drive)':'Cloud Sync (Google Drive)'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'Ø­ÙØ¸ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª ÙˆØ§Ø³ØªØ±Ø¬Ø§Ø¹Ù‡Ø§ Ù…Ø¨Ø§Ø´Ø±Ø© Ù…Ù† Ø­Ø³Ø§Ø¨Ùƒ ÙÙŠ Ø¬ÙˆØ¬Ù„ Ø¯Ø±Ø§ÙŠÙ.':'Backup and restore data directly from your Google Drive.'}</p>
             
             <div style="background:var(--bg3);padding:10px;border-radius:8px;margin-bottom:15px;">
-                <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:10px;">${L==='ar'?'تحتاج إلى إدخال مفاتيح Google API لكي تعمل المزامنة:':'You must enter Google API keys for sync to work:'}</p>
+                <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:10px;">${L==='ar'?'ØªØ­ØªØ§Ø¬ Ø¥Ù„Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ù…ÙØ§ØªÙŠØ­ Google API Ù„ÙƒÙŠ ØªØ¹Ù…Ù„ Ø§Ù„Ù…Ø²Ø§Ù…Ù†Ø©:':'You must enter Google API keys for sync to work:'}</p>
                 <input type="text" id="gdriveClientId" placeholder="Google Client ID" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
                 <input type="text" id="gdriveApiKey" placeholder="Google API Key" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
-                <button class="btn btn-p" onclick="saveDriveKeys()" style="width:100%;">${L==='ar'?'حفظ مفاتيح جوجل':'Save Google Keys'}</button>
+                <button class="btn btn-p" onclick="saveDriveKeys()" style="width:100%;">${L==='ar'?'Ø­ÙØ¸ Ù…ÙØ§ØªÙŠØ­ Ø¬ÙˆØ¬Ù„':'Save Google Keys'}</button>
             </div>
 
-            <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;padding:10px;background:var(--bg3);border-radius:8px;">⏳ ${L==='ar'?'جاري التحقق...':'Checking...'}</div>
+            <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;padding:10px;background:var(--bg3);border-radius:8px;">â³ ${L==='ar'?'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù‚Ù‚...':'Checking...'}</div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
                 <button class="btn btn-p" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;background:var(--ok);">
-                    ☁️ ${L==='ar'?'حفظ في درايف':'Save to Drive'}
+                    â˜ï¸ ${L==='ar'?'Ø­ÙØ¸ ÙÙŠ Ø¯Ø±Ø§ÙŠÙ':'Save to Drive'}
                 </button>
                 <button class="btn" onclick="restoreFromGoogleDrive()" style="flex:1;min-width:140px;background:var(--bg3);">
-                    📂 ${L==='ar'?'استرجاع من درايف':'Restore from Drive'}
+                    ðŸ“‚ ${L==='ar'?'Ø§Ø³ØªØ±Ø¬Ø§Ø¹ Ù…Ù† Ø¯Ø±Ø§ÙŠÙ':'Restore from Drive'}
                 </button>
             </div>
         </div>
 
         <div class="card" style="margin-bottom:20px;">
-            <h3>🤖 ${L==='ar'?'إعدادات المساعد الذكي (Gemini AI)':'Gemini AI Settings'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفتاح Gemini API لتفعيل المساعد الذكي':'Enter Gemini API key to enable smart assistant'}</p>
+            <h3>ðŸ¤– ${L==='ar'?'Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ù…Ø³Ø§Ø¹Ø¯ Ø§Ù„Ø°ÙƒÙŠ (Gemini AI)':'Gemini AI Settings'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'Ø£Ø¯Ø®Ù„ Ù…ÙØªØ§Ø­ Gemini API Ù„ØªÙØ¹ÙŠÙ„ Ø§Ù„Ù…Ø³Ø§Ø¹Ø¯ Ø§Ù„Ø°ÙƒÙŠ':'Enter Gemini API key to enable smart assistant'}</p>
             <div class="fg">
                 <input type="text" id="geminiApiKey" placeholder="${L==='ar'?'Gemini API Key':'Gemini API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gemini_api_key') || ''}">
             </div>
-            <button class="btn btn-p" onclick="saveGeminiKey()">${L==='ar'?'حفظ المفتاح':'Save Key'}</button>
+            <button class="btn btn-p" onclick="saveGeminiKey()">${L==='ar'?'Ø­ÙØ¸ Ø§Ù„Ù…ÙØªØ§Ø­':'Save Key'}</button>
         </div>
         
         <div class="card">
-            <h3>👤 ${L==='ar'?'الملف الشخصي':'Profile'}</h3>
+            <h3>ðŸ‘¤ ${L==='ar'?'Ø§Ù„Ù…Ù„Ù Ø§Ù„Ø´Ø®ØµÙŠ':'Profile'}</h3>
             <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${currentUser ? currentUser.email : 'Not logged in'}</p>
             <button class="btn btn-p" onclick="logout()" style="background:var(--rd)">${t('logout')}</button>
         </div>
@@ -3405,12 +3405,12 @@ function rSettings() {
             let ds = document.getElementById('driveStatus');
             if (!ds) return;
             if (!info) {
-                ds.innerHTML = L==='ar' ? '⚠️ لم تقم بعمل مزامنة في جوجل درايف مؤخراً.' : '⚠️ No recent Google Drive sync.';
+                ds.innerHTML = L==='ar' ? 'âš ï¸ Ù„Ù… ØªÙ‚Ù… Ø¨Ø¹Ù…Ù„ Ù…Ø²Ø§Ù…Ù†Ø© ÙÙŠ Ø¬ÙˆØ¬Ù„ Ø¯Ø±Ø§ÙŠÙ Ù…Ø¤Ø®Ø±Ø§Ù‹.' : 'âš ï¸ No recent Google Drive sync.';
                 return;
             }
-            ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${info.lastUpdated}
-                &nbsp;|&nbsp; 📊 ${L==='ar'?'المبيعات:':'Sales:'} ${info.salesCount}
-                &nbsp;|&nbsp; 💰 ${L==='ar'?'التحصيلات:':'Collections:'} ${info.payCount}`;
+            ds.innerHTML = `âœ… <strong>${L==='ar'?'Ø¢Ø®Ø± Ù…Ø²Ø§Ù…Ù†Ø©:':'Last sync:'}</strong> ${info.lastUpdated}
+                &nbsp;|&nbsp; ðŸ“Š ${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª:':'Sales:'} ${info.salesCount}
+                &nbsp;|&nbsp; ðŸ’° ${L==='ar'?'Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª:':'Collections:'} ${info.payCount}`;
         });
     }
 }
@@ -3421,10 +3421,10 @@ window.saveDriveKeys = function() {
     if (cId && aKey) {
         localStorage.setItem('gdrive_client_id', cId);
         localStorage.setItem('gdrive_api_key', aKey);
-        if(typeof toast === 'function') toast(L==='ar'?'✅ تم حفظ مفاتيح جوجل درايف بنجاح.':'Google Drive keys saved', 'success');
+        if(typeof toast === 'function') toast(L==='ar'?'âœ… ØªÙ… Ø­ÙØ¸ Ù…ÙØ§ØªÙŠØ­ Ø¬ÙˆØ¬Ù„ Ø¯Ø±Ø§ÙŠÙ Ø¨Ù†Ø¬Ø§Ø­.':'Google Drive keys saved', 'success');
         setTimeout(() => window.location.reload(), 1500);
     } else {
-        if(typeof toast === 'function') toast(L==='ar'?'❌ يرجى إدخال المفتاحين (Client ID و API Key)':'Please enter both keys', 'error');
+        if(typeof toast === 'function') toast(L==='ar'?'âŒ ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ù„Ù…ÙØªØ§Ø­ÙŠÙ† (Client ID Ùˆ API Key)':'Please enter both keys', 'error');
     }
 };
 
@@ -3432,9 +3432,9 @@ window.saveGeminiKey = function() {
     const gKey = document.getElementById('geminiApiKey').value.trim();
     if (gKey) {
         localStorage.setItem('gemini_api_key', gKey);
-        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفتاح Gemini بنجاح':'Gemini key saved', 'success');
+        if(typeof toast === 'function') toast(L==='ar'?'ØªÙ… Ø­ÙØ¸ Ù…ÙØªØ§Ø­ Gemini Ø¨Ù†Ø¬Ø§Ø­':'Gemini key saved', 'success');
     } else {
-        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال المفتاح أولاً':'Please enter the key', 'error');
+        if(typeof toast === 'function') toast(L==='ar'?'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ù„Ù…ÙØªØ§Ø­ Ø£ÙˆÙ„Ø§Ù‹':'Please enter the key', 'error');
     }
 };
 
@@ -3443,19 +3443,19 @@ window.saveGeminiKey = function() {
 // js/app.js
 
 const NAV = [
-    {s:{ar:'الأساسية',en:'Core'}},
-    {p:'dash',ic:'🏠'},{p:'sales',ic:'💰'},{p:'targets',ic:'🎯'},{p:'personal',ic:'👤'},
-    {p:'customers',ic:'🏪'},{p:'brands',ic:'📦'},
-    {s:{ar:'الأقسام',en:'Depts'}},
-    {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💰'},
-    {s:{ar:'متقدم',en:'Advanced'}},
-    {p:'analytics',ic:'🧠'},{p:'potential',ic:'🚀'},{p:'profit',ic:'💵'},
-    {p:'keyacc',ic:'⭐'},{p:'dormant',ic:'💤'},{p:'prospects',ic:'🔍'},
-    {s:{ar:'ذكي',en:'Smart'}},
-    {p:'ai',ic:'🤖'},{p:'alerts',ic:'🔔'},
-    {s:{ar:'النظام',en:'System'}},
-    {p:'account',ic:'👤'},{p:'backup',ic:'💾'},{p:'setup',ic:'📂'},{p:'reset',ic:'🗑️'},
-    {p:'settings',ic:'⚙️'}
+    {s:{ar:'Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ©',en:'Core'}},
+    {p:'dash',ic:'ðŸ '},{p:'sales',ic:'ðŸ’°'},{p:'targets',ic:'ðŸŽ¯'},{p:'personal',ic:'ðŸ‘¤'},
+    {p:'customers',ic:'ðŸª'},{p:'brands',ic:'ðŸ“¦'},
+    {s:{ar:'Ø§Ù„Ø£Ù‚Ø³Ø§Ù…',en:'Depts'}},
+    {p:'accessories',ic:'ðŸŽ§'},{p:'hardware',ic:'ðŸ“±'},{p:'collections',ic:'ðŸ’°'},
+    {s:{ar:'Ù…ØªÙ‚Ø¯Ù…',en:'Advanced'}},
+    {p:'analytics',ic:'ðŸ§ '},{p:'potential',ic:'ðŸš€'},{p:'profit',ic:'ðŸ’µ'},
+    {p:'keyacc',ic:'â­'},{p:'dormant',ic:'ðŸ’¤'},{p:'prospects',ic:'ðŸ”'},
+    {s:{ar:'Ø°ÙƒÙŠ',en:'Smart'}},
+    {p:'ai',ic:'ðŸ¤–'},{p:'alerts',ic:'ðŸ””'},
+    {s:{ar:'Ø§Ù„Ù†Ø¸Ø§Ù…',en:'System'}},
+    {p:'account',ic:'ðŸ‘¤'},{p:'backup',ic:'ðŸ’¾'},{p:'setup',ic:'ðŸ“‚'},{p:'reset',ic:'ðŸ—‘ï¸'},
+    {p:'settings',ic:'âš™ï¸'}
 ];
 
 const BNV = ['dash','customers','brands','analytics','settings'];
@@ -3520,7 +3520,7 @@ if ($('bTh')) {
     $('bTh').onclick = () => {
         let dk = document.documentElement.getAttribute('data-theme') === 'dark';
         document.documentElement.setAttribute('data-theme', dk ? '' : 'dark');
-        $('bTh').textContent = dk ? '🌙' : '☀️';
+        $('bTh').textContent = dk ? 'ðŸŒ™' : 'â˜€ï¸';
         sv('sp_theme', dk ? '' : 'dark');
     };
 }
@@ -3531,7 +3531,7 @@ if ($('bLn')) {
         document.body.classList.toggle('en', L === 'en');
         document.documentElement.dir = L === 'ar' ? 'rtl' : 'ltr';
         document.documentElement.lang = L;
-        $('bLn').textContent = L === 'ar' ? 'EN' : 'عربي';
+        $('bLn').textContent = L === 'ar' ? 'EN' : 'Ø¹Ø±Ø¨ÙŠ';
         $('bOt').textContent = t('logout');
         sv('sp_lang', L);
         buildNav();
@@ -3543,7 +3543,7 @@ function init() {
     let th = ld('sp_theme');
     if (th === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
-        if($('bTh')) $('bTh').textContent = '☀️';
+        if($('bTh')) $('bTh').textContent = 'â˜€ï¸';
     }
     
     let col = ld('sp_primary');
@@ -3557,7 +3557,7 @@ function init() {
         document.body.classList.add('en');
         document.documentElement.dir = 'ltr';
         document.documentElement.lang = 'en';
-        if($('bLn')) $('bLn').textContent = 'عربي';
+        if($('bLn')) $('bLn').textContent = 'Ø¹Ø±Ø¨ÙŠ';
         if($('bOt')) $('bOt').textContent = 'Logout';
     }
     
@@ -3705,7 +3705,7 @@ async function requireAuth(callback) {
     const API_KEY = localStorage.getItem('gdrive_api_key');
     
     if (!CLIENT_ID || !API_KEY) {
-        if(typeof toast === 'function') toast(L==='ar'?'يجب إدخال Google Client ID و API Key في الإعدادات':'Please enter Google Client ID and API Key in Settings', 'error');
+        if(typeof toast === 'function') toast(L==='ar'?'ÙŠØ¬Ø¨ Ø¥Ø¯Ø®Ø§Ù„ Google Client ID Ùˆ API Key ÙÙŠ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª':'Please enter Google Client ID and API Key in Settings', 'error');
         return;
     }
 
@@ -3724,13 +3724,13 @@ async function requireAuth(callback) {
     isInitializing = false;
 
     if (!gapiInited || !gisInited) {
-        if(typeof toast === 'function') toast(L==='ar'?'فشل الاتصال بخوادم جوجل. تأكد من صحة المفاتيح.':'Failed to connect to Google. Check keys.', 'error');
+        if(typeof toast === 'function') toast(L==='ar'?'ÙØ´Ù„ Ø§Ù„Ø§ØªØµØ§Ù„ Ø¨Ø®ÙˆØ§Ø¯Ù… Ø¬ÙˆØ¬Ù„. ØªØ£ÙƒØ¯ Ù…Ù† ØµØ­Ø© Ø§Ù„Ù…ÙØ§ØªÙŠØ­.':'Failed to connect to Google. Check keys.', 'error');
         return;
     }
 
     tokenClient.callback = async (resp) => {
         if (resp.error !== undefined) {
-            if(typeof toast === 'function') toast(L==='ar'?'خطأ في تسجيل الدخول لجوجل':'Google Login Error', 'error');
+            if(typeof toast === 'function') toast(L==='ar'?'Ø®Ø·Ø£ ÙÙŠ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ù„Ø¬ÙˆØ¬Ù„':'Google Login Error', 'error');
             console.error(resp);
             return;
         }
@@ -3746,10 +3746,10 @@ async function requireAuth(callback) {
 
 window.backupToGoogleDrive = function() {
     requireAuth(async () => {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري الحفظ في جوجل درايف...':'Saving to Google Drive...', 'info');
+        if(typeof toast === 'function') toast(L==='ar'?'Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø­ÙØ¸ ÙÙŠ Ø¬ÙˆØ¬Ù„ Ø¯Ø±Ø§ÙŠÙ...':'Saving to Google Drive...', 'info');
         
         let ds = document.getElementById('driveStatus');
-        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري الرفع...':'Uploading...'}</span>`;
+        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø±ÙØ¹...':'Uploading...'}</span>`;
 
         let dump = {
             salesData:  S        || [],
@@ -3800,26 +3800,26 @@ window.backupToGoogleDrive = function() {
             if (data.id) {
                 let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
                 localStorage.setItem('last_gdrive_sync', tme);
-                if(typeof toast === 'function') toast(L==='ar'?'✅ تم الحفظ في جوجل درايف!':'✅ Saved to Google Drive!', 'success');
-                if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${tme}`;
+                if(typeof toast === 'function') toast(L==='ar'?'âœ… ØªÙ… Ø§Ù„Ø­ÙØ¸ ÙÙŠ Ø¬ÙˆØ¬Ù„ Ø¯Ø±Ø§ÙŠÙ!':'âœ… Saved to Google Drive!', 'success');
+                if(ds) ds.innerHTML = `âœ… <strong>${L==='ar'?'Ø¢Ø®Ø± Ù…Ø²Ø§Ù…Ù†Ø©:':'Last sync:'}</strong> ${tme}`;
             } else {
                 throw new Error("Invalid response from Google Drive");
             }
         } catch (err) {
             console.error("Upload error", err);
             if(ds) ds.innerHTML = `<span style="color:red">Upload Error</span>`;
-            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل الحفظ في السحابة':'❌ Cloud save failed', 'error');
+            if(typeof toast === 'function') toast(L==='ar'?'âŒ ÙØ´Ù„ Ø§Ù„Ø­ÙØ¸ ÙÙŠ Ø§Ù„Ø³Ø­Ø§Ø¨Ø©':'âŒ Cloud save failed', 'error');
         }
     });
 };
 
 window.restoreFromGoogleDrive = function() {
-    if (!confirm(L === 'ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالنسخة الموجودة في جوجل درايف. متأكد؟' : 'Warning: Current data will be replaced with Google Drive backup. Sure?')) return;
+    if (!confirm(L === 'ar' ? 'ØªØ­Ø°ÙŠØ±: Ø³ÙŠØªÙ… Ø§Ø³ØªØ¨Ø¯Ø§Ù„ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø­Ø§Ù„ÙŠØ© Ø¨Ø§Ù„Ù†Ø³Ø®Ø© Ø§Ù„Ù…ÙˆØ¬ÙˆØ¯Ø© ÙÙŠ Ø¬ÙˆØ¬Ù„ Ø¯Ø±Ø§ÙŠÙ. Ù…ØªØ£ÙƒØ¯ØŸ' : 'Warning: Current data will be replaced with Google Drive backup. Sure?')) return;
     
     requireAuth(async () => {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري البحث عن النسخة...':'Searching for backup...', 'info');
+        if(typeof toast === 'function') toast(L==='ar'?'Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø¨Ø­Ø« Ø¹Ù† Ø§Ù„Ù†Ø³Ø®Ø©...':'Searching for backup...', 'info');
         let ds = document.getElementById('driveStatus');
-        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري التنزيل...':'Downloading...'}</span>`;
+        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªÙ†Ø²ÙŠÙ„...':'Downloading...'}</span>`;
 
         try {
             const search = await gapi.client.drive.files.list({
@@ -3830,7 +3830,7 @@ window.restoreFromGoogleDrive = function() {
             });
 
             if (!search.result.files || search.result.files.length === 0) {
-                if(typeof toast === 'function') toast(L==='ar'?'❌ لا يوجد نسخة احتياطية في جوجل درايف!':'❌ No backup found in Google Drive!', 'error');
+                if(typeof toast === 'function') toast(L==='ar'?'âŒ Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù†Ø³Ø®Ø© Ø§Ø­ØªÙŠØ§Ø·ÙŠØ© ÙÙŠ Ø¬ÙˆØ¬Ù„ Ø¯Ø±Ø§ÙŠÙ!':'âŒ No backup found in Google Drive!', 'error');
                 if(ds) ds.innerHTML = `<span style="color:red">No backup found!</span>`;
                 return;
             }
@@ -3855,15 +3855,15 @@ window.restoreFromGoogleDrive = function() {
             let tme = new Date(search.result.files[0].modifiedTime).toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
             localStorage.setItem('last_gdrive_sync', tme);
 
-            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم الاسترجاع بنجاح!' : '✅ Restored successfully!', 'success');
-            if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'تم الاسترجاع!':'Restored!'}</strong>`;
+            if (typeof toast === 'function') toast(L === 'ar' ? 'âœ… ØªÙ… Ø§Ù„Ø§Ø³ØªØ±Ø¬Ø§Ø¹ Ø¨Ù†Ø¬Ø§Ø­!' : 'âœ… Restored successfully!', 'success');
+            if(ds) ds.innerHTML = `âœ… <strong>${L==='ar'?'ØªÙ… Ø§Ù„Ø§Ø³ØªØ±Ø¬Ø§Ø¹!':'Restored!'}</strong>`;
             
             setTimeout(() => window.location.reload(), 1500);
 
         } catch (err) {
             console.error("Restore error", err);
             if(ds) ds.innerHTML = `<span style="color:red">Restore Error</span>`;
-            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل استرجاع البيانات':'❌ Restore failed', 'error');
+            if(typeof toast === 'function') toast(L==='ar'?'âŒ ÙØ´Ù„ Ø§Ø³ØªØ±Ø¬Ø§Ø¹ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª':'âŒ Restore failed', 'error');
         }
     });
 };
