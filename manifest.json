@@ -1,17 +1,16 @@
 {
-  "name": "Sales Pro Enterprise",
+  "name": "Sales Pro Dashboard",
   "short_name": "Sales Pro",
-  "description": "Enterprise Sales Management System",
+  "description": "Sales Pro Dashboard Application",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#1e293b",
+  "background_color": "#121212",
+  "theme_color": "#5046E5",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3214/3214746.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/1063/1063376.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
