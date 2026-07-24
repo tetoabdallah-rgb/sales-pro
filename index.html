@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Sales Pro Enterprise - Sales Pro</title>
+    <title>Sales Pro Enterprise - Sales Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <meta name="theme-color" content="#1e293b">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3214/3214746.png">
@@ -1395,7 +1395,6 @@ input[type=file] {
     <div class="sbt">
       <span class="sbr">&#x2699;&#xFE0F; Sales Pro</span>
       <div class="sbb">
-        <button id="bAlBell" title="Alerts" onclick="P='alerts';if(typeof buildNav==='function')buildNav();render();" style="position:relative;">&#x1F514;<span id="alBadge" style="display:none;position:absolute;top:-5px;right:-5px;background:var(--rd);color:#fff;border-radius:50%;padding:2px 5px;font-size:0.5rem;font-weight:bold;">0</span></button>
         <button id="bTh" title="Theme">&#x1F317;</button>
         <button id="bLn" title="Language">EN</button>
         <button id="bOt" title="Logout">&#x062E;&#x0631;&#x0648;&#x062C;</button>
@@ -1464,6 +1463,7 @@ let C = loadLS('payData'); // Collections/PayData
 let D = loadLS('duesData'); // Dues
 let CH = {}; // Chart Instances
 let L = localStorage.getItem('sp_lang') || 'ar';
+let CURR = localStorage.getItem('SalesPro_Currency') || '';
 L = L.replace(/"/g, ''); // Strip quotes if JSON stringified
 if (L !== 'ar' && L !== 'en') L = 'ar';
 let P = 'dash'; // Current Page
@@ -1840,7 +1840,41 @@ function rDash() {
     let ds = getFilteredSales();
     let ts = 0, tp = 0, tt = 0, tpt = 0;
     
-    ds.forEach(r => { ts += getSalesVal(r); tp += getProfitVal(r); });
+    ds.forEach(r => { ts += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']); tp += getRowVal(r, ['Profit Margin', 'Profit']); });
+
+    let prevSales = 0;
+    if(S && S.length > 0) {
+        if (globalDateRange.start && globalDateRange.end) {
+            let sDate = new Date(globalDateRange.start);
+            let eDate = new Date(globalDateRange.end);
+            let pEnd = new Date(sDate.getTime() - 86400000);
+            let pStart = new Date(pEnd.getTime() - (eDate - sDate));
+            let pStartStr = `${pStart.getFullYear()}-${String(pStart.getMonth()+1).padStart(2,'0')}-${String(pStart.getDate()).padStart(2,'0')}`;
+            let pEndStr = `${pEnd.getFullYear()}-${String(pEnd.getMonth()+1).padStart(2,'0')}-${String(pEnd.getDate()).padStart(2,'0')}`;
+            S.forEach(r => {
+                let d = pd(r['Order Date']);
+                if(d && d >= pStartStr && d <= pEndStr) prevSales += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+            });
+        } else {
+            let now = new Date();
+            let pEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+            let pStart = new Date(pEnd.getFullYear(), pEnd.getMonth(), 1);
+            let pStartStr = `${pStart.getFullYear()}-${String(pStart.getMonth()+1).padStart(2,'0')}-${String(pStart.getDate()).padStart(2,'0')}`;
+            let pEndStr = `${pEnd.getFullYear()}-${String(pEnd.getMonth()+1).padStart(2,'0')}-${String(pEnd.getDate()).padStart(2,'0')}`;
+            S.forEach(r => {
+                let d = pd(r['Order Date']);
+                if(d && d >= pStartStr && d <= pEndStr) prevSales += getRowVal(r, ['Sales After Discount', 'Sales', 'Amount']);
+            });
+        }
+    }
+    let trendHtml = '';
+    if (ts > 0 && prevSales > 0) {
+        let diffPct = ((ts - prevSales) / prevSales) * 100;
+        let c = diffPct >= 0 ? 'var(--gn)' : 'var(--rd)';
+        let a = diffPct >= 0 ? '&#x25B2;' : '&#x25BC;';
+        trendHtml = `<span style="color:${c};font-size:0.6rem;margin-left:5px;background:var(--bg3);padding:2px 4px;border-radius:4px;">${a} ${Math.abs(diffPct).toFixed(1)}%</span>`;
+    }
+
     T.forEach(r => { tt += Number(r.Target)||0; tpt += Number(r['Profit Target'])||0; });
     
     let cu = {}, or = {};
@@ -1861,11 +1895,14 @@ function rDash() {
     
     $('M').innerHTML = `
         <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
+                <button id="bPdfExport" class="btn" style="padding:4px 8px;font-size:0.7rem;" title="${L==='ar'?'تصدير PDF':'Export PDF'}">&#x1F4C4; PDF</button>
+            </div>
             ${dateFilterUI}
         </div>
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
+            <div class="ki"><div class="lb" style="display:flex;align-items:center;">${L==='ar'?TUI('Sales'):'Sales'}${trendHtml}</div><div class="vl">${aFmt(ts)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
@@ -3256,43 +3293,6 @@ function rSetup() {
                     ws = sName ? wb.Sheets[sName] : wb.Sheets[wb.SheetNames[0]];
                 } else {
                     ws = wb.Sheets[wb.SheetNames[0]];
-                }
-                cb(XLSX.utils.sheet_to_json(ws));
-            } catch(err) { toast(L==='ar'?TUI('? Error reading file'):'? Error reading file'); }
-        };
-        reader.readAsArrayBuffer(file);
-    }
-    $('bUpload').onclick = () => {
-        let done = 0, total = 0;
-        let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
-        if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
-        let onAllDone = () => {
-            toast(L==='ar' ? '✅ تم تحديث البيانات!' : '✅ Data Updated!');
-            render();
-            if (typeof window.cloudAutoSave === 'function') {
-                window.cloudAutoSave(L==='ar' ? 'رفع ملفات' : 'File Upload');
-            }
-        };
-        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) onAllDone(); }); }
-        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) onAllDone(); }); }
-        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) onAllDone(); }, 'Payment Ref'); }
-    };
-
-    
-    $('bSaveCats').onclick = () => {
-        let vals = $('inAccCats').value.split(',').map(s => s.trim()).filter(s => s);
-        if(vals.length > 0) {
-            accCats = vals;
-            sv('accCats', accCats);
-            toast(L==='ar'?'تم حفظ فئات الإكسسوارات بنجاح!':'Categories Saved!');
-            render();
-        } else {
-            toast(L==='ar'?'لا يمكن ترك الفئات فارغة!':'Categories cannot be empty!');
-        }
-    };
-}
-
-
 
 
 
@@ -3316,619 +3316,6 @@ function rSettings() {
                 <span style="width:32px;height:32px;display:flex;">⚙️</span> ${t('settings')}
             </h1>
             <p>${L==='ar'?'تخصيص ألوان التطبيق، والواجهة، وإعدادات المزامنة':'Customize app colors, interface, and sync settings'}</p>
-        </div>
-        
-                <div class="card" style="margin-bottom:20px;">
-            <h3>ðŸ’° ${L==='ar'?'Ø§Ù„Ø¹Ù…Ù„Ø©':'Currency'}</h3>
-            <div style="display:flex;gap:12px;margin-bottom:12px;">
-                <select id="currSelect" class="sbox" style="width:200px;padding:8px;">
-                    <option value="" ${CURR===''?'selected':''}>${L==='ar'?'Ø¨Ø¯ÙˆÙ† Ø¹Ù…Ù„Ø©':'None'}</option>
-                    <option value="EGP" ${CURR==='EGP'?'selected':''}>EGP (Ø¬Ù†ÙŠÙ‡)</option>
-                    <option value="SAR" ${CURR==='SAR'?'selected':''}>SAR (Ø±ÙŠØ§Ù„)</option>
-                    <option value="AED" ${CURR==='AED'?'selected':''}>AED (Ø¯Ø±Ù‡Ù…)</option>
-                    <option value="$" ${CURR==='
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'اختر اللون الذي يناسب ذوقك':'Choose the color that fits you'}</p>
-            
-            <div style="display:flex;gap:12px;flex-wrap:wrap;" id="colorPicker">
-                ${CL.map((color, i) => `
-                    <div class="color-btn" data-color="${color}" style="width:40px;height:40px;border-radius:50%;background-color:${color};cursor:pointer;border:2px solid ${ld('sp_primary')===color?'var(--tx1)':'transparent'};transition:all 0.2s;"></div>
-                `).join('')}
-            </div>
-        </div>
-        
-        <div class="card" style="margin-bottom:20px;">
-            <h3>☁️ ${L==='ar'?'النسخ الاحتياطي السحابي (Google Drive)':'Cloud Sync (Google Drive)'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'حفظ البيانات واسترجاعها مباشرة من حسابك في جوجل درايف.':'Backup and restore data directly from your Google Drive.'}</p>
-            
-            <div style="background:var(--bg3);padding:10px;border-radius:8px;margin-bottom:15px;">
-                <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:10px;">${L==='ar'?'تحتاج إلى إدخال مفاتيح Google API لكي تعمل المزامنة:':'You must enter Google API keys for sync to work:'}</p>
-                <input type="text" id="gdriveClientId" placeholder="Google Client ID" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
-                <input type="text" id="gdriveApiKey" placeholder="Google API Key" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
-                <button class="btn btn-p" onclick="saveDriveKeys()" style="width:100%;">${L==='ar'?'حفظ مفاتيح جوجل':'Save Google Keys'}</button>
-            </div>
-
-            <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;padding:10px;background:var(--bg3);border-radius:8px;">⏳ ${L==='ar'?'جاري التحقق...':'Checking...'}</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button class="btn btn-p" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;background:var(--ok);">
-                    ☁️ ${L==='ar'?'حفظ في درايف':'Save to Drive'}
-                </button>
-                <button class="btn" onclick="restoreFromGoogleDrive()" style="flex:1;min-width:140px;background:var(--bg3);">
-                    📂 ${L==='ar'?'استرجاع من درايف':'Restore from Drive'}
-                </button>
-            </div>
-        </div>
-
-        <div class="card" style="margin-bottom:20px;">
-            <h3>🤖 ${L==='ar'?'إعدادات المساعد الذكي (Gemini AI)':'Gemini AI Settings'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفتاح Gemini API لتفعيل المساعد الذكي':'Enter Gemini API key to enable smart assistant'}</p>
-            <div class="fg">
-                <input type="text" id="geminiApiKey" placeholder="${L==='ar'?'Gemini API Key':'Gemini API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gemini_api_key') || ''}">
-            </div>
-            <button class="btn btn-p" onclick="saveGeminiKey()">${L==='ar'?'حفظ المفتاح':'Save Key'}</button>
-        </div>
-        
-        <div class="card">
-            <h3>👤 ${L==='ar'?'الملف الشخصي':'Profile'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${currentUser ? currentUser.email : 'Not logged in'}</p>
-            <button class="btn btn-p" onclick="logout()" style="background:var(--rd)">${t('logout')}</button>
-        </div>
-    `;
-
-    document.querySelectorAll('.color-btn').forEach(btn => {
-        btn.onclick = () => {
-            let col = btn.getAttribute('data-color');
-            sv('sp_primary', col);
-            document.documentElement.style.setProperty('--am', col);
-            document.querySelectorAll('.color-btn').forEach(b => b.style.border = '2px solid transparent');
-            btn.style.border = '2px solid var(--tx1)';
-        };
-    });
-
-    // Load cloud backup info
-    if (typeof window.getCloudInfo === 'function') {
-        window.getCloudInfo().then(info => {
-            let ds = document.getElementById('driveStatus');
-            if (!ds) return;
-            if (!info) {
-                ds.innerHTML = L==='ar' ? '⚠️ لم تقم بعمل مزامنة في جوجل درايف مؤخراً.' : '⚠️ No recent Google Drive sync.';
-                return;
-            }
-            ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${info.lastUpdated}
-                &nbsp;|&nbsp; 📊 ${L==='ar'?'المبيعات:':'Sales:'} ${info.salesCount}
-                &nbsp;|&nbsp; 💰 ${L==='ar'?'التحصيلات:':'Collections:'} ${info.payCount}`;
-        });
-    }
-}
-
-window.saveDriveKeys = function() {
-    const cId = document.getElementById('gdriveClientId').value.trim();
-    const aKey = document.getElementById('gdriveApiKey').value.trim();
-    if (cId && aKey) {
-        localStorage.setItem('gdrive_client_id', cId);
-        localStorage.setItem('gdrive_api_key', aKey);
-        if(typeof toast === 'function') toast(L==='ar'?'✅ تم حفظ مفاتيح جوجل درايف بنجاح.':'Google Drive keys saved', 'success');
-        setTimeout(() => window.location.reload(), 1500);
-    } else {
-        if(typeof toast === 'function') toast(L==='ar'?'❌ يرجى إدخال المفتاحين (Client ID و API Key)':'Please enter both keys', 'error');
-    }
-};
-
-window.saveGeminiKey = function() {
-    const gKey = document.getElementById('geminiApiKey').value.trim();
-    if (gKey) {
-        localStorage.setItem('gemini_api_key', gKey);
-        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفتاح Gemini بنجاح':'Gemini key saved', 'success');
-    } else {
-        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال المفتاح أولاً':'Please enter the key', 'error');
-    }
-};
-
-</script>
-<script>
-// js/app.js
-
-const NAV = [
-    {s:{ar:'الأساسية',en:'Core'}},
-    {p:'dash',ic:'🏠'},{p:'sales',ic:'💰'},{p:'targets',ic:'🎯'},{p:'personal',ic:'👤'},
-    {p:'customers',ic:'🏪'},{p:'brands',ic:'📦'},
-    {s:{ar:'الأقسام',en:'Depts'}},
-    {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💰'},
-    {s:{ar:'متقدم',en:'Advanced'}},
-    {p:'analytics',ic:'🧠'},{p:'potential',ic:'🚀'},{p:'profit',ic:'💵'},
-    {p:'keyacc',ic:'⭐'},{p:'dormant',ic:'💤'},{p:'prospects',ic:'🔍'},
-    {s:{ar:'ذكي',en:'Smart'}},
-    {p:'ai',ic:'🤖'},{p:'alerts',ic:'🔔'},
-    {s:{ar:'النظام',en:'System'}},
-    {p:'account',ic:'👤'},{p:'backup',ic:'💾'},{p:'setup',ic:'📂'},{p:'reset',ic:'🗑️'},
-    {p:'settings',ic:'⚙️'}
-];
-
-const BNV = ['dash','customers','brands','analytics','settings'];
-
-const F_URL = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/';
-const getImg = (name) => `<img src="${F_URL}${name}" style="width:1.4em;height:1.4em;vertical-align:middle;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.15));">`;
-
-const ICONS = {
-    dash: getImg('Bar%20chart/3D/bar_chart_3d.png'),
-    sales: getImg('Chart%20increasing/3D/chart_increasing_3d.png'),
-    targets: getImg('Bullseye/3D/bullseye_3d.png'),
-    personal: getImg('Man%20office%20worker/3D/man_office_worker_3d.png'),
-    customers: getImg('Busts%20in%20silhouette/3D/busts_in_silhouette_3d.png'),
-    brands: getImg('Label/3D/label_3d.png'),
-    accessories: getImg('Headphone/3D/headphone_3d.png'),
-    hardware: getImg('Laptop/3D/laptop_3d.png'),
-    analytics: getImg('Chart%20decreasing/3D/chart_decreasing_3d.png'),
-    potential: getImg('Star/3D/star_3d.png'),
-    profit: getImg('Money%20bag/3D/money_bag_3d.png'),
-    keyacc: getImg('Crown/3D/crown_3d.png'),
-    dormant: getImg('Sleeping%20face/3D/sleeping_face_3d.png'),
-    prospects: getImg('Magnifying%20glass%20tilted%20right/3D/magnifying_glass_tilted_right_3d.png'),
-    ai: getImg('Robot/3D/robot_3d.png'),
-    alerts: getImg('Bell/3D/bell_3d.png'),
-    account: getImg('Bust%20in%20silhouette/3D/bust_in_silhouette_3d.png'),
-    backup: getImg('Floppy%20disk/3D/floppy_disk_3d.png'),
-    setup: getImg('Gear/3D/gear_3d.png'),
-    reset: getImg('Wastebasket/3D/wastebasket_3d.png'),
-    settings: getImg('Artist%20palette/3D/artist_palette_3d.png'),
-    collections: getImg('Coin/3D/coin_3d.png')
-};
-
-function buildNav() {
-    let h = '';
-    NAV.forEach(x => {
-        if(x.s) h += `<div class="ns">${x.s[L]}</div>`;
-        else h += `<div class="ni${x.p===P?' on':''}" data-p="${x.p}"><span class="ic">${ICONS[x.p]||x.ic}</span><span>${t(x.p)}</span></div>`;
-    });
-    let elNV = $('NV');
-    if(elNV) elNV.innerHTML = h;
-
-    let b = '';
-    BNV.forEach(p => {
-        let x = NAV.find(n => n.p === p) || {ic: ICONS[p]};
-        b += `<div class="bi${p===P?' on':''}" data-p="${p}"><span class="bic">${ICONS[p]||x.ic}</span><span>${t(p)}</span></div>`;
-    });
-    let elBN = $('BN');
-    if(elBN) elBN.innerHTML = b;
-}
-
-document.addEventListener('click', e => {
-    let el = e.target.closest('.ni, .bi');
-    if(!el) return;
-    let p = el.getAttribute('data-p');
-    if(!p) return;
-    P = p;
-    buildNav();
-    render();
-});
-
-if ($('bTh')) {
-    $('bTh').onclick = () => {
-        let dk = document.documentElement.getAttribute('data-theme') === 'dark';
-        document.documentElement.setAttribute('data-theme', dk ? '' : 'dark');
-        $('bTh').textContent = dk ? '🌙' : '☀️';
-        sv('sp_theme', dk ? '' : 'dark');
-    };
-}
-
-if ($('bLn')) {
-    $('bLn').onclick = () => {
-        L = L === 'ar' ? 'en' : 'ar';
-        document.body.classList.toggle('en', L === 'en');
-        document.documentElement.dir = L === 'ar' ? 'rtl' : 'ltr';
-        document.documentElement.lang = L;
-        $('bLn').textContent = L === 'ar' ? 'EN' : 'عربي';
-        $('bOt').textContent = t('logout');
-        sv('sp_lang', L);
-        buildNav();
-        render();
-    };
-}
-
-function init() {
-    let th = ld('sp_theme');
-    if (th === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        if($('bTh')) $('bTh').textContent = '☀️';
-    }
-    
-    let col = ld('sp_primary');
-    if (col) {
-        document.documentElement.style.setProperty('--am', col);
-    }
-    
-    let ln = ld('sp_lang');
-    if (ln === 'en' && L !== 'en') {
-        L = 'en';
-        document.body.classList.add('en');
-        document.documentElement.dir = 'ltr';
-        document.documentElement.lang = 'en';
-        if($('bLn')) $('bLn').textContent = 'عربي';
-        if($('bOt')) $('bOt').textContent = 'Logout';
-    }
-    
-    S = ld('salesData') || [];
-    T = ld('targetData') || [];
-    accCats = ld('accCats') || [];
-    hwCats = ld('hwCats') || [];
-    C = ld('payData') || [];
-    D = ld('duesData') || [];
-    
-    buildNav();
-    render();
-}
-
-function initAnm() {
-    document.querySelectorAll('.anm').forEach(el => {
-        let e = Number(el.getAttribute('data-v')), d = 1000, st = null;
-        let r = t => {
-            if(!st) st = t;
-            let p = Math.min((t - st) / d, 1);
-            let cStr = el.getAttribute('data-c') || '';
-            let val = el.getAttribute('data-p') ? pc(p * e) : fmt(Math.floor(p * e));
-            if(!el.getAttribute('data-p') && CURR) val = val.replace(CURR, '').trim() + ' ' + CURR;
-            el.textContent = val;
-            if(p < 1) requestAnimationFrame(r);
-            else {
-                let finalVal = el.getAttribute('data-p') ? pc(e) : fmt(e);
-                if(!el.getAttribute('data-p') && CURR) finalVal = finalVal.replace(CURR, '').trim() + ' ' + CURR;
-                el.textContent = finalVal;
-            }
-        };
-        requestAnimationFrame(r);
-    });
-}
-
-function updateAlertBadge() {
-    if(!$('alBadge')) return;
-    let alertsCount = 0;
-    let today = new Date();
-    let cu = {};
-    if(typeof S !== 'undefined' && S) {
-        S.forEach(r => { let c=r.Customer||''; let d=pd(r['Order Date']); if(!cu[c]||d>cu[c]) cu[c]=d; });
-        Object.entries(cu).forEach(([n,last]) => {
-            let days = Math.floor((today - new Date(last)) / 86400000);
-            if(days >= 60) alertsCount++;
-        });
-        let cuS = {};
-        S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
-        if(typeof T !== 'undefined' && T) {
-            T.forEach(r => {
-                let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
-                if(pct<50 && tg>0) alertsCount++;
-            });
-        }
-    }
-    if(alertsCount > 0) {
-        $('alBadge').style.display = 'block';
-        $('alBadge').textContent = alertsCount;
-    } else {
-        $('alBadge').style.display = 'none';
-    }
-}
-
-function render() {
-    let fn = {
-        dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
-        customers: rCust, brands: rBrands, analytics: rAn, potential: rPot,
-        profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
-        keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
-        account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
-    };
-    if (fn[P]) fn[P]();
-    initAnm();
-    updateAlertBadge();
-}
-
-window.TUI = function(enStr) {
-  const map = {
-    'Export Data': '\u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A',
-    'Export Sales': '\u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A',
-    'Export Targets': '\u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0645\u0633\u062A\u0647\u062F\u0641\u0627\u062A',
-    'Export Collections': '\u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A',
-    'Prev': '\u0627\u0644\u0633\u0627\u0628\u0642',
-    'Next': '\u0627\u0644\u062A\u0627\u0644\u064A',
-    'No data': '\u0644\u0627 \u062A\u0648\u062C\u062F \u0628\u064A\u0627\u0646\u0627\u062A',
-    'Upload Excel Files': '\u0631\u0641\u0639 \u0645\u0644\u0641\u0627\u062A \u0625\u0643\u0633\u064A\u0644',
-    'Upload your Sales, Target and Collections Excel files to update the data.': '\u0642\u0645 \u0628\u0631\u0641\u0639 \u0645\u0644\u0641\u0627\u062A \u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A \u0648\u0627\u0644\u0645\u0633\u062A\u0647\u062F\u0641\u0627\u062A \u0648\u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A \u0644\u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A.',
-    'Cloud Sync Active': '\u0627\u0644\u0645\u0632\u0627\u0645\u0646\u0629 \u0627\u0644\u0633\u062D\u0627\u0628\u064A\u0629 \u0646\u0634\u0637\u0629',
-    'Sales File': '\u0645\u0644\u0641 \u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A',
-    'Target File': '\u0645\u0644\u0641 \u0627\u0644\u0645\u0633\u062A\u0647\u062F\u0641',
-    'Collections File': '\u0645\u0644\u0641 \u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A',
-    'records currently loaded': '\u0633\u062C\u0644 \u0645\u062D\u0645\u0644 \u062D\u0627\u0644\u064A\u0627\u064B',
-    'Upload & Update Data': '\u0631\u0641\u0639 \u0648\u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A',
-    'Choose a file first!': '\u0627\u062E\u062A\u0631 \u0645\u0644\u0641\u0627\u064B \u0623\u0648\u0644\u0627\u064B!',
-    'Error reading file': '\u062E\u0637\u0623 \u0641\u064A \u0642\u0631\u0627\u0621\u0629 \u0627\u0644\u0645\u0644\u0641',
-    'Done': '\u062A\u0645 \u0628\u0646\u062C\u0627\u062D',
-    'Active User': '\u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645 \u0627\u0644\u0646\u0634\u0637',
-    'Sales': '\u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A',
-    'Targets': '\u0627\u0644\u0645\u0633\u062A\u0647\u062F\u0641\u0627\u062A',
-    'Collections': '\u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A',
-    'Not logged in': '\u063A\u064A\u0631 \u0645\u0633\u062C\u0644 \u0627\u0644\u062F\u062E\u0648\u0644'
-  };
-  return map[enStr] || enStr;
-};
-window.toast = function(msg, type = 'info') {
-    let t = document.getElementById('TT');
-    if (!t) return;
-    t.textContent = msg;
-    t.className = 'toast show ' + type;
-    setTimeout(() => { t.className = 'toast'; }, 3000);
-};
-
-</script>
-<script>
-// js/gdrive.js - Full Google Drive API Integration
-
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
-
-let tokenClient;
-let gapiInited = false;
-let gisInited = false;
-
-window.gapiLoaded = function() {
-    if (typeof gapi !== 'undefined' && !gapi.client) {
-        gapi.load('client', initializeGapiClient);
-    } else if (typeof gapi !== 'undefined' && gapi.client) {
-        initializeGapiClient();
-    }
-};
-
-async function initializeGapiClient() {
-    try {
-        const API_KEY = localStorage.getItem('gdrive_api_key');
-        if (!API_KEY) return;
-        
-        // Ensure gapi.client is loaded
-        if (typeof gapi !== 'undefined' && !gapi.client) {
-            await new Promise((resolve) => gapi.load('client', resolve));
-        }
-
-        await gapi.client.init({
-            apiKey: API_KEY,
-            discoveryDocs: [DISCOVERY_DOC],
-        });
-        gapiInited = true;
-    } catch (err) {
-        console.warn("Error initializing GAPI client: ", err);
-        throw err;
-    }
-}
-
-window.gisLoaded = function() {
-    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
-    if (!CLIENT_ID) return;
-    if (typeof google === 'undefined' || !google.accounts) return;
-    
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: '', 
-    });
-    gisInited = true;
-};
-
-// Auto-run if script tags loaded before this script
-if (typeof gapi !== 'undefined') window.gapiLoaded();
-if (typeof google !== 'undefined') window.gisLoaded();
-
-let isInitializing = false;
-
-async function requireAuth(callback) {
-    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
-    const API_KEY = localStorage.getItem('gdrive_api_key');
-    
-    if (!CLIENT_ID || !API_KEY) {
-        if(typeof toast === 'function') toast(L==='ar'?'يجب إدخال Google Client ID و API Key في الإعدادات':'Please enter Google Client ID and API Key in Settings', 'error');
-        return;
-    }
-
-    if (isInitializing) {
-        setTimeout(() => requireAuth(callback), 500);
-        return;
-    }
-
-    isInitializing = true;
-    try {
-        if (!gapiInited) await initializeGapiClient();
-        if (!gisInited) window.gisLoaded();
-    } catch(e) {
-        console.error(e);
-    }
-    isInitializing = false;
-
-    if (!gapiInited || !gisInited) {
-        if(typeof toast === 'function') toast(L==='ar'?'فشل الاتصال بخوادم جوجل. تأكد من صحة المفاتيح.':'Failed to connect to Google. Check keys.', 'error');
-        return;
-    }
-
-    tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) {
-            if(typeof toast === 'function') toast(L==='ar'?'خطأ في تسجيل الدخول لجوجل':'Google Login Error', 'error');
-            console.error(resp);
-            return;
-        }
-        callback();
-    };
-
-    if (gapi.client.getToken() === null) {
-        tokenClient.requestAccessToken({prompt: 'consent'});
-    } else {
-        tokenClient.requestAccessToken({prompt: ''});
-    }
-}
-
-window.backupToGoogleDrive = function() {
-    requireAuth(async () => {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري الحفظ في جوجل درايف...':'Saving to Google Drive...', 'info');
-        
-        let ds = document.getElementById('driveStatus');
-        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري الرفع...':'Uploading...'}</span>`;
-
-        let dump = {
-            salesData:  S        || [],
-            targetData: T        || [],
-            accCats:    accCats  || [],
-            hwCats:     hwCats   || [],
-            payData:    C        || [],
-            duesData:   D        || [],
-            lastUpdated: new Date().toISOString()
-        };
-        const fileContent = JSON.stringify(dump);
-        const file = new Blob([fileContent], { type: 'application/json' });
-        const metadata = {
-            'name': `SalesPro_Backup.json`,
-            'mimeType': 'application/json'
-        };
-
-        const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        form.append('file', file);
-
-        try {
-            // First check if file already exists to overwrite it
-            let existingFileId = null;
-            const search = await gapi.client.drive.files.list({
-                q: "name='SalesPro_Backup.json' and trashed=false",
-                spaces: 'drive',
-                fields: 'files(id, name)'
-            });
-            if (search.result.files && search.result.files.length > 0) {
-                existingFileId = search.result.files[0].id;
-            }
-
-            let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-            let method = 'POST';
-            if (existingFileId) {
-                url = `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=multipart`;
-                method = 'PATCH';
-            }
-
-            const res = await fetch(url, {
-                method: method,
-                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }),
-                body: form
-            });
-            
-            const data = await res.json();
-            if (data.id) {
-                let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
-                localStorage.setItem('last_gdrive_sync', tme);
-                if(typeof toast === 'function') toast(L==='ar'?'✅ تم الحفظ في جوجل درايف!':'✅ Saved to Google Drive!', 'success');
-                if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${tme}`;
-            } else {
-                throw new Error("Invalid response from Google Drive");
-            }
-        } catch (err) {
-            console.error("Upload error", err);
-            if(ds) ds.innerHTML = `<span style="color:red">Upload Error</span>`;
-            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل الحفظ في السحابة':'❌ Cloud save failed', 'error');
-        }
-    });
-};
-
-window.restoreFromGoogleDrive = function() {
-    if (!confirm(L === 'ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالنسخة الموجودة في جوجل درايف. متأكد؟' : 'Warning: Current data will be replaced with Google Drive backup. Sure?')) return;
-    
-    requireAuth(async () => {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري البحث عن النسخة...':'Searching for backup...', 'info');
-        let ds = document.getElementById('driveStatus');
-        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري التنزيل...':'Downloading...'}</span>`;
-
-        try {
-            const search = await gapi.client.drive.files.list({
-                q: "name='SalesPro_Backup.json' and trashed=false",
-                spaces: 'drive',
-                fields: 'files(id, name, modifiedTime)',
-                orderBy: 'modifiedTime desc'
-            });
-
-            if (!search.result.files || search.result.files.length === 0) {
-                if(typeof toast === 'function') toast(L==='ar'?'❌ لا يوجد نسخة احتياطية في جوجل درايف!':'❌ No backup found in Google Drive!', 'error');
-                if(ds) ds.innerHTML = `<span style="color:red">No backup found!</span>`;
-                return;
-            }
-
-            const fileId = search.result.files[0].id;
-            
-            // Download file content
-            const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token })
-            });
-            
-            const content = await res.text();
-            let p = JSON.parse(content);
-            
-            if (p.salesData)  { S       = p.salesData;  sv('salesData',  S); }
-            if (p.targetData) { T       = p.targetData; sv('targetData', T); }
-            if (p.accCats)    { accCats = p.accCats;    sv('accCats',    accCats); }
-            if (p.hwCats)     { hwCats  = p.hwCats;     sv('hwCats',     hwCats); }
-            if (p.payData)    { C       = p.payData;    sv('payData',    C); }
-            if (p.duesData)   { D       = p.duesData;   sv('duesData',   D); }
-
-            let tme = new Date(search.result.files[0].modifiedTime).toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
-            localStorage.setItem('last_gdrive_sync', tme);
-
-            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم الاسترجاع بنجاح!' : '✅ Restored successfully!', 'success');
-            if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'تم الاسترجاع!':'Restored!'}</strong>`;
-            
-            setTimeout(() => window.location.reload(), 1500);
-
-        } catch (err) {
-            console.error("Restore error", err);
-            if(ds) ds.innerHTML = `<span style="color:red">Restore Error</span>`;
-            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل استرجاع البيانات':'❌ Restore failed', 'error');
-        }
-    });
-};
-
-window.cloudAutoSave = function() {
-    // Disable automatic background sync for Google Drive because it requires OAuth consent popup
-    // We only want manual sync for Google Drive.
-};
-
-window.getCloudInfo = async function() {
-    let lastS = localStorage.getItem('last_gdrive_sync');
-    if(!lastS) return null;
-    return {
-        lastUpdated: lastS,
-        salesCount: (S || []).length,
-        payCount: (C || []).length
-    };
-};
-
-</script>
-<script>
-  window.addEventListener('load', function() {
-    try {
-      if(typeof init === 'function') init();
-    } catch(e) {
-      alert('Error during init: ' + e.message + '\n' + e.stack);
-    }
-    setTimeout(function() {
-      var loader = document.getElementById('LOADER');
-      if (loader) {
-        loader.classList.add('fade-out');
-        setTimeout(function() { loader.style.display = 'none'; }, 500);
-      }
-    }, 800);
-  });
-</script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(registration => console.log('SW registered'))
-        .catch(err => console.log('SW registration failed: ', err));
-    });
-  }
-</script>
-</body>
-</html>?'selected':''}>$ (USD)</option>
-                    <option value="â‚¬" ${CURR==='â‚¬'?'selected':''}>â‚¬ (EUR)</option>
-                </select>
-                <button class="btn" onclick="localStorage.setItem('SalesPro_Currency', $('currSelect').value); CURR=$('currSelect').value; render();">${L==='ar'?'Ø­ÙØ¸':'Save'}</button>
-            </div>
         </div>
         
         <div class="card" style="margin-bottom:20px;">
@@ -4184,34 +3571,6 @@ function initAnm() {
     });
 }
 
-function updateAlertBadge() {
-    if(!$('alBadge')) return;
-    let alertsCount = 0;
-    let today = new Date();
-    let cu = {};
-    if(typeof S !== 'undefined' && S) {
-        S.forEach(r => { let c=r.Customer||''; let d=pd(r['Order Date']); if(!cu[c]||d>cu[c]) cu[c]=d; });
-        Object.entries(cu).forEach(([n,last]) => {
-            let days = Math.floor((today - new Date(last)) / 86400000);
-            if(days >= 60) alertsCount++;
-        });
-        let cuS = {};
-        S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getRowVal(r, ['Sales After Discount', 'Sales', 'Amount'])); });
-        if(typeof T !== 'undefined' && T) {
-            T.forEach(r => {
-                let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
-                if(pct<50 && tg>0) alertsCount++;
-            });
-        }
-    }
-    if(alertsCount > 0) {
-        $('alBadge').style.display = 'block';
-        $('alBadge').textContent = alertsCount;
-    } else {
-        $('alBadge').style.display = 'none';
-    }
-}
-
 function render() {
     let fn = {
         dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
@@ -4222,7 +3581,6 @@ function render() {
     };
     if (fn[P]) fn[P]();
     initAnm();
-    updateAlertBadge();
 }
 
 window.TUI = function(enStr) {
@@ -4523,9 +3881,7 @@ window.getCloudInfo = async function() {
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(registration => console.log('SW registered'))
-        .catch(err => console.log('SW registration failed: ', err));
+      navigator.serviceWorker.register('sw.js');
     });
   }
 </script>
