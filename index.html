@@ -3779,6 +3779,15 @@ function init() {
     
     buildNav();
     render();
+
+    // Auto backup every 15 minutes
+    setInterval(() => {
+        if(typeof gapi !== 'undefined' && gapi.client && gapi.client.getToken() && gapi.client.getToken().access_token) {
+            if(typeof window.backupToGoogleDrive === 'function') {
+                window.backupToGoogleDrive(true);
+            }
+        }
+    }, 900000);
 }
 
 function initAnm() {
@@ -3947,12 +3956,12 @@ async function requireAuth(callback) {
     }
 }
 
-window.backupToGoogleDrive = function() {
+window.backupToGoogleDrive = function(isAuto = false) {
     requireAuth(async () => {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري الحفظ في جوجل درايف...':'Saving to Google Drive...', 'info');
+        if(!isAuto && typeof toast === 'function') toast(L==='ar'?'جاري الحفظ في جوجل درايف...':'Saving to Google Drive...', 'info');
         
         let ds = document.getElementById('driveStatus');
-        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري الرفع...':'Uploading...'}</span>`;
+        if(!isAuto && ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري الرفع...':'Uploading...'}</span>`;
 
         let dump = {
             salesData:  S        || [],
@@ -4010,7 +4019,7 @@ window.backupToGoogleDrive = function() {
             }
         } catch (err) {
             console.error("Upload error", err);
-            if(ds) ds.innerHTML = `<span style="color:red">Upload Error</span>`;
+            if(!isAuto && ds) ds.innerHTML = `<span style="color:red">Upload Error</span>`;
             if(typeof toast === 'function') toast(L==='ar'?'❌ فشل الحفظ في السحابة':'❌ Cloud save failed', 'error');
         }
     });
