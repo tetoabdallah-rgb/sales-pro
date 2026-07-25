@@ -3491,15 +3491,22 @@ window.aiAnalyze = async function(type) {
     }
     
     try {
-        let res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + key, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                contents: [{parts: [{text: prompt}]}]
-            })
-        });
-        let data = await res.json();
-        if(data.error) throw new Error(data.error.message);
+        let models = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-pro', 'gemini-1.0-pro'];
+        let data = null;
+        for (let m of models) {
+            try {
+                let res = await fetch(https://generativelanguage.googleapis.com/v1beta/models/:generateContent?key=, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{parts: [{text: prompt}]}] })
+                });
+                let d = await res.json();
+                if(!d.error) { data = d; break; }
+                if(d.error && m === models[models.length-1]) throw new Error(d.error.message);
+            } catch(ex) {
+                if(m === models[models.length-1]) throw ex;
+            }
+        }
         
         let text = data.candidates[0].content.parts[0].text;
         text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br/>');
