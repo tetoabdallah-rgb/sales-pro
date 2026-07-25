@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salespro-cache-v5-autobackup';
+const CACHE_NAME = 'salespro-cache-v7-addons';
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
