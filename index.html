@@ -3561,6 +3561,14 @@ function rSettings() {
             <button class="btn btn-p" onclick="saveGeminiKey()">${L==='ar'?'حفظ المفتاح':'Save Key'}</button>
         </div>
         
+                <div class="card" style="margin-bottom:20px;">
+            <h3>📧 ${L==='ar'?'التقارير اليومية الآلية':'Automated Daily Reports'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل رابط (Web App URL) لربط الأبلكيشن بالإيميل':'Enter Web App URL to link with email'}</p>
+            <div class="fg">
+                <input type="text" id="inReportUrl" class="sbox" placeholder="https://script.google.com/macros/s/..." style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('report_url') || ''}">
+            </div>
+            <button class="btn btn-p" onclick="saveReportUrl()">${L==='ar'?'حفظ الرابط':'Save URL'}</button>
+        </div>
         <div class="card">
             <h3>👤 ${L==='ar'?'الملف الشخصي':'Profile'}</h3>
             <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${currentUser ? currentUser.email : 'Not logged in'}</p>
@@ -4083,6 +4091,8 @@ window.getCloudInfo = async function() {
         .catch(err => console.log('SW registration failed: ', err));
     });
   }
+
+window.saveReportUrl = function() { localStorage.setItem('report_url', document.getElementById('inReportUrl').value); toast(L==='ar'?'تم حفظ الرابط':'URL Saved'); };
 </script>
 </body>
 </html>
