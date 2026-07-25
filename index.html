@@ -2139,8 +2139,7 @@ function rTgt() {
         let v = e.target.value.toLowerCase();
         fTg(v ? T.filter(r => (r.Customer||'').toLowerCase().includes(v)) : T);
     });
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 function rPers() {
     let myEmail = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.email : '';
     let myS = S, ts = 0, tp = 0;
@@ -2296,8 +2295,7 @@ function rPers() {
         toast(L==='ar'?TUI('Saved!'):'Saved!');
         rPers();
     };
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 
 function rCust() {
     let cu = {};
@@ -2499,8 +2497,7 @@ function rBrands() {
             <td>${fmt(d.qty>0?d.s/d.qty:0)}</td>
         </tr>`).join('');
     }, 200);
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 
 // Analytics
 function rAn() {
@@ -2553,8 +2550,7 @@ function rAn() {
             options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}
         });
     }
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 
 // Profit Margin
 function rProfit() {
@@ -2611,8 +2607,7 @@ function rProfit() {
         <tbody>${arr.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=10?'bg-g':r.m>=5?'bg-a':'bg-r'}">${pc(r.m)}</span></td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 
 // Accessories
 function rAcc() {
@@ -2641,8 +2636,7 @@ function rAcc() {
     dc('accC');
     let ctx = $('accC');
     if(ctx && catArr.length) { CH.accC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}}); }
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 
 // Hardware
 function rHW() {
@@ -2669,8 +2663,7 @@ function rHW() {
     dc('hwC');
     let ctx = $('hwC');
     if(ctx && catArr.length) { CH.hwC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8}}}}}}); }
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 
 // Collections
 function rCollections() {
@@ -2743,8 +2736,7 @@ function rCollections() {
         <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
         </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}"
     `;
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 // Key Accounts (top 20% customers)
 function rKey() {
     let cu = {};
@@ -2802,8 +2794,7 @@ function rKey() {
         <tbody>${keyAcc.map((r,i)=>`<tr><td><span class="badge bg-g">${i+1}</span></td><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${r.o}</td></tr>`).join('')}</tbody>
         </table></div></div>
     `;
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 
 // Dormant Customers (no purchase in 60+ days)
 function rDorm() {
@@ -3112,8 +3103,7 @@ Provide business insights and actionable recommendations.`;
             };
         }
     }
-    initAnm && initAnm();
-}
+    initAnm && initAnm();}
 
 // Account
 function rAcct() {
@@ -3343,6 +3333,7 @@ function rVisits() {
         </tbody></table></div></div>
     ;
     initAnm && initAnm();
+
 }
 
 window.showAddVisit = function() {
@@ -3409,6 +3400,7 @@ function rLeads() {
         </tbody></table></div></div>
     ;
     initAnm && initAnm();
+
 }
 
 window.showAddLead = function() {
@@ -3480,6 +3472,7 @@ function rAI() {
         </div>
     ;
     initAnm && initAnm();
+
 }
 
 window.aiAnalyze = async function(type) {
