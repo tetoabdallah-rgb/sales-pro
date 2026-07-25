@@ -1349,6 +1349,24 @@ input[type=file] {
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
+<div id="splash-screen">
+    <div class="splash-logo-container">
+        <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bar%20chart/3D/bar_chart_3d.png" alt="Logo">
+        <div class="splash-title">Sales <span>Pro</span></div>
+        <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+    </div>
+</div>
+<script>
+    window.addEventListener('load', function() {
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            if(splash) {
+                splash.classList.add('hidden');
+                setTimeout(() => splash.remove(), 800);
+            }
+        }, 2000);
+    });
+</script>
 
 <!-- Loading Overlay -->
 <div id="LOADER" class="loader-overlay">
@@ -1365,7 +1383,7 @@ input[type=file] {
     <div class="auth-logo">
       <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bar%20chart/3D/bar_chart_3d.png" alt="Sales Pro Logo" width="80" height="80" style="filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); animation: fadeUp 1s ease forwards;">
     </div>
-    <h1 style="margin-bottom:4px; font-weight:800;">Sales Pro</h1>
+    <h1 style="margin-bottom:4px; font-weight:800;">Sales <span>Pro</span></h1>
     <p class="ds" style="font-size:0.85rem; margin-bottom:24px;">Welcome back, please sign in</p>
     
     <div class="fg" style="margin-bottom:16px;">
