@@ -424,6 +424,8 @@ html[data-theme="dark"] .bg-r {
 
 /* ---------- Premium Auth Screen ---------- */
 .auth-card {
+    width: min(450px, 95%) !important;
+    padding: 50px 32px !important;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
@@ -438,6 +440,8 @@ html[data-theme="dark"] .bg-r {
 }
 
 html[data-theme="dark"] .auth-card {
+    width: min(450px, 95%) !important;
+    padding: 50px 32px !important;
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
@@ -872,6 +876,8 @@ html[data-theme="dark"] ::selection {
     background: linear-gradient(135deg, #0f172a, #172554, #1e1b4b) !important;
 }
 .auth-card {
+    width: min(450px, 95%) !important;
+    padding: 50px 32px !important;
     background: rgba(17, 24, 39, 0.7) !important;
     border: 1px solid rgba(255,255,255,0.05) !important;
     border-top: 1px solid rgba(139, 92, 246, 0.3) !important;
