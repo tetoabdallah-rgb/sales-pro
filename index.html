@@ -1840,6 +1840,17 @@ function rDash() {
     let cu = {}, or = {};
     ds.forEach(r => { cu[r.Customer] = 1; or[r['Order Nbr']] = 1; });
     
+    let tc = 0;
+    C.forEach(r => {
+        let keys = Object.keys(r);
+        let getVal = (possibleNames) => {
+            let k = keys.find(k => possibleNames.some(pn => k.toLowerCase().replace(/\s+/g, '') === pn.toLowerCase().replace(/\s+/g, '')));
+            return k ? r[k] : undefined;
+        };
+        let rawVal = getVal(['Amount', 'Collection']) || 0;
+        tc += Number(rawVal.toString().replace(/,/g, '')) || 0;
+    });
+    
     let ap = tt > 0 ? ts / tt * 100 : 0;
     let pp = tpt > 0 ? tp / tpt * 100 : 0;
     
@@ -1860,6 +1871,7 @@ function rDash() {
         </div>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
+            <div class="ki" style="border:1px solid var(--am);"><div class="lb" style="color:var(--am);">${L==='ar'?'التحصيلات':'Collections'}</div><div class="vl" style="color:var(--am);">${aFmt(tc)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
