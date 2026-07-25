@@ -1473,6 +1473,14 @@ let currentUser = null;
 
 // Global State
 
+window.toast = function(msg) {
+    let el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2ecc71;color:#fff;padding:10px 20px;border-radius:20px;z-index:9999;box-shadow:0 4px 6px rgba(0,0,0,0.1);transition:opacity 0.3s;opacity:0;';
+    document.body.appendChild(el);
+    setTimeout(() => el.style.opacity = '1', 10);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+};
 function loadLS(k) { try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : []; } catch(e){ return []; } }
 let S = loadLS('salesData'); // Sales
 let T = loadLS('targetData'); // Targets
