@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salespro-cache-v2-clear';
+const CACHE_NAME = 'salespro-cache-v3-fix';
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
