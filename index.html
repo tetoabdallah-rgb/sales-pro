@@ -3503,7 +3503,7 @@ window.aiAnalyze = async function(type) {
         let data = null;
         for (let m of models) {
             try {
-                let res = await fetch(https://generativelanguage.googleapis.com/v1beta/models/:generateContent?key=, {
+                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ contents: [{parts: [{text: prompt}]}] })
