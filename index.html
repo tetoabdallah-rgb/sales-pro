@@ -1343,6 +1343,245 @@ input[type=file] {
     canvas { max-width: 100% !important; }
 }
 
+
+/* ==========================================================================
+   ENTERPRISE V8 LUXURY POLISH (MAJOR ENTERPRISE CRM / ERP DESIGN SYSTEM)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Cairo', 'Outfit', system-ui, -apple-system, sans-serif !important;
+}
+
+body.en {
+    font-family: 'Outfit', 'Cairo', system-ui, sans-serif !important;
+}
+
+.hdr, #H {
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    background: rgba(255, 255, 255, 0.75) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.3s ease !important;
+}
+
+html[data-theme='dark'] .hdr, html[data-theme='dark'] #H {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+.sidebar {
+    backdrop-filter: blur(16px);
+    border-left: 1px solid rgba(0,0,0,0.05);
+}
+html[data-theme='dark'] .sidebar {
+    border-left: 1px solid rgba(255,255,255,0.06);
+}
+
+.ni, .bi {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-radius: 12px !important;
+    margin: 3px 8px !important;
+    padding: 10px 14px !important;
+}
+
+.ni:hover, .bi:hover {
+    transform: translateX(-4px);
+    background: var(--acl) !important;
+}
+
+body.en .ni:hover {
+    transform: translateX(4px);
+}
+
+.ni.on, .bi.on {
+    background: linear-gradient(135deg, var(--ac) 0%, var(--ac2) 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35) !important;
+    font-weight: 700 !important;
+}
+
+.ic img, .bic img, .ph img, h1 img, h2 img, h3 img {
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.22)) !important;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.ni:hover .ic img, .card:hover img {
+    transform: scale(1.15) rotate(4deg) !important;
+}
+
+.card, .ki {
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.02) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s !important;
+}
+
+html[data-theme='dark'] .card, html[data-theme='dark'] .ki {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.25) !important;
+}
+
+.card:hover, .ki:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.12), 0 8px 20px -6px rgba(0, 0, 0, 0.06) !important;
+    border-color: var(--ac2) !important;
+}
+
+.btn {
+    border-radius: 10px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-weight: 600 !important;
+}
+
+.btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn:active {
+    transform: scale(0.97) !important;
+}
+
+.btn-p {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #4338ca 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35) !important;
+    border: none !important;
+}
+
+.btn-p:hover {
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5) !important;
+}
+
+table {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    border: 1px solid var(--bd) !important;
+}
+
+th {
+    background: var(--bg3) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
+    padding: 12px 14px !important;
+    border-bottom: 2px solid var(--bd) !important;
+}
+
+tr {
+    transition: background 0.2s ease !important;
+}
+
+tr:hover {
+    background: var(--acl) !important;
+}
+
+.todo-float-btn {
+    position: fixed;
+    bottom: 80px;
+    right: 22px;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    color: #fff;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    box-shadow: 0 8px 24px rgba(108, 92, 231, 0.45);
+    cursor: pointer;
+    z-index: 9000;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+}
+.todo-float-btn:hover {
+    transform: scale(1.12) rotate(10deg);
+    box-shadow: 0 12px 30px rgba(108, 92, 231, 0.65);
+}
+.todo-drawer {
+    position: fixed;
+    top: 0;
+    right: -390px;
+    width: 350px;
+    max-width: 90%;
+    height: 100%;
+    background: var(--bg);
+    border-left: 1px solid var(--bd);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.25);
+    z-index: 99999;
+    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    color: var(--tx1);
+}
+body.en .todo-drawer { right: auto; left: -390px; border-left: none; border-right: 1px solid var(--bd); }
+.todo-drawer.open { right: 0; }
+body.en .todo-drawer.open { left: 0; right: auto; }
+.todo-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 99990;
+    display: none;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.todo-overlay.open { display: block; }
+.todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--bg3);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 4px solid #6c5ce7;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    transition: transform 0.2s;
+}
+.todo-item:hover { transform: translateX(-3px); }
+.todo-item.done span { text-decoration: line-through; opacity: 0.5; }
+
+.print-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(6px);
+}
+.print-modal-content {
+    background: #fff;
+    color: #000;
+    width: 100%;
+    max-width: 680px;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    max-height: 90vh;
+    overflow-y: auto;
+    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+}
+@media print {
+    body * { visibility: hidden; }
+    #printModalContent, #printModalContent * { visibility: visible; }
+    #printModalContent { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; padding: 0; }
+    .no-print { display: none !important; }
+}
+
   </style>
 </head>
 <body>
@@ -3305,6 +3544,337 @@ function rSetup() {
 
 
 
+
+
+/* ==========================================================================
+   ENTERPRISE V8 CRASH-PROOF ENHANCEMENTS (SAFE STATIC HELPERS)
+   ========================================================================== */
+
+// 1. Floating To-Do Drawer Logic
+window.initTodoUI = function() {
+    let container = document.getElementById('todoListContainer');
+    if(!container) return;
+    let todos = [];
+    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    if(todos.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:var(--tx2);margin-top:40px;">' + (L === 'ar' ? 'لا توجد مهام حالياً. أضف مهمة جديدة!' : 'No tasks yet. Add a new task!') + '</p>';
+        return;
+    }
+    let html = '';
+    todos.forEach((item, idx) => {
+        html += '<div class="todo-item ' + (item.done ? 'done' : '') + '">' +
+            '<div style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;" onclick="toggleTodoStatus(' + idx + ')">' +
+            '<input type="checkbox" ' + (item.done ? 'checked' : '') + ' style="cursor:pointer;width:18px;height:18px;" onclick="e=>e.stopPropagation()">' +
+            '<span style="font-size:0.95rem;color:var(--tx1);">' + item.text + '</span>' +
+            '</div>' +
+            '<span onclick="deleteTodoItem(' + idx + ')" style="cursor:pointer;color:#ef4444;font-size:1.2rem;padding:0 6px;" title="حذف">🗑️</span>' +
+            '</div>';
+    });
+    container.innerHTML = html;
+};
+
+window.toggleTodoDrawer = function() {
+    let drawer = document.getElementById('todoDrawer');
+    let overlay = document.getElementById('todoOverlay');
+    if(!drawer || !overlay) return;
+    let isOpen = drawer.classList.contains('open');
+    if(isOpen) {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+    } else {
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+        initTodoUI();
+    }
+};
+
+window.addTodoItem = function() {
+    let input = document.getElementById('newTodoInput');
+    if(!input || !input.value.trim()) return;
+    let todos = [];
+    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    todos.push({ text: input.value.trim(), done: false });
+    localStorage.setItem('sp_todos', JSON.stringify(todos));
+    input.value = '';
+    initTodoUI();
+    if(typeof toast==='function') toast(L==='ar'?'تمت إضافة المهمة بنجاح':'Task added');
+};
+
+window.deleteTodoItem = function(idx) {
+    let todos = [];
+    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    todos.splice(idx, 1);
+    localStorage.setItem('sp_todos', JSON.stringify(todos));
+    initTodoUI();
+};
+
+window.toggleTodoStatus = function(idx) {
+    let todos = [];
+    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    if(todos[idx]) {
+        todos[idx].done = !todos[idx].done;
+        localStorage.setItem('sp_todos', JSON.stringify(todos));
+        initTodoUI();
+    }
+};
+
+// 2. Print Official Receipt / Invoice
+window.printReceipt = function(customerName, amount, dateStr, typeStr) {
+    let modal = document.getElementById('printInvoiceModal');
+    let content = document.getElementById('printModalContent');
+    if(!modal || !content) return;
+    let invNum = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+    let today = dateStr || new Date().toISOString().split('T')[0];
+    content.innerHTML = '<div style="text-align:center;border-bottom:2px dashed var(--bd);padding-bottom:15px;margin-bottom:20px;">' +
+        '<h2 style="margin:0;color:var(--tx1);font-weight:800;font-size:1.6rem;">🏢 Sales Pro Enterprise</h2>' +
+        '<p style="margin:4px 0 0;color:var(--tx2);font-size:0.95rem;">إيصال معاملة مبيعات / تحصيل رسمي وثابت</p>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-size:0.95rem;color:var(--tx1);">' +
+        '<div><strong>رقم الإيصال:</strong> ' + invNum + '</div>' +
+        '<div><strong>التاريخ:</strong> ' + today + '</div>' +
+        '</div>' +
+        '<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.95rem;">' +
+        '<tr style="background:var(--bg3);border-bottom:1px solid var(--bd);">' +
+        '<th style="padding:10px;text-align:right;border:1px solid var(--bd);">البيان / العميل</th>' +
+        '<th style="padding:10px;text-align:left;border:1px solid var(--bd);">القيمة (ج.م)</th>' +
+        '</tr>' +
+        '<tr>' +
+        '<td style="padding:12px;border:1px solid var(--bd);color:var(--tx1);"><strong>' + (customerName || 'عميل عام') + '</strong><br><span style="font-size:0.85rem;color:var(--tx2);">' + (typeStr || 'معاملة مبيعات') + '</span></td>' +
+        '<td style="padding:12px;text-align:left;border:1px solid var(--bd);font-weight:bold;font-size:1.2rem;color:#10b981;">' + (typeof fmt==='function'?fmt(amount):amount) + ' ج.م</td>' +
+        '</tr>' +
+        '</table>' +
+        '<div style="text-align:center;margin-top:30px;color:var(--tx2);font-size:0.85rem;border-top:1px solid var(--bd);padding-top:15px;">' +
+        'تم إصدار هذا الإيصال إلكترونياً عبر نظام Sales Pro CRM، ولا يحتاج إلى ختم أو توقيع يدوي.' +
+        '</div>' +
+        '<div class="no-print" style="margin-top:25px;display:flex;gap:12px;justify-content:center;">' +
+        '<button onclick="window.print();" class="btn btn-p" style="padding:10px 24px;font-size:1rem;background:#10b981;color:#fff;border:none;">🖨️ طباعة فورية</button>' +
+        '<button onclick="document.getElementById(\'printInvoiceModal\').style.display=\'none\';" class="btn" style="padding:10px 24px;font-size:1rem;background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);">إغلاق</button>' +
+        '</div>';
+    modal.style.display = 'flex';
+};
+
+// 3. Excel Import Helper
+window.importFromExcel = function(targetType) {
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx, .xls, .csv';
+    input.onchange = function(e) {
+        let file = e.target.files[0];
+        if(!file) return;
+        if(typeof XLSX === 'undefined') {
+            alert('XLSX library not loaded yet!');
+            return;
+        }
+        let reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                let data = new Uint8Array(evt.target.result);
+                let workbook = XLSX.read(data, {type: 'array'});
+                let firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                let jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                if(!jsonData || jsonData.length === 0) {
+                    if(typeof toast==='function') toast(L==='ar'?'الملف فارغ أو غير صالح':'Empty file', 'error');
+                    return;
+                }
+                if(targetType === 'leads' || targetType === 'prospects') {
+                    let ld = []; try { ld = JSON.parse(localStorage.getItem('leadsData') || '[]'); } catch(err){}
+                    jsonData.forEach(row => {
+                        ld.push({
+                            id: Date.now() + Math.random(),
+                            name: row['Customer Name'] || row['Name'] || row['الاسم'] || row['اسم العميل'] || 'عميل مستورد',
+                            phone: row['Phone'] || row['Mobile'] || row['رقم الهاتف'] || row['التليفون'] || '',
+                            branch: row['Branch'] || row['الفرع'] || 'حدائق القبة',
+                            status: row['Status'] || row['الحالة'] || 'Warm',
+                            note: row['Note'] || row['ملاحظات'] || 'تم الاستيراد من الإكسل'
+                        });
+                    });
+                    localStorage.setItem('leadsData', JSON.stringify(ld));
+                    if(typeof toast==='function') toast(L==='ar'? 'تم استيراد ' + jsonData.length + ' عميل محتمل بنجاح!' : 'Imported ' + jsonData.length + ' leads!', 'success');
+                    if(typeof render==='function') render();
+                } else if(targetType === 'customers' || targetType === 'sales') {
+                    let count = 0;
+                    jsonData.forEach(row => {
+                        let cName = row['Customer Name'] || row['Customer'] || row['اسم العميل'] || row['العميل'];
+                        if(cName && !window.C.find(c => (c.name||'').toLowerCase() === cName.toLowerCase())) {
+                            window.C.push({
+                                id: Date.now() + Math.random(),
+                                name: cName,
+                                phone: row['Phone'] || row['Mobile'] || row['رقم الهاتف'] || '',
+                                branch: row['Branch'] || row['الفرع'] || 'حدائق القبة',
+                                type: row['Type'] || row['النوع'] || 'تجزئة'
+                            });
+                            count++;
+                        }
+                    });
+                    sv('custData', window.C);
+                    if(typeof toast==='function') toast(L==='ar'? 'تمت إضافة ' + count + ' عميل جديد بنجاح!' : 'Added ' + count + ' customers!', 'success');
+                    if(typeof render==='function') render();
+                } else {
+                    if(typeof toast==='function') toast(L==='ar'?'تم تحليل الملف بنجاح':'File parsed successfully', 'success');
+                }
+            } catch(err) {
+                if(typeof toast==='function') toast(L==='ar'?'حدث خطأ في قراءة ملف الإكسل':'Error reading excel', 'error');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    };
+    input.click();
+};
+
+// 4. Global Search Helper
+window.initGlobalSearch = function() {
+    let input = document.getElementById('globalSearchInput');
+    let resBox = document.getElementById('globalSearchResults');
+    let clearBtn = document.getElementById('clearGlobalSearch');
+    if(!input || !resBox) return;
+
+    input.oninput = function() {
+        let q = this.value.trim().toLowerCase();
+        if(!q) {
+            resBox.style.display = 'none';
+            if(clearBtn) clearBtn.style.display = 'none';
+            return;
+        }
+        if(clearBtn) clearBtn.style.display = 'inline';
+
+        let matches = [];
+        (window.S || []).forEach(s => {
+            let c = (s.Customer || '').toLowerCase();
+            let i = (s['Item Description'] || '').toLowerCase();
+            if(c.includes(q) || i.includes(q)) {
+                matches.push({ title: s.Customer || 'عميل', sub: s['Item Description'] || '', type: 'مبيعات', p: 'sales' });
+            }
+        });
+        (window.C || []).forEach(c => {
+            let n = (c.name || '').toLowerCase();
+            let ph = (c.phone || '').toLowerCase();
+            if(n.includes(q) || ph.includes(q)) {
+                matches.push({ title: c.name || 'عميل', sub: c.phone || '', type: 'عميل', p: 'customers' });
+            }
+        });
+
+        if(matches.length === 0) {
+            resBox.innerHTML = '<div style="padding:12px;text-align:center;color:var(--tx2);">' + (L === 'ar' ? 'لا توجد نتائج مطابقة' : 'No results found') + '</div>';
+        } else {
+            let h = '';
+            matches.slice(0, 8).forEach(m => {
+                h += '<div onclick="P=\'' + m.p + '\';if(typeof buildNav===\'function\')buildNav();if(typeof render===\'function\')render();document.getElementById(\'globalSearchResults\').style.display=\'none\';document.getElementById(\'globalSearchInput\').value=\'\';" style="padding:10px 14px;border-bottom:1px solid var(--bd);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;">' +
+                    '<div><strong style="font-size:0.95rem;display:block;color:var(--tx1);">' + m.title + '</strong><span style="font-size:0.8rem;color:var(--tx2);">' + m.sub + '</span></div>' +
+                    '<span class="badge" style="font-size:0.75rem;padding:4px 8px;background:var(--acl);color:var(--ac);border-radius:6px;">' + m.type + '</span>' +
+                    '</div>';
+            });
+            resBox.innerHTML = h;
+        }
+        resBox.style.display = 'block';
+    };
+
+    if(clearBtn) {
+        clearBtn.onclick = function() {
+            input.value = '';
+            resBox.style.display = 'none';
+            this.style.display = 'none';
+        };
+    }
+};
+
+// 5. Safe UI Enhancer Hook
+window.enhanceUI = function() {
+    try {
+        initGlobalSearch();
+        let ph = document.querySelector('#M .ph');
+        if(ph && !document.getElementById('btnExcelImport') && (P==='sales'||P==='leads'||P==='prospects'||P==='customers')) {
+            let btn = document.createElement('button');
+            btn.id = 'btnExcelImport';
+            btn.className = 'btn';
+            btn.style.cssText = 'background:#10b981;color:#fff;display:flex;align-items:center;gap:6px;font-size:0.85rem;padding:6px 14px;border-radius:10px;border:none;cursor:pointer;margin-left:auto;box-shadow:0 4px 10px rgba(16, 185, 129, 0.3);';
+            btn.innerHTML = '📥 ' + (L === 'ar' ? 'استيراد من Excel' : 'Import Excel');
+            btn.onclick = () => { if(typeof window.importFromExcel === 'function') importFromExcel(P); };
+            ph.appendChild(btn);
+        }
+
+        if(P === 'sales' || P === 'customers' || P === 'collections') {
+            document.querySelectorAll('#M table tbody tr').forEach(tr => {
+                let tds = tr.querySelectorAll('td');
+                if(tds.length >= 2 && !tr.querySelector('.btn-print-icon')) {
+                    let cName = tds[0] ? tds[0].innerText.trim() : 'العميل';
+                    let amtStr = tds[tds.length - 1] ? tds[tds.length - 1].innerText.replace(/[^0-9.]/g,'') : '0';
+                    let btn = document.createElement('a');
+                    btn.className = 'btn-print-icon';
+                    btn.href = 'javascript:void(0)';
+                    btn.innerHTML = '🖨️';
+                    btn.title = L === 'ar' ? 'طباعة إيصال رسمي' : 'Print Receipt';
+                    btn.style.cssText = 'margin-left:8px;font-size:1.1rem;text-decoration:none;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));';
+                    btn.onclick = (e) => { e.stopPropagation(); if(typeof window.printReceipt === 'function') printReceipt(cName, Number(amtStr), new Date().toISOString().split('T')[0], 'فاتورة مبيعات/حساب'); };
+                    if(tds[0]) tds[0].appendChild(btn);
+                }
+            });
+        }
+
+        if(P === 'leads' || P === 'prospects') {
+            document.querySelectorAll('#M table tbody tr').forEach(tr => {
+                let tds = tr.querySelectorAll('td');
+                if(tds.length >= 3 && !tr.querySelector('.wa-injected')) {
+                    let name = tds[0] ? tds[0].innerText.trim() : '';
+                    let phone = tds[2] ? tds[2].innerText.trim() : '';
+                    if(phone && phone !== '' && !phone.includes('wa-injected')) {
+                        let span = document.createElement('span');
+                        span.className = 'wa-injected';
+                        let cleanName = name.replace(/'/g, "\'");
+                        let cleanPhone = phone.replace(/[^0-9]/g, '');
+                        span.innerHTML = '<a href="https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent('مرحباً بك ' + name) + '" target="_blank" style="margin-left:8px;text-decoration:none;font-size:1.2rem;filter:drop-shadow(0 2px 4px rgba(37,211,102,0.4));" title="مراسلة عبر واتساب">🟢</a>';
+                        if(tds[2]) tds[2].appendChild(span);
+                    }
+                }
+            });
+        }
+
+        if((P === 'dashboard' || P === 'analytics') && !document.getElementById('branchPerfChartCard')) {
+            let qobbahSales = 0, luxorSales = 0, tot = 0;
+            (window.S || []).forEach(s => {
+                let val = Number(s['Sales Without Tax'] || 0);
+                tot += val;
+                let c = (s.Customer || '').toLowerCase();
+                let ref = (s['Payment Ref.'] || '').toLowerCase();
+                if(c.includes('أقصر') || c.includes('اقصر') || c.includes('luxor') || ref.includes('أقصر') || ref.includes('luxor')) {
+                    luxorSales += val;
+                } else {
+                    qobbahSales += val;
+                }
+            });
+            let qPct = tot > 0 ? Math.round((qobbahSales/tot)*100) : 50;
+            let lPct = tot > 0 ? Math.round((luxorSales/tot)*100) : 50;
+
+            let card = document.createElement('div');
+            card.id = 'branchPerfChartCard';
+            card.className = 'card';
+            card.style.cssText = 'margin-top:20px;padding:20px;border-left:5px solid #10b981;';
+            card.innerHTML = '<h3 style="margin:0 0 14px 0;display:flex;align-items:center;gap:10px;font-size:1.1rem;">📊 ' + (L === 'ar' ? 'مقارنة أداء المبيعات بين الفروع (تحليل تنفيذي)' : 'Branch Sales Performance') + '</h3>' +
+                '<div style="margin-bottom:14px;">' +
+                '<div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:6px;">' +
+                '<span>🏢 ' + (L === 'ar' ? 'فرع حدائق القبة والعملاء العامين' : 'Hadayek El-Qobbah & General') + '</span>' +
+                '<strong style="color:#10b981;">' + (typeof fmt==='function'?fmt(qobbahSales):qobbahSales) + ' ج.م (' + qPct + '%)</strong>' +
+                '</div>' +
+                '<div style="background:var(--bg3);height:14px;border-radius:7px;overflow:hidden;border:1px solid var(--bd);">' +
+                '<div style="background:linear-gradient(90deg, #3b82f6, #10b981);width:' + qPct + '%;height:100%;transition:width 1s;"></div>' +
+                '</div>' +
+                '</div>' +
+                '<div>' +
+                '<div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:6px;">' +
+                '<span>🏛️ ' + (L === 'ar' ? 'فرع الأقصر وعملائه' : 'Luxor Branch') + '</span>' +
+                '<strong style="color:#ef4444;">' + (typeof fmt==='function'?fmt(luxorSales):luxorSales) + ' ج.م (' + lPct + '%)</strong>' +
+                '</div>' +
+                '<div style="background:var(--bg3);height:14px;border-radius:7px;overflow:hidden;border:1px solid var(--bd);">' +
+                '<div style="background:linear-gradient(90deg, #ef4444, #f59e0b);width:' + lPct + '%;height:100%;transition:width 1s;"></div>' +
+                '</div>' +
+                '</div>';
+            let m = document.getElementById('M');
+            if(m) m.appendChild(card);
+        }
+    } catch(e) {
+        console.warn('enhanceUI error:', e);
+    }
+};
+
 </script>
 <script>
 // js/settings.js
@@ -3574,6 +4144,7 @@ function render() {
     };
     if (fn[P]) fn[P]();
     initAnm();
+    if (typeof window.enhanceUI === 'function') setTimeout(window.enhanceUI, 50);
 }
 
 window.TUI = function(enStr) {
