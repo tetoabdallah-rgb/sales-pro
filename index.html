@@ -1408,7 +1408,7 @@ input[type=file] {
 
 
   <!-- Floating To-Do Button & Drawer (Enterprise V8 Static Sibling) -->
-  <div class="todo-float-btn" id="todoFloatBtn" onclick="toggleTodoDrawer()" title="مفكرة المهام السريعة">📌</div>
+  <div class="todo-float-btn" id="todoFloatBtn" onclick="toggleTodoDrawer()" title="مفكرة المهام السريعة" style="display:none;">📌</div>
   <div class="todo-overlay" id="todoOverlay" onclick="toggleTodoDrawer()"></div>
   <div class="todo-drawer" id="todoDrawer">
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);padding-bottom:15px;margin-bottom:15px;">
@@ -1659,6 +1659,7 @@ auth.onAuthStateChanged(user => {
         $('AUTH').classList.add('hidden');
         $('APP').classList.remove('hidden');
         $('APP').style.display = 'flex';
+        if($('todoFloatBtn')) $('todoFloatBtn').style.display = 'flex';
         
         const ADMIN_EMAILS = ['tetoabdallah@gmail.com'];
         window.isAppAdmin = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
@@ -1793,6 +1794,9 @@ auth.onAuthStateChanged(user => {
         $('AUTH').classList.remove('hidden');
         $('APP').classList.add('hidden');
         $('APP').style.display = 'none';
+        if($('todoFloatBtn')) $('todoFloatBtn').style.display = 'none';
+        if($('todoDrawer')) $('todoDrawer').style.display = 'none';
+        if($('todoOverlay')) $('todoOverlay').style.display = 'none';
     }
 });
 
