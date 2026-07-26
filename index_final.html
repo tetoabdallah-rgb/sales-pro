@@ -1412,6 +1412,7 @@ input[type=file] {
 <!-- CDN Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script src="https://accounts.google.com/gsi/client?onload=gisLoaded" async defer></script>
 <script src="https://apis.google.com/js/api.js?onload=gapiLoaded" async defer></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -1435,10 +1436,13 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-firebase.firestore().enablePersistence().catch(function(err) {
-    console.warn("Firebase persistence error: ", err);
-});
 const db = firebase.firestore();
+
+// Force long-polling to bypass strict Antiviruses or Firewalls that block WebSockets
+db.settings({
+    experimentalForceLongPolling: true
+});
+
 const auth = firebase.auth();
 let currentUser = null;
 
@@ -1447,8 +1451,16 @@ let currentUser = null;
 // js/data-store.js
 
 // Global State
-const sv = (k, v) => localStorage.setItem(k, JSON.stringify(v));
-const ld = k => { let v = localStorage.getItem(k); if(!v) return null; try { return JSON.parse(v); } catch(e) { return v; } };
+window.syncUI = window.syncUI || function(status) {
+    console.log('[Cloud Sync]: ' + status);
+    let el = document.getElementById('SYNC_STATUS') || document.getElementById('cloud_status');
+    if (el) {
+        if (status === 'syncing') el.innerHTML = '🔄 ' + (typeof L !== 'undefined' && L === 'ar' ? 'جاري المزامنة...' : 'Syncing...');
+        else if (status === 'done') el.innerHTML = '☁️ ' + (typeof L !== 'undefined' && L === 'ar' ? 'متزامن مع السحابة' : 'Cloud Synced');
+        else if (status === 'error') el.innerHTML = '❌ ' + (typeof L !== 'undefined' && L === 'ar' ? 'خطأ في المزامنة' : 'Sync Error');
+    }
+};
+
 function loadLS(k) { try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : []; } catch(e){ return []; } }
 let S = loadLS('salesData'); // Sales
 let T = loadLS('targetData'); // Targets
@@ -1466,7 +1478,7 @@ let _chkC = {};
 let _mtC = {};
 let globalDateRange = { start: null, end: null }; // Global Date Filter
 
-const DEF_ACC = ['Mobile Accessories','Mobile Power','Accessories Commission','Laptop Accessories','TWS Earbuds','Headphone','Keyboard','Wearables','Imported Bags','Factory Bags','Mouse','Gaming Accessories'];
+const DEF_ACC = ['Mobile Accessories','Mobile Power','Accessories Commission','Laptop Accessories','TWS Earbuds','Headphone','Keyboard','Wearables','Imported Bags','Factory Bags','Mouse','Gaming Accessories','A/V Accessories'];
 const DEF_HW = ['Mobile Devices','Gaming Devices','TVs','Laptops'];
 const CL = ['#5046e5','#0fa87e','#2b8dea','#e5930f','#e5484d','#8b5cf6','#06b6d4','#f59e0b'];
 
@@ -1526,8 +1538,23 @@ function debounce(fn, ms) {
 
 
 
+function ld(k) {
+    if (typeof _cache !== 'undefined' && _cache[k] !== undefined) return _cache[k];
+    try {
+        let v = localStorage.getItem(k);
+        if (v !== null) {
+            try {
+                v = JSON.parse(v);
+            } catch(e) {}
+            if (typeof _cache !== 'undefined') _cache[k] = v;
+            return v;
+        }
+    } catch(e) {}
+    return null;
+}
+
 function sv(k, v) {
-    _cache[k] = v;
+    if (typeof _cache !== 'undefined') _cache[k] = v;
     try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){}
 }
 
@@ -1566,10 +1593,53 @@ function getFilteredSales() {
 
 
 function dc(k) { if(CH[k]) { CH[k].destroy(); delete CH[k]; } }
+// Robust row value getter - matches column by name (case insensitive, ignores spaces)
+function getRowVal(row, possibleNames) {
+    let keys = Object.keys(row);
+    let k = keys.find(k => possibleNames.some(p => k.toLowerCase().replace(/\s+/g, '') === p.toLowerCase().replace(/\s+/g, '')));
+    if (k) {
+        let v = row[k];
+        if (typeof v === 'string') return Number(v.replace(/,/g, '')) || 0;
+        return Number(v) || 0;
+    }
+    return 0;
+}
+
+// Get sales value - works with OLD format (Sales After Discount) AND NEW format (Sales Without Tax)
+function getSalesVal(row) {
+    return getRowVal(row, ['Sales After Discount', 'Sales Without Tax', 'Sales', 'Amount']);
+}
+
+// Get profit value
+function getProfitVal(row) {
+    return getRowVal(row, ['Profit Margin', 'Profit']);
+}
+
+// Get payment amount from Collections sheet
+function getPayVal(row) {
+    return getRowVal(row, ['Amount', 'Collection']);
+}
+
+// Get Payment Ref type from Collections sheet: returns 'acc', 'hw', or ''
+function getPayRef(row) {
+    let ref = (row['Payment Ref.'] || row['Payment Ref'] || row['PaymentRef'] || '').toString().trim().toLowerCase();
+    if (ref.startsWith('acc')) return 'acc';
+    if (ref.startsWith('hw'))  return 'hw';
+    return '';
+}
 
 </script>
 <script>
 // js/auth.js
+window.syncUI = window.syncUI || function(status) {
+    console.log('[Cloud Sync]: ' + status);
+    let el = document.getElementById('SYNC_STATUS') || document.getElementById('cloud_status');
+    if (el) {
+        if (status === 'syncing') el.innerHTML = '🔄 ' + (typeof L !== 'undefined' && L === 'ar' ? 'جاري المزامنة...' : 'Syncing...');
+        else if (status === 'done') el.innerHTML = '☁️ ' + (typeof L !== 'undefined' && L === 'ar' ? 'متزامن مع السحابة' : 'Cloud Synced');
+        else if (status === 'error') el.innerHTML = '❌ ' + (typeof L !== 'undefined' && L === 'ar' ? 'خطأ في المزامنة' : 'Sync Error');
+    }
+};
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -1592,7 +1662,6 @@ auth.onAuthStateChanged(user => {
                     accCats = d['accCats'] || accCats;
                     hwCats = d['hwCats'] || hwCats;
                     for(let k in d){ try{ localStorage.setItem(k, JSON.stringify(d[k])); }catch(e){} }
-                    chkAsm();
                     syncUI('done');
                 } else {
                     let md = { accCats: ld('accCats')||[], hwCats: ld('hwCats')||[] };
@@ -1602,17 +1671,7 @@ auth.onAuthStateChanged(user => {
                 syncUI('error'); console.error('Sync Error: ' + err.message);
             });
             
-            db.collection('users').doc(user.uid).collection('chunks').onSnapshot(snap => {
-                snap.docChanges().forEach(change => {
-                    if (change.type === "added" || change.type === "modified") {
-                        _chkC[change.doc.id] = change.doc.data().data;
-                    }
-                    if (change.type === "removed") {
-                        delete _chkC[change.doc.id];
-                    }
-                });
-                chkAsm();
-            });
+            
         }
         
         if (window.isAppAdmin) {
@@ -1683,6 +1742,37 @@ auth.onAuthStateChanged(user => {
             });
         } else {
             loadOwnDoc();
+        }
+        
+        // Auto-restore from cloud if local data is completely empty
+        if ((!S || S.length === 0) && (!T || T.length === 0) && (!C || C.length === 0)) {
+            console.log('Local data is empty, attempting auto-restore from cloud...');
+            db.collection('users').doc(user.uid).get().then(async doc => {
+                if (doc.exists && doc.data().backup_chunks) {
+                    let d = doc.data();
+                    let fullStr = "";
+                    let numChunks = d.backup_chunks || 1;
+                    for(let i=0; i<numChunks; i++){
+                        let c = await db.collection('users').doc(user.uid).collection('chunks').doc('backup_chunk_'+i).get();
+                        if(c.exists) fullStr += c.data().data;
+                    }
+                    if (fullStr) {
+                        let p = JSON.parse(fullStr);
+                        let changed = false;
+                        if (p.salesData && p.salesData.length > 0)  { S = p.salesData;  sv('salesData',  S); changed = true; }
+                        if (p.targetData && p.targetData.length > 0){ T = p.targetData; sv('targetData', T); changed = true; }
+                        if (p.payData && p.payData.length > 0)      { C = p.payData;    sv('payData',    C); changed = true; }
+                        if (p.duesData)     { D = p.duesData;   sv('duesData',   D); }
+                        if (p.accCats)      { accCats = p.accCats; sv('accCats', accCats); }
+                        if (p.hwCats)       { hwCats = p.hwCats;   sv('hwCats', hwCats); }
+                        
+                        if (changed) {
+                            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم استرجاع بيانات السحابة تلقائياً' : '✅ Cloud data auto-restored', 'success');
+                            setTimeout(() => { window.location.reload(); }, 1500);
+                        }
+                    }
+                }
+            }).catch(err => console.error('Auto-restore failed:', err));
         }
         
         if(typeof init === 'function') init();
@@ -1759,7 +1849,7 @@ function rDash() {
     let ds = getFilteredSales();
     let ts = 0, tp = 0, tt = 0, tpt = 0;
     
-    ds.forEach(r => { ts += Number(r['Sales After Discount'])||0; tp += Number(r['Profit Margin'])||0; });
+    ds.forEach(r => { ts += getSalesVal(r); tp += getProfitVal(r); });
     T.forEach(r => { tt += Number(r.Target)||0; tpt += Number(r['Profit Target'])||0; });
     
     let cu = {}, or = {};
@@ -1816,7 +1906,7 @@ function rDash() {
     let dl = {};
     ds.forEach(r => {
         let d = pd(r['Invoice Date'] || r['Order Date']);
-        if(d) dl[d] = (dl[d]||0) + (Number(r['Sales After Discount'])||0);
+        if(d) dl[d] = (dl[d]||0) + (getSalesVal(r));
     });
     let lb = Object.keys(dl).sort();
     dc('d');
@@ -1833,7 +1923,7 @@ function rDash() {
     let ca = {};
     ds.forEach(r => {
         let c = r['Item Class Name'] || 'Other';
-        ca[c] = (ca[c]||0) + (Number(r['Sales After Discount'])||0);
+        ca[c] = (ca[c]||0) + (getSalesVal(r));
     });
     let cs2 = Object.entries(ca).sort((a,b)=>b[1]-a[1]).slice(0,8);
     dc('c');
@@ -1857,8 +1947,8 @@ function rSales() {
     ds.forEach(r => {
         let iName = r['Item Description'] || 'Unknown';
         if(!items[iName]) items[iName] = {s:0, p:0, qty:0};
-        items[iName].s += Number(r['Sales After Discount'])||0;
-        items[iName].p += Number(r['Profit Margin'])||0;
+        items[iName].s += getSalesVal(r);
+        items[iName].p += getProfitVal(r);
         items[iName].qty += Number(r.Quantity)||0;
     });
     
@@ -1929,7 +2019,7 @@ function rSales() {
         let paged = data.slice(start, start + st.limit);
         
         $('stb').innerHTML = paged.map(r => {
-            let s = Number(r['Sales After Discount'])||0, pr = Number(r['Profit Margin'])||0, pm = s>0 ? pr/s*100 : 0;
+            let s = getSalesVal(r), pr = getProfitVal(r), pm = s>0 ? pr/s*100 : 0;
             let b = pm>20 ? '<span class="badge bg-g">High</span>' : pm>10 ? '<span class="badge bg-a">Med</span>' : '<span class="badge bg-r">Low</span>';
             return `<tr><td>${pd(r['Order Date'])}</td><td>${r['Order Nbr']||''}</td><td>${r.Customer||''}</td><td>${r['Customer Class']||''}</td><td>${r['Item Class Name']||''}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r['Item Description']||''}">${r['Item Description']||''}</td><td>${r.Quantity||0}</td><td>${fmt(s)}</td><td>${fmt(pr)} ${b}</td></tr>`;
         }).join('');
@@ -2003,13 +2093,13 @@ function rTgt() {
     T.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
     $('M').innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">$"{ICONS.targets}"</span> $"{t('targets')}"</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}"</h1>
             <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
         </div>
         <div class="kg">
-            <div class="ki"><div class="lb">Target</div><div class="vl">$"{aFmt(tt)}"</div></div>
-            <div class="ki"><div class="lb">Achieved</div><div class="vl">$"{aFmt(ta)}"</div></div>
-            <div class="ki"><div class="lb">%</div><div class="vl">$"{aFmt(tt>0?ta/tt*100:0,true)}"</div></div>
+            <div class="ki"><div class="lb">Target</div><div class="vl">${aFmt(tt)}</div></div>
+            <div class="ki"><div class="lb">Achieved</div><div class="vl">${aFmt(ta)}</div></div>
+            <div class="ki"><div class="lb">%</div><div class="vl">${aFmt(tt>0?ta/tt*100:0,true)}</div></div>
         </div>
         <div class="tb">
             <div class="tbt"><h3>Targets</h3><input class="sbox" id="tsr" placeholder="..."></div>
@@ -2022,7 +2112,7 @@ function rTgt() {
     function fTg(d){
         $('ttb').innerHTML = d.map(r => {
             let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
-            return `<tr><td>$"{r.Customer}"</td><td>$"{fmt(tg)}"</td><td>$"{fmt(a)}"</td><td>$"{pc(p)}"</td><td>$"{fmt(cSF(r.Customer,isAcc))}"</td><td>$"{fmt(cPF(r.Customer,isAcc))}"</td><td>$"{fmt(cSF(r.Customer,isHW))}"</td><td>$"{fmt(cPF(r.Customer,isHW))}"</td><td><span class="badge $"{p>=100?'bg-g':p>=60?'bg-a':'bg-r'}"">$"{p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}"</span></td></tr>`;
+            return `<tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>`;
         }).join('');
     }
     fTg(T);
@@ -2060,8 +2150,8 @@ function rPers() {
     let htpt = savedHwProfitTarget !== null ? Number(savedHwProfitTarget) : 0;
     
     myS.forEach(r => { 
-        let s = Number(r['Sales After Discount'])||0;
-        let p = Number(r['Profit Margin'])||0;
+        let s = getSalesVal(r);
+        let p = getProfitVal(r);
         ts += s; tp += p; 
         if (isAcc(r['Item Class Name'])) {
             accS += s; accP += p;
@@ -2088,8 +2178,8 @@ function rPers() {
         let d = pd(r['Order Date']); if(!d) return;
         let m = d.slice(0,7);
         if(!monthly[m]) monthly[m] = {s:0,p:0};
-        monthly[m].s += Number(r['Sales After Discount'])||0;
-        monthly[m].p += Number(r['Profit Margin'])||0;
+        monthly[m].s += getSalesVal(r);
+        monthly[m].p += getProfitVal(r);
     });
     let months = Object.keys(monthly).sort();
 
@@ -2198,9 +2288,9 @@ function rCust() {
         let c = r.Customer || '';
         if(!cu[c]) cu[c] = {rg:r['Customer Class']||'', o:{}, s:0, p:0, accS:0, hwS:0, l:''};
         cu[c].o[r['Order Nbr']] = 1;
-        cu[c].s += Number(r['Sales After Discount'])||0;
-        cu[c].p += Number(r['Profit Margin'])||0;
-        if(isAcc(r['Item Class Name'])) cu[c].accS += Number(r['Sales After Discount'])||0; else cu[c].hwS += Number(r['Sales After Discount'])||0;
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
+        if(isAcc(r['Item Class Name'])) cu[c].accS += getSalesVal(r); else cu[c].hwS += getSalesVal(r);
         let d = pd(r['Order Date']); if(d > cu[c].l) cu[c].l = d;
     });
     let arr = Object.keys(cu).map(n => {
@@ -2298,10 +2388,10 @@ function rBrands() {
     S.forEach(r => {
         let b = r['Brand'] || r['Item Class Name'] || 'Other';
         if(!brands[b]) brands[b] = {s:0,p:0,qty:0};
-        brands[b].s += Number(r['Sales After Discount'])||0;
-        brands[b].p += Number(r['Profit Margin'])||0;
+        brands[b].s += getSalesVal(r);
+        brands[b].p += getProfitVal(r);
         brands[b].qty += Number(r.Quantity)||0;
-        tsTotal += Number(r['Sales After Discount'])||0;
+        tsTotal += getSalesVal(r);
     });
     let arr = Object.entries(brands).sort((a,b)=>b[1].s-a[1].s);
     
@@ -2402,12 +2492,12 @@ function rAn() {
         let d = pd(r['Order Date']); if(!d) return;
         let m = d.slice(0,7);
         if(!monthly[m]) monthly[m] = {s:0,p:0};
-        monthly[m].s += Number(r['Sales After Discount'])||0;
-        monthly[m].p += Number(r['Profit Margin'])||0;
+        monthly[m].s += getSalesVal(r);
+        monthly[m].p += getProfitVal(r);
         let c = r['Item Class Name']||'Other';
-        cats[c] = (cats[c]||0) + (Number(r['Sales After Discount'])||0);
+        cats[c] = (cats[c]||0) + (getSalesVal(r));
         let rg = r['Customer Class']||'Other';
-        regions[rg] = (regions[rg]||0) + (Number(r['Sales After Discount'])||0);
+        regions[rg] = (regions[rg]||0) + (getSalesVal(r));
     });
     let months = Object.keys(monthly).sort();
     let topCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,8);
@@ -2455,8 +2545,8 @@ function rProfit() {
     ds.forEach(r => {
         let c = r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0};
-        cu[c].s += Number(r['Sales After Discount'])||0;
-        cu[c].p += Number(r['Profit Margin'])||0;
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.m-a.m);
     
@@ -2508,11 +2598,13 @@ function rProfit() {
 
 // Accessories
 function rAcc() {
-    let ds = getFilteredSales().filter(r => isAcc(r['Item Class Name']));
-    let tot = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0),0);
-    let prof = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0),0);
+    // Always use DEF_ACC as base; accCats overrides only if user saved custom ones
+    let _accList = (accCats && accCats.length) ? accCats : DEF_ACC;
+    let ds = getFilteredSales().filter(r => _accList.includes(r['Item Class Name']));
+    let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
+    let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(Number(r['Sales After Discount'])||0); });
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.accessories}</span> ${t('accessories')}</h1></div>
@@ -2537,10 +2629,10 @@ function rAcc() {
 // Hardware
 function rHW() {
     let ds = getFilteredSales().filter(r => isHW(r['Item Class Name']));
-    let tot = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0),0);
-    let prof = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0),0);
+    let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
+    let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(Number(r['Sales After Discount'])||0); });
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.hardware}</span> ${t('hardware')}</h1></div>
@@ -2566,11 +2658,11 @@ function rHW() {
 function rCollections() {
     let tot = 0, accTot = 0, hwTot = 0;
     let cAccMap = {}, cHWMap = {};
-    if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'])) {
+    if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
         S.forEach(s => {
             let c = s['Customer'];
             if(c) {
-                let v = Number(s['Sales After Discount'] || 0);
+                let v = Number(s['Sales Without Tax'] || 0);
                 if(isAcc(s['Item Class Name'])) cAccMap[c] = (cAccMap[c]||0) + v;
                 if(isHW(s['Item Class Name'])) cHWMap[c] = (cHWMap[c]||0) + v;
             }
@@ -2578,12 +2670,34 @@ function rCollections() {
     }
 
     C.forEach(r => {
-        let val = Number(r['Amount']||r['amount']||r['Collection']||0);
-        let cat = r['Item Class Name'] || r['Item Group'] || r['category'] || r['Category'];
-        let cName = r['Customer Name'] || r['Customer'] || r['customer'] || '';
+        let keys = Object.keys(r);
+        let getVal = (possibleNames) => {
+            let k = keys.find(k => possibleNames.some(pn => k.toLowerCase().replace(/\s+/g, '') === pn.toLowerCase().replace(/\s+/g, '')));
+            return k ? r[k] : undefined;
+        };
+        
+        let rawVal = getVal(['Amount', 'Collection']) || 0;
+        let val = Number(rawVal.toString().replace(/,/g, '')) || 0;
+        let cat = getVal(['Item Class Name', 'Item Group', 'Category']);
+        let ahRaw = getVal(['acc-hw', 'acchw', 'acc - hw']);
+        let ah = ahRaw ? ahRaw.toString().trim().toLowerCase() : '';
+        let cName = getVal(['Customer Name', 'Customer']) || '';
         
         tot += val;
-        if (cat) {
+          // Payment Ref. column takes priority: acc=accessories, hw=hardware
+          let payRef = (r['Payment Ref.'] || r['Payment Ref'] || r['PaymentRef'] || '').toString().trim().toLowerCase();
+          if (payRef.startsWith('acc')) {
+              accTot += val;
+          } else if (payRef.startsWith('hw')) {
+              hwTot += val;
+          } else if (ah.includes('acc') || ah.includes('اكسسوار')) {
+            accTot += val;
+        } else if (ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
+            hwTot += val;
+        } else if (cat) {
+            if (isAcc(cat)) accTot += val;
+            else if (isHW(cat)) hwTot += val;
+        } else if (cat) {
             if (isAcc(cat)) accTot += val;
             else if (isHW(cat)) hwTot += val;
         } else {
@@ -2599,17 +2713,17 @@ function rCollections() {
     });
 
     $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">$"{ICONS.collections}"</span> $"{t('collections')}"</h1></div>
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}"</h1></div>
         <div class="kg">
-            <div class="ki"><div class="lb">$"{L==='ar'?TUI('Total Collections'):'Total Collections'}"</div><div class="vl">$"{aFmt(tot)}"</div></div>
-            <div class="ki"><div class="lb">$"{L==='ar'?'إكسسوارات':'Accessories'}"</div><div class="vl">$"{aFmt(accTot)}"</div></div>
-            <div class="ki"><div class="lb">$"{L==='ar'?'هاردوير':'Hardware'}"</div><div class="vl">$"{aFmt(hwTot)}"</div></div>
-            <div class="ki"><div class="lb">$"{L==='ar'?TUI('Records'):'Records'}"</div><div class="vl">$"{aFmt(C.length)}"</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'هاردوير':'Hardware'}</div><div class="vl">${aFmt(hwTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
         </div>
-        $"{C.length>0 ? `<div class="tb"><div class="tbt"><h3>$"{t('collections')}"</h3></div>
-        <div class="tbs"><table><thead><tr>$"{Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>$"{k}"</th>`).join('')}"</tr></thead>
-        <tbody>$"{C.slice(0,100).map(r=>`<tr>$"{Object.keys(C[0]).slice(0,6).map(k=>`<td>$"{r[k]||''}"</td>`).join('')}"</tr>`).join('')}"</tbody>
-        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">$"{L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}"</p></div>`}"
+        ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
+        <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
+        <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}"
     `;
     initAnm && initAnm();
 }
@@ -2619,8 +2733,8 @@ function rKey() {
     S.forEach(r => {
         let c = r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0,o:{}};
-        cu[c].s += Number(r['Sales After Discount'])||0;
-        cu[c].p += Number(r['Profit Margin'])||0;
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
         cu[c].o[r['Order Nbr']] = 1;
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
@@ -2692,7 +2806,7 @@ function rDorm() {
         let c = r.Customer || '';
         if(!c) return;
         let dStr = pd(r['Order Date']);
-        let s = Number(r['Sales After Discount'])||0;
+        let s = getSalesVal(r);
         
         if(!cu[c]) cu[c] = {last: dStr, s: 0};
         else if (dStr && dStr > cu[c].last) cu[c].last = dStr;
@@ -2762,7 +2876,7 @@ function rPros() {
 // Opportunities (customers below 50% of target)
 function rPot() {
     let cu = {};
-    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(Number(r['Sales After Discount'])||0); });
+    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(getSalesVal(r)); });
     let opps = T.map(r => {
         let tg = Number(r.Target)||0, ach = cu[r.Customer]||0, pct = tg>0?ach/tg*100:0;
         return {n:r.Customer, tg, ach, pct, gap: tg-ach};
@@ -2825,7 +2939,7 @@ function rAl() {
     });
     // Low target alerts
     let cuS = {};
-    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(Number(r['Sales After Discount'])||0); });
+    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getSalesVal(r)); });
     T.forEach(r => {
         let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
         if(pct<50 && tg>0) alerts.push({type:'danger', icon:'&#x26A0;&#xFE0F;', msg:`${r.Customer} ? ${L==='ar'?TUI('Achievement'):'Achievement'} ${pc(pct)}`});
@@ -2846,12 +2960,12 @@ function rAI() {
     ds.forEach(r => {
         let c=r.Customer||'';
         if(!cu[c]) cu[c] = {s:0,p:0,o:{},last:'',accS:0,hwS:0};
-        cu[c].s += Number(r['Sales After Discount'])||0;
-        cu[c].p += Number(r['Profit Margin'])||0;
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
         cu[c].o[r['Order Nbr']]=1;
         let d=pd(r['Order Date']); if(d>cu[c].last) cu[c].last=d;
-        if(isAcc(r['Item Class Name'])) cu[c].accS+=Number(r['Sales After Discount'])||0;
-        else if(isHW(r['Item Class Name'])) cu[c].hwS+=Number(r['Sales After Discount'])||0;
+        if(isAcc(r['Item Class Name'])) cu[c].accS+=getSalesVal(r);
+        else if(isHW(r['Item Class Name'])) cu[c].hwS+=getSalesVal(r);
     });
     let insights = [];
     let arr = Object.entries(cu).map(([n,d])=>({n,...d,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
@@ -2919,8 +3033,8 @@ function rAI() {
                 sendBtn.innerHTML = '?';
                 rAI(); 
 
-                let totalSales = ds.reduce((s,r)=>s+(Number(r['Sales After Discount'])||0), 0);
-                let totalProfit = ds.reduce((s,r)=>s+(Number(r['Profit Margin'])||0), 0);
+                let totalSales = ds.reduce((s,r)=>s+(getSalesVal(r)), 0);
+                let totalProfit = ds.reduce((s,r)=>s+(getProfitVal(r)), 0);
                 let ctx = {
                     totalSales,
                     totalProfit,
@@ -3129,12 +3243,18 @@ function rSetup() {
             <button id="bSaveCats" class="btn btn-p" style="margin-top:16px;width:100%;padding:12px;font-size:1rem;">حفظ الفئات والتحديث / Save & Update</button>
         </div>
     `;
-    function parseFile(file, cb) {
+    function parseFile(file, cb, sheetName) {
         let reader = new FileReader();
         reader.onload = e => {
             try {
-                let wb = XLSX.read(e.target.result, {type:'array'});
-                let ws = wb.Sheets[wb.SheetNames[0]];
+                let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+                let ws;
+                if (sheetName) {
+                    let sName = wb.SheetNames.find(s => s.trim().toLowerCase() === sheetName.trim().toLowerCase());
+                    ws = sName ? wb.Sheets[sName] : wb.Sheets[wb.SheetNames[0]];
+                } else {
+                    ws = wb.Sheets[wb.SheetNames[0]];
+                }
                 cb(XLSX.utils.sheet_to_json(ws));
             } catch(err) { toast(L==='ar'?TUI('? Error reading file'):'? Error reading file'); }
         };
@@ -3144,10 +3264,18 @@ function rSetup() {
         let done = 0, total = 0;
         let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
         if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
-        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
-        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
-        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) { toast(L==='ar'?TUI('? Done'):'? Done'); render(); } }); }
+        let onAllDone = () => {
+            toast(L==='ar' ? '✅ تم تحديث البيانات!' : '✅ Data Updated!');
+            render();
+            if (typeof window.cloudAutoSave === 'function') {
+                window.cloudAutoSave(L==='ar' ? 'رفع ملفات' : 'File Upload');
+            }
+        };
+        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) onAllDone(); }); }
+        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) onAllDone(); }); }
+        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) onAllDone(); }, 'Payment Ref'); }
     };
+
     
     $('bSaveCats').onclick = () => {
         let vals = $('inAccCats').value.split(',').map(s => s.trim()).filter(s => s);
@@ -3170,6 +3298,11 @@ function rSetup() {
 
 
 
+
+
+
+
+
 </script>
 <script>
 // js/settings.js
@@ -3180,12 +3313,12 @@ function rSettings() {
             <h1 style="display:flex;align-items:center;gap:12px;">
                 <span style="width:32px;height:32px;display:flex;">⚙️</span> ${t('settings')}
             </h1>
-            <p>${L==='ar'?'تخصيص ألوان وواجهة التطبيق وإعدادات المزامنة':'Customize app colors, interface, and sync settings'}</p>
+            <p>${L==='ar'?'تخصيص ألوان التطبيق، والواجهة، وإعدادات المزامنة':'Customize app colors, interface, and sync settings'}</p>
         </div>
         
         <div class="card" style="margin-bottom:20px;">
             <h3>🎨 ${L==='ar'?'اللون الأساسي':'Primary Color'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'اختر اللون الذي يريح عينيك':'Choose the color that fits you'}</p>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'اختر اللون الذي يناسب ذوقك':'Choose the color that fits you'}</p>
             
             <div style="display:flex;gap:12px;flex-wrap:wrap;" id="colorPicker">
                 ${CL.map((color, i) => `
@@ -3195,19 +3328,29 @@ function rSettings() {
         </div>
         
         <div class="card" style="margin-bottom:20px;">
-            <h3>☁️ ${L==='ar'?'إعدادات المزامنة السحابية (Google Drive)':'Cloud Sync Settings (Google Drive)'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفاتيح API لتفعيل المزامنة مع جوجل درايف':'Enter API keys to enable cloud sync'}</p>
-            <div class="fg">
-                <input type="text" id="gdriveClientId" placeholder="${L==='ar'?'Google Client ID':'Google Client ID'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
+            <h3>☁️ ${L==='ar'?'النسخ الاحتياطي السحابي (Google Drive)':'Cloud Sync (Google Drive)'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'حفظ البيانات واسترجاعها مباشرة من حسابك في جوجل درايف.':'Backup and restore data directly from your Google Drive.'}</p>
+            
+            <div style="background:var(--bg3);padding:10px;border-radius:8px;margin-bottom:15px;">
+                <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:10px;">${L==='ar'?'تحتاج إلى إدخال مفاتيح Google API لكي تعمل المزامنة:':'You must enter Google API keys for sync to work:'}</p>
+                <input type="text" id="gdriveClientId" placeholder="Google Client ID" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
+                <input type="text" id="gdriveApiKey" placeholder="Google API Key" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
+                <button class="btn btn-p" onclick="saveDriveKeys()" style="width:100%;">${L==='ar'?'حفظ مفاتيح جوجل':'Save Google Keys'}</button>
             </div>
-            <div class="fg">
-                <input type="text" id="gdriveApiKey" placeholder="${L==='ar'?'Google API Key':'Google API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
+
+            <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;padding:10px;background:var(--bg3);border-radius:8px;">⏳ ${L==='ar'?'جاري التحقق...':'Checking...'}</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-p" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;background:var(--ok);">
+                    ☁️ ${L==='ar'?'حفظ في درايف':'Save to Drive'}
+                </button>
+                <button class="btn" onclick="restoreFromGoogleDrive()" style="flex:1;min-width:140px;background:var(--bg3);">
+                    📂 ${L==='ar'?'استرجاع من درايف':'Restore from Drive'}
+                </button>
             </div>
-            <button class="btn btn-p" onclick="saveDriveKeys()">${L==='ar'?'حفظ المفاتيح':'Save Keys'}</button>
         </div>
 
         <div class="card" style="margin-bottom:20px;">
-            <h3>🤖 ${L==='ar'?'إعدادات الذكاء الاصطناعي (Gemini AI)':'Gemini AI Settings'}</h3>
+            <h3>🤖 ${L==='ar'?'إعدادات المساعد الذكي (Gemini AI)':'Gemini AI Settings'}</h3>
             <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفتاح Gemini API لتفعيل المساعد الذكي':'Enter Gemini API key to enable smart assistant'}</p>
             <div class="fg">
                 <input type="text" id="geminiApiKey" placeholder="${L==='ar'?'Gemini API Key':'Gemini API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gemini_api_key') || ''}">
@@ -3227,12 +3370,25 @@ function rSettings() {
             let col = btn.getAttribute('data-color');
             sv('sp_primary', col);
             document.documentElement.style.setProperty('--am', col);
-            
-            // update selection UI
             document.querySelectorAll('.color-btn').forEach(b => b.style.border = '2px solid transparent');
             btn.style.border = '2px solid var(--tx1)';
         };
     });
+
+    // Load cloud backup info
+    if (typeof window.getCloudInfo === 'function') {
+        window.getCloudInfo().then(info => {
+            let ds = document.getElementById('driveStatus');
+            if (!ds) return;
+            if (!info) {
+                ds.innerHTML = L==='ar' ? '⚠️ لم تقم بعمل مزامنة في جوجل درايف مؤخراً.' : '⚠️ No recent Google Drive sync.';
+                return;
+            }
+            ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${info.lastUpdated}
+                &nbsp;|&nbsp; 📊 ${L==='ar'?'المبيعات:':'Sales:'} ${info.salesCount}
+                &nbsp;|&nbsp; 💰 ${L==='ar'?'التحصيلات:':'Collections:'} ${info.payCount}`;
+        });
+    }
 }
 
 window.saveDriveKeys = function() {
@@ -3241,10 +3397,10 @@ window.saveDriveKeys = function() {
     if (cId && aKey) {
         localStorage.setItem('gdrive_client_id', cId);
         localStorage.setItem('gdrive_api_key', aKey);
-        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفاتيح جوجل درايف بنجاح. أعد تحميل الصفحة.':'Google Drive keys saved. Please reload.', 'success');
+        if(typeof toast === 'function') toast(L==='ar'?'✅ تم حفظ مفاتيح جوجل درايف بنجاح.':'Google Drive keys saved', 'success');
         setTimeout(() => window.location.reload(), 1500);
     } else {
-        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال كلا المفتاحين':'Please enter both keys', 'error');
+        if(typeof toast === 'function') toast(L==='ar'?'❌ يرجى إدخال المفتاحين (Client ID و API Key)':'Please enter both keys', 'error');
     }
 };
 
@@ -3254,7 +3410,7 @@ window.saveGeminiKey = function() {
         localStorage.setItem('gemini_api_key', gKey);
         if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفتاح Gemini بنجاح':'Gemini key saved', 'success');
     } else {
-        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال المفتاح':'Please enter the key', 'error');
+        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال المفتاح أولاً':'Please enter the key', 'error');
     }
 };
 
@@ -3446,92 +3602,254 @@ window.TUI = function(enStr) {
   };
   return map[enStr] || enStr;
 };
+window.toast = function(msg, type = 'info') {
+    let t = document.getElementById('TT');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3000);
+};
+
 </script>
 <script>
-// js/gdrive.js (Now using Firebase Cloud Sync)
+// js/gdrive.js - Full Google Drive API Integration
 
-window.backupToGoogleDrive = async function() {
-    if (!currentUser) {
-        if(typeof toast === 'function') toast(L==='ar'?'يجب تسجيل الدخول أولاً للنسخ الاحتياطي':'You must be logged in to backup', 'error');
-        return;
-    }
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
 
-    try {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري الرفع إلى السحابة...':'Uploading to Cloud...', 'info');
-        
-        let dump = {
-            salesData: S || [],
-            targetData: T || [],
-            accCats: accCats || [],
-            hwCats: hwCats || [],
-            payData: C || [],
-            duesData: D || [],
-            lastUpdated: new Date().toISOString()
-        };
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
 
-        await db.collection('cloud_backups').doc(currentUser.uid).set({
-            backupData: JSON.stringify(dump),
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ نسختك الاحتياطية في السحابة بنجاح! ☁️':'Cloud backup saved successfully! ☁️', 'success');
-        
-        // Update UI status if exists
-        let ds = document.getElementById('driveStatus');
-        if (ds) {
-            let tme = new Date().toLocaleString(L==='ar'?'ar-EG':'en-US');
-            ds.innerHTML = `&#x2705; <strong>${L==='ar'?'آخر نسخة سحابية:':'Last cloud backup:'}</strong> ${tme}`;
-        }
-
-    } catch (error) {
-        console.error('Cloud Backup Error:', error);
-        if(typeof toast === 'function') toast(L==='ar'?'حدث خطأ أثناء الرفع للسحابة':'Error uploading to cloud', 'error');
+window.gapiLoaded = function() {
+    if (typeof gapi !== 'undefined' && !gapi.client) {
+        gapi.load('client', initializeGapiClient);
+    } else if (typeof gapi !== 'undefined' && gapi.client) {
+        initializeGapiClient();
     }
 };
 
-window.restoreFromGoogleDrive = async function() {
-    if (!currentUser) {
-        if(typeof toast === 'function') toast(L==='ar'?'يجب تسجيل الدخول أولاً لاسترجاع البيانات':'You must be logged in to restore', 'error');
-        return;
-    }
-
-    if (!confirm(L==='ar'?'تحذير: هذا سيقوم بمسح بياناتك الحالية واستبدالها بالنسخة السحابية. هل أنت متأكد؟':'WARNING: This will replace current data with the cloud backup. Are you sure?')) {
-        return;
-    }
-
+async function initializeGapiClient() {
     try {
-        if(typeof toast === 'function') toast(L==='ar'?'جاري استرجاع البيانات...':'Restoring data...', 'info');
+        const API_KEY = localStorage.getItem('gdrive_api_key');
+        if (!API_KEY) return;
         
-        let doc = await db.collection('cloud_backups').doc(currentUser.uid).get();
-        if (!doc.exists) {
-            if(typeof toast === 'function') toast(L==='ar'?'لم يتم العثور على أي نسخة احتياطية لك في السحابة!':'No cloud backup found for your account!', 'error');
-            return;
+        // Ensure gapi.client is loaded
+        if (typeof gapi !== 'undefined' && !gapi.client) {
+            await new Promise((resolve) => gapi.load('client', resolve));
         }
 
-        let dbData = doc.data();
-        if (!dbData || !dbData.backupData) {
-            if(typeof toast === 'function') toast(L==='ar'?'النسخة الاحتياطية تالفة أو فارغة':'Backup is corrupted or empty', 'error');
-            return;
-        }
-
-        let parsed = JSON.parse(dbData.backupData);
-        if(parsed.salesData) sv('salesData', parsed.salesData);
-        if(parsed.targetData) sv('targetData', parsed.targetData);
-        if(parsed.accCats) sv('accCats', parsed.accCats);
-        if(parsed.hwCats) sv('hwCats', parsed.hwCats);
-        if(parsed.payData) sv('payData', parsed.payData);
-        if(parsed.duesData) sv('duesData', parsed.duesData);
-
-        if(typeof toast === 'function') toast(L==='ar'?'تم استرجاع البيانات بنجاح! سيتم تحديث الصفحة.':'Data restored successfully! Reloading...', 'success');
-        
-        setTimeout(() => {
-            window.location.reload();
-        }, 1500);
-
-    } catch (error) {
-        console.error('Cloud Restore Error:', error);
-        if(typeof toast === 'function') toast(L==='ar'?'حدث خطأ أثناء استرجاع البيانات':'Error restoring data', 'error');
+        await gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: [DISCOVERY_DOC],
+        });
+        gapiInited = true;
+    } catch (err) {
+        console.warn("Error initializing GAPI client: ", err);
+        throw err;
     }
+}
+
+window.gisLoaded = function() {
+    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
+    if (!CLIENT_ID) return;
+    if (typeof google === 'undefined' || !google.accounts) return;
+    
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: '', 
+    });
+    gisInited = true;
+};
+
+// Auto-run if script tags loaded before this script
+if (typeof gapi !== 'undefined') window.gapiLoaded();
+if (typeof google !== 'undefined') window.gisLoaded();
+
+let isInitializing = false;
+
+async function requireAuth(callback) {
+    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
+    const API_KEY = localStorage.getItem('gdrive_api_key');
+    
+    if (!CLIENT_ID || !API_KEY) {
+        if(typeof toast === 'function') toast(L==='ar'?'يجب إدخال Google Client ID و API Key في الإعدادات':'Please enter Google Client ID and API Key in Settings', 'error');
+        return;
+    }
+
+    if (isInitializing) {
+        setTimeout(() => requireAuth(callback), 500);
+        return;
+    }
+
+    isInitializing = true;
+    try {
+        if (!gapiInited) await initializeGapiClient();
+        if (!gisInited) window.gisLoaded();
+    } catch(e) {
+        console.error(e);
+    }
+    isInitializing = false;
+
+    if (!gapiInited || !gisInited) {
+        if(typeof toast === 'function') toast(L==='ar'?'فشل الاتصال بخوادم جوجل. تأكد من صحة المفاتيح.':'Failed to connect to Google. Check keys.', 'error');
+        return;
+    }
+
+    tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+            if(typeof toast === 'function') toast(L==='ar'?'خطأ في تسجيل الدخول لجوجل':'Google Login Error', 'error');
+            console.error(resp);
+            return;
+        }
+        callback();
+    };
+
+    if (gapi.client.getToken() === null) {
+        tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+        tokenClient.requestAccessToken({prompt: ''});
+    }
+}
+
+window.backupToGoogleDrive = function() {
+    requireAuth(async () => {
+        if(typeof toast === 'function') toast(L==='ar'?'جاري الحفظ في جوجل درايف...':'Saving to Google Drive...', 'info');
+        
+        let ds = document.getElementById('driveStatus');
+        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري الرفع...':'Uploading...'}</span>`;
+
+        let dump = {
+            salesData:  S        || [],
+            targetData: T        || [],
+            accCats:    accCats  || [],
+            hwCats:     hwCats   || [],
+            payData:    C        || [],
+            duesData:   D        || [],
+            lastUpdated: new Date().toISOString()
+        };
+        const fileContent = JSON.stringify(dump);
+        const file = new Blob([fileContent], { type: 'application/json' });
+        const metadata = {
+            'name': `SalesPro_Backup.json`,
+            'mimeType': 'application/json'
+        };
+
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', file);
+
+        try {
+            // First check if file already exists to overwrite it
+            let existingFileId = null;
+            const search = await gapi.client.drive.files.list({
+                q: "name='SalesPro_Backup.json' and trashed=false",
+                spaces: 'drive',
+                fields: 'files(id, name)'
+            });
+            if (search.result.files && search.result.files.length > 0) {
+                existingFileId = search.result.files[0].id;
+            }
+
+            let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+            let method = 'POST';
+            if (existingFileId) {
+                url = `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=multipart`;
+                method = 'PATCH';
+            }
+
+            const res = await fetch(url, {
+                method: method,
+                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }),
+                body: form
+            });
+            
+            const data = await res.json();
+            if (data.id) {
+                let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
+                localStorage.setItem('last_gdrive_sync', tme);
+                if(typeof toast === 'function') toast(L==='ar'?'✅ تم الحفظ في جوجل درايف!':'✅ Saved to Google Drive!', 'success');
+                if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${tme}`;
+            } else {
+                throw new Error("Invalid response from Google Drive");
+            }
+        } catch (err) {
+            console.error("Upload error", err);
+            if(ds) ds.innerHTML = `<span style="color:red">Upload Error</span>`;
+            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل الحفظ في السحابة':'❌ Cloud save failed', 'error');
+        }
+    });
+};
+
+window.restoreFromGoogleDrive = function() {
+    if (!confirm(L === 'ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالنسخة الموجودة في جوجل درايف. متأكد؟' : 'Warning: Current data will be replaced with Google Drive backup. Sure?')) return;
+    
+    requireAuth(async () => {
+        if(typeof toast === 'function') toast(L==='ar'?'جاري البحث عن النسخة...':'Searching for backup...', 'info');
+        let ds = document.getElementById('driveStatus');
+        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري التنزيل...':'Downloading...'}</span>`;
+
+        try {
+            const search = await gapi.client.drive.files.list({
+                q: "name='SalesPro_Backup.json' and trashed=false",
+                spaces: 'drive',
+                fields: 'files(id, name, modifiedTime)',
+                orderBy: 'modifiedTime desc'
+            });
+
+            if (!search.result.files || search.result.files.length === 0) {
+                if(typeof toast === 'function') toast(L==='ar'?'❌ لا يوجد نسخة احتياطية في جوجل درايف!':'❌ No backup found in Google Drive!', 'error');
+                if(ds) ds.innerHTML = `<span style="color:red">No backup found!</span>`;
+                return;
+            }
+
+            const fileId = search.result.files[0].id;
+            
+            // Download file content
+            const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token })
+            });
+            
+            const content = await res.text();
+            let p = JSON.parse(content);
+            
+            if (p.salesData)  { S       = p.salesData;  sv('salesData',  S); }
+            if (p.targetData) { T       = p.targetData; sv('targetData', T); }
+            if (p.accCats)    { accCats = p.accCats;    sv('accCats',    accCats); }
+            if (p.hwCats)     { hwCats  = p.hwCats;     sv('hwCats',     hwCats); }
+            if (p.payData)    { C       = p.payData;    sv('payData',    C); }
+            if (p.duesData)   { D       = p.duesData;   sv('duesData',   D); }
+
+            let tme = new Date(search.result.files[0].modifiedTime).toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
+            localStorage.setItem('last_gdrive_sync', tme);
+
+            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم الاسترجاع بنجاح!' : '✅ Restored successfully!', 'success');
+            if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'تم الاسترجاع!':'Restored!'}</strong>`;
+            
+            setTimeout(() => window.location.reload(), 1500);
+
+        } catch (err) {
+            console.error("Restore error", err);
+            if(ds) ds.innerHTML = `<span style="color:red">Restore Error</span>`;
+            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل استرجاع البيانات':'❌ Restore failed', 'error');
+        }
+    });
+};
+
+window.cloudAutoSave = function() {
+    // Disable automatic background sync for Google Drive because it requires OAuth consent popup
+    // We only want manual sync for Google Drive.
+};
+
+window.getCloudInfo = async function() {
+    let lastS = localStorage.getItem('last_gdrive_sync');
+    if(!lastS) return null;
+    return {
+        lastUpdated: lastS,
+        salesCount: (S || []).length,
+        payCount: (C || []).length
+    };
 };
 
 </script>
@@ -3551,5 +3869,455 @@ window.restoreFromGoogleDrive = async function() {
     }, 800);
   });
 </script>
+
+<!-- SALESPRO ADDONS V7 START -->
+<style id="salespro-addons-v7-css">
+/* Floating To-Do Button & Drawer */
+.todo-float-btn { position:fixed; bottom:80px; right:20px; background:linear-gradient(135deg, #6c5ce7, #a29bfe); color:#fff; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.6rem; box-shadow:0 6px 16px rgba(108,92,231,0.4); cursor:pointer; z-index:9000; transition:transform 0.2s, box-shadow 0.2s; }
+.todo-float-btn:hover { transform:scale(1.08); box-shadow:0 8px 20px rgba(108,92,231,0.6); }
+.todo-drawer { position:fixed; top:0; right:-380px; width:340px; max-width:90%; height:100%; background:var(--bg); border-left:1px solid var(--border); box-shadow:-8px 0 32px rgba(0,0,0,0.3); z-index:99999; transition:right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display:flex; flex-direction:column; padding:20px; color:var(--tx); }
+.todo-drawer.open { right:0; }
+.todo-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99990; display:none; backdrop-filter:blur(2px); }
+.todo-overlay.open { display:block; }
+.todo-item { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--bg3); border-radius:8px; margin-bottom:8px; border-left:3px solid #6c5ce7; }
+.todo-item.done span { text-decoration:line-through; opacity:0.5; }
+
+/* Print Invoice Modal */
+.print-modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999999; display:none; align-items:center; justify-content:center; padding:20px; }
+.print-modal-content { background:#fff; color:#000; width:100%; max-width:650px; padding:30px; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.4); max-height:90vh; overflow-y:auto; font-family:'Segoe UI', Tahoma, sans-serif; }
+@media print {
+    body * { visibility:hidden; }
+    #printModalContent, #printModalContent * { visibility:visible; }
+    #printModalContent { position:absolute; left:0; top:0; width:100%; box-shadow:none; padding:0; }
+    .no-print { display:none !important; }
+}
+</style>
+
+<script id="salespro-addons-v7-js">
+(function(){
+    console.log("Initializing Sales Pro Addons v7...");
+
+    // 1️⃣ WhatsApp Integration
+    window.openWhatsApp = function(phone, type, name, amount, dueDate) {
+        if (!phone || phone === 'undefined' || phone === 'null') {
+            if(typeof toast === 'function') toast(L === 'ar' ? 'لا يوجد رقم هاتف مسجل' : 'No phone recorded', 'error');
+            return;
+        }
+        let p = String(phone).replace(/[^0-9+]/g, '');
+        if (p.startsWith('0') && (p.length === 10 || p.length === 11)) p = '2' + p;
+        let msg = '';
+        if (type === 'due') {
+            msg = L === 'ar' ? 
+                `أهلاً بك أستاذ ${name} من Sales Pro. نود تذكيركم بموعد استحقاق دفعة بقيمة ${amount || ''} ج.م بتاريخ ${dueDate || ''}. نسعد دائماً بالتعامل معكم.` :
+                `Hello Mr/Ms ${name} from Sales Pro. Friendly reminder regarding due payment of ${amount || ''} EGP dated ${dueDate || ''}. Thank you!`;
+        } else if (type === 'lead') {
+            msg = L === 'ar' ?
+                `أهلاً بك أستاذ ${name} من Sales Pro. يسعدنا التواصل معكم لتقديم خدماتنا ومنتجاتنا، ومستعدون لأي استفسار.` :
+                `Hello Mr/Ms ${name} from Sales Pro. We are glad to connect with you regarding our products and services.`;
+        } else if (type === 'visit') {
+            msg = L === 'ar' ?
+                `أهلاً بك أستاذ ${name} من Sales Pro. تشرفنا بزيارتكم والتواصل معكم اليوم، ونأمل في تعاون مثمر دائماً.` :
+                `Hello Mr/Ms ${name} from Sales Pro. It was a pleasure visiting you today.`;
+        } else {
+            msg = L === 'ar' ? `أهلاً بك أستاذ ${name} من Sales Pro. كيف يمكننا مساعدتكم اليوم؟` : `Hello Mr/Ms ${name} from Sales Pro. How can we assist you today?`;
+        }
+        window.open(`https://api.whatsapp.com/send?phone=${p}&text=${encodeURIComponent(msg)}`, '_blank');
+    };
+
+    window.waBtnHtml = function(phone, type, name, amount, dueDate) {
+        if(!phone || phone === '') return '';
+        let cleanName = (name || '').replace(/'/g, "\'");
+        return `<a href="javascript:void(0)" onclick="openWhatsApp('${phone}', '${type}', '${cleanName}', '${amount||''}', '${dueDate||''}')" style="color:#25D366;margin-left:6px;font-size:1.2rem;text-decoration:none;vertical-align:middle;" title="WhatsApp">💬</a>`;
+    };
+
+    // 2️⃣ Global Search Bar Helper
+    window.initGlobalSearch = function() {
+        let el = document.getElementById('globalSearchInput');
+        if(!el) return;
+        el.addEventListener('input', function() {
+            let q = this.value.trim().toLowerCase();
+            let resBox = document.getElementById('globalSearchResults');
+            let clearBtn = document.getElementById('clearGlobalSearch');
+            if(!resBox) return;
+            if(q.length === 0) {
+                resBox.style.display = 'none';
+                if(clearBtn) clearBtn.style.display = 'none';
+                return;
+            }
+            if(clearBtn) clearBtn.style.display = 'inline';
+            
+            let matches = [];
+            // Search Sales
+            (window.S || []).forEach(s => {
+                if((s.Customer && s.Customer.toLowerCase().includes(q)) || (s['Payment Ref.'] && String(s['Payment Ref.']).toLowerCase().includes(q))) {
+                    matches.push({ type: L === 'ar' ? 'فاتورة بيع' : 'Sale Invoice', title: s.Customer, sub: `${s['Sales Without Tax']||0} EGP - ${s['Order Date']||''}`, p: 'sales' });
+                }
+            });
+            // Search Leads
+            (loadLS('leadsData') || []).forEach(l => {
+                if((l.name && l.name.toLowerCase().includes(q)) || (l.phone && String(l.phone).includes(q))) {
+                    matches.push({ type: L === 'ar' ? 'عميل محتمل (Lead)' : 'Lead', title: l.name, sub: `${l.phone||''} (${l.branch||''})`, p: 'leads' });
+                }
+            });
+            // Search Visits
+            (loadLS('visitsData') || []).forEach(v => {
+                if((v.customer && v.customer.toLowerCase().includes(q)) || (v.note && v.note.toLowerCase().includes(q))) {
+                    matches.push({ type: L === 'ar' ? 'زيارة' : 'Visit', title: v.customer, sub: `${v.date||''} - ${v.type||''}`, p: 'visits' });
+                }
+            });
+
+            if(matches.length === 0) {
+                resBox.innerHTML = `<div style="padding:10px;text-align:center;color:var(--tx2);">${L === 'ar' ? 'لا توجد نتائج مطابقة' : 'No matches found'}</div>`;
+            } else {
+                resBox.innerHTML = matches.slice(0, 8).map(m => `
+                    <div onclick="P='${m.p}';if(typeof buildNav==='function')buildNav();if(typeof render==='function')render();document.getElementById('globalSearchResults').style.display='none';document.getElementById('globalSearchInput').value='';" style="padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <strong style="font-size:0.9rem;display:block;">${m.title}</strong>
+                            <span style="font-size:0.75rem;color:var(--tx2);">${m.sub}</span>
+                        </div>
+                        <span class="badge" style="font-size:0.7rem;padding:2px 6px;">${m.type}</span>
+                    </div>
+                `).join('');
+            }
+            resBox.style.display = 'block';
+        });
+
+        let clearBtn = document.getElementById('clearGlobalSearch');
+        if(clearBtn) {
+            clearBtn.onclick = function() {
+                el.value = '';
+                document.getElementById('globalSearchResults').style.display = 'none';
+                this.style.display = 'none';
+            };
+        }
+    };
+
+    // 3️⃣ Excel Import Helper
+    window.importFromExcel = function(targetType) {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.xlsx, .xls, .csv';
+        input.onchange = function(e) {
+            let file = e.target.files[0];
+            if(!file) return;
+            if(typeof XLSX === 'undefined') {
+                alert('XLSX library not loaded yet!');
+                return;
+            }
+            let reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    let data = new Uint8Array(evt.target.result);
+                    let workbook = XLSX.read(data, {type: 'array'});
+                    let firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    let jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    if(!jsonData || jsonData.length === 0) {
+                        if(typeof toast==='function') toast(L==='ar'?'الملف فارغ أو غير صالح':'Empty or invalid file', 'error');
+                        return;
+                    }
+
+                    if(targetType === 'leads') {
+                        let ld = loadLS('leadsData') || [];
+                        jsonData.forEach(row => {
+                            ld.push({
+                                id: Date.now() + Math.random(),
+                                name: row['Customer Name'] || row['Name'] || row['الاسم'] || row['اسم العميل'] || 'بدون اسم',
+                                phone: row['Phone'] || row['Mobile'] || row['رقم الهاتف'] || row['التليفون'] || '',
+                                branch: row['Branch'] || row['الفرع'] || 'حدائق القبة',
+                                status: row['Status'] || row['الحالة'] || 'Warm',
+                                note: row['Note'] || row['ملاحظات'] || 'تم الاستيراد من الإكسل'
+                            });
+                        });
+                        sv('leadsData', ld);
+                        if(typeof toast==='function') toast(L==='ar'? `تم استيراد ${jsonData.length} عميل محتمل بنجاح!` : `Imported ${jsonData.length} leads!`, 'success');
+                        if(typeof render==='function') render();
+                    } else if(targetType === 'customers') {
+                        let count = 0;
+                        jsonData.forEach(row => {
+                            let cName = row['Customer Name'] || row['Customer'] || row['اسم العميل'] || row['العميل'];
+                            if(cName) {
+                                S.push({
+                                    'Customer': cName,
+                                    'Order Date': row['Date'] || row['التاريخ'] || new Date().toISOString().split('T')[0],
+                                    'Sales Without Tax': Number(row['Amount'] || row['المبلغ'] || row['المبيعات'] || 0),
+                                    'Payment Ref.': row['Ref'] || row['البيان'] || 'استيراد رصيد'
+                                });
+                                count++;
+                            }
+                        });
+                        sv('salesData', S);
+                        if(typeof toast==='function') toast(L==='ar'? `تم استيراد ${count} عملية للعملاء!` : `Imported ${count} customer records!`, 'success');
+                        if(typeof render==='function') render();
+                    }
+                } catch(err) {
+                    console.error("Excel import error:", err);
+                    if(typeof toast==='function') toast(L==='ar'?'حدث خطأ أثناء قراءة الملف':'Error reading file', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+        input.click();
+    };
+
+    // 5️⃣ Print Receipt / PDF Invoice Generator
+    window.printReceipt = function(customerName, amount, date, ref) {
+        let modal = document.getElementById('printInvoiceModal');
+        if(!modal) {
+            modal = document.createElement('div');
+            modal.id = 'printInvoiceModal';
+            modal.className = 'print-modal';
+            document.body.appendChild(modal);
+        }
+        let invNo = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+        modal.innerHTML = `
+            <div class="print-modal-content" id="printModalContent">
+                <div style="text-align:center;border-bottom:2px dashed #ccc;padding-bottom:15px;margin-bottom:20px;">
+                    <h2 style="margin:0;color:#2c3e50;font-weight:800;">Sales Pro CRM</h2>
+                    <p style="margin:4px 0 0;color:#7f8c8d;font-size:0.9rem;">إيصال معاملة مبيعات / تحصيل رسمي</p>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:15px;font-size:0.95rem;">
+                    <div><strong>رقم الإيصال:</strong> ${invNo}</div>
+                    <div><strong>التاريخ:</strong> ${date || new Date().toISOString().split('T')[0]}</div>
+                </div>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.95rem;">
+                    <tr style="background:#f8f9fa;border-bottom:1px solid #ddd;">
+                        <th style="padding:10px;text-align:right;border:1px solid #ddd;">البيان / العميل</th>
+                        <th style="padding:10px;text-align:left;border:1px solid #ddd;">القيمة (ج.م)</th>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px;border:1px solid #ddd;"><strong>${customerName || 'عميل عام'}</strong><br><small style="color:#666;">${ref || 'دفعة حساب / مبيعات'}</small></td>
+                        <td style="padding:12px;text-align:left;border:1px solid #ddd;font-weight:bold;font-size:1.1rem;color:#27ae60;">${fmt(amount || 0)} ج.م</td>
+                    </tr>
+                </table>
+                <div style="text-align:center;margin-top:30px;color: #7f8c8d;font-size:0.85rem;border-top:1px solid #eee;padding-top:15px;">
+                    شكراً لثقتكم وتعاملكم معنا! • تم الإصدار بواسطة Sales Pro
+                </div>
+                <div class="no-print" style="margin-top:25px;display:flex;gap:12px;justify-content:center;">
+                    <button onclick="window.print();" class="btn btn-p" style="padding:10px 24px;font-size:1rem;background:#27ae60;color:#fff;border:none;border-radius:8px;cursor:pointer;">🖨️ طباعة / حفظ PDF</button>
+                    <button onclick="document.getElementById('printInvoiceModal').style.display='none';" class="btn" style="padding:10px 20px;background:#95a5a6;color:#fff;border:none;border-radius:8px;cursor:pointer;">إغلاق</button>
+                </div>
+            </div>
+        `;
+        modal.style.display = 'flex';
+    };
+
+    // 7️⃣ Daily To-Do List Drawer
+    window.toggleTodoDrawer = function() {
+        let drawer = document.getElementById('todoDrawer');
+        let overlay = document.getElementById('todoOverlay');
+        if(!drawer) {
+            overlay = document.createElement('div');
+            overlay.id = 'todoOverlay';
+            overlay.className = 'todo-overlay';
+            overlay.onclick = toggleTodoDrawer;
+            document.body.appendChild(overlay);
+
+            drawer = document.createElement('div');
+            drawer.id = 'todoDrawer';
+            drawer.className = 'todo-drawer';
+            drawer.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:16px;">
+                    <h3 style="margin:0;display:flex;align-items:center;gap:8px;">📌 ${L === 'ar' ? 'مفكرة المهام السريعة' : 'Daily To-Do List'}</h3>
+                    <span onclick="toggleTodoDrawer()" style="cursor:pointer;font-size:1.3rem;color:var(--tx2);">✖</span>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:16px;">
+                    <input type="text" id="newTodoInput" placeholder="${L === 'ar' ? 'أضف مهمة جديدة...' : 'Add a task...'}" style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--tx);font-size:0.9rem;">
+                    <button onclick="addTodoItem()" style="background:#6c5ce7;color:#fff;border:none;border-radius:8px;padding:0 14px;cursor:pointer;font-weight:bold;">+</button>
+                </div>
+                <div id="todoListContainer" style="flex:1;overflow-y:auto;"></div>
+            `;
+            document.body.appendChild(drawer);
+            renderTodos();
+
+            let inp = document.getElementById('newTodoInput');
+            if(inp) inp.addEventListener('keypress', e => { if(e.key==='Enter') addTodoItem(); });
+        }
+        drawer.classList.toggle('open');
+        overlay.classList.toggle('open');
+        if(drawer.classList.contains('open')) renderTodos();
+    };
+
+    window.renderTodos = function() {
+        let list = loadLS('sales_todos') || [];
+        let container = document.getElementById('todoListContainer');
+        if(!container) return;
+        if(list.length === 0) {
+            container.innerHTML = `<p style="text-align:center;color:var(--tx2);margin-top:40px;">${L === 'ar' ? 'لا توجد مهام حالياً. استمتع بيومك! 🎉' : 'No tasks yet. Enjoy your day! 🎉'}</p>`;
+            return;
+        }
+        container.innerHTML = list.map((item, idx) => `
+            <div class="todo-item ${item.done ? 'done' : ''}">
+                <div style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;" onclick="toggleTodoStatus(${idx})">
+                    <input type="checkbox" ${item.done ? 'checked' : ''} style="cursor:pointer;width:18px;height:18px;">
+                    <span style="font-size:0.9rem;">${item.text}</span>
+                </div>
+                <span onclick="deleteTodoItem(${idx})" style="cursor:pointer;color:#e74c3c;font-size:1.1rem;padding:0 6px;" title="حذف">🗑️</span>
+            </div>
+        `).join('');
+    };
+
+    window.addTodoItem = function() {
+        let inp = document.getElementById('newTodoInput');
+        if(!inp || !inp.value.trim()) return;
+        let list = loadLS('sales_todos') || [];
+        list.unshift({ text: inp.value.trim(), done: false, id: Date.now() });
+        sv('sales_todos', list);
+        inp.value = '';
+        renderTodos();
+    };
+
+    window.toggleTodoStatus = function(idx) {
+        let list = loadLS('sales_todos') || [];
+        if(list[idx]) {
+            list[idx].done = !list[idx].done;
+            sv('sales_todos', list);
+            renderTodos();
+        }
+    };
+
+    window.deleteTodoItem = function(idx) {
+        let list = loadLS('sales_todos') || [];
+        list.splice(idx, 1);
+        sv('sales_todos', list);
+        renderTodos();
+    };
+
+    window.initTodoFloatBtn = function() {
+        if(!document.getElementById('todoFloatBtn')) {
+            let btn = document.createElement('div');
+            btn.id = 'todoFloatBtn';
+            btn.className = 'todo-float-btn';
+            btn.innerHTML = '📌';
+            btn.title = L === 'ar' ? 'مفكرة المهام السريعة' : 'To-Do List';
+            btn.onclick = toggleTodoDrawer;
+            document.body.appendChild(btn);
+        }
+    };
+
+    // 4️⃣ & 6️⃣ Hook into Render to inject UI elements dynamically
+    if (!window._originalRenderV7) {
+        window._originalRenderV7 = window.render;
+        window.render = function() {
+            window._originalRenderV7();
+            try { window.applyV7AddonsAfterRender(); } catch(e) { console.error("Addons v7 render hook error:", e); }
+        };
+    }
+
+    window.applyV7AddonsAfterRender = function() {
+        initTodoFloatBtn();
+
+        let m = document.getElementById('M');
+        if (m && !document.getElementById('globalSearchContainer')) {
+            let sc = document.createElement('div');
+            sc.id = 'globalSearchContainer';
+            sc.style.cssText = 'margin:12px 16px 8px 16px; position:relative; z-index:100;';
+            sc.innerHTML = `
+                <div style="display:flex;align-items:center;background:var(--bg3);border-radius:10px;padding:8px 14px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                    <span style="font-size:1.2rem;margin-right:8px;color:var(--tx2);">🔍</span>
+                    <input type="text" id="globalSearchInput" placeholder="${L==='ar'?'بحث شامل في العملاء، الأصناف، الفواتير، والزيارات...':'Global search customers, items, invoices, visits...'}" style="border:none;background:transparent;width:100%;color:var(--tx);font-size:0.95rem;outline:none;">
+                    <span id="clearGlobalSearch" style="cursor:pointer;display:none;color:var(--tx2);font-size:1.1rem;margin-left:8px;">✖</span>
+                </div>
+                <div id="globalSearchResults" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--border);border-radius:8px;max-height:350px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.3);margin-top:4px;z-index:9999;padding:8px;"></div>
+            `;
+            m.parentNode.insertBefore(sc, m);
+            initGlobalSearch();
+        }
+
+        if(P === 'customers' || P === 'leads') {
+            let ph = m.querySelector('.ph');
+            if(ph && !document.getElementById('btnExcelImport')) {
+                let btn = document.createElement('button');
+                btn.id = 'btnExcelImport';
+                btn.className = 'btn';
+                btn.style.cssText = 'background:#27ae60;color:#fff;display:flex;align-items:center;gap:6px;font-size:0.85rem;padding:6px 12px;border-radius:8px;border:none;cursor:pointer;margin-left:auto;';
+                btn.innerHTML = `📥 ${L === 'ar' ? 'استيراد من Excel' : 'Import Excel'}`;
+                btn.onclick = () => importFromExcel(P);
+                ph.appendChild(btn);
+            }
+        }
+
+        if((P === 'dashboard' || P === 'analytics') && !document.getElementById('branchPerfChartCard')) {
+            let qobbahSales = 0, luxorSales = 0, tot = 0;
+            (window.S || []).forEach(s => {
+                let val = Number(s['Sales Without Tax'] || 0);
+                tot += val;
+                let c = (s.Customer || '').toLowerCase();
+                let ref = (s['Payment Ref.'] || '').toLowerCase();
+                if(c.includes('أقصر') || c.includes('اقصر') || c.includes('luxor') || ref.includes('أقصر') || ref.includes('luxor')) {
+                    luxorSales += val;
+                } else {
+                    qobbahSales += val;
+                }
+            });
+            let qPct = tot > 0 ? Math.round((qobbahSales/tot)*100) : 50;
+            let lPct = tot > 0 ? Math.round((luxorSales/tot)*100) : 50;
+
+            let card = document.createElement('div');
+            card.id = 'branchPerfChartCard';
+            card.className = 'card';
+            card.style.cssText = 'margin-top:16px;padding:16px;border-left:4px solid #2ecc71;';
+            card.innerHTML = `
+                <h3 style="margin:0 0 12px 0;display:flex;align-items:center;gap:8px;font-size:1rem;">📊 ${L === 'ar' ? 'مقارنة أداء المبيعات بين الفروع (ميزة بصرية جديدة)' : 'Branch Sales Performance'}</h3>
+                <div style="margin-bottom:12px;">
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px;">
+                        <span>🏢 ${L === 'ar' ? 'فرع حدائق القبة والعملاء العامين' : 'Hadayek El-Qobbah & General'}</span>
+                        <strong>${fmt(qobbahSales)} ج.م (${qPct}%)</strong>
+                    </div>
+                    <div style="background:var(--bg3);height:14px;border-radius:7px;overflow:hidden;border:1px solid rgba(0,0,0,0.05);">
+                        <div style="background:linear-gradient(90deg, #3498db, #2ecc71);width:${qPct}%;height:100%;transition:width 1s;"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px;">
+                        <span>🏛️ ${L === 'ar' ? 'فرع الأقصر وعملائه' : 'Luxor Branch'}</span>
+                        <strong>${fmt(luxorSales)} ج.م (${lPct}%)</strong>
+                    </div>
+                    <div style="background:var(--bg3);height:14px;border-radius:7px;overflow:hidden;border:1px solid rgba(0,0,0,0.05);">
+                        <div style="background:linear-gradient(90deg, #e74c3c, #f39c12);width:${lPct}%;height:100%;transition:width 1s;"></div>
+                    </div>
+                </div>
+            `;
+            m.appendChild(card);
+        }
+
+        if(P === 'sales' || P === 'customers') {
+            m.querySelectorAll('table tbody tr').forEach(tr => {
+                let tds = tr.querySelectorAll('td');
+                if(tds.length >= 2 && !tr.querySelector('.btn-print-icon')) {
+                    let cName = tds[0] ? tds[0].innerText.trim() : 'العميل';
+                    let amtStr = tds[tds.length - 1] ? tds[tds.length - 1].innerText.replace(/[^0-9.]/g,'') : '0';
+                    let btn = document.createElement('a');
+                    btn.className = 'btn-print-icon';
+                    btn.href = 'javascript:void(0)';
+                    btn.innerHTML = '🖨️';
+                    btn.title = L === 'ar' ? 'طباعة إيصال' : 'Print Receipt';
+                    btn.style.cssText = 'margin-left:8px;font-size:1.1rem;text-decoration:none;cursor:pointer;';
+                    btn.onclick = (e) => { e.stopPropagation(); printReceipt(cName, Number(amtStr), new Date().toISOString().split('T')[0], 'فاتورة مبيعات/حساب'); };
+                    if(tds[0]) tds[0].appendChild(btn);
+                }
+            });
+        }
+
+        if(P === 'leads') {
+            m.querySelectorAll('#ldTable tbody tr').forEach(tr => {
+                let tds = tr.querySelectorAll('td');
+                if(tds.length >= 3 && !tr.querySelector('.wa-injected')) {
+                    let name = tds[0].innerText.trim();
+                    let phone = tds[2].innerText.trim();
+                    if(phone && phone !== '') {
+                        let span = document.createElement('span');
+                        span.className = 'wa-injected';
+                        span.innerHTML = waBtnHtml(phone, 'lead', name);
+                        tds[2].appendChild(span);
+                    }
+                }
+            });
+        }
+    };
+
+    setTimeout(() => { if(typeof window.applyV7AddonsAfterRender === 'function') window.applyV7AddonsAfterRender(); }, 1000);
+})();
+</script>
+<!-- SALESPRO ADDONS V7 END -->
 </body>
 </html>
