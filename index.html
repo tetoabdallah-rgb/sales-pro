@@ -1397,6 +1397,79 @@ input[type=file] {
     transform: translateX(0) !important;
 }
 
+
+/* Executive UI & Page Hero Banner Styles */
+#M .ph {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.88) 0%, rgba(15, 23, 42, 0.96) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    border-radius: 22px !important;
+    padding: 24px 30px !important;
+    margin-bottom: 30px !important;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+    backdrop-filter: blur(18px) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 22px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s !important;
+}
+#M .ph:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+#M .ph::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0; left: 0; right: 0; height: 3.5px !important;
+    background: linear-gradient(90deg, #6366f1, #3b82f6, #10b981, #f59e0b, #ef4444) !important;
+    opacity: 0.95 !important;
+}
+#M .ph::after {
+    content: '' !important;
+    position: absolute !important;
+    top: -60px; left: -60px; width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%) !important;
+    border-radius: 50% !important;
+    pointer-events: none !important;
+}
+#M .ph:hover .ph-hero-icon {
+    transform: scale(1.15) rotate(6deg) !important;
+    border-color: rgba(255,255,255,0.4) !important;
+    box-shadow: 0 14px 32px rgba(99, 102, 241, 0.4) !important;
+}
+.ni {
+    padding: 12px 14px !important;
+    gap: 14px !important;
+    font-size: 0.88rem !important;
+    margin: 4px 0 !important;
+    border-radius: 12px !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.ni .ic {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 1.25rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.ni:hover .ic {
+    transform: scale(1.25) rotate(6deg) !important;
+}
+.ni.on {
+    background: linear-gradient(135deg, var(--acl), #6366f1) !important;
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45) !important;
+    font-weight: 800 !important;
+}
+.ni.on .ic {
+    transform: scale(1.18) !important;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)) !important;
+}
+
 </style>
 </head>
 <body>
@@ -1484,7 +1557,9 @@ input[type=file] {
 <div class="toast" id="TT"></div>
 
 <!-- CDN Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script src="https://accounts.google.com/gsi/client?onload=gisLoaded" async defer></script>
@@ -3549,7 +3624,7 @@ const ICONS = {
     sales: getImg('Receipt/3D/receipt_3d.png'),
     targets: getImg('Bullseye/3D/bullseye_3d.png'),
     personal: getImg('Handshake/3D/handshake_3d.png'),
-    customers: getImg('Store/3D/store_3d.png'),
+    customers: getImg('Department%20store/3D/department_store_3d.png'),
     brands: getImg('Package/3D/package_3d.png'),
     accessories: getImg('Headphone/3D/headphone_3d.png'),
     hardware: getImg('Mobile%20phone/3D/mobile_phone_3d.png'),
@@ -3563,7 +3638,7 @@ const ICONS = {
     alerts: getImg('Bell/3D/bell_3d.png'),
     account: getImg('Bust%20in%20silhouette/3D/bust_in_silhouette_3d.png'),
     backup: getImg('Floppy%20disk/3D/floppy_disk_3d.png'),
-    setup: getImg('Folder/3D/folder_3d.png'),
+    setup: getImg('File%20folder/3D/file_folder_3d.png'),
     reset: getImg('Wastebasket/3D/wastebasket_3d.png'),
     settings: getImg('Gear/3D/gear_3d.png'),
     collections: getImg('Money%20with%20wings/3D/money_with_wings_3d.png')
@@ -3667,6 +3742,86 @@ function initAnm() {
     });
 }
 
+
+/* =========================================================
+   ENTERPRISE ROYAL PAGE HERO BANNER & UI UPGRADE
+========================================================= */
+function upgradePageHeader(pageKey) {
+    let ph = document.querySelector('#M .ph');
+    if (!ph || ph.classList.contains('ph-upgraded')) return;
+    ph.classList.add('ph-upgraded');
+
+    const subtitles = {
+        dash: { ar: 'لوحة القيادة الرئيسية ومتابعة الأداء اللحظي والمؤشرات البيعية للشركة.', en: 'Main dashboard & real-time analytics overview.' },
+        sales: { ar: 'سجل فواتير المبيعات اليومية، الخصومات، وصافي القيمة لكل عميل.', en: 'Daily sales invoices, discounts, and net customer billing.' },
+        targets: { ar: 'متابعة نسب إنجاز المستهدف البيعي ومستهدف الربحية لكل مندوب وقسم.', en: 'Monthly sales & profit target achievement tracking.' },
+        personal: { ar: 'تحليل أداء فريق العمل ومقارنة مبيعات الأفراد بالتارجت المطلوب.', en: 'Team performance analysis and individual target comparison.' },
+        customers: { ar: 'قاعدة بيانات العملاء، تصنيف المتاجر، ومتابعة الأرصدة والتحصيلات النقدية.', en: 'Customer database, store classification, and balance tracking.' },
+        brands: { ar: 'تحليل أداء المنتجات والعلامات التجارية الأكثر مبيعاً وربحية.', en: 'Brand performance analysis and top-selling products.' },
+        accessories: { ar: 'متابعة مبيعات وحركة أصناف قسم الاكسسوارات والإيرادات اليومية.', en: 'Accessories department sales and inventory turnover.' },
+        hardware: { ar: 'متابعة مبيعات وحركة أصناف قسم الهواتف والأجهزة الذكية.', en: 'Hardware and mobile phones sales tracking.' },
+        collections: { ar: 'سجل الدفعات النقدية والتحصيلات المستلمة من العملاء والشركاء.', en: 'Daily cash collections and payment receipts log.' },
+        analytics: { ar: 'دراسات بيعية معقمة ومؤشرات نمو المبيعات والأرباح على مدار العام.', en: 'Advanced sales analytics and annual growth metrics.' },
+        potential: { ar: 'اكتشاف العملاء ذوي معدلات الشراء المرتفعة لفرص زيادة المبيعات.', en: 'High-potential clients and upselling opportunities.' },
+        profit: { ar: 'تقرير هامش الربح وصافي الأرباح التراكمية لكل منتج وعميل.', en: 'Profit margin reports and net cumulative profit analysis.' },
+        keyacc: { ar: 'قائمة نخبة العملاء وكبار الشركاء التجاريين ذوي الأهمية القصوى.', en: 'VIP key accounts and major commercial partners.' },
+        dormant: { ar: 'تنبيهات بالعملاء الذين توقفوا عن الشراء مؤخراً لإعادة تنشيطهم.', en: 'Dormant client alerts and reactivation tracking.' },
+        prospects: { ar: 'إدارة فرص المبيعات الجديدة والعملاء المحتمل التعاقد معهم.', en: 'New prospects and leads pipeline management.' },
+        ai: { ar: 'تحليلات وتوصيات ذكية بالذكاء الاصطناعي لتطوير أداء مبيعاتك.', en: 'AI-driven insights and strategic sales recommendations.' },
+        alerts: { ar: 'إشعارات الفواتير المتأخرة ومستحقات الدفع الحرجة للعملاء.', en: 'Overdue invoices and critical payment alerts.' },
+        account: { ar: 'إدارة الحساب الشخصي، الصلاحيات، وبيانات المندوب والتواصل.', en: 'Personal account management and permissions.' },
+        backup: { ar: 'حفظ واسترجاع نسخة أمان من قاعدة بياناتك محلياً وعبر السحابة (التلقائي كل 15 دقيقة).', en: 'Local and cloud database backup & restore.' },
+        setup: { ar: 'تجهيز وربط ملفات إكسيل وإعدادات الاتصال السحابي للشركة.', en: 'Excel file integration and cloud setup.' },
+        reset: { ar: 'إدارة مسح أو إعادة ضبط البيانات المحلية المؤقتة لتنظيف الذاكرة.', en: 'Local data reset and cache clearance.' },
+        settings: { ar: 'تخصيص ألوان التطبيق، والواجهة، وإعدادات المزامنة المتقدمة.', en: 'Theme customization and system preferences.' }
+    };
+
+    let desc = subtitles[pageKey] ? (subtitles[pageKey][typeof L !== 'undefined' ? L : 'ar'] || subtitles[pageKey].ar) : '';
+    let icon = (typeof ICONS !== 'undefined' && ICONS[pageKey]) ? ICONS[pageKey] : '📌';
+
+    let h1 = ph.querySelector('h1');
+    let titleText = h1 ? (h1.innerText || h1.textContent) : (typeof t === 'function' ? t(pageKey) : pageKey);
+    if (titleText) { titleText = titleText.replace(/^.*?([a-zA-Z\u0600-\u06FF])/,'$1').trim(); }
+    if (!titleText) titleText = (typeof t === 'function' ? t(pageKey) : pageKey);
+
+    let actions = [];
+    Array.from(ph.children).forEach(ch => {
+        if (ch.tagName !== 'H1' && ch.tagName !== 'P' && !ch.classList.contains('ph-desc')) {
+            actions.push(ch);
+        }
+    });
+
+    ph.innerHTML = `
+        <div class="ph-hero-main" style="display:flex;align-items:center;gap:20px;flex:1;min-width:280px;">
+            <div class="ph-hero-icon" style="width:68px;height:68px;border-radius:20px;background:linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.03));border:1px solid rgba(255,255,255,0.22);box-shadow:0 10px 28px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;padding:12px;flex-shrink:0;transition:all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                <span style="font-size:2.4rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
+                    ${icon}
+                </span>
+            </div>
+            <div class="ph-hero-text" style="display:flex;flex-direction:column;gap:6px;">
+                <h1 style="font-size:1.85rem;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em;text-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;align-items:center;gap:14px;">
+                    ${titleText}
+                </h1>
+                ${desc ? `<p class="ph-desc" style="font-size:0.95rem;color:#cbd5e1;margin:0;font-weight:600;line-height:1.6;opacity:0.95;">${desc}</p>` : ''}
+            </div>
+        </div>
+        <div class="ph-banner-actions" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-left:auto;">
+        </div>
+    `;
+
+    let actionsWrap = ph.querySelector('.ph-banner-actions');
+    actions.forEach(act => actionsWrap.appendChild(act));
+
+    let img = ph.querySelector('.ph-hero-icon img');
+    if (img) {
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'contain';
+        img.style.filter = 'drop-shadow(0 6px 14px rgba(0,0,0,0.45))';
+        img.style.transform = 'scale(1.2)';
+    }
+}
+
 function render() {
     let fn = {
         dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
@@ -3676,6 +3831,7 @@ function render() {
         account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
     };
     if (fn[P]) fn[P]();
+    if (typeof upgradePageHeader === 'function') upgradePageHeader(P);
     initAnm();
 }
 
