@@ -1490,6 +1490,16 @@ let hwCats = loadLS('hwCats'); // Hardware Categories
 let C = loadLS('payData'); // Collections/PayData
 let D = loadLS('duesData'); // Dues
 let CH = {}; // Chart Instances
+
+window.syncUI = window.syncUI || function(status) {
+    console.log('[Cloud Sync]: ' + status);
+    let el = document.getElementById('SYNC_STATUS') || document.getElementById('cloud_status');
+    if (el) {
+        if (status === 'syncing') { el.innerHTML = '🔄'; el.style.color = '#f39c12'; }
+        else if (status === 'error') { el.innerHTML = '⚠️'; el.style.color = '#e74c3c'; }
+        else if (status === 'done') { el.innerHTML = '☁️'; el.style.color = '#2ecc71'; }
+    }
+};
 let L = localStorage.getItem('sp_lang') || 'ar';
 L = L.replace(/"/g, ''); // Strip quotes if JSON stringified
 if (L !== 'ar' && L !== 'en') L = 'ar';
