@@ -4194,14 +4194,35 @@ window.getCloudInfo = async function() {
         }
     };
 
-    // 4️⃣ & 6️⃣ Hook into Render to inject UI elements dynamically
-    if (!window._originalRenderV7) {
+    // 4️⃣ & 6️⃣ Hook into Render to inject UI elements dynamically (Robust Safe-Wrap)
+    function setupRenderHook() {
+        if (typeof window.render !== 'function' || window.render._isV7Hook) {
+            if (!window.render || !window.render._isV7Hook) {
+                setTimeout(setupRenderHook, 100);
+            }
+            return;
+        }
         window._originalRenderV7 = window.render;
-        window.render = function() {
-            window._originalRenderV7();
-            try { window.applyV7AddonsAfterRender(); } catch(e) { console.error("Addons v7 render hook error:", e); }
+        const v7RenderHook = function(...args) {
+            if (typeof window._originalRenderV7 === 'function') {
+                try {
+                    window._originalRenderV7.apply(this, args);
+                } catch (err) {
+                    console.error("Original render error:", err);
+                }
+            }
+            try {
+                if (typeof window.applyV7AddonsAfterRender === 'function') {
+                    window.applyV7AddonsAfterRender();
+                }
+            } catch (e) {
+                console.error("Addons v7 render hook error:", e);
+            }
         };
+        v7RenderHook._isV7Hook = true;
+        window.render = v7RenderHook;
     }
+    setupRenderHook();
 
     window.applyV7AddonsAfterRender = function() {
         initTodoFloatBtn();
@@ -4315,7 +4336,7 @@ window.getCloudInfo = async function() {
         }
     };
 
-    setTimeout(() => { if(typeof window.applyV7AddonsAfterRender === 'function') window.applyV7AddonsAfterRender(); }, 1000);
+    setTimeout(() => { try { if(typeof window.applyV7AddonsAfterRender === 'function') window.applyV7AddonsAfterRender(); } catch(e) { console.error("Initial addon render error:", e); } }, 1000);
 })();
 </script>
 <!-- SALESPRO ADDONS V7 END -->
