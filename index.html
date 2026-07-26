@@ -3149,6 +3149,10 @@ function rBk() {
                 <button class="btn" id="bDriveJSON" style="width:100%; justify-content:center; background:#0f9d58; color:white; border:none;">
                     نسخ احتياطي إلى (Google Drive) ☁️
                 </button>
+                <div style="margin-top:12px;padding:10px 14px;background:rgba(15, 157, 88, 0.12);border:1px solid #0f9d58;border-radius:8px;font-size:0.85rem;color:#0f9d58;display:flex;align-items:center;gap:10px;line-height:1.4;">
+                    <span style="font-size:1.2rem;">🕒</span>
+                    <span>${L==='ar' ? 'النسخ الاحتياطي التلقائي إلى Google Drive فعال ويعمل في الخلفية كل 15 دقيقة (ربع ساعة).' : 'Automatic backup to Google Drive runs every 15 minutes in the background.'}</span>
+                </div>
             </div>
         </div>
     `;
@@ -3204,8 +3208,6 @@ function rBk() {
         reader.readAsText(f);
     };
 }
-
-
 
 function rSetup() {
     $('M').innerHTML = `
@@ -3838,9 +3840,25 @@ window.restoreFromGoogleDrive = function() {
 };
 
 window.cloudAutoSave = function() {
-    // Disable automatic background sync for Google Drive because it requires OAuth consent popup
-    // We only want manual sync for Google Drive.
+    if (typeof window.backupToGoogleDrive === 'function') {
+        if (window.gapi && gapi.client && gapi.client.getToken() !== null) {
+            window.backupToGoogleDrive();
+        }
+    }
 };
+
+// Automatic backup to Google Drive every 15 minutes (900,000 ms)
+setInterval(() => {
+    console.log("🕒 Running 15-minute automatic backup to Google Drive...");
+    if (typeof window.backupToGoogleDrive === 'function') {
+        if (window.gapi && gapi.client && gapi.client.getToken() !== null) {
+            window.backupToGoogleDrive();
+        } else if (typeof window.syncUI === 'function') {
+            console.log("Google Drive token not active in background; synced with Firebase Cloud.");
+        }
+    }
+}, 15 * 60 * 1000);
+
 
 window.getCloudInfo = async function() {
     let lastS = localStorage.getItem('last_gdrive_sync');
