@@ -1343,134 +1343,323 @@ input[type=file] {
     canvas { max-width: 100% !important; }
 }
 
-  
-/* Floating To-Do Drawer Styles */
-.todo-float-btn {
-    position: fixed !important;
-    bottom: 24px !important;
-    left: 24px !important;
-    background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
-    color: #fff !important;
-    width: 56px !important;
-    height: 56px !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 1.6rem !important;
-    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45) !important;
-    cursor: pointer !important;
-    z-index: 9000 !important;
-    transition: transform 0.25s, box-shadow 0.25s !important;
-    user-select: none;
-}
-.todo-float-btn:hover {
-    transform: scale(1.1) rotate(5deg) !important;
-    box-shadow: 0 12px 30px rgba(79, 70, 229, 0.6) !important;
-}
-.todo-overlay {
-    position: fixed !important;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.5) !important;
-    backdrop-filter: blur(4px) !important;
-    z-index: 9001 !important;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s !important;
-}
-.todo-drawer {
-    position: fixed !important;
-    bottom: 0; left: 0; width: 100%; max-width: 400px; height: 80vh;
-    background: var(--bg) !important;
-    border-top-right-radius: 20px !important;
-    border-bottom-right-radius: 20px !important;
-    box-shadow: 20px 0 50px rgba(0,0,0,0.3) !important;
-    z-index: 9002 !important;
-    padding: 20px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    transform: translateX(-110%) !important;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    border-right: 1px solid var(--bd) !important;
-}
-.todo-drawer.open {
-    transform: translateX(0) !important;
+
+/* ==========================================================================
+   ENTERPRISE V8 LUXURY POLISH (MAJOR ENTERPRISE CRM / ERP DESIGN SYSTEM)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Cairo', 'Outfit', system-ui, -apple-system, sans-serif !important;
 }
 
+body.en {
+    font-family: 'Outfit', 'Cairo', system-ui, sans-serif !important;
+}
 
-/* Executive UI & Page Hero Banner Styles */
-#M .ph {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.88) 0%, rgba(15, 23, 42, 0.96) 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
-    border-radius: 22px !important;
-    padding: 24px 30px !important;
-    margin-bottom: 30px !important;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
-    backdrop-filter: blur(18px) !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    flex-wrap: wrap !important;
-    gap: 22px !important;
-    position: relative !important;
-    overflow: hidden !important;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s !important;
+.hdr, #H {
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    background: rgba(255, 255, 255, 0.75) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.3s ease !important;
 }
-#M .ph:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+
+html[data-theme='dark'] .hdr, html[data-theme='dark'] #H {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3) !important;
 }
-#M .ph::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 0; left: 0; right: 0; height: 3.5px !important;
-    background: linear-gradient(90deg, #6366f1, #3b82f6, #10b981, #f59e0b, #ef4444) !important;
-    opacity: 0.95 !important;
+
+.sidebar {
+    backdrop-filter: blur(16px);
+    border-left: 1px solid rgba(0,0,0,0.05);
 }
-#M .ph::after {
-    content: '' !important;
-    position: absolute !important;
-    top: -60px; left: -60px; width: 220px; height: 220px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%) !important;
-    border-radius: 50% !important;
-    pointer-events: none !important;
+html[data-theme='dark'] .sidebar {
+    border-left: 1px solid rgba(255,255,255,0.06);
 }
-#M .ph:hover .ph-hero-icon {
-    transform: scale(1.15) rotate(6deg) !important;
-    border-color: rgba(255,255,255,0.4) !important;
-    box-shadow: 0 14px 32px rgba(99, 102, 241, 0.4) !important;
-}
-.ni {
-    padding: 12px 14px !important;
-    gap: 14px !important;
-    font-size: 0.88rem !important;
-    margin: 4px 0 !important;
+
+.ni, .bi {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     border-radius: 12px !important;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    margin: 3px 8px !important;
+    padding: 10px 14px !important;
 }
-.ni .ic {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 1.25rem !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+
+.ni:hover, .bi:hover {
+    transform: translateX(-4px);
+    background: var(--acl) !important;
+}
+
+body.en .ni:hover {
+    transform: translateX(4px);
+}
+
+.ni.on, .bi.on {
+    background: linear-gradient(135deg, var(--ac) 0%, var(--ac2) 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35) !important;
+    font-weight: 700 !important;
+}
+
+.ic img, .bic img, .ph img, h1 img, h2 img, h3 img {
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.22)) !important;
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
-.ni:hover .ic {
-    transform: scale(1.25) rotate(6deg) !important;
-}
-.ni.on {
-    background: linear-gradient(135deg, var(--acl), #6366f1) !important;
-    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45) !important;
-    font-weight: 800 !important;
-}
-.ni.on .ic {
-    transform: scale(1.18) !important;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)) !important;
+
+.ni:hover .ic img, .card:hover img {
+    transform: scale(1.15) rotate(4deg) !important;
 }
 
-</style>
+.card, .ki {
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.02) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s !important;
+}
+
+html[data-theme='dark'] .card, html[data-theme='dark'] .ki {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.25) !important;
+}
+
+.card:hover, .ki:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.12), 0 8px 20px -6px rgba(0, 0, 0, 0.06) !important;
+    border-color: var(--ac2) !important;
+}
+
+.btn {
+    border-radius: 10px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-weight: 600 !important;
+}
+
+.btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn:active {
+    transform: scale(0.97) !important;
+}
+
+.btn-p {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #4338ca 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35) !important;
+    border: none !important;
+}
+
+.btn-p:hover {
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5) !important;
+}
+
+table {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    border: 1px solid var(--bd) !important;
+}
+
+th {
+    background: var(--bg3) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
+    padding: 12px 14px !important;
+    border-bottom: 2px solid var(--bd) !important;
+}
+
+tr {
+    transition: background 0.2s ease !important;
+}
+
+tr:hover {
+    background: var(--acl) !important;
+}
+
+.todo-float-btn {
+    position: fixed;
+    bottom: 24px; left: 24px;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    color: #fff;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    box-shadow: 0 8px 24px rgba(108, 92, 231, 0.45);
+    cursor: pointer;
+    z-index: 9000;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+}
+.todo-float-btn:hover {
+    transform: scale(1.12) rotate(10deg);
+    box-shadow: 0 12px 30px rgba(108, 92, 231, 0.65);
+}
+.todo-drawer {
+    position: fixed;
+    top: 0;
+    right: -390px;
+    width: 350px;
+    max-width: 90%;
+    height: 100%;
+    background: var(--bg);
+    border-left: 1px solid var(--bd);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.25);
+    z-index: 99999;
+    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    color: var(--tx1);
+}
+body.en .todo-drawer { right: auto; left: -390px; border-left: none; border-right: 1px solid var(--bd); }
+.todo-drawer.open { right: 0; }
+body.en .todo-drawer.open { left: 0; right: auto; }
+.todo-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 99990;
+    display: none;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.todo-overlay.open { display: block; }
+.todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--bg3);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 4px solid #6c5ce7;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    transition: transform 0.2s;
+}
+.todo-item:hover { transform: translateX(-3px); }
+.todo-item.done span { text-decoration: line-through; opacity: 0.5; }
+
+.print-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(6px);
+}
+.print-modal-content {
+    background: #fff;
+    color: #000;
+    width: 100%;
+    max-width: 680px;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    max-height: 90vh;
+    overflow-y: auto;
+    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+}
+@media print {
+    body * { visibility: hidden; }
+    #printModalContent, #printModalContent * { visibility: visible; }
+    #printModalContent { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; padding: 0; }
+    .no-print { display: none !important; }
+}
+
+
+
+/* ==========================================================================
+   ENTERPRISE V8 LUXURY PAGE HEADERS (.ph) & ICON STYLING
+   ========================================================================== */
+.ph {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.85)) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    padding: 20px 28px !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    margin-bottom: 28px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+html[data-theme="light"] .ph {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(241, 245, 249, 0.98)) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.ph::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 6px !important;
+    height: 100% !important;
+    background: linear-gradient(180deg, var(--p), #10b981) !important;
+    border-radius: 6px 0 0 6px !important;
+}
+
+html[dir="rtl"] .ph::before {
+    left: auto !important;
+    right: 0 !important;
+    border-radius: 0 6px 6px 0 !important;
+}
+
+.ph h1 {
+    font-size: 1.6rem !important;
+    font-weight: 800 !important;
+    color: var(--tx1) !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    letter-spacing: -0.5px !important;
+}
+
+.ph h1 span:first-child, .ph h1 img, .ph h1 span img {
+    width: 48px !important;
+    height: 48px !important;
+    filter: drop-shadow(0 6px 14px rgba(59, 130, 246, 0.4)) !important;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.ph:hover h1 span:first-child, .ph:hover h1 img, .ph:hover h1 span img {
+    transform: scale(1.18) rotate(6deg) !important;
+}
+
+/* Page Icon Polish across tables and cards */
+.sc .i {
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15)) !important;
+    transition: transform 0.3s ease !important;
+}
+.sc:hover .i {
+    transform: scale(1.15) !important;
+}
+
+  </style>
 </head>
 <body>
 
@@ -1527,6 +1716,16 @@ input[type=file] {
     </div>
     <div id="NV"></div>
   </nav>
+  
+  <!-- Global Search Bar (Enterprise V8 Static Sibling) -->
+  <div id="globalSearchContainer" style="padding: 16px 24px 0 24px; max-width: 1200px; margin: 0 auto; position: relative; z-index: 100;">
+    <div style="display:flex;align-items:center;background:var(--bg3);border-radius:14px;padding:10px 18px;border:1px solid var(--bd);box-shadow:0 4px 15px rgba(0,0,0,0.03);transition:all 0.3s;">
+      <span style="font-size:1.3rem;margin-right:10px;color:var(--tx2);">ðŸ”</span>
+      <input type="text" id="globalSearchInput" placeholder="Ø¨Ø­Ø« Ø´Ø§Ù…Ù„ ÙÙŠ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ØŒ Ø§Ù„Ø£ØµÙ†Ø§ÙØŒ Ø§Ù„ÙÙˆØ§ØªÙŠØ±ØŒ ÙˆØ§Ù„Ø²ÙŠØ§Ø±Ø§Øª... / Global search..." style="border:none;background:transparent;width:100%;color:var(--tx1);font-size:0.95rem;outline:none;">
+      <span id="clearGlobalSearch" style="cursor:pointer;display:none;color:var(--tx2);font-size:1.2rem;margin-left:8px;">âœ–</span>
+    </div>
+    <div id="globalSearchResults" style="display:none;position:absolute;top:calc(100% - 2px);left:24px;right:24px;background:var(--bg);border:1px solid var(--bd);border-radius:14px;max-height:400px;overflow-y:auto;box-shadow:0 15px 35px rgba(0,0,0,0.15);z-index:1000;padding:10px;"></div>
+  </div>
   <main class="mw" id="M"></main>
   <nav class="bnav">
     <div class="bni" id="BN"></div>
@@ -1535,15 +1734,15 @@ input[type=file] {
 
 
   <!-- Floating To-Do Button & Drawer (Enterprise V8 Static Sibling) -->
-  <div class="todo-float-btn" id="todoFloatBtn" onclick="toggleTodoDrawer()" title="مفكرة المهام السريعة" style="display:none;">📌</div>
+  <div class="todo-float-btn" id="todoFloatBtn" onclick="toggleTodoDrawer()" title="Ù…ÙÙƒØ±Ø© Ø§Ù„Ù…Ù‡Ø§Ù… Ø§Ù„Ø³Ø±ÙŠØ¹Ø©">ðŸ“Œ</div>
   <div class="todo-overlay" id="todoOverlay" onclick="toggleTodoDrawer()"></div>
   <div class="todo-drawer" id="todoDrawer">
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);padding-bottom:15px;margin-bottom:15px;">
-      <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:1.1rem;">📌 مفكرة المهام السريعة</h3>
-      <span onclick="toggleTodoDrawer()" style="cursor:pointer;font-size:1.4rem;color:var(--tx2);padding:0 8px;">✖</span>
+      <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:1.1rem;">ðŸ“Œ Ù…ÙÙƒØ±Ø© Ø§Ù„Ù…Ù‡Ø§Ù… Ø§Ù„Ø³Ø±ÙŠØ¹Ø©</h3>
+      <span onclick="toggleTodoDrawer()" style="cursor:pointer;font-size:1.4rem;color:var(--tx2);padding:0 8px;">âœ–</span>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <input type="text" id="newTodoInput" placeholder="أضف مهمة جديدة..." style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx1);outline:none;font-size:0.9rem;">
+      <input type="text" id="newTodoInput" placeholder="Ø£Ø¶Ù Ù…Ù‡Ù…Ø© Ø¬Ø¯ÙŠØ¯Ø©..." style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx1);outline:none;font-size:0.9rem;">
       <button onclick="addTodoItem()" class="btn btn-p" style="padding:0 18px;border-radius:10px;font-size:1.2rem;">+</button>
     </div>
     <div id="todoListContainer" style="flex:1;overflow-y:auto;"></div>
@@ -1557,9 +1756,7 @@ input[type=file] {
 <div class="toast" id="TT"></div>
 
 <!-- CDN Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script src="https://accounts.google.com/gsi/client?onload=gisLoaded" async defer></script>
@@ -1600,6 +1797,15 @@ let currentUser = null;
 // js/data-store.js
 
 // Global State
+window.syncUI = window.syncUI || function(status) {
+    console.log('[Cloud Sync]: ' + status);
+    let el = document.getElementById('SYNC_STATUS') || document.getElementById('cloud_status');
+    if (el) {
+        if (status === 'syncing') el.innerHTML = '🔄 ' + (typeof L !== 'undefined' && L === 'ar' ? 'جاري المزامنة...' : 'Syncing...');
+        else if (status === 'done') el.innerHTML = '☁️ ' + (typeof L !== 'undefined' && L === 'ar' ? 'متزامن مع السحابة' : 'Cloud Synced');
+        else if (status === 'error') el.innerHTML = '❌ ' + (typeof L !== 'undefined' && L === 'ar' ? 'خطأ في المزامنة' : 'Sync Error');
+    }
+};
 
 function loadLS(k) { try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : []; } catch(e){ return []; } }
 let S = loadLS('salesData'); // Sales
@@ -1609,16 +1815,6 @@ let hwCats = loadLS('hwCats'); // Hardware Categories
 let C = loadLS('payData'); // Collections/PayData
 let D = loadLS('duesData'); // Dues
 let CH = {}; // Chart Instances
-
-window.syncUI = window.syncUI || function(status) {
-    console.log('[Cloud Sync]: ' + status);
-    let el = document.getElementById('SYNC_STATUS') || document.getElementById('cloud_status');
-    if (el) {
-        if (status === 'syncing') { el.innerHTML = '🔄'; el.style.color = '#f39c12'; }
-        else if (status === 'error') { el.innerHTML = '⚠️'; el.style.color = '#e74c3c'; }
-        else if (status === 'done') { el.innerHTML = '☁️'; el.style.color = '#2ecc71'; }
-    }
-};
 let L = localStorage.getItem('sp_lang') || 'ar';
 L = L.replace(/"/g, ''); // Strip quotes if JSON stringified
 if (L !== 'ar' && L !== 'en') L = 'ar';
@@ -1781,43 +1977,22 @@ function getPayRef(row) {
 </script>
 <script>
 // js/auth.js
+window.syncUI = window.syncUI || function(status) {
+    console.log('[Cloud Sync]: ' + status);
+    let el = document.getElementById('SYNC_STATUS') || document.getElementById('cloud_status');
+    if (el) {
+        if (status === 'syncing') el.innerHTML = '🔄 ' + (typeof L !== 'undefined' && L === 'ar' ? 'جاري المزامنة...' : 'Syncing...');
+        else if (status === 'done') el.innerHTML = '☁️ ' + (typeof L !== 'undefined' && L === 'ar' ? 'متزامن مع السحابة' : 'Cloud Synced');
+        else if (status === 'error') el.innerHTML = '❌ ' + (typeof L !== 'undefined' && L === 'ar' ? 'خطأ في المزامنة' : 'Sync Error');
+    }
+};
 
 auth.onAuthStateChanged(user => {
     if (user) {
         currentUser = user;
         $('AUTH').classList.add('hidden');
-        // Show macOS / Windows OS Startup Splash Screen upon user authentication
-        let over = document.getElementById('osStartupOverlay');
-        if (over && !window.osShownAfterAuth) {
-            window.osShownAfterAuth = true;
-            over.style.display = 'flex';
-            over.style.opacity = '1';
-            over.style.transform = 'scale(1)';
-            let prog = document.getElementById('osStartProgress');
-            let stat = document.getElementById('osStartStatus');
-            if(prog) prog.style.width = '30%';
-            if(stat) stat.textContent = 'جاري تسجيل الدخول ومزامنة بياناتك...';
-            
-            setTimeout(() => {
-                if(prog) prog.style.width = '70%';
-                if(stat) stat.textContent = 'تجهيز واجهة المبيعات والأيقونات الذكية (3D)...';
-            }, 500);
-            
-            setTimeout(() => {
-                if(prog) prog.style.width = '100%';
-                if(stat) stat.textContent = '✅ مرحباً بك في واجهة المبيعات الملكية!';
-            }, 1000);
-            
-            setTimeout(() => {
-                over.style.opacity = '0';
-                over.style.transform = 'scale(1.08)';
-                setTimeout(() => { over.style.display = 'none'; }, 600);
-            }, 1400);
-        }
-
         $('APP').classList.remove('hidden');
         $('APP').style.display = 'flex';
-        if($('todoFloatBtn')) $('todoFloatBtn').style.display = 'flex';
         
         const ADMIN_EMAILS = ['tetoabdallah@gmail.com'];
         window.isAppAdmin = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
@@ -1952,9 +2127,6 @@ auth.onAuthStateChanged(user => {
         $('AUTH').classList.remove('hidden');
         $('APP').classList.add('hidden');
         $('APP').style.display = 'none';
-        if($('todoFloatBtn')) $('todoFloatBtn').style.display = 'none';
-        if($('todoDrawer')) $('todoDrawer').style.display = 'none';
-        if($('todoOverlay')) $('todoOverlay').style.display = 'none';
     }
 });
 
@@ -2033,7 +2205,9 @@ function rDash() {
     let pp = tpt > 0 ? tp / tpt * 100 : 0;
     
     let dateFilterUI = `
-        <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);">
+        <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);flex-wrap:wrap;">
+            <button onclick="if(typeof sendDailyReportNow==='function')sendDailyReportNow(false);" class="btn" style="background:#10b981;color:#fff;font-weight:bold;padding:6px 12px;font-size:0.75rem;display:flex;align-items:center;gap:4px;cursor:pointer;" title="${L==='ar'?'إرسال تقرير المبيعات والتحصيلات إلى إيميلك الآن':'Send Report to Email'}">📧 ${L==='ar'?'إرسال التقرير للإيميل':'Email Report'}</button>
+            <span style="color:var(--bd);margin:0 4px;">|</span>
             <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('From'):'From'}:</label>
             <input type="date" id="dfStart" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.start||''}">
             <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('To'):'To'}:</label>
@@ -3323,11 +3497,9 @@ function rBk() {
                 <button class="btn" id="bDriveJSON" style="width:100%; justify-content:center; background:#0f9d58; color:white; border:none;">
                     نسخ احتياطي إلى (Google Drive) ☁️
                 </button>
-                <div style="margin-top:14px;padding:12px 16px;background:rgba(16, 185, 129, 0.12);border:1px solid #10b981;border-radius:12px;text-align:center;">
-                    <div style="color:#10b981;font-weight:700;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:6px;">
-                        <span>⏱️</span> النسخ الاحتياطي التلقائي لجوجل درايف (كل 15 دقيقة): مفعل ✅
-                    </div>
-                    <div style="color:var(--tx2);font-size:0.75rem;margin-top:4px;">يقوم النظام بحفظ ورفع نسخة أمان تلقائياً إلى حسابك في جوجل درايف كل ربع ساعة في الخلفية دون تدخل منك.</div>
+                <div style="margin-top:12px;padding:10px 14px;background:rgba(15, 157, 88, 0.12);border:1px solid #0f9d58;border-radius:8px;font-size:0.85rem;color:#0f9d58;display:flex;align-items:center;gap:10px;line-height:1.4;">
+                    <span style="font-size:1.2rem;">🕒</span>
+                    <span>${L==='ar' ? 'النسخ الاحتياطي التلقائي إلى Google Drive فعال ويعمل في الخلفية كل 15 دقيقة (ربع ساعة).' : 'Automatic backup to Google Drive runs every 15 minutes in the background.'}</span>
                 </div>
             </div>
         </div>
@@ -3384,8 +3556,6 @@ function rBk() {
         reader.readAsText(f);
     };
 }
-
-
 
 function rSetup() {
     $('M').innerHTML = `
@@ -3483,6 +3653,337 @@ function rSetup() {
 
 
 
+
+
+/* ==========================================================================
+   ENTERPRISE V8 CRASH-PROOF ENHANCEMENTS (SAFE STATIC HELPERS)
+   ========================================================================== */
+
+// 1. Floating To-Do Drawer Logic
+window.initTodoUI = function() {
+    let container = document.getElementById('todoListContainer');
+    if(!container) return;
+    let todos = [];
+    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    if(todos.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:var(--tx2);margin-top:40px;">' + (L === 'ar' ? 'لا توجد مهام حالياً. أضف مهمة جديدة!' : 'No tasks yet. Add a new task!') + '</p>';
+        return;
+    }
+    let html = '';
+    todos.forEach((item, idx) => {
+        html += '<div class="todo-item ' + (item.done ? 'done' : '') + '">' +
+            '<div style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;" onclick="toggleTodoStatus(' + idx + ')">' +
+            '<input type="checkbox" ' + (item.done ? 'checked' : '') + ' style="cursor:pointer;width:18px;height:18px;" onclick="e=>e.stopPropagation()">' +
+            '<span style="font-size:0.95rem;color:var(--tx1);">' + item.text + '</span>' +
+            '</div>' +
+            '<span onclick="deleteTodoItem(' + idx + ')" style="cursor:pointer;color:#ef4444;font-size:1.2rem;padding:0 6px;" title="حذف">🗑️</span>' +
+            '</div>';
+    });
+    container.innerHTML = html;
+};
+
+window.toggleTodoDrawer = function() {
+    let drawer = document.getElementById('todoDrawer');
+    let overlay = document.getElementById('todoOverlay');
+    if(!drawer || !overlay) return;
+    let isOpen = drawer.classList.contains('open');
+    if(isOpen) {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+    } else {
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+        initTodoUI();
+    }
+};
+
+window.addTodoItem = function() {
+    let input = document.getElementById('newTodoInput');
+    if(!input || !input.value.trim()) return;
+    let todos = [];
+    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    todos.push({ text: input.value.trim(), done: false });
+    localStorage.setItem('sp_todos', JSON.stringify(todos));
+    input.value = '';
+    initTodoUI();
+    if(typeof toast==='function') toast(L==='ar'?'تمت إضافة المهمة بنجاح':'Task added');
+};
+
+window.deleteTodoItem = function(idx) {
+    let todos = [];
+    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    todos.splice(idx, 1);
+    localStorage.setItem('sp_todos', JSON.stringify(todos));
+    initTodoUI();
+};
+
+window.toggleTodoStatus = function(idx) {
+    let todos = [];
+    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    if(todos[idx]) {
+        todos[idx].done = !todos[idx].done;
+        localStorage.setItem('sp_todos', JSON.stringify(todos));
+        initTodoUI();
+    }
+};
+
+// 2. Print Official Receipt / Invoice
+window.printReceipt = function(customerName, amount, dateStr, typeStr) {
+    let modal = document.getElementById('printInvoiceModal');
+    let content = document.getElementById('printModalContent');
+    if(!modal || !content) return;
+    let invNum = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+    let today = dateStr || new Date().toISOString().split('T')[0];
+    content.innerHTML = '<div style="text-align:center;border-bottom:2px dashed var(--bd);padding-bottom:15px;margin-bottom:20px;">' +
+        '<h2 style="margin:0;color:var(--tx1);font-weight:800;font-size:1.6rem;">🏢 Sales Pro Enterprise</h2>' +
+        '<p style="margin:4px 0 0;color:var(--tx2);font-size:0.95rem;">إيصال معاملة مبيعات / تحصيل رسمي وثابت</p>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:15px;font-size:0.95rem;color:var(--tx1);">' +
+        '<div><strong>رقم الإيصال:</strong> ' + invNum + '</div>' +
+        '<div><strong>التاريخ:</strong> ' + today + '</div>' +
+        '</div>' +
+        '<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.95rem;">' +
+        '<tr style="background:var(--bg3);border-bottom:1px solid var(--bd);">' +
+        '<th style="padding:10px;text-align:right;border:1px solid var(--bd);">البيان / العميل</th>' +
+        '<th style="padding:10px;text-align:left;border:1px solid var(--bd);">القيمة (ج.م)</th>' +
+        '</tr>' +
+        '<tr>' +
+        '<td style="padding:12px;border:1px solid var(--bd);color:var(--tx1);"><strong>' + (customerName || 'عميل عام') + '</strong><br><span style="font-size:0.85rem;color:var(--tx2);">' + (typeStr || 'معاملة مبيعات') + '</span></td>' +
+        '<td style="padding:12px;text-align:left;border:1px solid var(--bd);font-weight:bold;font-size:1.2rem;color:#10b981;">' + (typeof fmt==='function'?fmt(amount):amount) + ' ج.م</td>' +
+        '</tr>' +
+        '</table>' +
+        '<div style="text-align:center;margin-top:30px;color:var(--tx2);font-size:0.85rem;border-top:1px solid var(--bd);padding-top:15px;">' +
+        'تم إصدار هذا الإيصال إلكترونياً عبر نظام Sales Pro CRM، ولا يحتاج إلى ختم أو توقيع يدوي.' +
+        '</div>' +
+        '<div class="no-print" style="margin-top:25px;display:flex;gap:12px;justify-content:center;">' +
+        '<button onclick="window.print();" class="btn btn-p" style="padding:10px 24px;font-size:1rem;background:#10b981;color:#fff;border:none;">🖨️ طباعة فورية</button>' +
+        '<button onclick="document.getElementById(\'printInvoiceModal\').style.display=\'none\';" class="btn" style="padding:10px 24px;font-size:1rem;background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);">إغلاق</button>' +
+        '</div>';
+    modal.style.display = 'flex';
+};
+
+// 3. Excel Import Helper
+window.importFromExcel = function(targetType) {
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx, .xls, .csv';
+    input.onchange = function(e) {
+        let file = e.target.files[0];
+        if(!file) return;
+        if(typeof XLSX === 'undefined') {
+            alert('XLSX library not loaded yet!');
+            return;
+        }
+        let reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                let data = new Uint8Array(evt.target.result);
+                let workbook = XLSX.read(data, {type: 'array'});
+                let firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                let jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                if(!jsonData || jsonData.length === 0) {
+                    if(typeof toast==='function') toast(L==='ar'?'الملف فارغ أو غير صالح':'Empty file', 'error');
+                    return;
+                }
+                if(targetType === 'leads' || targetType === 'prospects') {
+                    let ld = []; try { ld = JSON.parse(localStorage.getItem('leadsData') || '[]'); } catch(err){}
+                    jsonData.forEach(row => {
+                        ld.push({
+                            id: Date.now() + Math.random(),
+                            name: row['Customer Name'] || row['Name'] || row['الاسم'] || row['اسم العميل'] || 'عميل مستورد',
+                            phone: row['Phone'] || row['Mobile'] || row['رقم الهاتف'] || row['التليفون'] || '',
+                            branch: row['Branch'] || row['الفرع'] || 'حدائق القبة',
+                            status: row['Status'] || row['الحالة'] || 'Warm',
+                            note: row['Note'] || row['ملاحظات'] || 'تم الاستيراد من الإكسل'
+                        });
+                    });
+                    localStorage.setItem('leadsData', JSON.stringify(ld));
+                    if(typeof toast==='function') toast(L==='ar'? 'تم استيراد ' + jsonData.length + ' عميل محتمل بنجاح!' : 'Imported ' + jsonData.length + ' leads!', 'success');
+                    if(typeof render==='function') render();
+                } else if(targetType === 'customers' || targetType === 'sales') {
+                    let count = 0;
+                    jsonData.forEach(row => {
+                        let cName = row['Customer Name'] || row['Customer'] || row['اسم العميل'] || row['العميل'];
+                        if(cName && !window.C.find(c => (c.name||'').toLowerCase() === cName.toLowerCase())) {
+                            window.C.push({
+                                id: Date.now() + Math.random(),
+                                name: cName,
+                                phone: row['Phone'] || row['Mobile'] || row['رقم الهاتف'] || '',
+                                branch: row['Branch'] || row['الفرع'] || 'حدائق القبة',
+                                type: row['Type'] || row['النوع'] || 'تجزئة'
+                            });
+                            count++;
+                        }
+                    });
+                    sv('custData', window.C);
+                    if(typeof toast==='function') toast(L==='ar'? 'تمت إضافة ' + count + ' عميل جديد بنجاح!' : 'Added ' + count + ' customers!', 'success');
+                    if(typeof render==='function') render();
+                } else {
+                    if(typeof toast==='function') toast(L==='ar'?'تم تحليل الملف بنجاح':'File parsed successfully', 'success');
+                }
+            } catch(err) {
+                if(typeof toast==='function') toast(L==='ar'?'حدث خطأ في قراءة ملف الإكسل':'Error reading excel', 'error');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    };
+    input.click();
+};
+
+// 4. Global Search Helper
+window.initGlobalSearch = function() {
+    let input = document.getElementById('globalSearchInput');
+    let resBox = document.getElementById('globalSearchResults');
+    let clearBtn = document.getElementById('clearGlobalSearch');
+    if(!input || !resBox) return;
+
+    input.oninput = function() {
+        let q = this.value.trim().toLowerCase();
+        if(!q) {
+            resBox.style.display = 'none';
+            if(clearBtn) clearBtn.style.display = 'none';
+            return;
+        }
+        if(clearBtn) clearBtn.style.display = 'inline';
+
+        let matches = [];
+        (window.S || []).forEach(s => {
+            let c = (s.Customer || '').toLowerCase();
+            let i = (s['Item Description'] || '').toLowerCase();
+            if(c.includes(q) || i.includes(q)) {
+                matches.push({ title: s.Customer || 'عميل', sub: s['Item Description'] || '', type: 'مبيعات', p: 'sales' });
+            }
+        });
+        (window.C || []).forEach(c => {
+            let n = (c.name || '').toLowerCase();
+            let ph = (c.phone || '').toLowerCase();
+            if(n.includes(q) || ph.includes(q)) {
+                matches.push({ title: c.name || 'عميل', sub: c.phone || '', type: 'عميل', p: 'customers' });
+            }
+        });
+
+        if(matches.length === 0) {
+            resBox.innerHTML = '<div style="padding:12px;text-align:center;color:var(--tx2);">' + (L === 'ar' ? 'لا توجد نتائج مطابقة' : 'No results found') + '</div>';
+        } else {
+            let h = '';
+            matches.slice(0, 8).forEach(m => {
+                h += '<div onclick="P=\'' + m.p + '\';if(typeof buildNav===\'function\')buildNav();if(typeof render===\'function\')render();document.getElementById(\'globalSearchResults\').style.display=\'none\';document.getElementById(\'globalSearchInput\').value=\'\';" style="padding:10px 14px;border-bottom:1px solid var(--bd);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;">' +
+                    '<div><strong style="font-size:0.95rem;display:block;color:var(--tx1);">' + m.title + '</strong><span style="font-size:0.8rem;color:var(--tx2);">' + m.sub + '</span></div>' +
+                    '<span class="badge" style="font-size:0.75rem;padding:4px 8px;background:var(--acl);color:var(--ac);border-radius:6px;">' + m.type + '</span>' +
+                    '</div>';
+            });
+            resBox.innerHTML = h;
+        }
+        resBox.style.display = 'block';
+    };
+
+    if(clearBtn) {
+        clearBtn.onclick = function() {
+            input.value = '';
+            resBox.style.display = 'none';
+            this.style.display = 'none';
+        };
+    }
+};
+
+// 5. Safe UI Enhancer Hook
+window.enhanceUI = function() {
+    try {
+        initGlobalSearch();
+        let ph = document.querySelector('#M .ph');
+        if(ph && !document.getElementById('btnExcelImport') && (P==='sales'||P==='leads'||P==='prospects'||P==='customers')) {
+            let btn = document.createElement('button');
+            btn.id = 'btnExcelImport';
+            btn.className = 'btn';
+            btn.style.cssText = 'background:#10b981;color:#fff;display:flex;align-items:center;gap:6px;font-size:0.85rem;padding:6px 14px;border-radius:10px;border:none;cursor:pointer;margin-left:auto;box-shadow:0 4px 10px rgba(16, 185, 129, 0.3);';
+            btn.innerHTML = '📥 ' + (L === 'ar' ? 'استيراد من Excel' : 'Import Excel');
+            btn.onclick = () => { if(typeof window.importFromExcel === 'function') importFromExcel(P); };
+            ph.appendChild(btn);
+        }
+
+        if(P === 'sales' || P === 'customers' || P === 'collections') {
+            document.querySelectorAll('#M table tbody tr').forEach(tr => {
+                let tds = tr.querySelectorAll('td');
+                if(tds.length >= 2 && !tr.querySelector('.btn-print-icon')) {
+                    let cName = tds[0] ? tds[0].innerText.trim() : 'العميل';
+                    let amtStr = tds[tds.length - 1] ? tds[tds.length - 1].innerText.replace(/[^0-9.]/g,'') : '0';
+                    let btn = document.createElement('a');
+                    btn.className = 'btn-print-icon';
+                    btn.href = 'javascript:void(0)';
+                    btn.innerHTML = '🖨️';
+                    btn.title = L === 'ar' ? 'طباعة إيصال رسمي' : 'Print Receipt';
+                    btn.style.cssText = 'margin-left:8px;font-size:1.1rem;text-decoration:none;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));';
+                    btn.onclick = (e) => { e.stopPropagation(); if(typeof window.printReceipt === 'function') printReceipt(cName, Number(amtStr), new Date().toISOString().split('T')[0], 'فاتورة مبيعات/حساب'); };
+                    if(tds[0]) tds[0].appendChild(btn);
+                }
+            });
+        }
+
+        if(P === 'leads' || P === 'prospects') {
+            document.querySelectorAll('#M table tbody tr').forEach(tr => {
+                let tds = tr.querySelectorAll('td');
+                if(tds.length >= 3 && !tr.querySelector('.wa-injected')) {
+                    let name = tds[0] ? tds[0].innerText.trim() : '';
+                    let phone = tds[2] ? tds[2].innerText.trim() : '';
+                    if(phone && phone !== '' && !phone.includes('wa-injected')) {
+                        let span = document.createElement('span');
+                        span.className = 'wa-injected';
+                        let cleanName = name.replace(/'/g, "\'");
+                        let cleanPhone = phone.replace(/[^0-9]/g, '');
+                        span.innerHTML = '<a href="https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent('مرحباً بك ' + name) + '" target="_blank" style="margin-left:8px;text-decoration:none;font-size:1.2rem;filter:drop-shadow(0 2px 4px rgba(37,211,102,0.4));" title="مراسلة عبر واتساب">🟢</a>';
+                        if(tds[2]) tds[2].appendChild(span);
+                    }
+                }
+            });
+        }
+
+        if((P === 'dashboard' || P === 'analytics') && !document.getElementById('branchPerfChartCard')) {
+            let qobbahSales = 0, luxorSales = 0, tot = 0;
+            (window.S || []).forEach(s => {
+                let val = Number(s['Sales Without Tax'] || 0);
+                tot += val;
+                let c = (s.Customer || '').toLowerCase();
+                let ref = (s['Payment Ref.'] || '').toLowerCase();
+                if(c.includes('أقصر') || c.includes('اقصر') || c.includes('luxor') || ref.includes('أقصر') || ref.includes('luxor')) {
+                    luxorSales += val;
+                } else {
+                    qobbahSales += val;
+                }
+            });
+            let qPct = tot > 0 ? Math.round((qobbahSales/tot)*100) : 50;
+            let lPct = tot > 0 ? Math.round((luxorSales/tot)*100) : 50;
+
+            let card = document.createElement('div');
+            card.id = 'branchPerfChartCard';
+            card.className = 'card';
+            card.style.cssText = 'margin-top:20px;padding:20px;border-left:5px solid #10b981;';
+            card.innerHTML = '<h3 style="margin:0 0 14px 0;display:flex;align-items:center;gap:10px;font-size:1.1rem;">📊 ' + (L === 'ar' ? 'مقارنة أداء المبيعات بين الفروع (تحليل تنفيذي)' : 'Branch Sales Performance') + '</h3>' +
+                '<div style="margin-bottom:14px;">' +
+                '<div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:6px;">' +
+                '<span>🏢 ' + (L === 'ar' ? 'فرع حدائق القبة والعملاء العامين' : 'Hadayek El-Qobbah & General') + '</span>' +
+                '<strong style="color:#10b981;">' + (typeof fmt==='function'?fmt(qobbahSales):qobbahSales) + ' ج.م (' + qPct + '%)</strong>' +
+                '</div>' +
+                '<div style="background:var(--bg3);height:14px;border-radius:7px;overflow:hidden;border:1px solid var(--bd);">' +
+                '<div style="background:linear-gradient(90deg, #3b82f6, #10b981);width:' + qPct + '%;height:100%;transition:width 1s;"></div>' +
+                '</div>' +
+                '</div>' +
+                '<div>' +
+                '<div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:6px;">' +
+                '<span>🏛️ ' + (L === 'ar' ? 'فرع الأقصر وعملائه' : 'Luxor Branch') + '</span>' +
+                '<strong style="color:#ef4444;">' + (typeof fmt==='function'?fmt(luxorSales):luxorSales) + ' ج.م (' + lPct + '%)</strong>' +
+                '</div>' +
+                '<div style="background:var(--bg3);height:14px;border-radius:7px;overflow:hidden;border:1px solid var(--bd);">' +
+                '<div style="background:linear-gradient(90deg, #ef4444, #f59e0b);width:' + lPct + '%;height:100%;transition:width 1s;"></div>' +
+                '</div>' +
+                '</div>';
+            let m = document.getElementById('M');
+            if(m) m.appendChild(card);
+        }
+    } catch(e) {
+        console.warn('enhanceUI error:', e);
+    }
+};
+
 </script>
 <script>
 // js/settings.js
@@ -3538,9 +4039,68 @@ function rSettings() {
             <button class="btn btn-p" onclick="saveGeminiKey()">${L==='ar'?'حفظ المفتاح':'Save Key'}</button>
         </div>
         
+        <div class="card" style="margin-bottom:20px; border-top: 4px solid #10b981;">
+            <h3 style="display:flex;align-items:center;gap:8px;">📧 ${L==='ar'?'التقرير اليومي التلقائي للإيميل (المبيعات والتحصيلات والعملاء)':'Automated Daily Email Report'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">
+                ${L==='ar'?'إرسال ملخص يومي تلقائي إلى بريدك الإلكتروني بكل ما حدث في النظام من مبيعات، تحصيل، وأداء العملاء دون أي عناء أو تدخل يدوي.':'Automatically send a daily summary to your email with all sales, collections, and customer activity.'}
+            </p>
+            
+            <div style="background:var(--bg3);padding:14px;border-radius:10px;margin-bottom:15px;border:1px solid var(--bd);">
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.85rem;font-weight:bold;display:block;margin-bottom:6px;">${L==='ar'?'البريد الإلكتروني المستلم (الخاص بك):':'Recipient Email Address:'}</label>
+                    <input type="email" id="repEmailInput" placeholder="name@example.com" class="sbox" style="width:100%;padding:10px;border-radius:8px;box-sizing:border-box;" value="${localStorage.getItem('sp_report_email') || (typeof currentUser !== 'undefined' && currentUser ? currentUser.email : '')}">
+                </div>
+                
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.85rem;font-weight:bold;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                        <input type="checkbox" id="repAutoChk" style="width:18px;height:18px;" ${localStorage.getItem('sp_report_auto') !== 'false' ? 'checked' : ''}>
+                        <span>${L==='ar'?'تفعيل الإرسال التلقائي يومياً عند فتح التطبيق في الخلفية':'Enable automatic daily send when opening app'}</span>
+                    </label>
+                    <p style="font-size:0.75rem;color:var(--tx2);margin-top:4px;padding-right:26px;">
+                        ${L==='ar'?'سيقوم التطبيق بالتحقق مرة واحدة يومياً عند فتحه أو تشغيله وإرسال تقرير المبيعات والتحصيلات تلقائياً في الخلفية بكل أمان.':'The app will check once a day when opened and automatically send sales and collections report in the background.'}
+                    </p>
+                </div>
+                
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.85rem;font-weight:bold;display:block;margin-bottom:6px;">${L==='ar'?'خدمة الإرسال (Sending Service):':'Sending Service:'}</label>
+                    <select id="repServiceSel" class="sbox" style="width:100%;padding:8px;border-radius:8px;" onchange="toggleEmailServiceFields()">
+                        <option value="formsubmit" ${(localStorage.getItem('sp_report_service')||'formsubmit')==='formsubmit'?'selected':''}>FormSubmit.co (${L==='ar'?'الأسهل - إرسال مباشر ومجاني دون إعدادات':'Easiest - Free, No API keys needed'})</option>
+                        <option value="emailjs" ${(localStorage.getItem('sp_report_service')||'formsubmit')==='emailjs'?'selected':''}>EmailJS (${L==='ar'?'احترافي - يتطلب حساب في emailjs.com':'Professional - Requires EmailJS account'})</option>
+                        <option value="webhook" ${(localStorage.getItem('sp_report_service')||'formsubmit')==='webhook'?'selected':''}>Custom Webhook / Google Script (${L==='ar'?'رابط ويب هوك مخصص':'Custom Webhook URL'})</option>
+                    </select>
+                </div>
+
+                <div id="emailjsFields" style="display:${(localStorage.getItem('sp_report_service')||'formsubmit')==='emailjs'?'block':'none'};background:var(--bg);padding:10px;border-radius:8px;margin-bottom:12px;border:1px dashed var(--bd);">
+                    <p style="font-size:0.75rem;color:var(--tx2);margin-bottom:8px;">${L==='ar'?'أدخل بيانات حسابك في EmailJS:':'Enter your EmailJS credentials:'}</p>
+                    <input type="text" id="ejsServiceId" placeholder="Service ID (e.g., service_xxx)" class="sbox" style="width:100%;margin-bottom:8px;padding:8px;box-sizing:border-box;" value="${localStorage.getItem('sp_emailjs_service_id')||''}">
+                    <input type="text" id="ejsTemplateId" placeholder="Template ID (e.g., template_xxx)" class="sbox" style="width:100%;margin-bottom:8px;padding:8px;box-sizing:border-box;" value="${localStorage.getItem('sp_emailjs_template_id')||''}">
+                    <input type="text" id="ejsPublicKey" placeholder="Public Key / User ID (e.g., xxxxxxxx)" class="sbox" style="width:100%;padding:8px;box-sizing:border-box;" value="${localStorage.getItem('sp_emailjs_public_key')||''}">
+                </div>
+
+                <div id="webhookFields" style="display:${(localStorage.getItem('sp_report_service')||'formsubmit')==='webhook'?'block':'none'};background:var(--bg);padding:10px;border-radius:8px;margin-bottom:12px;border:1px dashed var(--bd);">
+                    <p style="font-size:0.75rem;color:var(--tx2);margin-bottom:8px;">${L==='ar'?'رابط الويب هوك أو Google Apps Script:':'Webhook or Google Apps Script URL:'}</p>
+                    <input type="text" id="repWebhookUrl" placeholder="https://script.google.com/macros/s/..." class="sbox" style="width:100%;padding:8px;box-sizing:border-box;" value="${localStorage.getItem('sp_webhook_url')||''}">
+                </div>
+
+                <button class="btn btn-p" onclick="saveEmailReportSettings()" style="width:100%;padding:10px;font-weight:bold;">
+                    💾 ${L==='ar'?'حفظ إعدادات التقرير اليومي':'Save Report Settings'}
+                </button>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-p" onclick="sendDailyReportNow(false)" style="flex:1;min-width:180px;background:#10b981;color:#fff;font-weight:bold;padding:12px;">
+                    🚀 ${L==='ar'?'إرسال تقرير المبيعات والتحصيلات الآن (فوري)':'Send Sales & Collections Report Now'}
+                </button>
+                <button class="btn" onclick="previewDailyReportModal()" style="flex:1;min-width:140px;background:var(--bg3);padding:12px;">
+                    👁️ ${L==='ar'?'معاينة محتوى التقرير':'Preview Report Content'}
+                </button>
+            </div>
+            <div id="emailSendStatus" style="margin-top:12px;font-size:0.85rem;font-weight:bold;text-align:center;"></div>
+        </div>
+
         <div class="card">
             <h3>👤 ${L==='ar'?'الملف الشخصي':'Profile'}</h3>
-            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${currentUser ? currentUser.email : 'Not logged in'}</p>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${typeof currentUser !== 'undefined' && currentUser ? currentUser.email : 'Not logged in'}</p>
             <button class="btn btn-p" onclick="logout()" style="background:var(--rd)">${t('logout')}</button>
         </div>
     `;
@@ -3594,6 +4154,396 @@ window.saveGeminiKey = function() {
     }
 };
 
+window.toggleEmailServiceFields = function() {
+    let sel = document.getElementById('repServiceSel');
+    let ejs = document.getElementById('emailjsFields');
+    let webh = document.getElementById('webhookFields');
+    if (ejs) ejs.style.display = sel && sel.value === 'emailjs' ? 'block' : 'none';
+    if (webh) webh.style.display = sel && sel.value === 'webhook' ? 'block' : 'none';
+};
+
+window.saveEmailReportSettings = function() {
+    let email = (document.getElementById('repEmailInput') ? document.getElementById('repEmailInput').value.trim() : '');
+    let auto = (document.getElementById('repAutoChk') ? document.getElementById('repAutoChk').checked : true);
+    let service = (document.getElementById('repServiceSel') ? document.getElementById('repServiceSel').value : 'formsubmit');
+    
+    if (!email) {
+        if (typeof toast === 'function') toast(typeof L !== 'undefined' && L === 'ar' ? '❌ يرجى إدخال البريد الإلكتروني أولاً' : 'Please enter an email address', 'error');
+        return;
+    }
+    
+    localStorage.setItem('sp_report_email', email);
+    localStorage.setItem('sp_report_auto', auto ? 'true' : 'false');
+    localStorage.setItem('sp_report_service', service);
+    
+    if (service === 'emailjs') {
+        let sid = document.getElementById('ejsServiceId') ? document.getElementById('ejsServiceId').value.trim() : '';
+        let tid = document.getElementById('ejsTemplateId') ? document.getElementById('ejsTemplateId').value.trim() : '';
+        let pkey = document.getElementById('ejsPublicKey') ? document.getElementById('ejsPublicKey').value.trim() : '';
+        localStorage.setItem('sp_emailjs_service_id', sid);
+        localStorage.setItem('sp_emailjs_template_id', tid);
+        localStorage.setItem('sp_emailjs_public_key', pkey);
+    } else if (service === 'webhook') {
+        let wurl = document.getElementById('repWebhookUrl') ? document.getElementById('repWebhookUrl').value.trim() : '';
+        localStorage.setItem('sp_webhook_url', wurl);
+    }
+    
+    if (typeof toast === 'function') toast(typeof L !== 'undefined' && L === 'ar' ? '✅ تم حفظ إعدادات التقرير اليومي بنجاح' : 'Report settings saved successfully', 'success');
+};
+
+window.generateDailyReportData = function() {
+    try {
+        let sList = typeof window.S !== 'undefined' ? window.S : (typeof ld === 'function' ? ld('salesData') || [] : []);
+        let cList = typeof window.C !== 'undefined' ? window.C : (typeof ld === 'function' ? ld('payData') || [] : []);
+        let tList = typeof window.T !== 'undefined' ? window.T : (typeof ld === 'function' ? ld('targetData') || [] : []);
+        
+        let allDates = [];
+        sList.forEach(r => {
+            let d = typeof pd === 'function' ? pd(r['Order Date'] || r['Invoice Date']) : null;
+            if (d && d.length === 10) allDates.push(d);
+        });
+        cList.forEach(r => {
+            let d = typeof pd === 'function' ? pd(r['Date'] || r['Payment Date'] || r['Collection Date'] || r['Order Date']) : null;
+            if (d && d.length === 10) allDates.push(d);
+        });
+        allDates.sort();
+        
+        let todayStr = new Date().toISOString().slice(0, 10);
+        let latestDateStr = allDates.length > 0 ? allDates[allDates.length - 1] : todayStr;
+        
+        let totSales = 0, totProfit = 0, totTarget = 0, totColl = 0, accColl = 0, hwColl = 0;
+        let custMap = {}, itemMap = {};
+        
+        sList.forEach(r => {
+            let sv = typeof getSalesVal === 'function' ? getSalesVal(r) : Number(r['Sales After Discount'] || r['Amount'] || 0);
+            let pv = typeof getProfitVal === 'function' ? getProfitVal(r) : Number(r['Profit'] || 0);
+            totSales += sv;
+            totProfit += pv;
+            
+            let c = r.Customer || r['Customer Name'] || 'عميل غير محدد';
+            if (!custMap[c]) custMap[c] = 0;
+            custMap[c] += sv;
+            
+            let itm = r['Item Description'] || 'صنف غير محدد';
+            if (!itemMap[itm]) itemMap[itm] = 0;
+            itemMap[itm] += sv;
+        });
+        
+        tList.forEach(r => { totTarget += Number(r.Target) || 0; });
+        
+        cList.forEach(r => {
+            let cv = typeof getPayVal === 'function' ? getPayVal(r) : Number(r['Amount'] || r['Collection'] || 0);
+            totColl += cv;
+            let ref = (r['Payment Ref.'] || r['Payment Ref'] || '').toString().trim().toLowerCase();
+            let cat = r['Item Class Name'] || r['Category'] || '';
+            if (ref.startsWith('acc') || (typeof isAcc === 'function' && isAcc(cat))) accColl += cv;
+            else hwColl += cv;
+        });
+        
+        let marginPct = totSales > 0 ? (totProfit / totSales * 100) : 0;
+        let achPct = totTarget > 0 ? (totSales / totTarget * 100) : 0;
+        
+        // Activity for latest recorded date
+        let daySales = 0, dayProfit = 0, dayActiveCusts = {};
+        sList.forEach(r => {
+            let d = typeof pd === 'function' ? pd(r['Order Date'] || r['Invoice Date']) : null;
+            if (d === latestDateStr) {
+                daySales += (typeof getSalesVal === 'function' ? getSalesVal(r) : 0);
+                dayProfit += (typeof getProfitVal === 'function' ? getProfitVal(r) : 0);
+                if (r.Customer) dayActiveCusts[r.Customer] = 1;
+            }
+        });
+        let dayColl = 0;
+        cList.forEach(r => {
+            let d = typeof pd === 'function' ? pd(r['Date'] || r['Payment Date'] || r['Collection Date'] || r['Order Date']) : null;
+            if (d === latestDateStr) {
+                dayColl += (typeof getPayVal === 'function' ? getPayVal(r) : Number(r['Amount'] || 0));
+                if (r['Customer Name'] || r['Customer']) dayActiveCusts[r['Customer Name'] || r['Customer']] = 1;
+            }
+        });
+        
+        let topCusts = Object.entries(custMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        let topCustsText = topCusts.map((c, i) => `${i+1}. ${c[0]} (${typeof fmt==='function'?fmt(c[1]):c[1]} ج.م)`).join(' | ') || 'لا يوجد';
+        
+        let topItems = Object.entries(itemMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        let topItemsText = topItems.map((it, i) => `${i+1}. ${it[0]} (${typeof fmt==='function'?fmt(it[1]):it[1]} ج.م)`).join(' | ') || 'لا يوجد';
+        
+        let recentColls = cList.slice(0, 5).map(r => `${r['Customer Name']||r['Customer']||'عميل'}: ${typeof fmt==='function'?fmt(typeof getPayVal==='function'?getPayVal(r):r['Amount']||0):0} ج.م`).join(' | ') || 'لا يوجد';
+        let totalCustomersCount = Object.keys(custMap).length;
+        let dayActiveCustCount = Object.keys(dayActiveCusts).length;
+        
+        return {
+            todayStr, latestDateStr, totSales, totProfit, totTarget, totColl, accColl, hwColl,
+            marginPct, achPct, daySales, dayProfit, dayColl, dayActiveCustCount,
+            totalCustomersCount, topCustsText, topItemsText, recentCollsText: recentColls,
+            topCusts, topItems, recentCollsArr: cList.slice(0, 5)
+        };
+    } catch(e) {
+        console.error('Error generating report data:', e);
+        return {
+            todayStr: new Date().toISOString().slice(0,10), latestDateStr: 'N/A',
+            totSales: 0, totProfit: 0, totTarget: 0, totColl: 0, accColl: 0, hwColl: 0,
+            marginPct: 0, achPct: 0, daySales: 0, dayProfit: 0, dayColl: 0, dayActiveCustCount: 0,
+            totalCustomersCount: 0, topCustsText: 'لا يوجد', topItemsText: 'لا يوجد', recentCollsText: 'لا يوجد',
+            topCusts: [], topItems: [], recentCollsArr: []
+        };
+    }
+};
+
+window.sendDailyReportNow = function(isAuto = false) {
+    try {
+        let repEmail = localStorage.getItem('sp_report_email') || (typeof currentUser !== 'undefined' && currentUser ? currentUser.email : '');
+        if (!repEmail) {
+            if (!isAuto) {
+                if (typeof toast === 'function') toast(typeof L !== 'undefined' && L === 'ar' ? '❌ يرجى إدخال إيميل استلام التقارير في صفحة الإعدادات أولاً' : 'Please enter recipient email in Settings first', 'error');
+                if (typeof P !== 'undefined' && P !== 'settings') {
+                    if (confirm(typeof L !== 'undefined' && L === 'ar' ? 'لم تقم بإدخال بريدك الإلكتروني لاستلام التقرير اليومي. هل تود الانتقال لصفحة الإعدادات الآن؟' : 'No email set for daily reports. Go to Settings now?')) {
+                        P = 'settings';
+                        if (typeof buildNav === 'function') buildNav();
+                        if (typeof render === 'function') render();
+                    }
+                }
+            }
+            return;
+        }
+
+        let statusEl = document.getElementById('emailSendStatus');
+        if (!isAuto && statusEl) {
+            statusEl.innerHTML = `<span style="color:var(--am);">⏳ ${typeof L !== 'undefined' && L === 'ar' ? 'جاري إعداد وإرسال التقرير اليومي إلى' : 'Sending daily report to'} ${repEmail}...</span>`;
+        }
+        if (!isAuto && typeof toast === 'function') toast(typeof L !== 'undefined' && L === 'ar' ? '⏳ جاري إرسال التقرير إلى بريدك...' : 'Sending report...', 'info');
+
+        let data = window.generateDailyReportData();
+        let service = localStorage.getItem('sp_report_service') || 'formsubmit';
+        
+        let subject = `📊 تقرير Sales Pro اليومي الشامل - ${data.todayStr}`;
+        let fFunc = typeof fmt === 'function' ? fmt : (n) => n;
+        let pFunc = typeof pc === 'function' ? pc : (n) => n + '%';
+        
+        let payload = {
+            "_subject": subject,
+            "_template": "table",
+            "📅 تاريخ التقرير": data.todayStr,
+            "🕒 أحدث نشاط مسجل في النظام": data.latestDateStr,
+            "💰 إجمالي المبيعات الشامل": `${fFunc(data.totSales)} ج.م`,
+            "💵 إجمالي الأرباح": `${fFunc(data.totProfit)} ج.م (هامش ربح: ${pFunc(data.marginPct)})`,
+            "🎯 التارجت الإجمالي ونسبة التحقيق": `${fFunc(data.totTarget)} ج.م (${pFunc(data.achPct)})`,
+            "🪙 إجمالي التحصيلات": `${fFunc(data.totColl)} ج.م (إكسسوارات: ${fFunc(data.accColl)} | هاردوير: ${fFunc(data.hwColl)})`,
+            "👥 عدد العملاء الإجمالي": `${data.totalCustomersCount} عميل (نشط في آخر نشاط: ${data.dayActiveCustCount})`,
+            "📈 مبيعات اليوم / النشاط الأخير": `${fFunc(data.daySales)} ج.م (أرباح: ${fFunc(data.dayProfit)} ج.م)`,
+            "💵 تحصيلات اليوم / النشاط الأخير": `${fFunc(data.dayColl)} ج.م`,
+            "🏆 أفضل العملاء مبيعاً": data.topCustsText,
+            "📦 أكثر الأصناف مبيعاً": data.topItemsText,
+            "💰 أحدث عمليات التحصيل": data.recentCollsText,
+            "ℹ️ نظام الإرسال": "تم إنشاء وإرسال هذا التقرير تلقائياً من تطبيق Sales Pro Enterprise"
+        };
+
+        if (service === 'formsubmit') {
+            fetch('https://formsubmit.co/ajax/' + encodeURIComponent(repEmail), {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json' 
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(resData => {
+                console.log('[Daily Report Sent]:', resData);
+                localStorage.setItem('sp_report_last_sent_date', data.todayStr);
+                if (!isAuto) {
+                    if (statusEl) statusEl.innerHTML = `<span style="color:var(--ok);">✅ ${typeof L !== 'undefined' && L === 'ar' ? 'تم إرسال التقرير بنجاح إلى' : 'Report sent successfully to'} <strong>${repEmail}</strong>! <br><small style="color:var(--tx2);">(ملاحظة: إذا كان هذا أول إرسال، يرجى فحص صندوق الوارد أو Spam وتفعيل الرابط المرسل من FormSubmit مرة واحدة)</small></span>`;
+                    if (typeof toast === 'function') toast(typeof L !== 'undefined' && L === 'ar' ? '✅ تم إرسال التقرير بنجاح إلى إيميلك' : 'Report sent successfully', 'success');
+                } else {
+                    if (typeof toast === 'function') toast(typeof L !== 'undefined' && L === 'ar' ? '📧 تم إرسال تقرير المبيعات والتحصيلات اليومي إلى إيميلك' : 'Automated daily report sent to email', 'success');
+                }
+            })
+            .catch(err => {
+                console.error('[Daily Report Error]:', err);
+                if (!isAuto) {
+                    if (statusEl) statusEl.innerHTML = `<span style="color:var(--rd);">❌ ${typeof L !== 'undefined' && L === 'ar' ? 'حدث خطأ أثناء الإرسال:' : 'Error sending report:'} ${err.message}</span>`;
+                    if (typeof toast === 'function') toast(typeof L !== 'undefined' && L === 'ar' ? '❌ حدث خطأ في إرسال التقرير' : 'Error sending report', 'error');
+                }
+            });
+        } else if (service === 'emailjs') {
+            let sid = localStorage.getItem('sp_emailjs_service_id');
+            let tid = localStorage.getItem('sp_emailjs_template_id');
+            let pkey = localStorage.getItem('sp_emailjs_public_key');
+            if (!sid || !tid || !pkey) {
+                if (!isAuto && typeof toast === 'function') toast(typeof L !== 'undefined' && L === 'ar' ? '❌ يرجى إدخال بيانات EmailJS في الإعدادات' : 'Please enter EmailJS credentials in Settings', 'error');
+                return;
+            }
+            fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    service_id: sid,
+                    template_id: tid,
+                    user_id: pkey,
+                    template_params: {
+                        to_email: repEmail,
+                        subject: subject,
+                        report_date: data.todayStr,
+                        latest_date: data.latestDateStr,
+                        total_sales: fFunc(data.totSales),
+                        total_profit: fFunc(data.totProfit),
+                        margin_pct: pFunc(data.marginPct),
+                        target_achieved: pFunc(data.achPct),
+                        total_collections: fFunc(data.totColl),
+                        active_customers: data.dayActiveCustCount,
+                        top_customers: data.topCustsText,
+                        top_items: data.topItemsText,
+                        message: `تقرير Sales Pro لليوم ${data.todayStr}: إجمالي المبيعات ${fFunc(data.totSales)} ج.م | إجمالي التحصيلات ${fFunc(data.totColl)} ج.م | تحقيق التارجت ${pFunc(data.achPct)}`
+                    }
+                })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('EmailJS HTTP status ' + res.status);
+                localStorage.setItem('sp_report_last_sent_date', data.todayStr);
+                if (!isAuto) {
+                    if (statusEl) statusEl.innerHTML = `<span style="color:var(--ok);">✅ تم إرسال التقرير بنجاح عبر EmailJS إلى ${repEmail}</span>`;
+                    if (typeof toast === 'function') toast('✅ تم إرسال التقرير عبر EmailJS بنجاح', 'success');
+                } else {
+                    if (typeof toast === 'function') toast('📧 تم إرسال التقرير التلقائي عبر EmailJS', 'success');
+                }
+            })
+            .catch(err => {
+                console.error('[EmailJS Error]:', err);
+                if (!isAuto && typeof toast === 'function') toast('❌ خطأ في إرسال EmailJS: ' + err.message, 'error');
+            });
+        } else if (service === 'webhook') {
+            let wurl = localStorage.getItem('sp_webhook_url');
+            if (!wurl) {
+                if (!isAuto && typeof toast === 'function') toast('❌ يرجى إدخال رابط الويب هوك في الإعدادات', 'error');
+                return;
+            }
+            fetch(wurl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: repEmail, reportData: data, timestamp: new Date().toISOString() })
+            })
+            .then(res => {
+                localStorage.setItem('sp_report_last_sent_date', data.todayStr);
+                if (!isAuto) {
+                    if (statusEl) statusEl.innerHTML = `<span style="color:var(--ok);">✅ تم إرسال التقرير بنجاح عبر الويب هوك</span>`;
+                    if (typeof toast === 'function') toast('✅ تم إرسال التقرير عبر الويب هوك بنجاح', 'success');
+                }
+            })
+            .catch(err => {
+                console.error('[Webhook Error]:', err);
+                if (!isAuto && typeof toast === 'function') toast('❌ خطأ في إرسال الويب هوك', 'error');
+            });
+        }
+    } catch(err) {
+        console.error('[sendDailyReportNow Exception]:', err);
+    }
+};
+
+window.previewDailyReportModal = function() {
+    let data = window.generateDailyReportData();
+    let fFunc = typeof fmt === 'function' ? fmt : (n) => n;
+    let pFunc = typeof pc === 'function' ? pc : (n) => n + '%';
+    
+    let topCustRows = (data.topCusts || []).map((c, i) => `<tr><td style="padding:6px;border-bottom:1px solid #334155;">#${i+1}</td><td style="padding:6px;border-bottom:1px solid #334155;">${c[0]}</td><td style="padding:6px;border-bottom:1px solid #334155;color:#60a5fa;font-weight:bold;">${fFunc(c[1])} ج.م</td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center;padding:10px;">لا يوجد بيانات</td></tr>';
+    let topItemRows = (data.topItems || []).map((it, i) => `<tr><td style="padding:6px;border-bottom:1px solid #334155;">#${i+1}</td><td style="padding:6px;border-bottom:1px solid #334155;">${it[0]}</td><td style="padding:6px;border-bottom:1px solid #334155;color:#34d399;font-weight:bold;">${fFunc(it[1])} ج.م</td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center;padding:10px;">لا يوجد بيانات</td></tr>';
+    
+    let htmlContent = `
+    <div id="REP_MODAL" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;">
+        <div style="background:#0f172a;color:#f8fafc;width:100%;max-width:650px;max-height:90vh;border-radius:16px;border:1px solid #334155;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,0.5);direction:rtl;text-align:right;">
+            <div style="padding:16px 20px;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;background:#1e293b;">
+                <h3 style="margin:0;font-size:1.1rem;color:#60a5fa;display:flex;align-items:center;gap:8px;">👁️ معاينة التقرير اليومي الشامل</h3>
+                <button onclick="closePreviewReportModal()" style="background:transparent;border:none;color:#94a3b8;font-size:1.5rem;cursor:pointer;">✖</button>
+            </div>
+            <div style="padding:20px;overflow-y:auto;flex:1;font-size:0.9rem;">
+                <div style="background:#1e293b;padding:12px 16px;border-radius:10px;margin-bottom:16px;border-right:4px solid #3b82f6;">
+                    <strong>📅 تاريخ اليوم:</strong> ${data.todayStr} | <strong>🕒 أحدث نشاط مسجل:</strong> ${data.latestDateStr}
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+                    <div style="background:#1e293b;padding:12px;border-radius:10px;border:1px solid #334155;text-align:center;">
+                        <span style="font-size:0.75rem;color:#94a3b8;">💰 إجمالي المبيعات الشامل</span>
+                        <div style="font-size:1.3rem;font-weight:bold;color:#60a5fa;margin-top:4px;">${fFunc(data.totSales)} ج.م</div>
+                        <span style="font-size:0.75rem;color:#cbd5e1;">نشاط اليوم/الأخير: ${fFunc(data.daySales)} ج.م</span>
+                    </div>
+                    <div style="background:#1e293b;padding:12px;border-radius:10px;border:1px solid #334155;text-align:center;">
+                        <span style="font-size:0.75rem;color:#94a3b8;">💵 إجمالي الأرباح</span>
+                        <div style="font-size:1.3rem;font-weight:bold;color:#34d399;margin-top:4px;">${fFunc(data.totProfit)} ج.م</div>
+                        <span style="font-size:0.75rem;color:#cbd5e1;">هامش: ${pFunc(data.marginPct)}</span>
+                    </div>
+                    <div style="background:#1e293b;padding:12px;border-radius:10px;border:1px solid #334155;text-align:center;">
+                        <span style="font-size:0.75rem;color:#94a3b8;">🎯 التارجت ونسبة التحقيق</span>
+                        <div style="font-size:1.3rem;font-weight:bold;color:#fbbf24;margin-top:4px;">${pFunc(data.achPct)}</div>
+                        <span style="font-size:0.75rem;color:#cbd5e1;">الهدف: ${fFunc(data.totTarget)} ج.م</span>
+                    </div>
+                    <div style="background:#1e293b;padding:12px;border-radius:10px;border:1px solid #334155;text-align:center;">
+                        <span style="font-size:0.75rem;color:#94a3b8;">🪙 إجمالي التحصيلات</span>
+                        <div style="font-size:1.3rem;font-weight:bold;color:#a78bfa;margin-top:4px;">${fFunc(data.totColl)} ج.م</div>
+                        <span style="font-size:0.75rem;color:#cbd5e1;">إكسسوار: ${fFunc(data.accColl)} | هارد: ${fFunc(data.hwColl)}</span>
+                    </div>
+                </div>
+                <div style="background:#1e293b;padding:14px;border-radius:10px;margin-bottom:14px;border:1px solid #334155;">
+                    <h4 style="margin:0 0 10px;color:#f8fafc;font-size:0.95rem;border-bottom:1px solid #334155;padding-bottom:6px;">🏆 أفضل العملاء مبيعاً</h4>
+                    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                        <tr style="color:#94a3b8;text-align:right;"><th style="padding:6px;">#</th><th style="padding:6px;">العميل</th><th style="padding:6px;">المبيعات</th></tr>
+                        ${topCustRows}
+                    </table>
+                </div>
+                <div style="background:#1e293b;padding:14px;border-radius:10px;border:1px solid #334155;">
+                    <h4 style="margin:0 0 10px;color:#f8fafc;font-size:0.95rem;border-bottom:1px solid #334155;padding-bottom:6px;">📦 أكثر الأصناف مبيعاً</h4>
+                    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                        <tr style="color:#94a3b8;text-align:right;"><th style="padding:6px;">#</th><th style="padding:6px;">الصنف</th><th style="padding:6px;">المبيعات</th></tr>
+                        ${topItemRows}
+                    </table>
+                </div>
+            </div>
+            <div style="padding:14px 20px;border-top:1px solid #334155;background:#1e293b;display:flex;gap:10px;justify-content:flex-end;">
+                <button onclick="closePreviewReportModal(); sendDailyReportNow(false);" class="btn btn-p" style="background:#10b981;color:#fff;padding:8px 16px;font-weight:bold;">🚀 إرسال للإيميل الآن</button>
+                <button onclick="closePreviewReportModal()" class="btn" style="background:#334155;color:#f8fafc;padding:8px 16px;">✖ إغلاق</button>
+            </div>
+        </div>
+    </div>`;
+    
+    let el = document.createElement('div');
+    el.innerHTML = htmlContent;
+    document.body.appendChild(el.firstElementChild);
+};
+
+window.closePreviewReportModal = function() {
+    let m = document.getElementById('REP_MODAL');
+    if (m) m.remove();
+};
+
+window.checkAndSendDailyReport = function() {
+    try {
+        let isAuto = localStorage.getItem('sp_report_auto') !== 'false';
+        if (!isAuto) return;
+        
+        let repEmail = localStorage.getItem('sp_report_email') || (typeof currentUser !== 'undefined' && currentUser ? currentUser.email : '');
+        if (!repEmail) return;
+        
+        let todayStr = new Date().toISOString().slice(0, 10);
+        let lastSent = localStorage.getItem('sp_report_last_sent_date');
+        
+        if (lastSent === todayStr) {
+            console.log('[Daily Report]: Already sent for today (' + todayStr + ')');
+            return;
+        }
+        
+        console.log('[Daily Report]: Automatic trigger checking in for today (' + todayStr + ')...');
+        // Small check to avoid sending if sales list is empty or still initializing
+        let sList = typeof window.S !== 'undefined' ? window.S : [];
+        let cList = typeof window.C !== 'undefined' ? window.C : [];
+        if (sList.length === 0 && cList.length === 0) {
+            console.log('[Daily Report]: Waiting for data before sending...');
+            return;
+        }
+        
+        window.sendDailyReportNow(true);
+    } catch(err) {
+        console.error('[checkAndSendDailyReport Error]:', err);
+    }
+};
+
+
 </script>
 <script>
 // js/app.js
@@ -3621,27 +4571,27 @@ const getImg = (name) => `<img src="${F_URL}${name}" style="width:1.4em;height:1
 
 const ICONS = {
     dash: getImg('Bar%20chart/3D/bar_chart_3d.png'),
-    sales: getImg('Receipt/3D/receipt_3d.png'),
+    sales: getImg('Chart%20increasing/3D/chart_increasing_3d.png'),
     targets: getImg('Bullseye/3D/bullseye_3d.png'),
-    personal: getImg('Handshake/3D/handshake_3d.png'),
-    customers: getImg('Department%20store/3D/department_store_3d.png'),
-    brands: getImg('Package/3D/package_3d.png'),
+    personal: getImg('Man%20office%20worker/3D/man_office_worker_3d.png'),
+    customers: getImg('Busts%20in%20silhouette/3D/busts_in_silhouette_3d.png'),
+    brands: getImg('Label/3D/label_3d.png'),
     accessories: getImg('Headphone/3D/headphone_3d.png'),
-    hardware: getImg('Mobile%20phone/3D/mobile_phone_3d.png'),
-    analytics: getImg('Chart%20increasing/3D/chart_increasing_3d.png'),
-    potential: getImg('Rocket/3D/rocket_3d.png'),
+    hardware: getImg('Laptop/3D/laptop_3d.png'),
+    analytics: getImg('Chart%20decreasing/3D/chart_decreasing_3d.png'),
+    potential: getImg('Star/3D/star_3d.png'),
     profit: getImg('Money%20bag/3D/money_bag_3d.png'),
     keyacc: getImg('Crown/3D/crown_3d.png'),
     dormant: getImg('Sleeping%20face/3D/sleeping_face_3d.png'),
-    prospects: getImg('Magnifying%20glass%20tilted%20left/3D/magnifying_glass_tilted_left_3d.png'),
+    prospects: getImg('Magnifying%20glass%20tilted%20right/3D/magnifying_glass_tilted_right_3d.png'),
     ai: getImg('Robot/3D/robot_3d.png'),
     alerts: getImg('Bell/3D/bell_3d.png'),
     account: getImg('Bust%20in%20silhouette/3D/bust_in_silhouette_3d.png'),
     backup: getImg('Floppy%20disk/3D/floppy_disk_3d.png'),
-    setup: getImg('File%20folder/3D/file_folder_3d.png'),
+    setup: getImg('Gear/3D/gear_3d.png'),
     reset: getImg('Wastebasket/3D/wastebasket_3d.png'),
-    settings: getImg('Gear/3D/gear_3d.png'),
-    collections: getImg('Money%20with%20wings/3D/money_with_wings_3d.png')
+    settings: getImg('Artist%20palette/3D/artist_palette_3d.png'),
+    collections: getImg('Coin/3D/coin_3d.png')
 };
 
 function buildNav() {
@@ -3726,6 +4676,9 @@ function init() {
     
     buildNav();
     render();
+    setTimeout(function() {
+        if (typeof window.checkAndSendDailyReport === 'function') window.checkAndSendDailyReport();
+    }, 4000);
 }
 
 function initAnm() {
@@ -3742,86 +4695,6 @@ function initAnm() {
     });
 }
 
-
-/* =========================================================
-   ENTERPRISE ROYAL PAGE HERO BANNER & UI UPGRADE
-========================================================= */
-function upgradePageHeader(pageKey) {
-    let ph = document.querySelector('#M .ph');
-    if (!ph || ph.classList.contains('ph-upgraded')) return;
-    ph.classList.add('ph-upgraded');
-
-    const subtitles = {
-        dash: { ar: 'لوحة القيادة الرئيسية ومتابعة الأداء اللحظي والمؤشرات البيعية للشركة.', en: 'Main dashboard & real-time analytics overview.' },
-        sales: { ar: 'سجل فواتير المبيعات اليومية، الخصومات، وصافي القيمة لكل عميل.', en: 'Daily sales invoices, discounts, and net customer billing.' },
-        targets: { ar: 'متابعة نسب إنجاز المستهدف البيعي ومستهدف الربحية لكل مندوب وقسم.', en: 'Monthly sales & profit target achievement tracking.' },
-        personal: { ar: 'تحليل أداء فريق العمل ومقارنة مبيعات الأفراد بالتارجت المطلوب.', en: 'Team performance analysis and individual target comparison.' },
-        customers: { ar: 'قاعدة بيانات العملاء، تصنيف المتاجر، ومتابعة الأرصدة والتحصيلات النقدية.', en: 'Customer database, store classification, and balance tracking.' },
-        brands: { ar: 'تحليل أداء المنتجات والعلامات التجارية الأكثر مبيعاً وربحية.', en: 'Brand performance analysis and top-selling products.' },
-        accessories: { ar: 'متابعة مبيعات وحركة أصناف قسم الاكسسوارات والإيرادات اليومية.', en: 'Accessories department sales and inventory turnover.' },
-        hardware: { ar: 'متابعة مبيعات وحركة أصناف قسم الهواتف والأجهزة الذكية.', en: 'Hardware and mobile phones sales tracking.' },
-        collections: { ar: 'سجل الدفعات النقدية والتحصيلات المستلمة من العملاء والشركاء.', en: 'Daily cash collections and payment receipts log.' },
-        analytics: { ar: 'دراسات بيعية معقمة ومؤشرات نمو المبيعات والأرباح على مدار العام.', en: 'Advanced sales analytics and annual growth metrics.' },
-        potential: { ar: 'اكتشاف العملاء ذوي معدلات الشراء المرتفعة لفرص زيادة المبيعات.', en: 'High-potential clients and upselling opportunities.' },
-        profit: { ar: 'تقرير هامش الربح وصافي الأرباح التراكمية لكل منتج وعميل.', en: 'Profit margin reports and net cumulative profit analysis.' },
-        keyacc: { ar: 'قائمة نخبة العملاء وكبار الشركاء التجاريين ذوي الأهمية القصوى.', en: 'VIP key accounts and major commercial partners.' },
-        dormant: { ar: 'تنبيهات بالعملاء الذين توقفوا عن الشراء مؤخراً لإعادة تنشيطهم.', en: 'Dormant client alerts and reactivation tracking.' },
-        prospects: { ar: 'إدارة فرص المبيعات الجديدة والعملاء المحتمل التعاقد معهم.', en: 'New prospects and leads pipeline management.' },
-        ai: { ar: 'تحليلات وتوصيات ذكية بالذكاء الاصطناعي لتطوير أداء مبيعاتك.', en: 'AI-driven insights and strategic sales recommendations.' },
-        alerts: { ar: 'إشعارات الفواتير المتأخرة ومستحقات الدفع الحرجة للعملاء.', en: 'Overdue invoices and critical payment alerts.' },
-        account: { ar: 'إدارة الحساب الشخصي، الصلاحيات، وبيانات المندوب والتواصل.', en: 'Personal account management and permissions.' },
-        backup: { ar: 'حفظ واسترجاع نسخة أمان من قاعدة بياناتك محلياً وعبر السحابة (التلقائي كل 15 دقيقة).', en: 'Local and cloud database backup & restore.' },
-        setup: { ar: 'تجهيز وربط ملفات إكسيل وإعدادات الاتصال السحابي للشركة.', en: 'Excel file integration and cloud setup.' },
-        reset: { ar: 'إدارة مسح أو إعادة ضبط البيانات المحلية المؤقتة لتنظيف الذاكرة.', en: 'Local data reset and cache clearance.' },
-        settings: { ar: 'تخصيص ألوان التطبيق، والواجهة، وإعدادات المزامنة المتقدمة.', en: 'Theme customization and system preferences.' }
-    };
-
-    let desc = subtitles[pageKey] ? (subtitles[pageKey][typeof L !== 'undefined' ? L : 'ar'] || subtitles[pageKey].ar) : '';
-    let icon = (typeof ICONS !== 'undefined' && ICONS[pageKey]) ? ICONS[pageKey] : '📌';
-
-    let h1 = ph.querySelector('h1');
-    let titleText = h1 ? (h1.innerText || h1.textContent) : (typeof t === 'function' ? t(pageKey) : pageKey);
-    if (titleText) { titleText = titleText.replace(/^.*?([a-zA-Z\u0600-\u06FF])/,'$1').trim(); }
-    if (!titleText) titleText = (typeof t === 'function' ? t(pageKey) : pageKey);
-
-    let actions = [];
-    Array.from(ph.children).forEach(ch => {
-        if (ch.tagName !== 'H1' && ch.tagName !== 'P' && !ch.classList.contains('ph-desc')) {
-            actions.push(ch);
-        }
-    });
-
-    ph.innerHTML = `
-        <div class="ph-hero-main" style="display:flex;align-items:center;gap:20px;flex:1;min-width:280px;">
-            <div class="ph-hero-icon" style="width:68px;height:68px;border-radius:20px;background:linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.03));border:1px solid rgba(255,255,255,0.22);box-shadow:0 10px 28px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;padding:12px;flex-shrink:0;transition:all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);">
-                <span style="font-size:2.4rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
-                    ${icon}
-                </span>
-            </div>
-            <div class="ph-hero-text" style="display:flex;flex-direction:column;gap:6px;">
-                <h1 style="font-size:1.85rem;font-weight:900;color:#ffffff;margin:0;letter-spacing:-0.02em;text-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;align-items:center;gap:14px;">
-                    ${titleText}
-                </h1>
-                ${desc ? `<p class="ph-desc" style="font-size:0.95rem;color:#cbd5e1;margin:0;font-weight:600;line-height:1.6;opacity:0.95;">${desc}</p>` : ''}
-            </div>
-        </div>
-        <div class="ph-banner-actions" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-left:auto;">
-        </div>
-    `;
-
-    let actionsWrap = ph.querySelector('.ph-banner-actions');
-    actions.forEach(act => actionsWrap.appendChild(act));
-
-    let img = ph.querySelector('.ph-hero-icon img');
-    if (img) {
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'contain';
-        img.style.filter = 'drop-shadow(0 6px 14px rgba(0,0,0,0.45))';
-        img.style.transform = 'scale(1.2)';
-    }
-}
-
 function render() {
     let fn = {
         dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
@@ -3831,8 +4704,8 @@ function render() {
         account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
     };
     if (fn[P]) fn[P]();
-    if (typeof upgradePageHeader === 'function') upgradePageHeader(P);
     initAnm();
+    if (typeof window.enhanceUI === 'function') setTimeout(window.enhanceUI, 50);
 }
 
 window.TUI = function(enStr) {
@@ -4099,9 +4972,25 @@ window.restoreFromGoogleDrive = function() {
 };
 
 window.cloudAutoSave = function() {
-    // Disable automatic background sync for Google Drive because it requires OAuth consent popup
-    // We only want manual sync for Google Drive.
+    if (typeof window.backupToGoogleDrive === 'function') {
+        if (window.gapi && gapi.client && gapi.client.getToken() !== null) {
+            window.backupToGoogleDrive();
+        }
+    }
 };
+
+// Automatic backup to Google Drive every 15 minutes (900,000 ms)
+setInterval(() => {
+    console.log("🕒 Running 15-minute automatic backup to Google Drive...");
+    if (typeof window.backupToGoogleDrive === 'function') {
+        if (window.gapi && gapi.client && gapi.client.getToken() !== null) {
+            window.backupToGoogleDrive();
+        } else if (typeof window.syncUI === 'function') {
+            console.log("Google Drive token not active in background; synced with Firebase Cloud.");
+        }
+    }
+}, 15 * 60 * 1000);
+
 
 window.getCloudInfo = async function() {
     let lastS = localStorage.getItem('last_gdrive_sync');
@@ -4130,46 +5019,5 @@ window.getCloudInfo = async function() {
     }, 800);
   });
 </script>
-
-<script>
-// Auto-Backup to Google Drive every 15 minutes
-window.addEventListener('load', function() {
-    // OS Startup Sequence
-    let prog = document.getElementById('osStartProgress');
-    let stat = document.getElementById('osStartStatus');
-    let over = document.getElementById('osStartupOverlay');
-    if (over) {
-        setTimeout(() => {
-            if(prog) prog.style.width = '40%';
-            if(stat) stat.textContent = 'جاري مزامنة قاعدة بيانات العملاء والمبيعات...';
-        }, 350);
-        
-        setTimeout(() => {
-            if(prog) prog.style.width = '85%';
-            if(stat) stat.textContent = 'تجهيز واجهة المبيعات والأيقونات الذكية...';
-        }, 800);
-        
-        setTimeout(() => {
-            if(prog) prog.style.width = '100%';
-            if(stat) stat.textContent = '✅ تم التشغيل بنجاح!';
-        }, 1200);
-        
-        setTimeout(() => {
-            over.style.opacity = '0';
-            over.style.transform = 'scale(1.08)';
-            setTimeout(() => { over.style.display = 'none'; }, 700);
-        }, 1500);
-    }
-
-    // Google Drive Auto-Backup Interval (Every 15 mins = 900,000 ms)
-    setInterval(() => {
-        if (typeof saveToGoogleDrive === 'function' && localStorage.getItem('gdrive_client_id') && localStorage.getItem('gdrive_api_key')) {
-            console.log('[Auto-Backup]: Starting 15-min Google Drive backup...');
-            saveToGoogleDrive(true);
-        }
-    }, 900000);
-});
-</script>
-
 </body>
 </html>
