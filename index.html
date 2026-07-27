@@ -513,14 +513,14 @@ html[dir="ltr"] .input-wrap input#inP {
 .ni {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  margin: 2px 0;
-  font-size: 0.75rem;
-  font-weight: 600;
+  gap: 14px;
+  padding: 12px 14px;
+  margin: 4px 0;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: var(--tx2);
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 12px;
   transition: all 0.2s ease;
 }
 
@@ -538,14 +538,19 @@ html[dir="ltr"] .input-wrap input#inP {
 
 .ni.on .ic {
   opacity: 1;
+  transform: scale(1.1);
 }
 
 .ni .ic {
-  font-size: 0.85rem;
-  width: 22px;
+  font-size: 1.35rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  opacity: 1;
+  transition: all 0.2s;
 }
 
 /* SVG icon sizing in nav */
@@ -594,7 +599,8 @@ body.en .ni:hover {
 }
 
 .bi .bic {
-  font-size: 1.2rem;
+  font-size: 1.6rem;
+  opacity: 1;
   transition: transform 0.2s;
 }
 
@@ -1479,60 +1485,7 @@ tr:hover {
     background: var(--acl) !important;
 }
 
-.todo-float-btn {
-    position: fixed;
-    bottom: 24px; left: 24px;
-    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-    color: #fff;
-    width: 58px;
-    height: 58px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.7rem;
-    box-shadow: 0 8px 24px rgba(108, 92, 231, 0.45);
-    cursor: pointer;
-    z-index: 9000;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
-}
-.todo-float-btn:hover {
-    transform: scale(1.12) rotate(10deg);
-    box-shadow: 0 12px 30px rgba(108, 92, 231, 0.65);
-}
-.todo-drawer {
-    position: fixed;
-    top: 0;
-    right: -390px;
-    width: 350px;
-    max-width: 90%;
-    height: 100%;
-    background: var(--bg);
-    border-left: 1px solid var(--bd);
-    box-shadow: -10px 0 40px rgba(0,0,0,0.25);
-    z-index: 99999;
-    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex;
-    flex-direction: column;
-    padding: 24px;
-    color: var(--tx1);
-}
-body.en .todo-drawer { right: auto; left: -390px; border-left: none; border-right: 1px solid var(--bd); }
-.todo-drawer.open { right: 0; }
-body.en .todo-drawer.open { left: 0; right: auto; }
-.todo-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 99990;
-    display: none;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-}
-.todo-overlay.open { display: block; }
+
 .todo-item {
     display: flex;
     align-items: center;
@@ -1724,21 +1677,6 @@ html[dir="rtl"] .ph::before {
 </div>
 
 
-  <!-- Floating To-Do Button & Drawer (Enterprise V8 Static Sibling) -->
-  <div class="todo-float-btn" id="todoFloatBtn" onclick="toggleTodoDrawer()" title="Ù…ÙÙƒØ±Ø© Ø§Ù„Ù…Ù‡Ø§Ù… Ø§Ù„Ø³Ø±ÙŠØ¹Ø©">ðŸ“Œ</div>
-  <div class="todo-overlay" id="todoOverlay" onclick="toggleTodoDrawer()"></div>
-  <div class="todo-drawer" id="todoDrawer">
-    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);padding-bottom:15px;margin-bottom:15px;">
-      <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:1.1rem;">ðŸ“Œ Ù…ÙÙƒØ±Ø© Ø§Ù„Ù…Ù‡Ø§Ù… Ø§Ù„Ø³Ø±ÙŠØ¹Ø©</h3>
-      <span onclick="toggleTodoDrawer()" style="cursor:pointer;font-size:1.4rem;color:var(--tx2);padding:0 8px;">âœ–</span>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <input type="text" id="newTodoInput" placeholder="Ø£Ø¶Ù Ù…Ù‡Ù…Ø© Ø¬Ø¯ÙŠØ¯Ø©..." style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx1);outline:none;font-size:0.9rem;">
-      <button onclick="addTodoItem()" class="btn btn-p" style="padding:0 18px;border-radius:10px;font-size:1.2rem;">+</button>
-    </div>
-    <div id="todoListContainer" style="flex:1;overflow-y:auto;"></div>
-  </div>
-
   <!-- Print Invoice Modal (Enterprise V8 Static Sibling) -->
   <div class="print-modal" id="printInvoiceModal">
     <div class="print-modal-content" id="printModalContent"></div>
@@ -1826,7 +1764,7 @@ const I = {
     collections:{ar:'التحصيلات',en:'Collections'},dash:{ar:'لوحة التحكم',en:'Dashboard'},
     sales:{ar:'المبيعات',en:'Sales'},targets:{ar:'تارجت العميل',en:'Targets'},
     personal:{ar:'التارجت الشخصي',en:'Personal'},customers:{ar:'العملاء',en:'Customers'},
-    brands:{ar:'البراندات',en:'Brands'},analytics:{ar:'تحليلات',en:'Analytics'},
+    todo:{ar:'مفكرة المهام',en:'To-Do Tasks'},brands:{ar:'البراندات',en:'Brands'},analytics:{ar:'تحليلات',en:'Analytics'},
     potential:{ar:'فرص التحقيق',en:'Opportunities'},profit:{ar:'هامش الربح',en:'Profit'},
     accessories:{ar:'الأكسسوارات',en:'Accessories'},hardware:{ar:'الهاردوير',en:'Hardware'},
     keyacc:{ar:'المميزين',en:'Key Accounts'},dormant:{ar:'الخاملين',en:'Dormant'},
@@ -3740,42 +3678,65 @@ function rSetup() {
    ENTERPRISE V8 CRASH-PROOF ENHANCEMENTS (SAFE STATIC HELPERS)
    ========================================================================== */
 
-// 1. Floating To-Do Drawer Logic
-window.initTodoUI = function() {
-    let container = document.getElementById('todoListContainer');
-    if(!container) return;
+// 1. Full-Page To-Do / Tasks Tab (Enterprise V8)
+window.rTodo = function() {
     let todos = [];
     try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    
+    let html = `<div class="ph">
+        <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.todo || '📋'}</span> ${t('todo')}</h1>
+    </div>
+    
+    <div class="card" style="max-width:850px;margin:0 auto 24px;padding:28px;background:var(--bg2);border-radius:16px;box-shadow:0 6px 16px rgba(0,0,0,0.06);border:1px solid var(--bd);">
+        <div style="display:flex;gap:12px;margin-bottom:28px;">
+            <input type="text" id="newTodoInput" class="inp" placeholder="${L==='ar'?'أدخل مهمة جديدة هنا (مثال: متابعة تحصيل العميل إسلام)...':'Enter new task here...'}" style="flex:1;padding:14px 18px;font-size:1.05rem;border-radius:12px;border:1px solid var(--bd);background:var(--bg1);color:var(--tx1);" onkeydown="if(event.key==='Enter') addTodoItem()">
+            <button class="btn btn-p" onclick="addTodoItem()" style="padding:0 28px;font-size:1.05rem;font-weight:bold;border-radius:12px;display:flex;align-items:center;gap:8px;background:var(--ac);color:#fff;cursor:pointer;">
+                <span style="font-size:1.4rem;">+</span> ${L==='ar'?'إضافة مهمة':'Add Task'}
+            </button>
+        </div>
+        
+        <div id="todoListContainer" style="display:flex;flex-direction:column;gap:14px;">`;
+        
     if(todos.length === 0) {
-        container.innerHTML = '<p style="text-align:center;color:var(--tx2);margin-top:40px;">' + (L === 'ar' ? 'لا توجد مهام حالياً. أضف مهمة جديدة!' : 'No tasks yet. Add a new task!') + '</p>';
-        return;
+        html += `<div style="text-align:center;padding:56px 20px;background:var(--bg1);border-radius:14px;border:1px dashed var(--bd-s);">
+            <div style="font-size:3.5rem;margin-bottom:14px;">🎉</div>
+            <h3 style="margin:0;color:var(--tx1);font-size:1.3rem;">${L==='ar'?'لا توجد مهام معلقة حالياً!':'No pending tasks right now!'}</h3>
+            <p style="color:var(--tx2);margin-top:8px;font-size:1rem;">${L==='ar'?'أضف مهامك اليومية ومتابعات العملاء والتحصيلات لتنظيم وقتك بكفاءة.':'Add your daily tasks, customer follow-ups and collections.'}</p>
+        </div>`;
+    } else {
+        let pending = todos.filter(t => !t.done).length;
+        let completed = todos.filter(t => t.done).length;
+        
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 6px;font-size:0.95rem;color:var(--tx2);font-weight:600;">
+            <span>${L==='ar'?'المهام المتبقية:':'Pending tasks:'} <strong style="color:var(--ac);font-size:1.1rem;">${pending}</strong></span>
+            <span>${L==='ar'?'المكتملة:':'Completed:'} <strong style="color:#10b981;font-size:1.1rem;">${completed}</strong></span>
+        </div>`;
+        
+        todos.forEach((item, idx) => {
+            html += `<div class="todo-item ${item.done ? 'done' : ''}" style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;background:var(--bg1);border:1px solid var(--bd-s);border-radius:14px;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.02);">
+                <div style="display:flex;align-items:center;gap:16px;cursor:pointer;flex:1;" onclick="toggleTodoStatus(${idx})">
+                    <input type="checkbox" ${item.done ? 'checked' : ''} style="cursor:pointer;width:22px;height:22px;accent-color:var(--ac);" onclick="event.stopPropagation(); toggleTodoStatus(${idx});">
+                    <span style="font-size:1.1rem;font-weight:600;color:var(--tx1);text-decoration:${item.done ? 'line-through' : 'none'};opacity:${item.done ? '0.5' : '1'};">${item.text}</span>
+                </div>
+                <button onclick="deleteTodoItem(${idx})" style="background:transparent;border:none;cursor:pointer;color:#ef4444;font-size:1.4rem;padding:6px 12px;border-radius:8px;transition:background 0.2s;" title="${L==='ar'?'حذف المهمة':'Delete'}" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">🗑️</button>
+            </div>`;
+        });
     }
-    let html = '';
-    todos.forEach((item, idx) => {
-        html += '<div class="todo-item ' + (item.done ? 'done' : '') + '">' +
-            '<div style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;" onclick="toggleTodoStatus(' + idx + ')">' +
-            '<input type="checkbox" ' + (item.done ? 'checked' : '') + ' style="cursor:pointer;width:18px;height:18px;" onclick="e=>e.stopPropagation()">' +
-            '<span style="font-size:0.95rem;color:var(--tx1);">' + item.text + '</span>' +
-            '</div>' +
-            '<span onclick="deleteTodoItem(' + idx + ')" style="cursor:pointer;color:#ef4444;font-size:1.2rem;padding:0 6px;" title="حذف">🗑️</span>' +
-            '</div>';
-    });
-    container.innerHTML = html;
+    
+    html += `</div>
+    </div>`;
+    
+    let elM = $('M');
+    if (elM) elM.innerHTML = html;
+};
+
+window.initTodoUI = function() {
+    if (typeof rTodo === 'function' && typeof P !== 'undefined' && P === 'todo') rTodo();
 };
 
 window.toggleTodoDrawer = function() {
-    let drawer = document.getElementById('todoDrawer');
-    let overlay = document.getElementById('todoOverlay');
-    if(!drawer || !overlay) return;
-    let isOpen = drawer.classList.contains('open');
-    if(isOpen) {
-        drawer.classList.remove('open');
-        overlay.classList.remove('open');
-    } else {
-        drawer.classList.add('open');
-        overlay.classList.add('open');
-        initTodoUI();
-    }
+    if (typeof rPage === 'function') rPage('todo');
+    else if (typeof P !== 'undefined') { P = 'todo'; if(typeof buildNav==='function') buildNav(); if(typeof render==='function') render(); }
 };
 
 window.addTodoItem = function() {
@@ -3786,7 +3747,8 @@ window.addTodoItem = function() {
     todos.push({ text: input.value.trim(), done: false });
     localStorage.setItem('sp_todos', JSON.stringify(todos));
     input.value = '';
-    initTodoUI();
+    if (typeof rTodo === 'function' && typeof P !== 'undefined' && P === 'todo') rTodo();
+    else initTodoUI();
     if(typeof toast==='function') toast(L==='ar'?'تمت إضافة المهمة بنجاح':'Task added');
 };
 
@@ -3795,7 +3757,8 @@ window.deleteTodoItem = function(idx) {
     try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
     todos.splice(idx, 1);
     localStorage.setItem('sp_todos', JSON.stringify(todos));
-    initTodoUI();
+    if (typeof rTodo === 'function' && typeof P !== 'undefined' && P === 'todo') rTodo();
+    else initTodoUI();
 };
 
 window.toggleTodoStatus = function(idx) {
@@ -3804,7 +3767,8 @@ window.toggleTodoStatus = function(idx) {
     if(todos[idx]) {
         todos[idx].done = !todos[idx].done;
         localStorage.setItem('sp_todos', JSON.stringify(todos));
-        initTodoUI();
+        if (typeof rTodo === 'function' && typeof P !== 'undefined' && P === 'todo') rTodo();
+        else initTodoUI();
     }
 };
 
@@ -4640,7 +4604,7 @@ window.addEventListener('load', () => {
 const NAV = [
     {s:{ar:'الأساسية',en:'Core'}},
     {p:'dash',ic:'🏠'},{p:'sales',ic:'💰'},{p:'targets',ic:'🎯'},{p:'personal',ic:'👤'},
-    {p:'customers',ic:'🏪'},{p:'brands',ic:'📦'},
+    {p:'customers',ic:'🏪'},{p:'todo',ic:'📋'},{p:'brands',ic:'📦'},
     {s:{ar:'الأقسام',en:'Depts'}},
     {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💰'},
     {s:{ar:'متقدم',en:'Advanced'}},
@@ -4653,10 +4617,10 @@ const NAV = [
     {p:'settings',ic:'⚙️'}
 ];
 
-const BNV = ['dash','customers','brands','analytics','settings'];
+const BNV = ['dash','customers','todo','analytics','settings'];
 
 const F_URL = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/';
-const getImg = (name) => `<img src="${F_URL}${name}" style="width:1.4em;height:1.4em;vertical-align:middle;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.15));">`;
+const getImg = (name) => `<img src="${F_URL}${name}" style="width:28px;height:28px;vertical-align:middle;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(0,0,0,0.22));">`;
 
 const ICONS = {
     dash: getImg('Bar%20chart/3D/bar_chart_3d.png'),
@@ -4664,6 +4628,7 @@ const ICONS = {
     targets: getImg('Bullseye/3D/bullseye_3d.png'),
     personal: getImg('Handshake/3D/handshake_3d.png'),
     customers: getImg('Department%20store/3D/department_store_3d.png'),
+    todo: getImg('Clipboard/3D/clipboard_3d.png'),
     brands: getImg('Package/3D/package_3d.png'),
     accessories: getImg('Headphone/3D/headphone_3d.png'),
     hardware: getImg('Mobile%20phone/3D/mobile_phone_3d.png'),
@@ -4787,7 +4752,7 @@ function initAnm() {
 function render() {
     let fn = {
         dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
-        customers: rCust, brands: rBrands, analytics: rAn, potential: rPot,
+        customers: rCust, todo: rTodo, brands: rBrands, analytics: rAn, potential: rPot,
         profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
         keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
         account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
