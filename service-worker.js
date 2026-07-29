@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salespro-v5';
+﻿const CACHE_NAME = 'salespro-v7';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const CDN_ASSETS = [
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 
-// Install — cache static assets
+// Install â€” cache static assets
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
@@ -24,7 +24,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate â€” clean old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -38,7 +38,7 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch — Network-first for app files, cache-first for CDN
+// Fetch â€” Network-first for app files, cache-first for CDN
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
@@ -53,7 +53,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // CDN assets — cache-first (they're versioned)
+  // CDN assets â€” cache-first (they're versioned)
   if (url.includes('cdn.jsdelivr.net') || url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {
     event.respondWith(
       caches.match(event.request).then(cached => {
@@ -70,7 +70,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // App files — network-first with cache fallback
+  // App files â€” network-first with cache fallback
   event.respondWith(
     fetch(event.request)
       .then(response => {
@@ -87,3 +87,4 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
