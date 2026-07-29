@@ -2443,7 +2443,9 @@ function rDash() {
                 alert(L==='ar'?'مكتبة PDF غير محملة. يرجى تحديث الصفحة والمحاولة مرة أخرى.':'PDF library not loaded. Refresh and try again.');
             }
         };
-    }\n\n    // Charts
+    }
+
+    // Charts
     let dl = {};
     ds.forEach(r => {
         let d = pd(r['Invoice Date'] || r['Order Date']);
