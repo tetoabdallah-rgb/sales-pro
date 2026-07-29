@@ -1959,12 +1959,12 @@ function getRowVal(row, possibleNames) {
 
 // Get sales value - works with OLD format (Sales After Discount) AND NEW format (Sales Without Tax)
 function getSalesVal(row) {
-    return getRowVal(row, ['Sales After Discount', 'Sales Without Tax', 'Sales', 'Amount']);
+    return getRowVal(row, ['Sales After Discount', 'Sales Without Tax', 'Sales', 'Amount', 'المبيعات', 'المبيعات بعد الخصم', 'الصافي', 'صافي المبيعات', 'قيمة المبيعات']);
 }
 
 // Get profit value
 function getProfitVal(row) {
-    return getRowVal(row, ['Profit Margin', 'Profit']);
+    return getRowVal(row, ['Profit Margin', 'Profit', 'الربح', 'هامش الربح', 'ربح']);
 }
 
 // Get payment amount from Collections sheet
@@ -2525,8 +2525,8 @@ function rTgt() {
     sData.forEach(r => {
         let c = r.Customer;
         if(!c) return;
-        let s = Number(r['Sales After Discount']) || 0;
-        let p = Number(r['Profit Margin']) || 0;
+        let s = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
+        let p = typeof getProfitVal === 'function' ? getProfitVal(r) : 0;
         let isA = isAcc(r['Item Class Name']);
         let isH = isHW(r['Item Class Name']);
         sMap[c] = (sMap[c] || 0) + s;
