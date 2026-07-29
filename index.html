@@ -2179,6 +2179,60 @@ function rDash() {
     let ap = tt > 0 ? ts / tt * 100 : 0;
     let pp = tpt > 0 ? tp / tpt * 100 : 0;
     
+    let accTot = 0, hwTot = 0;
+    if (typeof C !== 'undefined' && C.length > 0) {
+        let cAccMap = {}, cHWMap = {};
+        if (!(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
+            if (typeof S !== 'undefined') {
+                S.forEach(s => {
+                    let c = s['Customer'];
+                    if(c) {
+                        let v = Number(s['Sales Without Tax'] || 0);
+                        if(typeof isAcc==='function' && isAcc(s['Item Class Name'])) cAccMap[c] = (cAccMap[c]||0) + v;
+                        if(typeof isHW==='function' && isHW(s['Item Class Name'])) cHWMap[c] = (cHWMap[c]||0) + v;
+                    }
+                });
+            }
+        }
+        C.forEach(r => {
+            let keys = Object.keys(r);
+            let getVal = (possibleNames) => {
+                let k = keys.find(k => possibleNames.some(pn => k.toLowerCase().replace(/\s+/g, '') === pn.toLowerCase().replace(/\s+/g, '')));
+                return k ? r[k] : undefined;
+            };
+            
+            let rawVal = getVal(['Amount', 'Collection']) || 0;
+            let val = Number(rawVal.toString().replace(/,/g, '')) || 0;
+            let cat = getVal(['Item Class Name', 'Item Group', 'Category']);
+            let ahRaw = getVal(['acc-hw', 'acchw', 'acc - hw']);
+            let ah = ahRaw ? ahRaw.toString().trim().toLowerCase() : '';
+            let cName = getVal(['Customer Name', 'Customer']) || '';
+            
+            let payRef = (r['Payment Ref.'] || r['Payment Ref'] || r['PaymentRef'] || '').toString().trim().toLowerCase();
+            if (payRef.startsWith('acc')) {
+                accTot += val;
+            } else if (payRef.startsWith('hw')) {
+                hwTot += val;
+            } else if (ah.includes('acc') || ah.includes('اكسسوار')) {
+                accTot += val;
+            } else if (ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
+                hwTot += val;
+            } else if (cat) {
+                if (typeof isAcc==='function' && isAcc(cat)) accTot += val;
+                else if (typeof isHW==='function' && isHW(cat)) hwTot += val;
+            } else {
+                let a = cAccMap[cName]||0;
+                let h = cHWMap[cName]||0;
+                if (a > 0 || h > 0) {
+                    if (a >= h) accTot += val;
+                    else hwTot += val;
+                } else {
+                    accTot += val; 
+                }
+            }
+        });
+    }
+    
     let dateFilterUI = `
         <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);flex-wrap:wrap;">
             <button onclick="if(typeof sendDailyReportNow==='function')sendDailyReportNow(false);" class="btn" style="background:#10b981;color:#fff;font-weight:bold;padding:6px 12px;font-size:0.75rem;display:flex;align-items:center;gap:4px;cursor:pointer;" title="${L==='ar'?'إرسال تقرير المبيعات والتحصيلات إلى إيميلك الآن':'Send Report to Email'}">📧 ${L==='ar'?'إرسال التقرير للإيميل':'Email Report'}</button>
@@ -2203,6 +2257,8 @@ function rDash() {
             <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Cust.'):'Cust.'}</div><div class="vl">${aFmt(Object.keys(cu).length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'تحصيل إكسسوارات':'Acc Coll.'}</div><div class="vl">${aFmt(accTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'تحصيل هاردوير':'HW Coll.'}</div><div class="vl">${aFmt(hwTot)}</div></div>
         </div>
         <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, tt)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tpt)}</div>
         
