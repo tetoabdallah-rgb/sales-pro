@@ -793,9 +793,10 @@ body.en .mw {
 }
 
 .rce .s {
-  font-size: 0.5rem;
-  color: var(--tx3);
-  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--tx1);
+  font-weight: 700;
+  margin-top: 4px;
 }
 
 /* ---------- Chart Cards ---------- */
@@ -1691,6 +1692,29 @@ html[dir="rtl"] .ph::before {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script>
+window.addEventListener('load', function() {
+    if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+        Chart.defaults.set('plugins.datalabels', {
+            color: '#fff',
+            font: {
+                weight: 'bold',
+                size: 11
+            },
+            formatter: function(value, context) {
+                if (value === 0) return '';
+                if (value > 1000000) return (value / 1000000).toFixed(1) + 'M';
+                if (value > 1000) return (value / 1000).toFixed(1) + 'K';
+                return value;
+            },
+            display: function(context) {
+                return context.dataset.data[context.dataIndex] > 0;
+            }
+        });
+    }
+});
+</script>
 <script src="https://accounts.google.com/gsi/client?onload=gisLoaded" async defer></script>
 <script src="https://apis.google.com/js/api.js?onload=gapiLoaded" async defer></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
