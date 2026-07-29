@@ -1613,6 +1613,9 @@ html[dir="rtl"] .ph::before {
 }
 
   </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 </head>
 <body>
 
@@ -1695,7 +1698,74 @@ html[dir="rtl"] .ph::before {
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <!-- ALL LOCAL JS INLINED BELOW -->
-<script>// js/firebase-config.js
+<script>
+
+window.exportTableToPDF = function(tableId, title) {
+    if(typeof pdfMake === 'undefined') {
+        if(typeof toast === 'function') toast(L==='ar'?'??????? ???????? ??? ??????':'PDF library not loaded', 'error');
+        return;
+    }
+    try {
+        let table = document.getElementById(tableId);
+        if(!table) return;
+        
+        let body = [];
+        // headers
+        let headRow = [];
+        table.querySelectorAll('th').forEach(th => {
+            headRow.push({ text: th.innerText, bold: true, fillColor: '#f0f2f5' });
+        });
+        body.push(headRow);
+        
+        // rows
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            let row = [];
+            tr.querySelectorAll('td').forEach(td => {
+                row.push(td.innerText);
+            });
+            body.push(row);
+        });
+        
+        let docDefinition = {
+            content: [
+                { text: title, style: 'header', alignment: 'center', margin: [0,0,0,20] },
+                {
+                    table: {
+                        headerRows: 1,
+                        body: body
+                    },
+                    layout: 'lightHorizontalLines'
+                }
+            ],
+            styles: {
+                header: { fontSize: 18, bold: true }
+            },
+            defaultStyle: {
+                font: 'Roboto' // Note: pdfmake default font Roboto does not support Arabic well without custom VFS, but for English numbers/basic text it works. For full Arabic, a custom VFS is needed, but this is a solid start without breaking anything.
+            }
+        };
+        pdfMake.createPdf(docDefinition).download(title + '.pdf');
+        if(typeof toast === 'function') toast(L==='ar'?'?? ?????? PDF ?????!':'PDF Exported!', 'success');
+    } catch(e) {
+        console.error(e);
+        if(typeof toast === 'function') toast('Error: ' + e.message, 'error');
+    }
+};
+
+
+window.sanitize = function(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, match => {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[match];
+    });
+};
+// js/firebase-config.js
 const firebaseConfig = {
     apiKey: "AIzaSyAxXU5MePdVP1OcOyzitl0Jy5jMGrWtTSE",
     authDomain: "salesproapp-ba56b.firebaseapp.com",
@@ -5167,5 +5237,101 @@ window.getCloudInfo = async function() {
     }, 800);
   });
 </script>
+
+<!-- PDF Export Enhancements -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script>
+window.exportToPDF = function(data, filename) {
+    if(typeof pdfMake === 'undefined') {
+        if(typeof toast === 'function') toast(typeof L !== 'undefined' && L==='ar' ? 'مكتبة PDF لم يتم تحميلها' : 'PDF library not loaded', 'error');
+        return;
+    }
+    if(!data || data.length === 0) {
+        if(typeof toast === 'function') toast(typeof L !== 'undefined' && L==='ar' ? 'لا توجد بيانات للتصدير' : 'No data to export', 'error');
+        return;
+    }
+    
+    try {
+        let body = [];
+        // Extract headers from the first object
+        let headers = Object.keys(data[0]);
+        let headRow = headers.map(h => ({ text: h, bold: true, fillColor: '#f0f2f5' }));
+        body.push(headRow);
+        
+        // Extract rows
+        data.forEach(rowObj => {
+            let row = headers.map(h => String(rowObj[h] || ''));
+            body.push(row);
+        });
+        
+        let docDefinition = {
+            content: [
+                { text: filename, style: 'header', alignment: 'center', margin: [0,0,0,20] },
+                {
+                    table: {
+                        headerRows: 1,
+                        body: body
+                    },
+                    layout: 'lightHorizontalLines'
+                }
+            ],
+            styles: {
+                header: { fontSize: 18, bold: true }
+            },
+            defaultStyle: {
+                font: 'Roboto'
+            }
+        };
+        pdfMake.createPdf(docDefinition).download(filename + '.pdf');
+        if(typeof toast === 'function') toast(typeof L !== 'undefined' && L==='ar' ? 'تم التصدير PDF' : 'PDF Exported!', 'success');
+    } catch(e) {
+        console.error(e);
+        if(typeof toast === 'function') toast('Error: ' + e.message, 'error');
+    }
+};
+
+// Automatically find Excel buttons and inject PDF buttons next to them
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        // Find buttons that call exportToExcel
+        const excelBtns = document.querySelectorAll('button');
+        excelBtns.forEach(btn => {
+            if (btn.innerText && btn.innerText.toLowerCase().includes('excel') && btn.onclick && btn.onclick.toString().includes('exportToExcel')) {
+                // Check if we already added a PDF button
+                if (btn.nextElementSibling && btn.nextElementSibling.innerText.includes('PDF')) return;
+                
+                let pdfBtn = document.createElement('button');
+                pdfBtn.className = btn.className;
+                pdfBtn.style.cssText = btn.style.cssText;
+                // Change color to red
+                pdfBtn.style.background = 'var(--rdl)';
+                pdfBtn.style.color = 'var(--rd)';
+                pdfBtn.style.borderColor = 'var(--rd)';
+                pdfBtn.innerHTML = btn.innerHTML.replace(/Excel/i, 'PDF').replace('?','?').replace('&#x1F4E5;','&#x1F4E5;'); // Replace icon if any
+                
+                // Copy onclick but replace exportToExcel with exportToPDF
+                let clickCode = btn.onclick.toString();
+                // Extract body of the function
+                clickCode = clickCode.substring(clickCode.indexOf('{') + 1, clickCode.lastIndexOf('}'));
+                if(!clickCode) {
+                    // Arrow function fallback
+                    let arrowIdx = btn.onclick.toString().indexOf('=>');
+                    if(arrowIdx > -1) clickCode = btn.onclick.toString().substring(arrowIdx + 2);
+                }
+                
+                if(clickCode) {
+                    clickCode = clickCode.replace(/exportToExcel/g, 'exportToPDF');
+                    pdfBtn.onclick = new Function('event', clickCode);
+                    
+                    // Insert after Excel button
+                    btn.parentNode.insertBefore(pdfBtn, btn.nextSibling);
+                }
+            }
+        });
+    }, 1500); // Wait for DOM and initial renders
+});
+</script>
+
 </body>
 </html>
