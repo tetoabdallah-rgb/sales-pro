@@ -1783,7 +1783,7 @@ window.exportTableToPDF = function(tableId, title) {
                     },
                     layout: 'lightHorizontalLines'
                 }
-           ,
+            ],
             styles: {
                 header: { fontSize: 18, bold: true }
             },
@@ -2374,28 +2374,11 @@ function rDash() {
         </div>
     `;
     
-        let maxD = 0; ds.forEach(r => { let d = new Date(pd(r['Order Date'])).getTime(); if(!isNaN(d) && d>maxD) maxD=d; });
-    let cuD = {}; ds.forEach(r => { let cust = r.Customer; if(!cust) return; let d = pd(r['Order Date']); if(!cuD[cust] || d > cuD[cust]) cuD[cust]=d; });
-    let dormantCount = 0; let ttD = maxD>0?maxD:new Date().getTime();
-    Object.values(cuD).forEach(v => { let t = new Date(v).getTime(); if(!isNaN(t) && Math.floor((ttD-t)/86400000)>=60) dormantCount++; });
-
-    let dormantCard = `
-    <div class="card" style="margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; background:linear-gradient(to right, rgba(231,76,60,0.05), transparent); border-left:4px solid var(--rd); box-shadow:0 4px 12px rgba(0,0,0,0.05);" onclick="nav('dormant')">
-        <div style="display:flex; align-items:center; gap:16px;">
-            <div style="font-size:2rem; width:50px; height:50px; background:var(--rd); color:white; border-radius:12px; display:flex; align-items:center; justify-content:center;">\${ICONS.dormant}</div>
-            <div>
-                <h3 style="margin:0 0 4px; color:var(--tx1);">\${L==='ar'?'العملاء الخاملين':'Dormant Customers'}</h3>
-                <div style="color:var(--tx2); font-size:0.9rem;">\${L==='ar'?'إضغط هنا لمشاهدة قائمة العملاء المنقطعين منذ 60 يوم':'Click to view customers with no orders in 60+ days'}</div>
-            </div>
-        </div>
-        <div style="font-size:1.8rem; font-weight:900; color:var(--rd);">${dormantCount}</div>
-    </div>`;
-\n    $('M').innerHTML = `
+    $('M').innerHTML = `
         <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
             ${dateFilterUI}
         </div>
-        ${dormantCard}
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
@@ -2406,7 +2389,7 @@ function rDash() {
             <div class="ki"><div class="lb">${L==='ar'?'تحصيل إكسسوارات':'Acc Coll.'}</div><div class="vl">${aFmt(accTot)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'تحصيل هاردوير':'HW Coll.'}</div><div class="vl">${aFmt(hwTot)}</div></div>
         </div>
-        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, ts)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tp)}</div>
+        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, ts)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tp)}
         
         <div class="cg">
             <div class="cc"><h3>${L==='ar'?TUI('Daily'):'Daily'}</h3><div class="cw"><canvas id="cD"></canvas></div></div>
@@ -2867,7 +2850,7 @@ function rPers() {
             <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Rem. Profit'):'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremP)}</div></div>
         </div>
 
-        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, ts)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tp)}]
+        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, ts)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tp)}
         <div class="tb"><div class="tbt"><h3>${L==='ar'?TUI('Monthly'):'Monthly'}</h3></div>
         <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Month'):'Month'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th></tr></thead>
         <tbody>${months.map(m => `<tr><td>${m}</td><td>${fmt(monthly[m].s)}</td><td>${fmt(monthly[m].p)}</td><td><span class="badge ${monthly[m].s>0&&monthly[m].p/monthly[m].s*100>=5?'bg-g':'bg-a'}">${pc(monthly[m].s>0?monthly[m].p/monthly[m].s*100:0)}</span></td></tr>`).join('')}</tbody>
@@ -4321,7 +4304,7 @@ window.enhanceUI = function() {
             ph.appendChild(btn);
         }
 
-        if(P === 'sales' || P === 'customers' || P === 'collections' || P === 'dormant') {
+        if(P === 'sales' || P === 'customers' || P === 'collections') {
             document.querySelectorAll('#M table tbody tr').forEach(tr => {
                 let tds = tr.querySelectorAll('td');
                 if(tds.length >= 2 && !tr.querySelector('.btn-print-icon')) {
@@ -5524,7 +5507,7 @@ window.exportToPDF = function(data, filename) {
                     },
                     layout: 'lightHorizontalLines'
                 }
-           ,
+            ],
             styles: {
                 header: { fontSize: 18, bold: true }
             },
