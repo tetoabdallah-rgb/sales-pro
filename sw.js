@@ -1,23 +1,48 @@
-const CACHE_NAME = 'salespro-cache-v7-addons';
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
-});
+const CACHE_NAME = 'promoter-cache-v44';
+const urlsToCache = [
+  './',
+  './index.html',
+  './manifest.json'
+];
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          return caches.delete(cacheName);
-        })
-      );
-    }).then(() => {
-      self.clients.claim();
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache);
     })
   );
 });
 
-self.addEventListener('fetch', (event) => {
-  // Always fetch from network to bust cache
-  event.respondWith(fetch(event.request));
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request).then(response => {
+      // Don't cache if not a valid response
+      if (!response || response.status !== 200 || response.type !== 'basic') {
+        return response;
+      }
+      // Clone response and cache it
+      let responseToCache = response.clone();
+      caches.open(CACHE_NAME).then(cache => {
+        cache.put(event.request, responseToCache);
+      });
+      return response;
+    }).catch(() => {
+      return caches.match(event.request);
+    })
+  );
 });
