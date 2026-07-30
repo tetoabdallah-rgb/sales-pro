@@ -2389,7 +2389,7 @@ function rDash() {
             <div class="ki"><div class="lb">${L==='ar'?'تحصيل إكسسوارات':'Acc Coll.'}</div><div class="vl">${aFmt(accTot)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'تحصيل هاردوير':'HW Coll.'}</div><div class="vl">${aFmt(hwTot)}</div></div>
         </div>
-        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, ts)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tp)}
+        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, ts)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tp)}</div>
         
         <div class="cg">
             <div class="cc"><h3>${L==='ar'?TUI('Daily'):'Daily'}</h3><div class="cw"><canvas id="cD"></canvas></div></div>
@@ -2850,7 +2850,7 @@ function rPers() {
             <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Rem. Profit'):'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremP)}</div></div>
         </div>
 
-        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, ts)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tp)}
+        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, ts)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tp)}</div>
         <div class="tb"><div class="tbt"><h3>${L==='ar'?TUI('Monthly'):'Monthly'}</h3></div>
         <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Month'):'Month'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th></tr></thead>
         <tbody>${months.map(m => `<tr><td>${m}</td><td>${fmt(monthly[m].s)}</td><td>${fmt(monthly[m].p)}</td><td><span class="badge ${monthly[m].s>0&&monthly[m].p/monthly[m].s*100>=5?'bg-g':'bg-a'}">${pc(monthly[m].s>0?monthly[m].p/monthly[m].s*100:0)}</span></td></tr>`).join('')}</tbody>
