@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Sales Pro Enterprise - Sales Pro</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1063/1063376.png">
   <meta name="theme-color" content="#1e293b">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3214/3214746.png">
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -5565,5 +5567,14 @@ window.addEventListener('load', () => {
 });
 </script>
 
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').then(reg => {
+      console.log('SW registered!', reg);
+    }).catch(err => console.log('SW registration failed', err));
+  });
+}
+</script>
 </body>
 </html>
