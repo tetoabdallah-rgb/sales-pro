@@ -5,12 +5,46 @@
 function getS() { try { return JSON.parse(localStorage.getItem('salesData') || '[]'); } catch(e){ return []; } }
 function getT() { try { return JSON.parse(localStorage.getItem('targetData') || '[]'); } catch(e){ return []; } }
 
+
 // --- UI STYLES ---
 (function injectStyles() {
     if(document.getElementById('sp-new-features-css')) return;
     let style = document.createElement('style');
     style.id = 'sp-new-features-css';
     style.innerHTML = `
+        body::after {
+            content: "";
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw; height: 100vh;
+            background: url('logo_2b.png') no-repeat center center;
+            background-size: min(350px, 80%);
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Make sure cards and modals have some glassmorphism so the watermark shows elegantly behind them */
+        .card, .sp-modal-content {
+            background: rgba(15, 23, 42, 0.8) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        .loader-overlay::after {
+            content: "";
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; height: 100%;
+            background: url('logo_2b.png') no-repeat center center;
+            background-size: min(250px, 60%);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: -1;
+        }
+
         .sp-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
@@ -18,7 +52,7 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
             opacity: 0; animation: spFadeIn 0.3s forwards;
         }
         .sp-modal-content {
-            background: var(--bg2); width: 90%; max-width: 450px;
+            width: 90%; max-width: 450px;
             border-radius: 16px; padding: 24px; position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             transform: translateY(20px); animation: spSlideUp 0.3s forwards;
