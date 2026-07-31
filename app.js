@@ -3,11 +3,11 @@
 const NAV = [
     {s:{ar:'الأساسية',en:'Core'}},
     {p:'dash',ic:'🏠'},{p:'sales',ic:'💰'},{p:'targets',ic:'🎯'},{p:'personal',ic:'👤'},
-    {p:'customers',ic:'🏪'},{p:'brands',ic:'📦'},
+    {p:'customers',ic:'🏪'},{p:'todo',ic:'📋'},{p:'visits',ic:'🚗'},{p:'brands',ic:'📦'},
     {s:{ar:'الأقسام',en:'Depts'}},
     {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💰'},
     {s:{ar:'متقدم',en:'Advanced'}},
-    {p:'analytics',ic:'🧠'},{p:'potential',ic:'🚀'},{p:'profit',ic:'💵'},
+    {p:'analytics',ic:'🧠'},{p:'leads',ic:'🤝'},{p:'potential',ic:'🚀'},{p:'profit',ic:'💵'},
     {p:'keyacc',ic:'⭐'},{p:'dormant',ic:'💤'},{p:'prospects',ic:'🔍'},
     {s:{ar:'ذكي',en:'Smart'}},
     {p:'ai',ic:'🤖'},{p:'alerts',ic:'🔔'},
@@ -16,34 +16,37 @@ const NAV = [
     {p:'settings',ic:'⚙️'}
 ];
 
-const BNV = ['dash','customers','brands','analytics','settings'];
+const BNV = ['dash','customers','todo','analytics','settings'];
 
 const F_URL = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/';
-const getImg = (name) => `<img src="${F_URL}${name}" style="width:1.4em;height:1.4em;vertical-align:middle;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.15));">`;
+const getImg = (name) => `<img src="${F_URL}${name}" style="width:28px;height:28px;vertical-align:middle;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(0,0,0,0.22));">`;
 
 const ICONS = {
     dash: getImg('Bar%20chart/3D/bar_chart_3d.png'),
-    sales: getImg('Chart%20increasing/3D/chart_increasing_3d.png'),
+    sales: getImg('Receipt/3D/receipt_3d.png'),
     targets: getImg('Bullseye/3D/bullseye_3d.png'),
-    personal: getImg('Man%20office%20worker/3D/man_office_worker_3d.png'),
-    customers: getImg('Busts%20in%20silhouette/3D/busts_in_silhouette_3d.png'),
-    brands: getImg('Label/3D/label_3d.png'),
+    personal: getImg('Handshake/3D/handshake_3d.png'),
+    customers: getImg('Department%20store/3D/department_store_3d.png'),
+    todo: getImg('Clipboard/3D/clipboard_3d.png'),
+    brands: getImg('Package/3D/package_3d.png'),
     accessories: getImg('Headphone/3D/headphone_3d.png'),
-    hardware: getImg('Laptop/3D/laptop_3d.png'),
-    analytics: getImg('Chart%20decreasing/3D/chart_decreasing_3d.png'),
-    potential: getImg('Star/3D/star_3d.png'),
+    hardware: getImg('Mobile%20phone/3D/mobile_phone_3d.png'),
+    analytics: getImg('Chart%20increasing/3D/chart_increasing_3d.png'),
+    potential: getImg('Rocket/3D/rocket_3d.png'),
     profit: getImg('Money%20bag/3D/money_bag_3d.png'),
     keyacc: getImg('Crown/3D/crown_3d.png'),
     dormant: getImg('Sleeping%20face/3D/sleeping_face_3d.png'),
-    prospects: getImg('Magnifying%20glass%20tilted%20right/3D/magnifying_glass_tilted_right_3d.png'),
+    prospects: getImg('Magnifying%20glass%20tilted%20left/3D/magnifying_glass_tilted_left_3d.png'),
     ai: getImg('Robot/3D/robot_3d.png'),
     alerts: getImg('Bell/3D/bell_3d.png'),
     account: getImg('Bust%20in%20silhouette/3D/bust_in_silhouette_3d.png'),
     backup: getImg('Floppy%20disk/3D/floppy_disk_3d.png'),
-    setup: getImg('Gear/3D/gear_3d.png'),
+    setup: getImg('File%20folder/3D/file_folder_3d.png'),
     reset: getImg('Wastebasket/3D/wastebasket_3d.png'),
-    settings: getImg('Artist%20palette/3D/artist_palette_3d.png'),
-    collections: getImg('Coin/3D/coin_3d.png')
+    settings: getImg('Gear/3D/gear_3d.png'),
+    collections: getImg('Money%20with%20wings/3D/money_with_wings_3d.png'),
+    visits: getImg('Automobile/3D/automobile_3d.png'),
+    leads: getImg('Handshake/3D/handshake_3d.png')
 };
 
 function buildNav() {
@@ -128,6 +131,9 @@ function init() {
     
     buildNav();
     render();
+    setTimeout(function() {
+        if (typeof window.checkAndSendDailyReport === 'function') window.checkAndSendDailyReport();
+    }, 4000);
 }
 
 function initAnm() {
@@ -147,13 +153,14 @@ function initAnm() {
 function render() {
     let fn = {
         dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
-        customers: rCust, brands: rBrands, analytics: rAn, potential: rPot,
-        profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
+        customers: rCust, todo: rTodo, visits: rVisits, brands: rBrands, analytics: rAn, potential: rPot,
+        leads: rLeads, profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
         keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
         account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
     };
     if (fn[P]) fn[P]();
     initAnm();
+    if (typeof window.enhanceUI === 'function') setTimeout(window.enhanceUI, 50);
 }
 
 window.TUI = function(enStr) {
@@ -183,4 +190,11 @@ window.TUI = function(enStr) {
     'Not logged in': '\u063A\u064A\u0631 \u0645\u0633\u062C\u0644 \u0627\u0644\u062F\u062E\u0648\u0644'
   };
   return map[enStr] || enStr;
+};
+window.toast = function(msg, type = 'info') {
+    let t = document.getElementById('TT');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3000);
 };
