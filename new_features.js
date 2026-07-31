@@ -4,26 +4,26 @@
 // VISITS (الزيارات)
 // =======================
 function rVisits() {
-    let html = \
+    let html = `
         <div class="ph">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🚗</span> \</h1>
-            <button class="btn" onclick="addVisitModal()" style="background:var(--ac);color:#fff;">➕ \</button>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🚗</span> ${L==='ar'?'الزيارات':'Visits'}</h1>
+            <button class="btn" onclick="addVisitModal()" style="background:var(--ac);color:#fff;">➕ ${L==='ar'?'زيارة جديدة':'New Visit'}</button>
         </div>
         <div class="card" id="visitsList">
             <table style="width:100%;text-align:left;border-collapse:collapse;">
                 <thead>
                     <tr style="border-bottom:1px solid var(--bd);">
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
+                        <th style="padding:10px;">${L==='ar'?'التاريخ':'Date'}</th>
+                        <th style="padding:10px;">${L==='ar'?'العميل':'Customer'}</th>
+                        <th style="padding:10px;">${L==='ar'?'النتيجة':'Outcome'}</th>
+                        <th style="padding:10px;">${L==='ar'?'الزيارة القادمة':'Next Visit'}</th>
                     </tr>
                 </thead>
                 <tbody id="vTbody">
                 </tbody>
             </table>
         </div>
-    \;
+    `;
     let M = document.getElementById('M');
     if(M) M.innerHTML = html;
     loadVisits();
@@ -37,18 +37,18 @@ function loadVisits() {
     if (!tb) return;
     tb.innerHTML = '';
     if (visitsData.length === 0) {
-        tb.innerHTML = \<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--tx3);">\</td></tr>\;
+        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--tx3);">${L==='ar'?'لا توجد زيارات مسجلة':'No visits logged'}</td></tr>`;
         return;
     }
     visitsData.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(v => {
         let tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid var(--bd-s)';
-        tr.innerHTML = \
-            <td style="padding:10px;">\</td>
-            <td style="padding:10px;font-weight:bold;">\</td>
-            <td style="padding:10px;">\</td>
-            <td style="padding:10px;">\</td>
-        \;
+        tr.innerHTML = `
+            <td style="padding:10px;">${v.date}</td>
+            <td style="padding:10px;font-weight:bold;">${v.customer}</td>
+            <td style="padding:10px;">${v.outcome}</td>
+            <td style="padding:10px;">${v.nextDate || '-'}</td>
+        `;
         tb.appendChild(tr);
     });
 }
@@ -56,23 +56,23 @@ function loadVisits() {
 window.addVisitModal = function() {
     let S = window.S || [];
     let cList = [...new Set(S.map(r=>r.Customer).filter(Boolean))];
-    let opts = cList.map(c => \<option value="\">\</option>\).join('');
-    let h = \
-        <h3>\</h3>
-        <label>\</label>
-        <select id="nvCust" class="sbox" style="width:100%;margin-bottom:10px;">\</select>
-        <label>\</label>
-        <input type="date" id="nvDate" class="sbox" style="width:100%;margin-bottom:10px;" value="\">
-        <label>\</label>
+    let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
+    let h = `
+        <h3>${L==='ar'?'تسجيل زيارة جديدة':'Log New Visit'}</h3>
+        <label>${L==='ar'?'العميل':'Customer'}</label>
+        <select id="nvCust" class="sbox" style="width:100%;margin-bottom:10px;">${opts}</select>
+        <label>${L==='ar'?'تاريخ الزيارة':'Visit Date'}</label>
+        <input type="date" id="nvDate" class="sbox" style="width:100%;margin-bottom:10px;" value="${new Date().toISOString().split('T')[0]}">
+        <label>${L==='ar'?'نتائج الزيارة / ملاحظات':'Outcome / Notes'}</label>
         <textarea id="nvOutcome" class="sbox" style="width:100%;margin-bottom:10px;height:60px;"></textarea>
-        <label>\</label>
+        <label>${L==='ar'?'موعد الزيارة القادمة':'Next Visit Date'}</label>
         <input type="date" id="nvNext" class="sbox" style="width:100%;margin-bottom:10px;">
-        <button class="btn" style="width:100%;background:var(--ac);color:#fff;" onclick="saveVisit()">\</button>
-    \;
+        <button class="btn" style="width:100%;background:var(--ac);color:#fff;" onclick="saveVisit()">${L==='ar'?'حفظ الزيارة':'Save Visit'}</button>
+    `;
     let m = document.createElement('div');
     m.className = 'modal show';
     m.id = 'vModal';
-    m.innerHTML = \<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal').remove()">×</span>\</div>\;
+    m.innerHTML = `<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal').remove()">×</span>${h}</div>`;
     document.body.appendChild(m);
 };
 
@@ -95,10 +95,10 @@ window.saveVisit = function() {
 // LEADS (العملاء المحتملين)
 // =======================
 function rLeads() {
-    let html = \
+    let html = `
         <div class="ph">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🤝</span> \</h1>
-            <button class="btn" onclick="addLeadModal()" style="background:var(--ac);color:#fff;">➕ \</button>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🤝</span> ${L==='ar'?'عملاء محتملين (Leads)':'Potential Clients'}</h1>
+            <button class="btn" onclick="addLeadModal()" style="background:var(--ac);color:#fff;">➕ ${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</button>
         </div>
         <div class="kg" style="margin-bottom:20px;">
             <div class="ki"><div class="lb">إجمالي المحتملين</div><div class="vl" id="ldTot">0</div></div>
@@ -109,17 +109,17 @@ function rLeads() {
             <table style="width:100%;text-align:left;border-collapse:collapse;">
                 <thead>
                     <tr style="border-bottom:1px solid var(--bd);">
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
+                        <th style="padding:10px;">${L==='ar'?'الاسم':'Name'}</th>
+                        <th style="padding:10px;">${L==='ar'?'رقم الهاتف':'Phone'}</th>
+                        <th style="padding:10px;">${L==='ar'?'الحالة':'Status'}</th>
+                        <th style="padding:10px;">${L==='ar'?'الإجراء':'Action'}</th>
                     </tr>
                 </thead>
                 <tbody id="lTbody">
                 </tbody>
             </table>
         </div>
-    \;
+    `;
     let M = document.getElementById('M');
     if(M) M.innerHTML = html;
     loadLeads();
@@ -145,19 +145,19 @@ function loadLeads() {
         let stColor = ld.status === 'converted' ? 'var(--gn)' : 'var(--am)';
         let stText = ld.status === 'converted' ? 'تم التحويل لعميل فعلي' : 'تواصل مبدئي / جاري';
         
-        let actions = ld.status === 'converted' ? '-' : \<button class="btn" style="padding:4px 8px;font-size:0.75rem;background:var(--gn);color:#fff;" onclick="convertLead(\)">تحويل لعميل</button>\;
+        let actions = ld.status === 'converted' ? '-' : `<button class="btn" style="padding:4px 8px;font-size:0.75rem;background:var(--gn);color:#fff;" onclick="convertLead(${ld.id})">تحويل لعميل</button>`;
         
-        tr.innerHTML = \
-            <td style="padding:10px;font-weight:bold;">\</td>
-            <td style="padding:10px;">\</td>
-            <td style="padding:10px;color:\;font-weight:bold;">\</td>
-            <td style="padding:10px;">\</td>
-        \;
+        tr.innerHTML = `
+            <td style="padding:10px;font-weight:bold;">${ld.name}</td>
+            <td style="padding:10px;">${ld.phone || '-'}</td>
+            <td style="padding:10px;color:${stColor};font-weight:bold;">${stText}</td>
+            <td style="padding:10px;">${actions}</td>
+        `;
         tb.appendChild(tr);
     });
     
     if(tot===0) {
-        tb.innerHTML = \<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--tx3);">\</td></tr>\;
+        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--tx3);">${L==='ar'?'لا يوجد عملاء محتملين':'No leads'}</td></tr>`;
     }
     
     document.getElementById('ldTot').textContent = tot;
@@ -166,20 +166,20 @@ function loadLeads() {
 }
 
 window.addLeadModal = function() {
-    let h = \
-        <h3>\</h3>
-        <label>\</label>
+    let h = `
+        <h3>${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</h3>
+        <label>${L==='ar'?'اسم العميل':'Client Name'}</label>
         <input type="text" id="nlName" class="sbox" style="width:100%;margin-bottom:10px;">
-        <label>\</label>
+        <label>${L==='ar'?'رقم الهاتف':'Phone'}</label>
         <input type="text" id="nlPhone" class="sbox" style="width:100%;margin-bottom:10px;">
-        <label>\</label>
+        <label>${L==='ar'?'ملاحظات / الاهتمام':'Notes'}</label>
         <textarea id="nlNotes" class="sbox" style="width:100%;margin-bottom:10px;height:60px;"></textarea>
-        <button class="btn" style="width:100%;background:var(--ac);color:#fff;" onclick="saveLead()">\</button>
-    \;
+        <button class="btn" style="width:100%;background:var(--ac);color:#fff;" onclick="saveLead()">${L==='ar'?'حفظ':'Save'}</button>
+    `;
     let m = document.createElement('div');
     m.className = 'modal show';
     m.id = 'lModal';
-    m.innerHTML = \<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal').remove()">×</span>\</div>\;
+    m.innerHTML = `<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal').remove()">×</span>${h}</div>`;
     document.body.appendChild(m);
 };
 
@@ -229,17 +229,17 @@ window.checkDailyAlerts = function() {
     }
     
     if (delayCount > 0) {
-        let h = \
+        let h = `
             <div style="text-align:center;">
                 <div style="font-size:3rem;">⚠️</div>
                 <h2 style="color:var(--rd);margin:10px 0;">تنبيهات المتأخرات اليومية</h2>
-                <p style="margin-bottom:20px;">يوجد <strong>\</strong> عملاء متأخرين عن تحقيق المستهدف (أقل من 50%). يرجى مراجعة صفحة التنبيهات.</p>
+                <p style="margin-bottom:20px;">يوجد <strong>${delayCount}</strong> عملاء متأخرين عن تحقيق المستهدف (أقل من 50%). يرجى مراجعة صفحة التنبيهات.</p>
                 <button class="btn" style="background:var(--ac);color:#fff;" onclick="this.closest('.modal').remove(); if(typeof P!=='undefined'){ P='alerts'; if(typeof buildNav==='function') buildNav(); if(typeof render==='function') render(); }">الذهاب للتنبيهات</button>
             </div>
-        \;
+        `;
         let m = document.createElement('div');
         m.className = 'modal show';
-        m.innerHTML = \<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal').remove()">×</span>\</div>\;
+        m.innerHTML = `<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal').remove()">×</span>${h}</div>`;
         document.body.appendChild(m);
     }
     
@@ -311,7 +311,7 @@ window.askGemini = async function() {
         }
         
         let text = data.candidates[0].content.parts[0].text;
-        let htmlText = text.replace(/\*\*(.*?)\*\*/g, '<strong></strong>').replace(/\n/g, '<br>');
+        let htmlText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
         resDiv.innerHTML = '<div style="background:var(--bg3);padding:15px;border-radius:12px;border:1px solid var(--bd);line-height:1.6;">' + htmlText + '</div>';
         
     } catch(err) {
@@ -326,7 +326,7 @@ window.rAI = function() {
     let aiCard = document.createElement('div');
     aiCard.className = 'card';
     aiCard.style.marginTop = '20px';
-    aiCard.innerHTML = \
+    aiCard.innerHTML = `
         <h3>🤖 المساعد الذكي (Gemini AI)</h3>
         <p style="color:var(--tx2);font-size:0.9rem;margin-bottom:15px;">اطرح سؤالاً عن مبيعاتك، أو اطلب خطة لتطوير المبيعات وتحقيق التارجت للعملاء أو للفروع.</p>
         <div style="display:flex;gap:10px;margin-bottom:15px;">
@@ -334,7 +334,7 @@ window.rAI = function() {
             <button class="btn" style="background:var(--ac);color:#fff;" onclick="askGemini()">إرسال</button>
         </div>
         <div id="aiResponse"></div>
-    \;
+    `;
     let M = document.getElementById('M');
     if(M) M.appendChild(aiCard);
 };
@@ -346,27 +346,27 @@ let old_rCollections = window.rCollections;
 window.rCollections = function() {
     if(old_rCollections) old_rCollections();
     
-    let html = \
+    let html = `
         <div class="card" style="margin-top:20px; border-top:4px solid var(--bl);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-                <h3 style="margin:0;">💰 \</h3>
-                <button class="btn" style="background:var(--ac);color:#fff;" onclick="addColModal()">➕ \</button>
+                <h3 style="margin:0;">💰 ${L==='ar'?'متابعة المتأخرات (ديون العملاء)':'Collections Follow-up'}</h3>
+                <button class="btn" style="background:var(--ac);color:#fff;" onclick="addColModal()">➕ ${L==='ar'?'إضافة متابعة':'Add Follow-up'}</button>
             </div>
             <table style="width:100%;text-align:left;border-collapse:collapse;">
                 <thead>
                     <tr style="border-bottom:1px solid var(--bd);">
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
-                        <th style="padding:10px;">\</th>
+                        <th style="padding:10px;">${L==='ar'?'العميل':'Customer'}</th>
+                        <th style="padding:10px;">${L==='ar'?'المبلغ المتأخر':'Overdue Amount'}</th>
+                        <th style="padding:10px;">${L==='ar'?'موعد السداد المتوقع':'Expected Date'}</th>
+                        <th style="padding:10px;">${L==='ar'?'الحالة':'Status'}</th>
+                        <th style="padding:10px;">${L==='ar'?'الإجراء':'Action'}</th>
                     </tr>
                 </thead>
                 <tbody id="cTbody">
                 </tbody>
             </table>
         </div>
-    \;
+    `;
     let m = document.getElementById('M');
     if(m) {
         let div = document.createElement('div');
@@ -384,7 +384,7 @@ window.loadColFollowups = function() {
     if (!tb) return;
     tb.innerHTML = '';
     if (colData.length === 0) {
-        tb.innerHTML = \<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--tx3);">\</td></tr>\;
+        tb.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--tx3);">${L==='ar'?'لا يوجد ديون مسجلة':'No collections tracked'}</td></tr>`;
         return;
     }
     
@@ -395,15 +395,15 @@ window.loadColFollowups = function() {
         let stColor = c.status === 'paid' ? 'var(--gn)' : (new Date(c.date) < new Date() ? 'var(--rd)' : 'var(--am)');
         let stText = c.status === 'paid' ? (L==='ar'?'تم السداد':'Paid') : (new Date(c.date) < new Date() ? (L==='ar'?'متأخر بشدة':'Heavily Overdue') : (L==='ar'?'قيد الانتظار':'Pending'));
         
-        let actions = c.status === 'paid' ? '-' : \<button class="btn" style="padding:4px 8px;font-size:0.75rem;background:var(--gn);color:#fff;" onclick="markColPaid(\)">\</button>\;
+        let actions = c.status === 'paid' ? '-' : `<button class="btn" style="padding:4px 8px;font-size:0.75rem;background:var(--gn);color:#fff;" onclick="markColPaid(${c.id})">${L==='ar'?'تم السداد':'Mark Paid'}</button>`;
         
-        tr.innerHTML = \
-            <td style="padding:10px;font-weight:bold;">\</td>
-            <td style="padding:10px;color:var(--rd);font-weight:bold;">\</td>
-            <td style="padding:10px;">\</td>
-            <td style="padding:10px;color:\;font-weight:bold;">\</td>
-            <td style="padding:10px;">\</td>
-        \;
+        tr.innerHTML = `
+            <td style="padding:10px;font-weight:bold;">${c.customer}</td>
+            <td style="padding:10px;color:var(--rd);font-weight:bold;">${typeof fmt==='function'?fmt(c.amount):c.amount}</td>
+            <td style="padding:10px;">${c.date}</td>
+            <td style="padding:10px;color:${stColor};font-weight:bold;">${stText}</td>
+            <td style="padding:10px;">${actions}</td>
+        `;
         tb.appendChild(tr);
     });
 };
@@ -411,21 +411,21 @@ window.loadColFollowups = function() {
 window.addColModal = function() {
     let S_data = window.S || [];
     let cList = [...new Set(S_data.map(r=>r.Customer).filter(Boolean))];
-    let opts = cList.map(c => \<option value="\">\</option>\).join('');
-    let h = \
-        <h3>\</h3>
-        <label>\</label>
-        <select id="ncCust" class="sbox" style="width:100%;margin-bottom:10px;">\</select>
-        <label>\</label>
+    let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
+    let h = `
+        <h3>${L==='ar'?'إضافة مبلغ متأخر للعميل':'Add Overdue Amount'}</h3>
+        <label>${L==='ar'?'العميل':'Customer'}</label>
+        <select id="ncCust" class="sbox" style="width:100%;margin-bottom:10px;">${opts}</select>
+        <label>${L==='ar'?'المبلغ المتأخر':'Overdue Amount'}</label>
         <input type="number" id="ncAmount" class="sbox" style="width:100%;margin-bottom:10px;">
-        <label>\</label>
+        <label>${L==='ar'?'موعد السداد المتوقع':'Expected Payment Date'}</label>
         <input type="date" id="ncDate" class="sbox" style="width:100%;margin-bottom:10px;">
-        <button class="btn" style="width:100%;background:var(--ac);color:#fff;" onclick="saveCol()">\</button>
-    \;
+        <button class="btn" style="width:100%;background:var(--ac);color:#fff;" onclick="saveCol()">${L==='ar'?'حفظ':'Save'}</button>
+    `;
     let m = document.createElement('div');
     m.className = 'modal show';
     m.id = 'cModal';
-    m.innerHTML = \<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal').remove()">×</span>\</div>\;
+    m.innerHTML = `<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal').remove()">×</span>${h}</div>`;
     document.body.appendChild(m);
 };
 
