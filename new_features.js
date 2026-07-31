@@ -48,7 +48,7 @@
 // VISITS (الزيارات)
 // =======================
 function rVisits() {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     let html = `
         <div class="ph">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🚗</span> ${L==='ar'?'الزيارات ومتابعة العملاء':'Visits & Follow-up'}</h1>
@@ -79,7 +79,7 @@ function rVisits() {
 let visitsData = [];
 
 function loadVisits() {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
     let tb = document.getElementById('vTbody');
     if (!tb) return;
@@ -102,7 +102,7 @@ function loadVisits() {
 }
 
 window.addVisitModal = function() {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     let S = window.S || [];
     let cList = [...new Set(S.map(r=>r.Customer).filter(Boolean))];
     let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -148,7 +148,7 @@ window.saveVisit = function() {
 // LEADS (العملاء المحتملين)
 // =======================
 function rLeads() {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     let html = `
         <div class="ph">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🤝</span> ${L==='ar'?'عملاء محتملين (Leads)':'Potential Clients'}</h1>
@@ -184,7 +184,7 @@ function rLeads() {
 let leadsData = [];
 
 function loadLeads() {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     leadsData = JSON.parse(localStorage.getItem('sp_leads') || '[]');
     let tb = document.getElementById('lTbody');
     if (!tb) return;
@@ -223,7 +223,7 @@ function loadLeads() {
 }
 
 window.addLeadModal = function() {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     let h = `
         <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">🤝 ${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</h3>
         <label class="sp-form-label">${L==='ar'?'اسم العميل':'Client Name'}</label>
@@ -258,7 +258,7 @@ window.saveLead = function() {
 };
 
 window.convertLead = function(id) {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     if(!confirm(L==='ar'?'هل أنت متأكد من تحويل هذا العميل إلى عميل فعلي؟':'Convert this lead to a real customer?')) return;
     let idx = leadsData.findIndex(l => l.id === id);
     if(idx > -1) {
@@ -396,7 +396,7 @@ window.askGemini = async function() {
 let old_rAI = window.rAI;
 window.rAI = function() {
     if(old_rAI) old_rAI();
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     let aiCard = document.createElement('div');
     aiCard.className = 'card';
     aiCard.style.marginTop = '20px';
@@ -419,7 +419,7 @@ window.rAI = function() {
 let old_rCollections = window.rCollections;
 window.rCollections = function() {
     if(old_rCollections) old_rCollections();
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     
     let html = `
         <div class="card" style="margin-top:20px; border-top:4px solid var(--ac);">
@@ -456,7 +456,7 @@ window.rCollections = function() {
 let colData = [];
 
 window.loadColFollowups = function() {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     colData = JSON.parse(localStorage.getItem('sp_collections_fu') || '[]');
     let tb = document.getElementById('cTbody');
     if (!tb) return;
@@ -487,7 +487,7 @@ window.loadColFollowups = function() {
 };
 
 window.addColModal = function() {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     let S_data = window.S || [];
     let cList = [...new Set(S_data.map(r=>r.Customer).filter(Boolean))];
     let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -525,7 +525,7 @@ window.saveCol = function() {
 };
 
 window.markColPaid = function(id) {
-    let L = window.L || 'ar';
+    let L = localStorage.getItem('sp_lang') || 'ar';
     if(!confirm(L==='ar'?'هل أنت متأكد من تسجيل المبلغ كمسدد؟':'Mark as paid?')) return;
     let idx = colData.findIndex(c => c.id === id);
     if(idx > -1) {
@@ -560,7 +560,7 @@ window.injectBranchCards = function() {
         
         let dashCards = document.querySelector('.kg'); // The grid for KPIs
         if(dashCards && !document.getElementById('branchLuxor')) {
-            let L = window.L || 'ar';
+            let L = localStorage.getItem('sp_lang') || 'ar';
             let html = `
                 <div class="ki" id="branchLuxor" style="border-left: 3px solid var(--ac); background: var(--bg3);">
                     <div class="lb">${L==='ar'?'مبيعات الأقصر':'Luxor Sales'}</div>
@@ -598,7 +598,7 @@ window.buildNav = function() {
     if(old_buildNav) old_buildNav();
     
     setTimeout(() => {
-        let L = window.L || 'ar';
+        let L = localStorage.getItem('sp_lang') || 'ar';
         let elVisits = document.querySelector('.ni[data-p="visits"] span:nth-child(2)');
         if(elVisits) elVisits.textContent = L==='ar' ? 'الزيارات' : 'Visits';
         
