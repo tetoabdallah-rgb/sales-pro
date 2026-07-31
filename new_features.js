@@ -1,6 +1,11 @@
-﻿// new_features.js - Added for Visits, Leads, AI Assistant, Collections Follow-up
 
-// Inject Custom CSS for Modals to match the dark theme perfectly
+// new_features.js - Universal, Safe, and Dynamic Injection
+
+// --- DATA ACCESS HELPERS ---
+function getS() { try { return JSON.parse(localStorage.getItem('salesData') || '[]'); } catch(e){ return []; } }
+function getT() { try { return JSON.parse(localStorage.getItem('targetData') || '[]'); } catch(e){ return []; } }
+
+// --- UI STYLES ---
 (function injectStyles() {
     if(document.getElementById('sp-new-features-css')) return;
     let style = document.createElement('style');
@@ -44,10 +49,8 @@
     document.head.appendChild(style);
 })();
 
-// =======================
-// VISITS (الزيارات)
-// =======================
-function rVisits() {
+// --- VISITS ---
+window.rVisits = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
     let html = `
         <div class="ph">
@@ -65,22 +68,18 @@ function rVisits() {
                             <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الزيارة القادمة':'Next Visit'}</th>
                         </tr>
                     </thead>
-                    <tbody id="vTbody">
-                    </tbody>
+                    <tbody id="vTbody"></tbody>
                 </table>
             </div>
         </div>
     `;
     let M = document.getElementById('M');
-    if(M) M.innerHTML = html;
-    loadVisits();
-}
-
-let visitsData = [];
+    if(M) { M.innerHTML = html; loadVisits(); }
+};
 
 function loadVisits() {
     let L = localStorage.getItem('sp_lang') || 'ar';
-    visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
+    let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
     let tb = document.getElementById('vTbody');
     if (!tb) return;
     tb.innerHTML = '';
@@ -103,23 +102,21 @@ function loadVisits() {
 
 window.addVisitModal = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
-    let S = (typeof S !== "undefined" ? S : []) || [];
-    let cList = [...new Set(S.map(r=>r.Customer).filter(Boolean))];
+    let S_data = getS();
+    let cList = [...new Set(S_data.map(r=>r.Customer).filter(Boolean))];
     let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
+    if(!opts) opts = `<option value="">${L==='ar'?'لا يوجد عملاء (يرجى رفع ملف المبيعات)':'No customers found'}</option>`;
+    
     let h = `
         <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">🚗 ${L==='ar'?'تسجيل زيارة جديدة':'Log New Visit'}</h3>
         <label class="sp-form-label">${L==='ar'?'العميل':'Customer'}</label>
         <select id="nvCust" class="sp-form-input">${opts}</select>
-        
         <label class="sp-form-label">${L==='ar'?'تاريخ الزيارة':'Visit Date'}</label>
         <input type="date" id="nvDate" class="sp-form-input" value="${new Date().toISOString().split('T')[0]}">
-        
         <label class="sp-form-label">${L==='ar'?'نتائج الزيارة / ملاحظات':'Outcome / Notes'}</label>
         <textarea id="nvOutcome" class="sp-form-input" style="height:80px;resize:vertical;" placeholder="${L==='ar'?'ماذا حدث في الزيارة؟':'What happened?'}"></textarea>
-        
         <label class="sp-form-label">${L==='ar'?'موعد الزيارة القادمة':'Next Visit Date'}</label>
         <input type="date" id="nvNext" class="sp-form-input">
-        
         <button class="sp-btn-primary" onclick="saveVisit()">${L==='ar'?'حفظ الزيارة':'Save Visit'}</button>
     `;
     let m = document.createElement('div');
@@ -135,6 +132,7 @@ window.saveVisit = function() {
     let o = document.getElementById('nvOutcome').value;
     let n = document.getElementById('nvNext').value;
     if(!c || !d) { alert('العميل والتاريخ مطلوبان'); return; }
+    let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
     visitsData.push({ id: Date.now(), customer: c, date: d, outcome: o, nextDate: n });
     localStorage.setItem('sp_visits', JSON.stringify(visitsData));
     let modal = document.getElementById('vModal');
@@ -144,97 +142,68 @@ window.saveVisit = function() {
 };
 
 
-// =======================
-// LEADS (العملاء المحتملين)
-// =======================
-function rLeads() {
+
+// --- LEADS ---
+window.rLeads = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
     let html = `
         <div class="ph">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🤝</span> ${L==='ar'?'عملاء محتملين (Leads)':'Potential Clients'}</h1>
-            <button class="btn" onclick="addLeadModal()" style="background:var(--ac);color:#fff;font-weight:bold;">➕ ${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</button>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🤝</span> ${L==='ar'?'عملاء محتملين (Leads)':'Potential Leads'}</h1>
+            <button class="btn bg-p" onclick="addLeadModal()" style="color:#fff;border:none;">${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</button>
         </div>
-        <div class="kg" style="margin-top:20px;margin-bottom:20px;">
-            <div class="ki"><div class="lb">${L==='ar'?'إجمالي المحتملين':'Total Leads'}</div><div class="vl" id="ldTot">0</div></div>
-            <div class="ki" style="color:var(--am)"><div class="lb">${L==='ar'?'قيد التواصل':'In Progress'}</div><div class="vl" id="ldInp">0</div></div>
-            <div class="ki" style="color:var(--gn)"><div class="lb">${L==='ar'?'تم التحويل (Converted)':'Converted'}</div><div class="vl" id="ldConv">0</div></div>
-        </div>
-        <div class="card" id="leadsList">
+        <div class="card" id="leadsList" style="margin-top:20px;">
             <div style="overflow-x:auto;">
                 <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
                     <thead>
                         <tr style="border-bottom:2px solid var(--bd);">
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الاسم':'Name'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'اسم العميل':'Lead Name'}</th>
                             <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'رقم الهاتف':'Phone'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'المصدر':'Source'}</th>
                             <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الحالة':'Status'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الإجراء':'Action'}</th>
                         </tr>
                     </thead>
-                    <tbody id="lTbody">
-                    </tbody>
+                    <tbody id="lTbody"></tbody>
                 </table>
             </div>
         </div>
     `;
     let M = document.getElementById('M');
-    if(M) M.innerHTML = html;
-    loadLeads();
-}
-
-let leadsData = [];
+    if(M) { M.innerHTML = html; loadLeads(); }
+};
 
 function loadLeads() {
     let L = localStorage.getItem('sp_lang') || 'ar';
-    leadsData = JSON.parse(localStorage.getItem('sp_leads') || '[]');
+    let leadsData = JSON.parse(localStorage.getItem('sp_leads') || '[]');
     let tb = document.getElementById('lTbody');
     if (!tb) return;
     tb.innerHTML = '';
-    
-    let tot=0, inp=0, conv=0;
-    
-    leadsData.forEach(ld => {
-        tot++;
-        if(ld.status === 'converted') conv++;
-        else inp++;
-        
+    if (leadsData.length === 0) {
+        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'لا يوجد عملاء محتملين بعد.':'No leads yet.'}</td></tr>`;
+        return;
+    }
+    leadsData.forEach(v => {
         let tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid var(--bd-s)';
-        let stColor = ld.status === 'converted' ? 'var(--gn)' : 'var(--am)';
-        let stText = ld.status === 'converted' ? (L==='ar'?'عميل فعلي':'Converted') : (L==='ar'?'تواصل مبدئي':'Pending');
-        
-        let actions = ld.status === 'converted' ? '<span style="color:var(--tx3);">-</span>' : `<button class="btn" style="padding:6px 12px;font-size:0.8rem;background:var(--gn);color:#fff;border-radius:6px;font-weight:bold;" onclick="convertLead(${ld.id})">${L==='ar'?'تحويل لعميل':'Convert'}</button>`;
-        
         tr.innerHTML = `
-            <td style="padding:15px 10px;font-weight:bold;">${ld.name}</td>
-            <td style="padding:15px 10px;color:var(--tx2);">${ld.phone || '-'}</td>
-            <td style="padding:15px 10px;"><span style="color:${stColor};background:var(--bg3);padding:4px 8px;border-radius:4px;font-weight:bold;font-size:0.85rem;">${stText}</span></td>
-            <td style="padding:15px 10px;">${actions}</td>
+            <td style="padding:15px 10px;font-weight:bold;color:var(--tx1);">${v.name}</td>
+            <td style="padding:15px 10px;">${v.phone || '-'}</td>
+            <td style="padding:15px 10px;">${v.source || '-'}</td>
+            <td style="padding:15px 10px;"><span style="background:var(--bg3);padding:4px 8px;border-radius:4px;color:var(--pu);">${v.status || 'New'}</span></td>
         `;
         tb.appendChild(tr);
     });
-    
-    if(tot===0) {
-        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'لا يوجد عملاء محتملين. ابدأ بإضافة عميل!':'No leads'}</td></tr>`;
-    }
-    
-    document.getElementById('ldTot').textContent = tot;
-    document.getElementById('ldInp').textContent = inp;
-    document.getElementById('ldConv').textContent = conv;
 }
 
 window.addLeadModal = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
     let h = `
-        <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">🤝 ${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</h3>
-        <label class="sp-form-label">${L==='ar'?'اسم العميل':'Client Name'}</label>
-        <input type="text" id="nlName" class="sp-form-input" placeholder="${L==='ar'?'الاسم...':'Name...'}">
-        
+        <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">🤝 ${L==='ar'?'إضافة عميل محتمل':'Add New Lead'}</h3>
+        <label class="sp-form-label">${L==='ar'?'الاسم':'Name'}</label>
+        <input type="text" id="nlName" class="sp-form-input">
         <label class="sp-form-label">${L==='ar'?'رقم الهاتف':'Phone'}</label>
-        <input type="text" id="nlPhone" class="sp-form-input" placeholder="${L==='ar'?'01...':'01...'}">
-        
-        <label class="sp-form-label">${L==='ar'?'ملاحظات / الاهتمام':'Notes'}</label>
-        <textarea id="nlNotes" class="sp-form-input" style="height:80px;resize:vertical;" placeholder="${L==='ar'?'اكتب تفاصيل الفرصة...':'Notes...'}"></textarea>
-        
+        <input type="text" id="nlPhone" class="sp-form-input">
+        <label class="sp-form-label">${L==='ar'?'المصدر (فيسبوك، زيارة، الخ)':'Source'}</label>
+        <input type="text" id="nlSource" class="sp-form-input">
         <button class="sp-btn-primary" onclick="saveLead()">${L==='ar'?'حفظ العميل':'Save Lead'}</button>
     `;
     let m = document.createElement('div');
@@ -247,400 +216,23 @@ window.addLeadModal = function() {
 window.saveLead = function() {
     let n = document.getElementById('nlName').value;
     let p = document.getElementById('nlPhone').value;
-    let nt = document.getElementById('nlNotes').value;
+    let s = document.getElementById('nlSource').value;
     if(!n) { alert('الاسم مطلوب'); return; }
-    leadsData.push({ id: Date.now(), name: n, phone: p, notes: nt, status: 'new', date: new Date().toISOString() });
+    let leadsData = JSON.parse(localStorage.getItem('sp_leads') || '[]');
+    leadsData.push({ id: Date.now(), name: n, phone: p, source: s, status: 'New' });
     localStorage.setItem('sp_leads', JSON.stringify(leadsData));
     let modal = document.getElementById('lModal');
     if(modal) modal.remove();
     loadLeads();
-    if(typeof toast === 'function') toast('تم إضافة العميل المحتمل', 'success');
+    if(typeof toast === 'function') toast('تم الحفظ بنجاح', 'success');
 };
 
-window.convertLead = function(id) {
-    let L = localStorage.getItem('sp_lang') || 'ar';
-    if(!confirm(L==='ar'?'هل أنت متأكد من تحويل هذا العميل إلى عميل فعلي؟':'Convert this lead to a real customer?')) return;
-    let idx = leadsData.findIndex(l => l.id === id);
-    if(idx > -1) {
-        leadsData[idx].status = 'converted';
-        localStorage.setItem('sp_leads', JSON.stringify(leadsData));
-        loadLeads();
-        if(typeof toast === 'function') toast(L==='ar'?'تم التحويل بنجاح':'Converted successfully', 'success');
-    }
-};
-
-
-// =======================
-// DAILY ALERTS CHECK (التنبيهات اليومية)
-// =======================
-window.checkDailyAlerts = function() {
-    let lastCheck = localStorage.getItem('sp_last_alert_check');
-    let today = new Date().toISOString().split('T')[0];
-    if(lastCheck === today) return;
-    
-    let delayCount = 0;
-    let T_data = (typeof T !== "undefined" ? T : []) || [];
-    let S_data = (typeof S !== "undefined" ? S : []) || [];
-    if (T_data.length > 0 && S_data.length > 0) {
-        let cuS = {};
-        S_data.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(typeof getSalesVal === 'function' ? getSalesVal(r) : Number(r['Sales Without Tax']||0)); });
-        T_data.forEach(r => {
-            let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
-            if(pct < 50 && tg > 0) delayCount++;
-        });
-    }
-    
-    if (delayCount > 0) {
-        let emailBody = encodeURIComponent(`تنبيه: يوجد ${delayCount} عملاء متأخرين عن تحقيق 50% من المستهدف. يرجى المتابعة.`);
-        let h = `
-            <div style="text-align:center;padding:10px;">
-                <div style="font-size:3.5rem;margin-bottom:10px;">⚠️</div>
-                <h2 style="color:var(--rd);margin:0 0 10px 0;">تنبيهات المتأخرات اليومية</h2>
-                <p style="margin-bottom:20px;color:var(--tx2);line-height:1.5;">يوجد <strong>${delayCount}</strong> عملاء متأخرين عن تحقيق المستهدف (أقل من 50%). يرجى مراجعة صفحة التنبيهات.</p>
-                <div style="display:flex;gap:10px;flex-direction:column;">
-                    <button class="sp-btn-primary" onclick="this.closest('.sp-modal-overlay').remove(); if(typeof P!=='undefined'){ P='alerts'; if(typeof buildNav==='function') buildNav(); if(typeof render==='function') render(); }">مراجعة التنبيهات في التطبيق</button>
-                    <a href="mailto:?subject=تنبيه تأخير تارجت العملاء&body=${emailBody}" class="btn" style="background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);padding:12px;border-radius:8px;text-decoration:none;display:block;">📧 إرسال تنبيه عبر الإيميل</a>
-                </div>
-            </div>
-        `;
-        let m = document.createElement('div');
-        m.className = 'sp-modal-overlay';
-        m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
-        document.body.appendChild(m);
-    }
-    
-    localStorage.setItem('sp_last_alert_check', today);
-};
-
-let oldInit = window.init;
-window.init = function() {
-    if(oldInit) oldInit();
-    setTimeout(window.checkDailyAlerts, 3000);
-    setTimeout(window.injectBranchCards, 3000);
-};
-
-// =======================
-// GEMINI AI INTEGRATION
-// =======================
-window.askGemini = async function() {
-    let q = document.getElementById('aiInput').value;
-    if(!q) return;
-    
-    let apiKey = localStorage.getItem('sp_gemini_key');
-    if(!apiKey) {
-        let h = `
-            <h3 style="margin-bottom:15px;color:var(--tx1);">🤖 تفعيل المساعد الذكي</h3>
-            <p style="color:var(--tx2);font-size:0.9rem;margin-bottom:15px;line-height:1.5;">لإستخدام المساعد الذكي، يرجى إدخال مفتاح Google Gemini API Key الخاص بك (يمكنك الحصول عليه مجاناً من Google AI Studio).</p>
-            <input type="text" id="tmpApiKey" class="sp-form-input" placeholder="AIzaSy...">
-            <button class="sp-btn-primary" onclick="
-                let k = document.getElementById('tmpApiKey').value;
-                if(k) { localStorage.setItem('sp_gemini_key', k); this.closest('.sp-modal-overlay').remove(); window.askGemini(); }
-            ">حفظ المفتاح</button>
-        `;
-        let m = document.createElement('div');
-        m.className = 'sp-modal-overlay';
-        m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
-        document.body.appendChild(m);
-        return;
-    }
-    
-    let resDiv = document.getElementById('aiResponse');
-    resDiv.innerHTML = '<div style="color:var(--ac);padding:15px;text-align:center;background:var(--bg3);border-radius:12px;">جارٍ التحليل والتفكير... 🤖</div>';
-    
-    try {
-        let context = "أنت مساعد ذكي لمدير مبيعات يعمل على تطبيق Sales Pro. لديك البيانات التالية:\n";
-        let T_data = (typeof T !== "undefined" ? T : []) || [];
-        let S_data = (typeof S !== "undefined" ? S : []) || [];
-        if (T_data.length > 0) {
-            context += "إجمالي المستهدف: " + T_data.reduce((acc,r)=>acc+(Number(r.Target)||0),0) + "\n";
-        }
-        if (S_data.length > 0) {
-            let luxorSales = 0, qobbahSales = 0;
-            S_data.forEach(s => {
-                let val = Number(s['Sales Without Tax'] || 0);
-                let c = (s.Customer || '').toLowerCase();
-                let ref = (s['Payment Ref.'] || '').toLowerCase();
-                if(c.includes('أقصر') || c.includes('اقصر') || c.includes('luxor') || ref.includes('luxor')) {
-                    luxorSales += val;
-                } else {
-                    qobbahSales += val;
-                }
-            });
-            context += "مبيعات فرع الأقصر: " + luxorSales + "\n";
-            context += "مبيعات فرع حدائق القبة: " + qobbahSales + "\n";
-        }
-        
-        let response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                contents: [{parts: [{text: context + "\nسؤال المستخدم: " + q}]}]
-            })
-        });
-        
-        let data = await response.json();
-        if(data.error) {
-            resDiv.innerHTML = '<div style="color:var(--rd);padding:15px;background:var(--bg3);border-radius:12px;">خطأ في API: ' + data.error.message + '</div>';
-            return;
-        }
-        
-        let text = data.candidates[0].content.parts[0].text;
-        let htmlText = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--ac);">$1</strong>').replace(/\n/g, '<br>');
-        resDiv.innerHTML = '<div style="background:var(--bg3);padding:20px;border-radius:12px;border:1px solid var(--bd);line-height:1.7;color:var(--tx1);font-size:0.95rem;">' + htmlText + '</div>';
-        
-    } catch(err) {
-        resDiv.innerHTML = '<div style="color:var(--rd);padding:15px;background:var(--bg3);border-radius:12px;">حدث خطأ في الاتصال. تأكد من صحة المفتاح والإنترنت.</div>';
-    }
-};
-
-let old_rAI = window.rAI;
-window.rAI = function() {
-    if(old_rAI) old_rAI();
-    let L = localStorage.getItem('sp_lang') || 'ar';
-    let aiCard = document.createElement('div');
-    aiCard.className = 'card';
-    aiCard.style.marginTop = '20px';
-    aiCard.innerHTML = `
-        <h3 style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">🤖 ${L==='ar'?'المساعد الذكي (Gemini AI)':'AI Assistant'}</h3>
-        <p style="color:var(--tx2);font-size:0.95rem;margin-bottom:20px;line-height:1.5;">${L==='ar'?'اطرح سؤالاً عن مبيعاتك، أو اطلب خطة لتطوير المبيعات وتحقيق التارجت للعملاء أو للفروع (مثل فرع الأقصر أو حدائق القبة).':'Ask anything about sales or request a plan.'}</p>
-        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-            <input type="text" id="aiInput" class="sp-form-input" style="flex:1;min-width:250px;margin:0;" placeholder="${L==='ar'?'مثال: اقترح خطة لزيادة مبيعات فرع الأقصر هذا الشهر...':'Ask something...'}">
-            <button class="sp-btn-primary" style="width:auto;min-width:120px;" onclick="askGemini()">${L==='ar'?'إرسال للذكاء الاصطناعي':'Send'}</button>
-        </div>
-        <div id="aiResponse"></div>
-    `;
-    let M = document.getElementById('M');
-    if(M) M.appendChild(aiCard);
-};
-
-// =======================
-// COLLECTIONS FOLLOW-UP (التحصيلات)
-// =======================
-let old_rCollections = window.rCollections;
-window.rCollections = function() {
-    if(old_rCollections) old_rCollections();
-    let L = localStorage.getItem('sp_lang') || 'ar';
-    
-    let html = `
-        <div class="card" style="margin-top:20px; border-top:4px solid var(--ac);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-                <h3 style="margin:0;display:flex;align-items:center;gap:8px;">💰 ${L==='ar'?'متابعة التحصيلات والمتأخرات':'Collections Follow-up'}</h3>
-                <button class="btn" style="background:var(--ac);color:#fff;font-weight:bold;padding:8px 16px;" onclick="addColModal()">➕ ${L==='ar'?'إضافة متابعة تحصيل':'Add Follow-up'}</button>
-            </div>
-            <div style="overflow-x:auto;">
-                <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
-                    <thead>
-                        <tr style="border-bottom:2px solid var(--bd);">
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'العميل':'Customer'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'المبلغ المتأخر':'Overdue Amount'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'موعد السداد المتوقع':'Expected Date'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الحالة':'Status'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الإجراء':'Action'}</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cTbody">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-    let m = document.getElementById('M');
-    if(m) {
-        let div = document.createElement('div');
-        div.innerHTML = html;
-        m.appendChild(div);
-        loadColFollowups();
-    }
-};
-
-let colData = [];
-
-window.loadColFollowups = function() {
-    let L = localStorage.getItem('sp_lang') || 'ar';
-    colData = JSON.parse(localStorage.getItem('sp_collections_fu') || '[]');
-    let tb = document.getElementById('cTbody');
-    if (!tb) return;
-    tb.innerHTML = '';
-    if (colData.length === 0) {
-        tb.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'لا يوجد ديون مسجلة للمتابعة.':'No collections tracked'}</td></tr>`;
-        return;
-    }
-    
-    colData.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(c => {
-        let tr = document.createElement('tr');
-        tr.style.borderBottom = '1px solid var(--bd-s)';
-        
-        let stColor = c.status === 'paid' ? 'var(--gn)' : (new Date(c.date) < new Date() ? 'var(--rd)' : 'var(--am)');
-        let stText = c.status === 'paid' ? (L==='ar'?'تم السداد':'Paid') : (new Date(c.date) < new Date() ? (L==='ar'?'متأخر بشدة':'Heavily Overdue') : (L==='ar'?'قيد الانتظار':'Pending'));
-        
-        let actions = c.status === 'paid' ? '<span style="color:var(--tx3);">-</span>' : `<button class="btn" style="padding:6px 12px;font-size:0.8rem;background:var(--gn);color:#fff;border-radius:6px;font-weight:bold;" onclick="markColPaid(${c.id})">${L==='ar'?'تم السداد':'Mark Paid'}</button>`;
-        
-        tr.innerHTML = `
-            <td style="padding:15px 10px;font-weight:bold;color:var(--tx1);">${c.customer}</td>
-            <td style="padding:15px 10px;color:var(--rd);font-weight:bold;font-size:1.1rem;">${typeof fmt==='function'?fmt(c.amount):c.amount}</td>
-            <td style="padding:15px 10px;color:var(--tx2);">${c.date}</td>
-            <td style="padding:15px 10px;"><span style="color:${stColor};background:var(--bg3);padding:4px 8px;border-radius:4px;font-weight:bold;font-size:0.85rem;">${stText}</span></td>
-            <td style="padding:15px 10px;">${actions}</td>
-        `;
-        tb.appendChild(tr);
-    });
-};
-
-window.addColModal = function() {
-    let L = localStorage.getItem('sp_lang') || 'ar';
-    let S_data = (typeof S !== "undefined" ? S : []) || [];
-    let cList = [...new Set(S_data.map(r=>r.Customer).filter(Boolean))];
-    let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
-    let h = `
-        <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">💰 ${L==='ar'?'إضافة مبلغ متأخر للعميل':'Add Overdue Amount'}</h3>
-        <label class="sp-form-label">${L==='ar'?'العميل':'Customer'}</label>
-        <select id="ncCust" class="sp-form-input">${opts}</select>
-        
-        <label class="sp-form-label">${L==='ar'?'المبلغ المتأخر':'Overdue Amount'}</label>
-        <input type="number" id="ncAmount" class="sp-form-input" placeholder="0.00">
-        
-        <label class="sp-form-label">${L==='ar'?'موعد السداد المتوقع':'Expected Payment Date'}</label>
-        <input type="date" id="ncDate" class="sp-form-input" value="${new Date().toISOString().split('T')[0]}">
-        
-        <button class="sp-btn-primary" onclick="saveCol()">${L==='ar'?'حفظ המتابعة':'Save'}</button>
-    `;
-    let m = document.createElement('div');
-    m.className = 'sp-modal-overlay';
-    m.id = 'cModal';
-    m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
-    document.body.appendChild(m);
-};
-
-window.saveCol = function() {
-    let c = document.getElementById('ncCust').value;
-    let a = document.getElementById('ncAmount').value;
-    let d = document.getElementById('ncDate').value;
-    if(!c || !a || !d) { alert('جميع الحقول مطلوبة'); return; }
-    colData.push({ id: Date.now(), customer: c, amount: Number(a), date: d, status: 'pending' });
-    localStorage.setItem('sp_collections_fu', JSON.stringify(colData));
-    let modal = document.getElementById('cModal');
-    if(modal) modal.remove();
-    loadColFollowups();
-    if(typeof toast === 'function') toast('تم إضافة المتأخرات', 'success');
-};
-
-window.markColPaid = function(id) {
-    let L = localStorage.getItem('sp_lang') || 'ar';
-    if(!confirm(L==='ar'?'هل أنت متأكد من تسجيل المبلغ كمسدد؟':'Mark as paid?')) return;
-    let idx = colData.findIndex(c => c.id === id);
-    if(idx > -1) {
-        colData[idx].status = 'paid';
-        localStorage.setItem('sp_collections_fu', JSON.stringify(colData));
-        loadColFollowups();
-        if(typeof toast === 'function') toast(L==='ar'?'تم سداد المبلغ':'Marked as paid', 'success');
-    }
-};
-
-// =======================
-// DYNAMIC UI INJECTION & BRANCH CARDS
-// =======================
-window.injectBranchCards = function() {
-    // Only inject in Dashboard
-    if(typeof P !== 'undefined' && P === 'dash') {
-        let S_data = (typeof S !== "undefined" ? S : []) || [];
-        if(S_data.length === 0) return;
-        
-        // Calculate Branch Sales
-        let luxorSales = 0, qobbahSales = 0;
-        S_data.forEach(s => {
-            let val = Number(s['Sales Without Tax'] || 0);
-            let c = (s.Customer || '').toLowerCase();
-            let ref = (s['Payment Ref.'] || '').toLowerCase();
-            if(c.includes('أقصر') || c.includes('اقصر') || c.includes('luxor') || ref.includes('luxor')) {
-                luxorSales += val;
-            } else {
-                qobbahSales += val;
-            }
-        });
-        
-        let dashCards = document.querySelector('.kg'); // The grid for KPIs
-        if(dashCards && !document.getElementById('branchLuxor')) {
-            let L = localStorage.getItem('sp_lang') || 'ar';
-            let html = `
-                <div class="ki" id="branchLuxor" style="border-left: 3px solid var(--ac); background: var(--bg3);">
-                    <div class="lb">${L==='ar'?'مبيعات الأقصر':'Luxor Sales'}</div>
-                    <div class="vl" style="color:var(--tx1);">${typeof fmt==='function'?fmt(luxorSales):luxorSales}</div>
-                </div>
-                <div class="ki" id="branchQobbah" style="border-left: 3px solid var(--pu); background: var(--bg3);">
-                    <div class="lb">${L==='ar'?'مبيعات حدائق القبة':'Qobbah Sales'}</div>
-                    <div class="vl" style="color:var(--tx1);">${typeof fmt==='function'?fmt(qobbahSales):qobbahSales}</div>
-                </div>
-            `;
-            dashCards.insertAdjacentHTML('beforeend', html);
-        }
-    }
-};
-
-(function injectNavItems() {
-    if (typeof NAV !== 'undefined') {
-        if (!NAV.find(n => n.p === 'visits')) {
-            let coreIdx = NAV.findIndex(n => n.s && (n.s.en === 'Depts' || n.s.en === 'Advanced'));
-            if (coreIdx > -1) {
-                NAV.splice(coreIdx, 0, {p:'visits',ic:'🚗'}, {p:'leads',ic:'🤝'});
-            } else {
-                NAV.push({p:'visits',ic:'🚗'}, {p:'leads',ic:'🤝'});
-            }
-        }
-    }
-    if (typeof ICONS !== 'undefined') {
-        ICONS['visits'] = '🚗';
-        ICONS['leads'] = '🤝';
-    }
-})();
-
-let old_buildNav = window.buildNav;
-window.buildNav = function() {
-    if(old_buildNav) old_buildNav();
-    
-    setTimeout(() => {
-        let L = localStorage.getItem('sp_lang') || 'ar';
-        let elVisits = document.querySelector('.ni[data-p="visits"] span:nth-child(2)');
-        if(elVisits) elVisits.textContent = L==='ar' ? 'الزيارات' : 'Visits';
-        
-        let elLeads = document.querySelector('.ni[data-p="leads"] span:nth-child(2)');
-        if(elLeads) elLeads.textContent = L==='ar' ? 'محتملين' : 'Leads';
-        
-        let elCol = document.querySelector('.ni[data-p="collections"] span:nth-child(2)');
-        if(elCol) elCol.textContent = L==='ar' ? 'التحصيلات' : 'Collections';
-    }, 50);
-};
-
-let old_render = window.render;
-window.render = function() {
-    if (typeof P !== 'undefined') {
-        if (P === 'visits') {
-            if (typeof buildNav === 'function') buildNav();
-            rVisits();
-            return;
-        }
-        if (P === 'leads') {
-            if (typeof buildNav === 'function') buildNav();
-            rLeads();
-            return;
-        }
-        if (P === 'collections') {
-            if (typeof buildNav === 'function') buildNav();
-            if (typeof rCollections === 'function') rCollections();
-            return;
-        }
-    }
-    if (old_render) old_render();
-    setTimeout(window.injectBranchCards, 100);
-};
-
-
-
-// =======================
-// TARGETS ENHANCEMENT (نسب المحقق)
-// =======================
+// --- TARGETS ---
 window.rTgt = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
-    let sData = typeof getFilteredSales === 'function' ? getFilteredSales() : (typeof S !== "undefined" ? S : []);
+    let sData = typeof getFilteredSales === 'function' ? getFilteredSales() : getS();
+    let tData = getT();
+    
     let sMap = {}, accSMap = {}, hwSMap = {};
     let pMap = {}, accPMap = {}, hwPMap = {};
     
@@ -660,12 +252,12 @@ window.rTgt = function() {
     }
     
     let cS = (c) => sMap[c] || 0;
-    let cSF = (c, f) => f === isAcc ? (accSMap[c] || 0) : (hwSMap[c] || 0);
-    let cPF = (c, f) => f === isAcc ? (accPMap[c] || 0) : (hwPMap[c] || 0);
+    let cSF = (c, f) => f === window.isAcc ? (accSMap[c] || 0) : (hwSMap[c] || 0);
+    let cPF = (c, f) => f === window.isAcc ? (accPMap[c] || 0) : (hwPMap[c] || 0);
 
     let tt=0, ta=0;
-    if((typeof T !== "undefined" ? T : []) && (typeof T !== "undefined" ? T : []).length > 0) {
-        (typeof T !== "undefined" ? T : []).forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
+    if(tData && tData.length > 0) {
+        tData.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
     }
     
     let mDiv = document.getElementById('M');
@@ -673,7 +265,7 @@ window.rTgt = function() {
     
     mDiv.innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS ? ICONS.targets : '🎯'}</span> ${typeof t==='function'?t('targets'):(L==='ar'?'المستهدفات':'Targets')}</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${window.ICONS ? window.ICONS.targets : '🎯'}</span> ${typeof t==='function'?t('targets'):(L==='ar'?'المستهدفات':'Targets')}</h1>
             <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
         </div>
         <div class="kg">
@@ -704,9 +296,8 @@ window.rTgt = function() {
         </div>
     `;
     
-    let btnEx = document.getElementById('bExTgt');
-    if(btnEx && typeof exportToExcel === 'function') {
-        btnEx.onclick = () => exportToExcel((typeof T !== "undefined" ? T : []).map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
+    if(document.getElementById('bExTgt') && typeof exportToExcel === 'function') {
+        document.getElementById('bExTgt').onclick = () => exportToExcel(tData.map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
     }
 
     function fTg(d){
@@ -714,8 +305,6 @@ window.rTgt = function() {
         if(!ttb) return;
         ttb.innerHTML = d.map(r => {
             let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
-            
-            // Progress Bar HTML
             let pColor = p >= 100 ? 'var(--gn)' : p >= 60 ? 'var(--am)' : 'var(--rd)';
             let pBar = `<div style="width:100%;background:var(--bg3);border-radius:10px;height:12px;overflow:hidden;position:relative;min-width:150px;border:1px solid var(--bd);">
                             <div style="width:${Math.min(p, 100)}%;background:${pColor};height:100%;transition:width 0.5s;"></div>
@@ -727,22 +316,234 @@ window.rTgt = function() {
                 <td style="color:var(--tx2);">${typeof fmt==='function'?fmt(tg):tg}</td>
                 <td style="color:var(--ac);font-weight:bold;">${typeof fmt==='function'?fmt(a):a}</td>
                 <td style="vertical-align:middle;padding:10px;">${pBar}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,isAcc)):0}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,isAcc)):0}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,isHW)):0}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,isHW)):0}</td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,window.isAcc)):0}</td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,window.isAcc)):0}</td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,window.isHW)):0}</td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,window.isHW)):0}</td>
                 <td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td>
             </tr>`;
         }).join('');
     }
-    if((typeof T !== "undefined" ? T : [])) fTg((typeof T !== "undefined" ? T : []));
+    if(tData) fTg(tData);
     
     let tsr = document.getElementById('tsr');
     if(tsr && typeof debounce === 'function') {
         tsr.oninput = debounce(e => {
             let v = e.target.value.toLowerCase();
-            fTg(v && (typeof T !== "undefined" ? T : []) ? (typeof T !== "undefined" ? T : []).filter(r => (r.Customer||'').toLowerCase().includes(v)) : ((typeof T !== "undefined" ? T : [])||[]));
+            fTg(v && tData ? tData.filter(r => (r.Customer||'').toLowerCase().includes(v)) : (tData||[]));
         }, 300);
     }
 };
 
+// --- DORMANT 30 DAYS ---
+window.rDormant30 = function() {
+    let L = localStorage.getItem('sp_lang') || 'ar';
+    let sData = getS();
+    let html = `
+        <div class="ph">
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🛌</span> ${L==='ar'?'عملاء خاملين (30 يوم)':'30-Day Dormant'}</h1>
+        </div>
+        <div class="card" style="margin-top:20px;">
+            <div style="overflow-x:auto;">
+                <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
+                    <thead>
+                        <tr style="border-bottom:2px solid var(--bd);">
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'العميل':'Customer'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'آخر فاتورة':'Last Invoice Date'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'أيام الخمول':'Days Dormant'}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dorm30Tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    let M = document.getElementById('M');
+    if(M) M.innerHTML = html;
+    
+    let tb = document.getElementById('dorm30Tbody');
+    if(!tb) return;
+    
+    let cu = {};
+    sData.forEach(r => {
+        let c = r.Customer;
+        if(!c) return;
+        let d = typeof pd === 'function' ? pd(r['Order Date']) : r['Order Date'];
+        if(d) {
+            let dt = new Date(d);
+            if(!cu[c] || dt > cu[c]) cu[c] = dt;
+        }
+    });
+    
+    let today = new Date();
+    let dormants = [];
+    Object.entries(cu).forEach(([c, last]) => {
+        let days = Math.floor((today - last) / 86400000);
+        if(days >= 30) dormants.push({c, last, days});
+    });
+    
+    if(dormants.length === 0) {
+        tb.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'لا يوجد عملاء خاملين.':'No dormant customers.'}</td></tr>`;
+        return;
+    }
+    
+    dormants.sort((a,b) => b.days - a.days).forEach(d => {
+        let tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--bd-s)';
+        tr.innerHTML = `
+            <td style="padding:15px 10px;font-weight:bold;color:var(--tx1);">${d.c}</td>
+            <td style="padding:15px 10px;color:var(--tx2);">${d.last.toISOString().split('T')[0]}</td>
+            <td style="padding:15px 10px;"><span style="background:var(--rd);color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold;">${d.days} ${L==='ar'?'يوم':'days'}</span></td>
+        `;
+        tb.appendChild(tr);
+    });
+};
+
+// --- ALERTS & AUTO EMAIL ---
+window.checkDailyAlerts = function() {
+    let lastCheck = localStorage.getItem('sp_last_alert_check');
+    let today = new Date().toISOString().split('T')[0];
+    
+    let delayCount = 0;
+    let T_data = getT();
+    let S_data = getS();
+    
+    if (T_data.length > 0 && S_data.length > 0) {
+        let cuS = {};
+        S_data.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(typeof getSalesVal === 'function' ? getSalesVal(r) : Number(r['Sales Without Tax']||0)); });
+        T_data.forEach(r => {
+            let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
+            if(pct < 50 && tg > 0) delayCount++;
+        });
+    }
+    
+    // Check if auto-email was already triggered today
+    let mailSentToday = localStorage.getItem('sp_auto_mail_sent') === today;
+    
+    if (delayCount > 0 && lastCheck !== today) {
+        let emailBody = encodeURIComponent(`تنبيه يومي: يوجد ${delayCount} عملاء متأخرين عن تحقيق 50% من المستهدف. يرجى المتابعة العاجلة.`);
+        let emailAddress = localStorage.getItem('repEmailInput') || ''; // if they saved an email somewhere
+        
+        let mailLink = `mailto:${emailAddress}?subject=تنبيه تأخير تارجت العملاء&body=${emailBody}`;
+        
+        // AUTO SEND EMAIL upon opening if not sent today
+        if(!mailSentToday) {
+            localStorage.setItem('sp_auto_mail_sent', today);
+            
+            // Try to trigger the system's checkAndSendDailyReport if it exists (EmailJS/Webhook)
+            if(typeof window.checkAndSendDailyReport === 'function') {
+                window.checkAndSendDailyReport();
+            } else {
+                // Otherwise open the default mail client automatically
+                window.open(mailLink, '_blank');
+            }
+        }
+        
+        let h = `
+            <div style="text-align:center;padding:10px;">
+                <div style="font-size:3.5rem;margin-bottom:10px;">⚠️</div>
+                <h2 style="color:var(--rd);margin:0 0 10px 0;">تنبيه المتأخرات اليومي</h2>
+                <p style="margin-bottom:20px;color:var(--tx2);line-height:1.5;">يوجد <strong>${delayCount}</strong> عملاء متأخرين عن تحقيق المستهدف (أقل من 50%). يرجى مراجعة صفحة التنبيهات.</p>
+                <div style="display:flex;gap:10px;flex-direction:column;">
+                    <button class="sp-btn-primary" onclick="this.closest('.sp-modal-overlay').remove(); if(typeof P!=='undefined'){ P='alerts'; if(typeof buildNav==='function') buildNav(); if(typeof render==='function') render(); }">مراجعة التنبيهات في التطبيق</button>
+                    <a href="${mailLink}" target="_blank" class="btn" style="background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);padding:12px;border-radius:8px;text-decoration:none;display:block;">📧 فتح تطبيق الإيميل يدوياً</a>
+                </div>
+            </div>
+        `;
+        let m = document.createElement('div');
+        m.className = 'sp-modal-overlay';
+        m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
+        document.body.appendChild(m);
+    }
+    
+    localStorage.setItem('sp_last_alert_check', today);
+};
+
+// --- INITIALIZATION HOOKS ---
+let oldInit = window.init;
+window.init = function() {
+    if(oldInit) oldInit();
+    setTimeout(window.checkDailyAlerts, 1500);
+    setTimeout(window.injectBranchCards, 1500);
+};
+
+// --- BRANCH CARDS ---
+window.injectBranchCards = function() {
+    if(typeof P !== 'undefined' && P === 'dash') {
+        let S_data = getS();
+        if(S_data.length === 0) return;
+        
+        let luxorSales = 0, qobbahSales = 0;
+        S_data.forEach(s => {
+            let val = Number(s['Sales Without Tax'] || 0);
+            let c = (s.Customer || '').toLowerCase();
+            let ref = (s['Payment Ref.'] || '').toLowerCase();
+            if(c.includes('أقصر') || c.includes('اقصر') || c.includes('luxor') || ref.includes('luxor')) {
+                luxorSales += val;
+            } else {
+                qobbahSales += val;
+            }
+        });
+        
+        let dashCards = document.querySelector('.kg');
+        if(dashCards && !document.getElementById('branchLuxor')) {
+            let L = localStorage.getItem('sp_lang') || 'ar';
+            let html = `
+                <div class="ki" id="branchLuxor" style="border-left: 3px solid var(--ac); background: var(--bg3); cursor:pointer;" onclick="if(typeof P!=='undefined'){ P='dormant30'; if(typeof render==='function') render(); }">
+                    <div class="lb">${L==='ar'?'مبيعات الأقصر':'Luxor Sales'}</div>
+                    <div class="vl" style="color:var(--tx1);">${typeof fmt==='function'?fmt(luxorSales):luxorSales}</div>
+                </div>
+                <div class="ki" id="branchQobbah" style="border-left: 3px solid var(--pu); background: var(--bg3); cursor:pointer;" onclick="if(typeof P!=='undefined'){ P='dormant30'; if(typeof render==='function') render(); }">
+                    <div class="lb">${L==='ar'?'مبيعات حدائق القبة':'Qobbah Sales'}</div>
+                    <div class="vl" style="color:var(--tx1);">${typeof fmt==='function'?fmt(qobbahSales):qobbahSales}</div>
+                </div>
+            `;
+            dashCards.insertAdjacentHTML('beforeend', html);
+        }
+    }
+};
+
+// --- DYNAMIC NAV ---
+(function injectNavItems() {
+    if (typeof NAV !== 'undefined') {
+        if (!NAV.find(n => n.p === 'visits')) {
+            let advIdx = NAV.findIndex(n => n.p === 'dormant');
+            if (advIdx > -1) {
+                NAV.splice(advIdx + 1, 0, {p:'dormant30', ic:'🛌'}, {p:'visits',ic:'🚗'}, {p:'leads',ic:'🤝'});
+            } else {
+                NAV.push({p:'dormant30', ic:'🛌'}, {p:'visits',ic:'🚗'}, {p:'leads',ic:'🤝'});
+            }
+        }
+    }
+})();
+
+let old_buildNav = window.buildNav;
+window.buildNav = function() {
+    if(old_buildNav) old_buildNav();
+    
+    setTimeout(() => {
+        let L = localStorage.getItem('sp_lang') || 'ar';
+        let elVisits = document.querySelector('.ni[data-p="visits"] span:nth-child(2)');
+        if(elVisits) elVisits.textContent = L==='ar' ? 'الزيارات' : 'Visits';
+        
+        let elLeads = document.querySelector('.ni[data-p="leads"] span:nth-child(2)');
+        if(elLeads) elLeads.textContent = L==='ar' ? 'محتملين' : 'Leads';
+        
+        let elCol = document.querySelector('.ni[data-p="collections"] span:nth-child(2)');
+        if(elCol) elCol.textContent = L==='ar' ? 'التحصيلات' : 'Collections';
+        
+        let elDorm = document.querySelector('.ni[data-p="dormant30"] span:nth-child(2)');
+        if(elDorm) elDorm.textContent = L==='ar' ? 'خاملين (30 يوم)' : '30-Day Dormant';
+    }, 50);
+};
+
+let old_render = window.render;
+window.render = function() {
+    if (typeof P !== 'undefined') {
+        if (P === 'visits') { if (typeof buildNav === 'function') buildNav(); rVisits(); return; }
+        if (P === 'leads') { if (typeof buildNav === 'function') buildNav(); rLeads(); return; }
+        if (P === 'dormant30') { if (typeof buildNav === 'function') buildNav(); window.rDormant30(); return; }
+    }
+    if (old_render) old_render();
+    setTimeout(window.injectBranchCards, 100);
+};
