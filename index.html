@@ -4936,8 +4936,8 @@ window.checkAndSendDailyReport = function() {
         
         console.log('[Daily Report]: Automatic trigger checking in for today (' + todayStr + ')...');
         // Small check to avoid sending if sales list is empty or still initializing
-        let sList = typeof window.S !== 'undefined' ? window.S : [];
-        let cList = typeof window.C !== 'undefined' ? window.C : [];
+        let sList = typeof S !== 'undefined' ? S : JSON.parse(localStorage.getItem('salesData')||'[]');
+        let cList = typeof C !== 'undefined' ? C : JSON.parse(localStorage.getItem('payData')||'[]');
         if (sList.length === 0 && cList.length === 0) {
             console.log('[Daily Report]: Waiting for data before sending...');
             return;
