@@ -20,11 +20,11 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
             width: 100vw; height: 100vh;
             background: url('logo_2b.png') no-repeat center center;
             background-size: 100vw 100vh;
-            opacity: 0.04;
+            opacity: 0.2; /* Increased opacity so it's clearly visible */
             pointer-events: none;
             z-index: 0;
             mix-blend-mode: screen; /* This removes the black background */
-            filter: grayscale(100%); /* Optional: removes color for a more subtle watermark, or leave color */
+            /* filter: grayscale removed to keep the beautiful colors! */
         }
         
         /* Make sure cards and modals have some glassmorphism so the watermark shows elegantly behind them */
