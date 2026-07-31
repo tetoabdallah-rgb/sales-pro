@@ -103,7 +103,7 @@ function loadVisits() {
 
 window.addVisitModal = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
-    let S = window.S || [];
+    let S = (typeof S !== "undefined" ? S : []) || [];
     let cList = [...new Set(S.map(r=>r.Customer).filter(Boolean))];
     let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
     let h = `
@@ -279,8 +279,8 @@ window.checkDailyAlerts = function() {
     if(lastCheck === today) return;
     
     let delayCount = 0;
-    let T_data = window.T || [];
-    let S_data = window.S || [];
+    let T_data = (typeof T !== "undefined" ? T : []) || [];
+    let S_data = (typeof S !== "undefined" ? S : []) || [];
     if (T_data.length > 0 && S_data.length > 0) {
         let cuS = {};
         S_data.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(typeof getSalesVal === 'function' ? getSalesVal(r) : Number(r['Sales Without Tax']||0)); });
@@ -349,8 +349,8 @@ window.askGemini = async function() {
     
     try {
         let context = "أنت مساعد ذكي لمدير مبيعات يعمل على تطبيق Sales Pro. لديك البيانات التالية:\n";
-        let T_data = window.T || [];
-        let S_data = window.S || [];
+        let T_data = (typeof T !== "undefined" ? T : []) || [];
+        let S_data = (typeof S !== "undefined" ? S : []) || [];
         if (T_data.length > 0) {
             context += "إجمالي المستهدف: " + T_data.reduce((acc,r)=>acc+(Number(r.Target)||0),0) + "\n";
         }
@@ -488,7 +488,7 @@ window.loadColFollowups = function() {
 
 window.addColModal = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
-    let S_data = window.S || [];
+    let S_data = (typeof S !== "undefined" ? S : []) || [];
     let cList = [...new Set(S_data.map(r=>r.Customer).filter(Boolean))];
     let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
     let h = `
@@ -542,7 +542,7 @@ window.markColPaid = function(id) {
 window.injectBranchCards = function() {
     // Only inject in Dashboard
     if(typeof P !== 'undefined' && P === 'dash') {
-        let S_data = window.S || [];
+        let S_data = (typeof S !== "undefined" ? S : []) || [];
         if(S_data.length === 0) return;
         
         // Calculate Branch Sales
@@ -640,7 +640,7 @@ window.render = function() {
 // =======================
 window.rTgt = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
-    let sData = typeof getFilteredSales === 'function' ? getFilteredSales() : window.S;
+    let sData = typeof getFilteredSales === 'function' ? getFilteredSales() : (typeof S !== "undefined" ? S : []);
     let sMap = {}, accSMap = {}, hwSMap = {};
     let pMap = {}, accPMap = {}, hwPMap = {};
     
@@ -660,12 +660,12 @@ window.rTgt = function() {
     }
     
     let cS = (c) => sMap[c] || 0;
-    let cSF = (c, f) => f === window.isAcc ? (accSMap[c] || 0) : (hwSMap[c] || 0);
-    let cPF = (c, f) => f === window.isAcc ? (accPMap[c] || 0) : (hwPMap[c] || 0);
+    let cSF = (c, f) => f === isAcc ? (accSMap[c] || 0) : (hwSMap[c] || 0);
+    let cPF = (c, f) => f === isAcc ? (accPMap[c] || 0) : (hwPMap[c] || 0);
 
     let tt=0, ta=0;
-    if(window.T && window.T.length > 0) {
-        window.T.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
+    if((typeof T !== "undefined" ? T : []) && (typeof T !== "undefined" ? T : []).length > 0) {
+        (typeof T !== "undefined" ? T : []).forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
     }
     
     let mDiv = document.getElementById('M');
@@ -673,7 +673,7 @@ window.rTgt = function() {
     
     mDiv.innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${window.ICONS ? window.ICONS.targets : '🎯'}</span> ${typeof t==='function'?t('targets'):(L==='ar'?'المستهدفات':'Targets')}</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS ? ICONS.targets : '🎯'}</span> ${typeof t==='function'?t('targets'):(L==='ar'?'المستهدفات':'Targets')}</h1>
             <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
         </div>
         <div class="kg">
@@ -706,7 +706,7 @@ window.rTgt = function() {
     
     let btnEx = document.getElementById('bExTgt');
     if(btnEx && typeof exportToExcel === 'function') {
-        btnEx.onclick = () => exportToExcel(window.T.map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
+        btnEx.onclick = () => exportToExcel((typeof T !== "undefined" ? T : []).map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
     }
 
     function fTg(d){
@@ -727,21 +727,21 @@ window.rTgt = function() {
                 <td style="color:var(--tx2);">${typeof fmt==='function'?fmt(tg):tg}</td>
                 <td style="color:var(--ac);font-weight:bold;">${typeof fmt==='function'?fmt(a):a}</td>
                 <td style="vertical-align:middle;padding:10px;">${pBar}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,window.isAcc)):0}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,window.isAcc)):0}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,window.isHW)):0}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,window.isHW)):0}</td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,isAcc)):0}</td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,isAcc)):0}</td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,isHW)):0}</td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,isHW)):0}</td>
                 <td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td>
             </tr>`;
         }).join('');
     }
-    if(window.T) fTg(window.T);
+    if((typeof T !== "undefined" ? T : [])) fTg((typeof T !== "undefined" ? T : []));
     
     let tsr = document.getElementById('tsr');
     if(tsr && typeof debounce === 'function') {
         tsr.oninput = debounce(e => {
             let v = e.target.value.toLowerCase();
-            fTg(v && window.T ? window.T.filter(r => (r.Customer||'').toLowerCase().includes(v)) : (window.T||[]));
+            fTg(v && (typeof T !== "undefined" ? T : []) ? (typeof T !== "undefined" ? T : []).filter(r => (r.Customer||'').toLowerCase().includes(v)) : ((typeof T !== "undefined" ? T : [])||[]));
         }, 300);
     }
 };
