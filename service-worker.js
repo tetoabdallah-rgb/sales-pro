@@ -1,9 +1,10 @@
-const CACHE_NAME = 'salespro-v10';
+const CACHE_NAME = 'salespro-v11';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './new_features.js',
   './manifest.json'
 ];
 
