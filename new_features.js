@@ -12,6 +12,12 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
     let style = document.createElement('style');
     style.id = 'sp-new-features-css';
     style.innerHTML = `
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Cairo', sans-serif !important;
+        }
+
         body::after {
             content: "";
             position: fixed;
