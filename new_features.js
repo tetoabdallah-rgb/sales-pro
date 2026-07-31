@@ -19,7 +19,7 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
             transform: translate(-50%, -50%);
             width: 100vw; height: 100vh;
             background: url('logo_2b.png') no-repeat center center;
-            background-size: min(600px, 90%);
+            background-size: contain;
             opacity: 0.04;
             pointer-events: none;
             z-index: 0;
@@ -42,7 +42,7 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
             transform: translate(-50%, -50%);
             width: 100%; height: 100%;
             background: url('logo_2b.png') no-repeat center center;
-            background-size: min(400px, 80%);
+            background-size: 90vw;
             opacity: 0.4;
             pointer-events: none;
             z-index: -1;
