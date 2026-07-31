@@ -40,7 +40,7 @@ const ICONS = {
     ai: getImg('Robot/3D/robot_3d.png'),
     alerts: getImg('Bell/3D/bell_3d.png'),
     account: getImg('Bust%20in%20silhouette/3D/bust_in_silhouette_3d.png'),
-    backup: getImg('Floppy%20disk/3D/floppy_disk_3d.png'),
+    backup: getImg('Cloud/3D/cloud_3d.png'),
     setup: getImg('File%20folder/3D/file_folder_3d.png'),
     reset: getImg('Wastebasket/3D/wastebasket_3d.png'),
     settings: getImg('Gear/3D/gear_3d.png'),
