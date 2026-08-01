@@ -812,65 +812,67 @@ if (originalRTgt && !window.tgtGamInjected) {
 // 4. Premium Analytics Dashboard
 
 window.rAn = function() {
-    let ds = typeof getFilteredSales === 'function' ? getFilteredSales() : S;
+    let ds = typeof getFilteredSales === 'function' ? getFilteredSales() : (typeof S !== 'undefined' ? S : []);
     
-    // Monthly calculation (Current Month)
+    // Function to calculate and render for a specific month
+    let renderMonth = (year, month) => {
+        let daysInMonth = new Date(year, month + 1, 0).getDate();
+        let daysMap = {};
+        for(let i=1; i<=daysInMonth; i++) daysMap[i] = 0;
+        
+        let dsTop = {};
+        let dsClass = {'إكسسوارات':0, 'هاردوير':0, 'أخرى':0};
+        let dsRegion = {};
+
+        ds.forEach(r => {
+            let val = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
+            let rDateStr = typeof pd === 'function' ? pd(r['Order Date']) : r['Order Date']; 
+            if(rDateStr) {
+                let rDate = new Date(rDateStr);
+                if(rDate.getMonth() === month && rDate.getFullYear() === year) {
+                    daysMap[rDate.getDate()] += val;
+                }
+            }
+            
+            let c = r.Customer || 'Unknown';
+            dsTop[c] = (dsTop[c] || 0) + val;
+            
+            let cls = r['Item Class Name'] || '';
+            if(typeof isAcc === 'function' && isAcc(cls)) dsClass['إكسسوارات'] += val;
+            else if(typeof isHW === 'function' && isHW(cls)) dsClass['هاردوير'] += val;
+            else dsClass['أخرى'] += val;
+            
+            let reg = r['Customer Class'] || 'Unknown';
+            dsRegion[reg] = (dsRegion[reg] || 0) + val;
+        });
+        return { daysMap, dsTop, dsClass, dsRegion };
+    };
+
     let today = new Date();
     let currentMonth = today.getMonth();
     let currentYear = today.getFullYear();
-    let daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    
-    let daysMap = {};
-    for(let i=1; i<=daysInMonth; i++) {
-        daysMap[i] = 0;
-    }
-
-    let dsTop = {};
-    let dsClass = {'إكسسوارات':0, 'هاردوير':0, 'أخرى':0};
-    let dsRegion = {};
-
-    ds.forEach(r => {
-        let val = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
-        
-        // Month Data
-        let rDateStr = typeof pd === 'function' ? pd(r['Order Date']) : r['Order Date']; 
-        if(rDateStr) {
-            let rDate = new Date(rDateStr);
-            if(rDate.getMonth() === currentMonth && rDate.getFullYear() === currentYear) {
-                let day = rDate.getDate();
-                daysMap[day] += val;
-            }
-        }
-        
-        // Top Customers
-        let c = r.Customer || 'Unknown';
-        dsTop[c] = (dsTop[c] || 0) + val;
-        
-        // Classes (Acc vs HW)
-        let cls = r['Item Class Name'] || '';
-        if(typeof isAcc === 'function' && isAcc(cls)) dsClass['إكسسوارات'] += val;
-        else if(typeof isHW === 'function' && isHW(cls)) dsClass['هاردوير'] += val;
-        else dsClass['أخرى'] += val;
-        
-        // Regions
-        let reg = r['Customer Class'] || 'Unknown';
-        dsRegion[reg] = (dsRegion[reg] || 0) + val;
-    });
+    let { daysMap, dsTop, dsClass, dsRegion } = renderMonth(currentYear, currentMonth);
 
     let topCats = Object.entries(dsTop).sort((a,b)=>b[1]-a[1]).slice(0,5);
     let classArr = Object.entries(dsClass).filter(x => x[1] > 0);
     let regArr = Object.entries(dsRegion).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
     let m = document.getElementById('M');
-    m.innerHTML = '<div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">📊</span> إحصائيات الشهر الحالي</h1></div>' +
-        '<div style="display:flex; flex-direction:column; gap: 20px; margin-top:20px;">' +
+    
+    let monthVal = currentYear + '-' + String(currentMonth + 1).padStart(2, '0');
+
+    m.innerHTML = '<div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">📊</span> إحصائيات المبيعات</h1></div>' +
+        '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top:20px;">' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
-        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">📈 المبيعات اليومية (شهر ' + (currentMonth+1) + ')</h3>' +
+        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">' +
+        '<h3>📈 المبيعات اليومية</h3>' +
+        '<input type="month" id="anMonthSel" value="' + monthVal + '" style="padding:6px; border-radius:6px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-family:Cairo;">' +
+        '</div>' +
         '<div style="height:350px; width:100%;"><canvas id="premChart1"></canvas></div></div>' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
-        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">🏆 أفضل 5 عملاء (Top 5)</h3>' +
+        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">🏆 أفضل 5 عملاء (الإجمالي)</h3>' +
         '<div style="height:350px; width:100%;"><canvas id="premChart2"></canvas></div></div>' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
@@ -891,11 +893,28 @@ window.rAn = function() {
         
         let colors = ['#0f9d58', '#4285F4', '#f4b400', '#db4437', '#9c27b0', '#00bcd4', '#ff9800'];
         
+        let chart1;
+        
+        let labelConf = {
+            color: '#fff',
+            font: { weight: 'bold', size: 10, family: 'Cairo' },
+            display: function(ctx) {
+                let v = ctx.dataset.data[ctx.dataIndex];
+                return v > 0 ? 'auto' : false;
+            },
+            formatter: function(v) {
+                if (!v || v === 0) return '';
+                if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                return v;
+            }
+        };
+
         if(ctx1) {
-            new Chart(ctx1, {
+            chart1 = new Chart(ctx1, {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(daysMap), // 1 to 31
+                    labels: Object.keys(daysMap),
                     datasets: [{
                         label: 'المبيعات',
                         data: Object.values(daysMap),
@@ -903,22 +922,25 @@ window.rAn = function() {
                         borderRadius: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: {
-    color: '#fff',
-    font: { weight: 'bold', size: 10, family: 'Cairo' },
-    display: function(ctx) {
-        let v = ctx.dataset.data[ctx.dataIndex];
-        return v > 0 ? 'auto' : false;
-    },
-    formatter: function(v) {
-        if (!v || v === 0) return '';
-        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-        return v;
-    }
-} } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: labelConf } }
             });
         }
+        
+        // Month Selector Event Listener
+        let mSel = document.getElementById('anMonthSel');
+        if(mSel && chart1) {
+            mSel.addEventListener('change', (e) => {
+                if(!e.target.value) return;
+                let parts = e.target.value.split('-');
+                let y = parseInt(parts[0]);
+                let m = parseInt(parts[1]) - 1; // 0-indexed
+                let { daysMap: newDaysMap } = renderMonth(y, m);
+                chart1.data.labels = Object.keys(newDaysMap);
+                chart1.data.datasets[0].data = Object.values(newDaysMap);
+                chart1.update();
+            });
+        }
+
         if(ctx2) {
             new Chart(ctx2, {
                 type: 'doughnut',
@@ -930,20 +952,7 @@ window.rAn = function() {
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: {
-    color: '#fff',
-    font: { weight: 'bold', size: 10, family: 'Cairo' },
-    display: function(ctx) {
-        let v = ctx.dataset.data[ctx.dataIndex];
-        return v > 0 ? 'auto' : false;
-    },
-    formatter: function(v) {
-        if (!v || v === 0) return '';
-        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-        return v;
-    }
-}, legend: { position: 'right' } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: labelConf, legend: { position: 'right' } } }
             });
         }
         if(ctx3) {
@@ -957,20 +966,7 @@ window.rAn = function() {
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: {
-    color: '#fff',
-    font: { weight: 'bold', size: 10, family: 'Cairo' },
-    display: function(ctx) {
-        let v = ctx.dataset.data[ctx.dataIndex];
-        return v > 0 ? 'auto' : false;
-    },
-    formatter: function(v) {
-        if (!v || v === 0) return '';
-        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-        return v;
-    }
-}, legend: { position: 'bottom' } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: labelConf, legend: { position: 'bottom' } } }
             });
         }
         if(ctx4) {
@@ -984,24 +980,12 @@ window.rAn = function() {
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: {
-    color: '#fff',
-    font: { weight: 'bold', size: 10, family: 'Cairo' },
-    display: function(ctx) {
-        let v = ctx.dataset.data[ctx.dataIndex];
-        return v > 0 ? 'auto' : false;
-    },
-    formatter: function(v) {
-        if (!v || v === 0) return '';
-        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-        return v;
-    }
-}, legend: { position: 'right' } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: labelConf, legend: { position: 'right' } } }
             });
         }
     }, 100);
 };
+
 
 // 5. GPS Check-in for Visits
 const originalRVisits = window.rVisits;
