@@ -897,10 +897,20 @@ window.rAn = function() {
         
         let labelConf = {
             color: '#fff',
-            font: { weight: 'bold', size: 10, family: 'Cairo' },
+            font: { weight: 'bold', size: 14, family: 'Cairo' },
+            textStrokeColor: 'rgba(0,0,0,0.5)',
+            textStrokeWidth: 3,
             display: function(ctx) {
-                let v = ctx.dataset.data[ctx.dataIndex];
-                return v > 0 ? 'auto' : false;
+                let dataset = ctx.chart.data.datasets[ctx.datasetIndex];
+                let v = dataset.data[ctx.dataIndex];
+                if (!v || v <= 0) return false;
+                
+                // If it's a pie/doughnut chart, hide labels for slices < 5% to prevent overlap
+                if (ctx.chart.config.type === 'doughnut' || ctx.chart.config.type === 'pie') {
+                    let total = dataset.data.reduce((a, b) => a + b, 0);
+                    if ((v / total) < 0.05) return false;
+                }
+                return 'auto';
             },
             formatter: function(v) {
                 if (!v || v === 0) return '';
