@@ -24,7 +24,7 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 100vw; height: 100vh;
-            background: url('logo_2b.png') no-repeat center center;
+            background: none;
             background-size: 100vw 100vh;
             opacity: 0.2; /* Increased opacity so it's clearly visible */
             pointer-events: none;
@@ -47,7 +47,7 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 100%; height: 100%;
-            background: url('logo_2b.png') no-repeat center center;
+            background: none;
             background-size: 100vw 100vh;
             opacity: 0.4;
             pointer-events: none;
@@ -869,19 +869,19 @@ window.rAn = function() {
         '<h3>📈 المبيعات اليومية</h3>' +
         '<input type="month" id="anMonthSel" value="' + monthVal + '" style="padding:6px; border-radius:6px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-family:Cairo;">' +
         '</div>' +
-        '<div style="height:350px; width:100%;"><canvas id="premChart1"></canvas></div></div>' +
+        '<div style="height:450px; width:100%;"><canvas id="premChart1"></canvas></div></div>' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
         '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">🏆 أفضل 5 عملاء (الإجمالي)</h3>' +
-        '<div style="height:350px; width:100%;"><canvas id="premChart2"></canvas></div></div>' +
+        '<div style="height:450px; width:100%;"><canvas id="premChart2"></canvas></div></div>' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
         '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">🎧 إكسسوارات مقابل هاردوير 📱</h3>' +
-        '<div style="height:350px; width:100%;"><canvas id="premChart3"></canvas></div></div>' +
+        '<div style="height:450px; width:100%;"><canvas id="premChart3"></canvas></div></div>' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
         '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">📍 مبيعات المناطق</h3>' +
-        '<div style="height:350px; width:100%;"><canvas id="premChart4"></canvas></div></div>' +
+        '<div style="height:450px; width:100%;"><canvas id="premChart4"></canvas></div></div>' +
         
         '</div>';
 
@@ -932,7 +932,7 @@ window.rAn = function() {
                         borderRadius: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: labelConf } }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '45%', layout: { padding: 15 }, plugins: { datalabels: labelConf } }
             });
         }
         
@@ -962,7 +962,7 @@ window.rAn = function() {
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: labelConf, legend: { position: 'right' } } }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '45%', layout: { padding: 15 }, plugins: { datalabels: labelConf, legend: { position: 'right' } } }
             });
         }
         if(ctx3) {
@@ -976,7 +976,7 @@ window.rAn = function() {
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: labelConf, legend: { position: 'bottom' } } }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '45%', layout: { padding: 15 }, plugins: { datalabels: labelConf, legend: { position: 'bottom' } } }
             });
         }
         if(ctx4) {
@@ -990,7 +990,7 @@ window.rAn = function() {
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: labelConf, legend: { position: 'right' } } }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '45%', layout: { padding: 15 }, plugins: { datalabels: labelConf, legend: { position: 'right' } } }
             });
         }
     }, 100);
