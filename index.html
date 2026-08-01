@@ -3114,7 +3114,7 @@ function rCust() {
                 </div>
                 <input class="sbox" id="cusr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
             </div>
-            <div class="tbs"><table><thead><tr><th>Customer</th><th>Region</th><th>Orders</th><th>Sales</th><th>Acc</th><th>HW</th><th>Profit</th><th>Margin</th><th>Target</th><th>Ach.</th><th>Last</th></tr></thead><tbody id="cutb"></tbody></table></div>
+            <div class="tbs"><table><thead><tr><th>Customer</th><th>Region</th><th>Orders</th><th>Sales</th><th>Acc</th><th>HW</th><th>Profit</th><th>Margin</th><th>Target</th><th>Ach.</th><th>Last</th><th>الإجراءات</th></tr></thead><tbody id="cutb"></tbody></table></div>
             <div id="cpg"></div>
         </div>
     `;
@@ -3151,7 +3151,15 @@ function rCust() {
         let start = (st.page - 1) * st.limit;
         let paged = filtered.slice(start, start + st.limit);
         
-        $('cutb').innerHTML = paged.map(r => `<tr><td><strong>${r.n}</strong> ${r.tierBadge||''}</td><td>${r.rg}</td><td>${r.o}</td><td>${fmt(r.s)}</td><td>${fmt(r.accS)}</td><td>${fmt(r.hwS)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${fmt(r.tg)}</td><td>${r.tg>0?`<span class="badge ${r.ach>=100?'bg-g':r.ach>=60?'bg-a':'bg-r'}">${pc(r.ach)}</span>`:'-'}</td><td>${r.l}</td></tr>`).join('');
+        $('cutb').innerHTML = paged.map(r => {
+            let phone = window.T && window.T.find(t => t.Customer === r.n) ? window.T.find(t => t.Customer === r.n).Phone : '';
+            return `<tr><td><strong>${r.n}</strong> ${r.tierBadge||''}</td><td>${r.rg}</td><td>${r.o}</td><td>${fmt(r.s)}</td><td>${fmt(r.accS)}</td><td>${fmt(r.hwS)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${fmt(r.tg)}</td><td>${r.tg>0?`<span class="badge ${r.ach>=100?'bg-g':r.ach>=60?'bg-a':'bg-r'}">${pc(r.ach)}</span>`:'-'}</td><td>${r.l}</td><td>
+                <div style="display:flex;gap:5px;">
+                    <button class="btn" style="background:#25D366; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.8rem;" onclick="let p=prompt('رقم هاتف ${r.n}:', '${phone||''}'); if(p) window.open('https://wa.me/2'+p.replace(/\\D/g,'')+'?text='+encodeURIComponent('أهلاً بك أستاذ ${r.n.replace(/'/g, "\\'")}') ,'_blank')">WA</button>
+                    <button class="btn" style="background:var(--p); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.8rem;" onclick="window.generateQuote('${r.n.replace(/'/g, "\\'")}')">PDF</button>
+                </div>
+            </td></tr>`;
+        }).join('');
         $('cpg').innerHTML = renderPagination(filtered.length, 'customers', 'window.doCustSearch');
     };
     
@@ -3732,16 +3740,90 @@ function rDorm() {
 }
 
 // Prospects (customers in T but not in S)
+// Prospects (CRM Kanban)
 function rPros() {
     let activeCustomers = new Set(S.map(r=>r.Customer||''));
-    let prospects = T.filter(r=>!activeCustomers.has(r.Customer));
+    let unpurchasedTargets = T.filter(r=>!activeCustomers.has(r.Customer));
+    let ld = [];
+    try { ld = JSON.parse(localStorage.getItem('leadsData') || '[]'); } catch(err){}
+    
+    let added = false;
+    unpurchasedTargets.forEach(r => {
+        if(!ld.find(x => x.name === r.Customer)) {
+            ld.push({ id: Date.now() + Math.random(), name: r.Customer, phone: '', branch: 'من التارجت', status: 'Targeted', note: 'المستهدف: ' + r.Target });
+            added = true;
+        }
+    });
+    if(added) localStorage.setItem('leadsData', JSON.stringify(ld));
+
+    let stages = [
+        { id: 'Targeted', name: L==='ar'?'الاستهداف':'Targeted', color: '#607d8b' },
+        { id: 'Contacted', name: L==='ar'?'تم التواصل':'Contacted', color: '#ff9800' },
+        { id: 'Visited', name: L==='ar'?'تمت الزيارة':'Visited', color: '#2196f3' },
+        { id: 'Won', name: L==='ar'?'تمت البيعة':'Won', color: '#4caf50' }
+    ];
+
+    window.changeLeadStatus = function(id, newStatus) {
+        let lds = JSON.parse(localStorage.getItem('leadsData') || '[]');
+        let idx = lds.findIndex(x => x.id == id);
+        if(idx > -1) { lds[idx].status = newStatus; localStorage.setItem('leadsData', JSON.stringify(lds)); rPros(); }
+    };
+    window.addLead = function() {
+        let n = prompt(L==='ar'?'اسم العميل المحتمل:':'Lead Name:'); if(!n) return;
+        let p = prompt(L==='ar'?'رقم الهاتف:':'Phone:');
+        let lds = JSON.parse(localStorage.getItem('leadsData') || '[]');
+        lds.push({ id: Date.now(), name: n, phone: p||'', branch: 'إضافة يدوية', status: 'Targeted', note: '' });
+        localStorage.setItem('leadsData', JSON.stringify(lds)); rPros();
+    };
+    window.waLead = function(phone, name) {
+        if(!phone) { alert(L==='ar'?'لا يوجد رقم هاتف مسجل لهذا العميل':'No phone recorded'); return; }
+        let msg = L==='ar'? `أهلاً بك أستاذ ${name}، معك مندوب المبيعات لتقديم عروض حصرية.` : `Hello ${name}, presenting exclusive offers.`;
+        window.open(`https://wa.me/2${phone.replace(/\\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
+    };
+    window.delLead = function(id) {
+        if(confirm(L==='ar'?'تأكيد الحذف؟':'Confirm Delete?')) {
+            let lds = JSON.parse(localStorage.getItem('leadsData') || '[]');
+            lds = lds.filter(x => x.id != id);
+            localStorage.setItem('leadsData', JSON.stringify(lds)); rPros();
+        }
+    };
+
+    let colsHTML = stages.map(st => {
+        let items = ld.filter(x => x.status === st.id);
+        let itemsHTML = items.map(x => `
+            <div class="card" style="padding:15px; margin-bottom:10px; border-right: 4px solid ${st.color}; background: var(--bg2);">
+                <div style="font-weight:bold; font-size:1.1rem; margin-bottom:5px;">${x.name}</div>
+                <div style="color:var(--tx2); font-size:0.9rem; margin-bottom:10px;">${x.phone||'---'} | ${x.branch||''}</div>
+                ${x.note ? `<div style="font-size:0.85rem; color:var(--tx3); margin-bottom:10px;">${x.note}</div>` : ''}
+                <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:10px;">
+                    <select onchange="changeLeadStatus(${x.id}, this.value)" style="padding:4px; border-radius:4px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); flex:1;">
+                        ${stages.map(s => `<option value="${s.id}" ${s.id===x.status?'selected':''}>${s.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div style="display:flex; gap:5px;">
+                    <button onclick="window.waLead('${x.phone}', '${x.name}')" class="btn" style="flex:1; background:#25D366; color:#fff; padding:6px; font-size:0.9rem; border:none; border-radius:4px;">WhatsApp</button>
+                    <button onclick="window.delLead(${x.id})" class="btn" style="background:#f44336; color:#fff; padding:6px; border:none; border-radius:4px;">X</button>
+                </div>
+            </div>
+        `).join('');
+        return `
+            <div style="flex:1; min-width:280px; background: var(--bg); border-radius:8px; padding:15px; border:1px solid var(--bd);">
+                <h3 style="margin-bottom:15px; color:${st.color}; border-bottom:2px solid ${st.color}; padding-bottom:5px;">${st.name} (${items.length})</h3>
+                <div style="min-height: 400px;">${itemsHTML}</div>
+            </div>
+        `;
+    }).join('');
+
     $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.prospects}</span> ${t('prospects')}</h1></div>
-        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?TUI('Prospects'):'Prospects'}</div><div class="vl">${aFmt(prospects.length)}</div></div></div>
-        <div class="tb"><div class="tbt"><h3>${t('prospects')}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Target'):'Target'}</th></tr></thead>
-        <tbody>${prospects.map(r=>`<tr><td><strong>${r.Customer}</strong></td><td>${fmt(Number(r.Target)||0)}</td></tr>`).join('')}${prospects.length===0?`<tr><td colspan="2" style="text-align:center;color:var(--tx2)">${L==='ar'?TUI('None'):'None'}</td></tr>`:''}</tbody>
-        </table></div></div>
+        <div class="ph" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.prospects}</span> ${L==='ar'?'نظام إدارة المحتملين (CRM)':'Leads CRM'}</h1>
+            <div style="display:flex; gap:10px;">
+                <button onclick="window.addLead()" class="btn" style="background:var(--ac); color:#fff; padding:8px 16px;">+ ${L==='ar'?'إضافة عميل':'Add Lead'}</button>
+            </div>
+        </div>
+        <div style="display:flex; gap:20px; overflow-x:auto; padding-bottom:20px; margin-top:20px;">
+            ${colsHTML}
+        </div>
     `;
 }
 
@@ -5725,6 +5807,77 @@ if ('serviceWorker' in navigator) {
     }).catch(err => console.log('SW registration failed', err));
   });
 }
+</script>
+<script>
+
+window.generateQuote = function(customerName) {
+    let items = JSON.parse(localStorage.getItem("draft_quote") || "[]");
+    if(items.length === 0) items = [{desc:"",qty:1,price:0}];
+    let modal = document.createElement("div");
+    modal.className = "sp-modal-overlay";
+    modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;";
+    
+    let renderItems = () => items.map((it, i) => `
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+            <input type="text" value="${it.desc}" onchange="window.updateQItem(${i},`+`"desc"`+`,this.value)" style="flex:2;padding:8px;" class="sbox" placeholder="????? / ??????">
+            <input type="number" value="${it.qty}" onchange="window.updateQItem(${i},`+`"qty"`+`,this.value)" style="flex:1;padding:8px;" class="sbox" placeholder="??????">
+            <input type="number" value="${it.price}" onchange="window.updateQItem(${i},`+`"price"`+`,this.value)" style="flex:1;padding:8px;" class="sbox" placeholder="?????">
+            <button onclick="window.delQItem(${i})" class="btn" style="background:#f44336;color:white;padding:8px;">X</button>
+        </div>
+    `).join("");
+
+    window.updateQItem = (i, field, val) => { items[i][field] = val; localStorage.setItem("draft_quote", JSON.stringify(items)); };
+    window.addQItem = () => { items.push({desc:"",qty:1,price:0}); document.getElementById("qItemsList").innerHTML = renderItems(); };
+    window.delQItem = (i) => { items.splice(i,1); localStorage.setItem("draft_quote", JSON.stringify(items)); document.getElementById("qItemsList").innerHTML = renderItems(); };
+    
+    window.printQuote = () => {
+        let total = items.reduce((s, it) => s + (it.qty * it.price), 0);
+        let printWin = window.open("", "", "width=800,height=900");
+        printWin.document.write(`
+            <html dir="rtl"><head><title>??? ??? - ${customerName}</title>
+            <style>
+                body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+                .header { border-bottom: 2px solid #0056b3; padding-bottom: 20px; margin-bottom: 30px; display:flex; justify-content:space-between; align-items:center; }
+                .header h1 { color: #0056b3; margin:0; font-size:2.5rem; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                th, td { border: 1px solid #ddd; padding: 12px; text-align: right; }
+                th { background-color: #f8f9fa; color: #0056b3; }
+                .total { font-size: 1.5em; font-weight: bold; text-align: left; color: #0056b3; padding-top:20px; border-top:2px solid #ddd; }
+                .footer { margin-top: 50px; text-align: center; color: #777; font-size: 0.9em; padding-top:20px; border-top:1px solid #ddd; }
+                @media print { body { padding:0; margin:0; } }
+            </style>
+            </head><body>
+                <div class="header">
+                    <div><h1>??? ???</h1><p>???????: ${new Date().toLocaleDateString("ar-EG")}</p></div>
+                    <div style="text-align:left;"><h3>?????? / ${customerName}</h3><p>???? ???? ?????</p></div>
+                </div>
+                <table>
+                    <thead><tr><th>?</th><th>????? / ??????</th><th>??????</th><th>????? (?.?)</th><th>???????? (?.?)</th></tr></thead>
+                    <tbody>
+                        ${items.map((it,idx) => `<tr><td>${idx+1}</td><td>${it.desc}</td><td>${it.qty}</td><td>${fmt(it.price)}</td><td>${fmt(it.qty * it.price)}</td></tr>`).join("")}
+                    </tbody>
+                </table>
+                <div class="total">???????? ?????: ${fmt(total)} ?.?</div>
+                <div class="footer">????? ?????? ???. ?????? ?????? ??????.</div>
+            </body></html>
+        `);
+        printWin.document.close();
+        printWin.focus();
+        setTimeout(() => { printWin.print(); printWin.close(); }, 500);
+    };
+
+    modal.innerHTML = `
+        <div style="background:var(--bg);padding:20px;border-radius:12px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <button onclick="this.closest(`+`".sp-modal-overlay"`+`).remove()" style="position:absolute;top:10px;left:10px;background:none;border:none;font-size:1.5rem;color:var(--tx);cursor:pointer;">&times;</button>
+            <h2 style="margin-bottom:20px;color:var(--p);">?? ????? ??? ??? ?? ${customerName}</h2>
+            <div id="qItemsList" style="margin-bottom:20px;">${renderItems()}</div>
+            <button onclick="window.addQItem()" class="btn" style="background:var(--bg2);color:var(--tx);width:100%;margin-bottom:20px;padding:10px;">+ ????? ???</button>
+            <button onclick="window.printQuote()" class="btn" style="background:var(--p);color:white;width:100%;padding:12px;font-size:1.1rem;font-weight:bold;">??? ????? ??? ????? (PDF)</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+};
+
 </script>
 </body>
 </html>
