@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salespro-v33';
+const CACHE_NAME = 'salespro-v34';
 const STATIC_ASSETS = [
   './',
   './index.html',
