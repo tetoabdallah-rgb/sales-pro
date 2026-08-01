@@ -862,7 +862,7 @@ window.rAn = function() {
     let monthVal = currentYear + '-' + String(currentMonth + 1).padStart(2, '0');
 
     m.innerHTML = '<div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">📊</span> إحصائيات المبيعات</h1></div>' +
-        '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top:20px;">' +
+        '<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top:20px;">' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
         '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">' +
