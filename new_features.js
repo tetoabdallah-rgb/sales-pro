@@ -903,7 +903,20 @@ window.rAn = function() {
                         borderRadius: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: {
+    color: '#fff',
+    font: { weight: 'bold', size: 10, family: 'Cairo' },
+    display: function(ctx) {
+        let v = ctx.dataset.data[ctx.dataIndex];
+        return v > 0 ? 'auto' : false;
+    },
+    formatter: function(v) {
+        if (!v || v === 0) return '';
+        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+        return v;
+    }
+} } }
             });
         }
         if(ctx2) {
@@ -917,7 +930,20 @@ window.rAn = function() {
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, legend: { position: 'right' } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: {
+    color: '#fff',
+    font: { weight: 'bold', size: 10, family: 'Cairo' },
+    display: function(ctx) {
+        let v = ctx.dataset.data[ctx.dataIndex];
+        return v > 0 ? 'auto' : false;
+    },
+    formatter: function(v) {
+        if (!v || v === 0) return '';
+        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+        return v;
+    }
+}, legend: { position: 'right' } } }
             });
         }
         if(ctx3) {
@@ -931,7 +957,20 @@ window.rAn = function() {
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, legend: { position: 'bottom' } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: {
+    color: '#fff',
+    font: { weight: 'bold', size: 10, family: 'Cairo' },
+    display: function(ctx) {
+        let v = ctx.dataset.data[ctx.dataIndex];
+        return v > 0 ? 'auto' : false;
+    },
+    formatter: function(v) {
+        if (!v || v === 0) return '';
+        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+        return v;
+    }
+}, legend: { position: 'bottom' } } }
             });
         }
         if(ctx4) {
@@ -945,7 +984,20 @@ window.rAn = function() {
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, legend: { position: 'right' } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: {
+    color: '#fff',
+    font: { weight: 'bold', size: 10, family: 'Cairo' },
+    display: function(ctx) {
+        let v = ctx.dataset.data[ctx.dataIndex];
+        return v > 0 ? 'auto' : false;
+    },
+    formatter: function(v) {
+        if (!v || v === 0) return '';
+        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+        return v;
+    }
+}, legend: { position: 'right' } } }
             });
         }
     }, 100);
