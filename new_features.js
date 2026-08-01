@@ -412,7 +412,7 @@ window.rDormant30 = function() {
     sData.forEach(r => {
         let c = r.Customer;
         if(!c) return;
-        let d = typeof pd === 'function' ? pd(r['Order Date']) : r['Order Date'];
+        let d = typeof pd === 'function' ? pd((r['Invoice Date'] || r['Order Date'] || r['Date'])) : (r['Invoice Date'] || r['Order Date'] || r['Date']);
         if(d) {
             let dt = new Date(d);
             if(!cu[c] || dt > cu[c]) cu[c] = dt;
@@ -676,7 +676,7 @@ if (typeof window.fSl === 'function' && !window.whatsappInjected) {
                 let r = data[start + idx];
                 if(r && !tr.querySelector('.wa-btn')) {
                     let s = typeof getSalesVal === 'function' ? getSalesVal(r) : r['Sales After Discount'];
-                    let msg = "مرحباً بك عميلنا المميز " + (r.Customer || '') + "، تم تسجيل فاتورة مبيعات لحسابكم بقيمة " + s + " بتاريخ " + (r['Order Date']||'') + ". شكراً لتعاملكم معنا!";
+                    let msg = "مرحباً بك عميلنا المميز " + (r.Customer || '') + "، تم تسجيل فاتورة مبيعات لحسابكم بقيمة " + s + " بتاريخ " + ((r['Invoice Date'] || r['Order Date'] || r['Date'])||'') + ". شكراً لتعاملكم معنا!";
                     tr.insertAdjacentHTML('beforeend', '<td><button class="wa-btn" onclick="window.open(\'https://wa.me/?text=' + encodeURIComponent(msg) + '\')" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.2)\'" onmouseout="this.style.transform=\'scale(1)\'">💬</button></td>');
                 }
             });
@@ -826,10 +826,11 @@ window.rAn = function() {
 
         ds.forEach(r => {
             let val = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
-            let rDateStr = typeof pd === 'function' ? pd(r['Order Date']) : r['Order Date']; 
+            let rDateRaw = r['Invoice Date'] || (r['Invoice Date'] || r['Order Date'] || r['Date']) || r['Date'];
+            let rDateStr = typeof pd === 'function' ? pd(rDateRaw) : rDateRaw; 
             if(rDateStr) {
                 let rDate = new Date(rDateStr);
-                if(rDate.getMonth() === month && rDate.getFullYear() === year) {
+                if(!isNaN(rDate) && rDate.getMonth() === month && rDate.getFullYear() === year) {
                     daysMap[rDate.getDate()] += val;
                 }
             }
@@ -861,7 +862,70 @@ window.rAn = function() {
     
     let monthVal = currentYear + '-' + String(currentMonth + 1).padStart(2, '0');
 
+    // Calculate required daily target based on working days left
+    let totalTarget = typeof T !== 'undefined' ? T.reduce((sum, r) => sum + (Number(r.Target)||0), 0) : 0;
+    let totalSales = ds.reduce((sum, r) => sum + (typeof getSalesVal === 'function' ? getSalesVal(r) : 0), 0);
+    let todayDate = new Date();
+    let daysInCurrentMonth = new Date(todayDate.getFullYear(), todayDate.getMonth() + 1, 0).getDate();
+    let workingDaysLeft = 0;
+    for(let i = todayDate.getDate(); i <= daysInCurrentMonth; i++) {
+        let d = new Date(todayDate.getFullYear(), todayDate.getMonth(), i);
+        if(d.getDay() !== 5) workingDaysLeft++; // Excluding Fridays (5)
+    }
+    let remainingTarget = Math.max(0, totalTarget - totalSales);
+    let dailyRequired = workingDaysLeft > 0 ? (remainingTarget / workingDaysLeft) : remainingTarget;
+    
+    // AI Restock Predictor (Customers who might need restock today)
+    let restockAlerts = [];
+    if(typeof S !== 'undefined') {
+        let cuFreq = {};
+        S.forEach(r => { 
+            let c=r.Customer||''; 
+            if(!cuFreq[c]) cuFreq[c] = {dates:[], last:null};
+            let d=pd(r['Invoice Date'] || r['Order Date'] || r['Date']); 
+            if(d) {
+                let dTime = new Date(d).getTime();
+                if(!isNaN(dTime)) cuFreq[c].dates.push(dTime);
+            }
+        });
+        Object.entries(cuFreq).forEach(([c, data]) => {
+            if(data.dates.length > 2) {
+                data.dates.sort((a,b)=>a-b);
+                let diffs = [];
+                for(let i=1; i<data.dates.length; i++) {
+                    diffs.push(data.dates[i] - data.dates[i-1]);
+                }
+                let avgDiff = diffs.reduce((a,b)=>a+b,0) / diffs.length;
+                let lastOrder = data.dates[data.dates.length-1];
+                let daysSinceLast = (todayDate.getTime() - lastOrder) / 86400000;
+                let avgDays = avgDiff / 86400000;
+                if(avgDays > 3 && daysSinceLast >= (avgDays - 2) && daysSinceLast <= (avgDays + 3)) {
+                    restockAlerts.push({c, avgDays: Math.round(avgDays)});
+                }
+            }
+        });
+    }
+    let restockHTML = restockAlerts.length > 0 ? 
+        restockAlerts.slice(0,3).map(a => `<div style="font-size:0.85rem; color:var(--am);"><span style="font-size:1rem;">⚠️</span> العميل <b>${a.c}</b> قد يحتاج لطلب بضاعة اليوم (متوسط الشراء كل ${a.avgDays} يوم)</div>`).join('') :
+        `<div style="font-size:0.85rem; color:var(--gn);"><span style="font-size:1rem;">✅</span> لا يوجد نواقص متوقعة لعملائك اليوم.</div>`;
+
     m.innerHTML = '<div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">📊</span> إحصائيات المبيعات</h1></div>' +
+        '<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top:20px;">' +
+        
+        // Micro-targeting Widget
+        '<div class="card" style="padding:20px; width:100%; border-left: 4px solid var(--p); background: var(--bg2);">' +
+        '<h3 style="margin-bottom:10px; color:var(--p);">🎯 الهدف اليومي المطلوب (تكسير التارجت)</h3>' +
+        `<div style="font-size:1.8rem; font-weight:bold; margin-bottom:10px;">${fmt(dailyRequired)} ج.م</div>` +
+        `<div style="font-size:0.9rem; color:var(--tx2);">المتبقي من الهدف الشهري: ${fmt(remainingTarget)} | أيام العمل المتبقية: ${workingDaysLeft} يوم</div>` +
+        '</div>' +
+        
+        // AI Predictor Widget
+        '<div class="card" style="padding:20px; width:100%; border-left: 4px solid var(--am); background: var(--bg2);">' +
+        '<h3 style="margin-bottom:10px; color:var(--am);">🤖 توقعات نفاد المخزون (الذكاء الاصطناعي)</h3>' +
+        `<div style="display:flex; flex-direction:column; gap:8px;">${restockHTML}</div>` +
+        '</div>' +
+        '</div>' +
+        
         '<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top:20px;">' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
