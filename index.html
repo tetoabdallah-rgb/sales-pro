@@ -832,9 +832,7 @@ body.en .mw {
   margin-bottom: 20px;
 }
 
-.cw {
-  position: relative;
-  height: 240px;
+.cw { position: relative; height: 400px;
 }
 
 /* ---------- Tables ---------- */
@@ -2462,31 +2460,28 @@ function rDash() {
         g.addColorStop(0, 'rgba(80,70,229,.8)'); g.addColorStop(1, 'rgba(80,70,229,.1)');
         CH.d = new Chart(ctx, {
             type:'bar', data:{labels:lb.map(x=>x.slice(5)), datasets:[{data:lb.map(x=>dl[x]), backgroundColor:g, borderRadius:4}]},
-            options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, datalabels: {
-                    color: '#fff',
-                    font: { weight: 'bold', size: 10 },
-                    formatter: function(v) {
-                        if (v === 0) return '';
-                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-                        return v;
-                    },
-                    display: function(ctx) {
-                        let val = ctx.dataset.data[ctx.dataIndex];
-                        if (val <= 0) return false;
-                        let type = ctx.chart.config.type;
-                        if (type === 'doughnut' || type === 'pie') {
-                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
-                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
-                        }
-                        return 'auto';
-                    },
-                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
-                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
-                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
-                    clamp: true
-                }}}
-        });
+            options:{responsive:true, maintainAspectRatio:false, cutout:'45%', layout:{padding:15}, plugins:{legend:{display:false}, datalabels: {
+                      color: '#fff',
+                      font: { weight: 'bold', size: 14, family: 'Cairo' },
+                      textStrokeColor: 'rgba(0,0,0,0.5)',
+                      textStrokeWidth: 3,
+                      display: function(ctx) {
+                          let dataset = ctx.chart.data.datasets[ctx.datasetIndex];
+                          let v = dataset.data[ctx.dataIndex];
+                          if (!v || v <= 0) return false;
+                          if (ctx.chart.config.type === 'doughnut' || ctx.chart.config.type === 'pie') {
+                              let total = dataset.data.reduce((a, b) => a + b, 0);
+                              if ((v / total) < 0.05) return false;
+                          }
+                          return 'auto';
+                      },
+                      formatter: function(v) {
+                          if (!v || v === 0) return '';
+                          if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                          if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                          return v;
+                      }
+                  });
     }
 
     let ca = {};
@@ -2500,31 +2495,28 @@ function rDash() {
     if(ctx2 && cs2.length) {
         CH.c = new Chart(ctx2, {
             type:'doughnut', data:{labels:cs2.map(x=>x[0]), datasets:[{data:cs2.map(x=>x[1]), backgroundColor:CL, borderWidth:0}]},
-            options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
-                    color: '#fff',
-                    font: { weight: 'bold', size: 10 },
-                    formatter: function(v) {
-                        if (v === 0) return '';
-                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-                        return v;
-                    },
-                    display: function(ctx) {
-                        let val = ctx.dataset.data[ctx.dataIndex];
-                        if (val <= 0) return false;
-                        let type = ctx.chart.config.type;
-                        if (type === 'doughnut' || type === 'pie') {
-                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
-                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
-                        }
-                        return 'auto';
-                    },
-                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
-                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
-                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
-                    clamp: true
-                }}}
-        });
+            options:{responsive:true, maintainAspectRatio:false, cutout:'45%', layout:{padding:15}, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
+                      color: '#fff',
+                      font: { weight: 'bold', size: 14, family: 'Cairo' },
+                      textStrokeColor: 'rgba(0,0,0,0.5)',
+                      textStrokeWidth: 3,
+                      display: function(ctx) {
+                          let dataset = ctx.chart.data.datasets[ctx.datasetIndex];
+                          let v = dataset.data[ctx.dataIndex];
+                          if (!v || v <= 0) return false;
+                          if (ctx.chart.config.type === 'doughnut' || ctx.chart.config.type === 'pie') {
+                              let total = dataset.data.reduce((a, b) => a + b, 0);
+                              if ((v / total) < 0.05) return false;
+                          }
+                          return 'auto';
+                      },
+                      formatter: function(v) {
+                          if (!v || v === 0) return '';
+                          if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                          if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                          return v;
+                      }
+                  });
     }
 }
 
@@ -3161,61 +3153,55 @@ function rAn() {
     if(ctxM && months.length) {
         CH.anM = new Chart(ctxM, {
             type:'line', data:{labels:months.map(x=>x.slice(5)), datasets:[{label:'Sales',data:months.map(m=>monthly[m].s),borderColor:'#5046e5',backgroundColor:'rgba(80,70,229,.1)',fill:true,tension:0.4},{label:'Profit',data:months.map(m=>monthly[m].p),borderColor:'#0fa87e',backgroundColor:'rgba(15,168,126,.1)',fill:true,tension:0.4}]},
-            options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}, datalabels: {
-                    color: '#fff',
-                    font: { weight: 'bold', size: 10 },
-                    formatter: function(v) {
-                        if (v === 0) return '';
-                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-                        return v;
-                    },
-                    display: function(ctx) {
-                        let val = ctx.dataset.data[ctx.dataIndex];
-                        if (val <= 0) return false;
-                        let type = ctx.chart.config.type;
-                        if (type === 'doughnut' || type === 'pie') {
-                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
-                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
-                        }
-                        return 'auto';
-                    },
-                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
-                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
-                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
-                    clamp: true
-                }}}
-        });
+            options:{responsive:true, maintainAspectRatio:false, cutout:'45%', layout:{padding:15}, plugins:{legend:{position:'top'}, datalabels: {
+                      color: '#fff',
+                      font: { weight: 'bold', size: 14, family: 'Cairo' },
+                      textStrokeColor: 'rgba(0,0,0,0.5)',
+                      textStrokeWidth: 3,
+                      display: function(ctx) {
+                          let dataset = ctx.chart.data.datasets[ctx.datasetIndex];
+                          let v = dataset.data[ctx.dataIndex];
+                          if (!v || v <= 0) return false;
+                          if (ctx.chart.config.type === 'doughnut' || ctx.chart.config.type === 'pie') {
+                              let total = dataset.data.reduce((a, b) => a + b, 0);
+                              if ((v / total) < 0.05) return false;
+                          }
+                          return 'auto';
+                      },
+                      formatter: function(v) {
+                          if (!v || v === 0) return '';
+                          if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                          if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                          return v;
+                      }
+                  });
     }
     let ctxC = $('anC');
     if(ctxC && topCats.length) {
         CH.anC = new Chart(ctxC, {
             type:'doughnut', data:{labels:topCats.map(x=>x[0]), datasets:[{data:topCats.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},
-            options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
-                    color: '#fff',
-                    font: { weight: 'bold', size: 10 },
-                    formatter: function(v) {
-                        if (v === 0) return '';
-                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-                        return v;
-                    },
-                    display: function(ctx) {
-                        let val = ctx.dataset.data[ctx.dataIndex];
-                        if (val <= 0) return false;
-                        let type = ctx.chart.config.type;
-                        if (type === 'doughnut' || type === 'pie') {
-                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
-                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
-                        }
-                        return 'auto';
-                    },
-                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
-                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
-                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
-                    clamp: true
-                }}}
-        });
+            options:{responsive:true, maintainAspectRatio:false, cutout:'45%', layout:{padding:15}, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
+                      color: '#fff',
+                      font: { weight: 'bold', size: 14, family: 'Cairo' },
+                      textStrokeColor: 'rgba(0,0,0,0.5)',
+                      textStrokeWidth: 3,
+                      display: function(ctx) {
+                          let dataset = ctx.chart.data.datasets[ctx.datasetIndex];
+                          let v = dataset.data[ctx.dataIndex];
+                          if (!v || v <= 0) return false;
+                          if (ctx.chart.config.type === 'doughnut' || ctx.chart.config.type === 'pie') {
+                              let total = dataset.data.reduce((a, b) => a + b, 0);
+                              if ((v / total) < 0.05) return false;
+                          }
+                          return 'auto';
+                      },
+                      formatter: function(v) {
+                          if (!v || v === 0) return '';
+                          if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                          if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                          return v;
+                      }
+                  });
     }
     initAnm && initAnm();
 }
@@ -3304,97 +3290,28 @@ function rAcc() {
     `;
     dc('accC');
     let ctx = $('accC');
-    if(ctx && catArr.length) { CH.accC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
-                    color: '#fff',
-                    font: { weight: 'bold', size: 10 },
-                    formatter: function(v) {
-                        if (v === 0) return '';
-                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-                        return v;
-                    },
-                    display: function(ctx) {
-                        let val = ctx.dataset.data[ctx.dataIndex];
-                        if (val <= 0) return false;
-                        let type = ctx.chart.config.type;
-                        if (type === 'doughnut' || type === 'pie') {
-                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
-                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
-                        }
-                        return 'auto';
-                    },
-                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
-                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
-                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
-                    clamp: true
-                }}}}); }
-    initAnm && initAnm();
-}
-
-// Hardware
-function rHW() {
-    let ds = getFilteredSales().filter(r => isHW(r['Item Class Name']));
-    let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
-    let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
-    let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
-    let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-    $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.hardware}</span> ${t('hardware')}</h1></div>
-        <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(tot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(prof)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(tot>0?prof/tot*100:0,true)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(ds.length)}</div></div>
-        </div>
-        <div class="cg"><div class="cc"><h3>${L==='ar'?TUI('Categories'):'Categories'}</h3><div class="cw"><canvas id="hwC"></canvas></div></div></div>
-        <div class="tb"><div class="tbt"><h3>${t('hardware')}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Category'):'Category'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>%</th></tr></thead>
-        <tbody>${catArr.map(([n,v])=>`<tr><td>${n}</td><td>${fmt(v)}</td><td>${pc(tot>0?v/tot*100:0)}</td></tr>`).join('')}</tbody>
-        </table></div></div>
-    `;
-    dc('hwC');
-    let ctx = $('hwC');
-    if(ctx && catArr.length) { CH.hwC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
-                    color: '#fff',
-                    font: { weight: 'bold', size: 10 },
-                    formatter: function(v) {
-                        if (v === 0) return '';
-                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
-                        return v;
-                    },
-                    display: function(ctx) {
-                        let val = ctx.dataset.data[ctx.dataIndex];
-                        if (val <= 0) return false;
-                        let type = ctx.chart.config.type;
-                        if (type === 'doughnut' || type === 'pie') {
-                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
-                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
-                        }
-                        return 'auto';
-                    },
-                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
-                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
-                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
-                    clamp: true
-                }}}}); }
-    initAnm && initAnm();
-}
-
-// Collections
-function rCollections() {
-    let tot = 0, accTot = 0, hwTot = 0;
-    let cAccMap = {}, cHWMap = {};
-    if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
-        S.forEach(s => {
-            let c = s['Customer'];
-            if(c) {
-                let v = Number(s['Sales Without Tax'] || 0);
-                if(isAcc(s['Item Class Name'])) cAccMap[c] = (cAccMap[c]||0) + v;
-                if(isHW(s['Item Class Name'])) cHWMap[c] = (cHWMap[c]||0) + v;
-            }
-        });
+    if(ctx && catArr.length) { CH.accC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true, maintainAspectRatio:false, cutout:'45%', layout:{padding:15}, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
+                      color: '#fff',
+                      font: { weight: 'bold', size: 14, family: 'Cairo' },
+                      textStrokeColor: 'rgba(0,0,0,0.5)',
+                      textStrokeWidth: 3,
+                      display: function(ctx) {
+                          let dataset = ctx.chart.data.datasets[ctx.datasetIndex];
+                          let v = dataset.data[ctx.dataIndex];
+                          if (!v || v <= 0) return false;
+                          if (ctx.chart.config.type === 'doughnut' || ctx.chart.config.type === 'pie') {
+                              let total = dataset.data.reduce((a, b) => a + b, 0);
+                              if ((v / total) < 0.05) return false;
+                          }
+                          return 'auto';
+                      },
+                      formatter: function(v) {
+                          if (!v || v === 0) return '';
+                          if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                          if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                          return v;
+                      }
+                  });
     }
 
     C.forEach(r => {
