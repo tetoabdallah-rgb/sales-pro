@@ -3904,10 +3904,9 @@ window.fetchGizaLeads = async function() {
     document.getElementById('gizaSearchBtn').disabled = true;
     document.getElementById('gizaSearchBtn').style.opacity = '0.6';
     
-    // Overpass API Query for Giza Governorate explicitly mapping the large area bounds
+    // Overpass API Query for Giza Governorate using Bounding Box (Giza, 6th of October, Sheikh Zayed, Haram, etc.)
     let query = `[out:json][timeout:25];
-area["name:ar"="محافظة الجيزة"]->.searchArea;
-nwr${cat}(area.searchArea);
+nwr${cat}(29.80,30.80,30.15,31.25);
 out center 150;`; 
     
     try {
