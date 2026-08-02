@@ -1,4 +1,4 @@
-
+﻿
 // new_features.js - Universal, Safe, and Dynamic Injection
 
 // --- DATA ACCESS HELPERS ---
@@ -1133,4 +1133,5 @@ if (originalRVisits && !window.gpsInjected) {
         }
     };
 }
+
 
