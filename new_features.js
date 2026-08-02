@@ -299,23 +299,41 @@ window.rTgt = function() {
     let cSF = (c, f) => f === window.isAcc ? (accSMap[c] || 0) : (hwSMap[c] || 0);
     let cPF = (c, f) => f === window.isAcc ? (accPMap[c] || 0) : (hwPMap[c] || 0);
 
-    let tt=0, ta=0;
+    let tt=0, ta=0, hwt=0, acct=0, hwa=0, acca=0;
     if(tData && tData.length > 0) {
-        tData.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
+        tData.forEach(r => { 
+            tt += Number(r.Target)||0; 
+            ta += cS(r.Customer); 
+            hwt += Number(r.hwTarget)||0;
+            acct += Number(r.accTarget)||0;
+            hwa += cSF(r.Customer, window.isHW);
+            acca += cSF(r.Customer, window.isAcc);
+        });
     }
     
     let mDiv = document.getElementById('M');
     if(!mDiv) return;
     
     mDiv.innerHTML = `
-        <div class="ph" style="display:flex;align-items:center;gap:12px;">
+        <div class="ph" style="display:flex;align-items:center;gap:12px; flex-wrap:wrap;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${window.ICONS ? window.ICONS.targets : '🎯'}</span> ${typeof t==='function'?t('targets'):(L==='ar'?'المستهدفات':'Targets')}</h1>
-            <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
+            <div style="margin-left:auto; display:flex; gap:10px;">
+                <button onclick="window.editCustomerTarget('')" class="btn btn-p" style="font-weight:bold; font-family:inherit;">+ ${L==='ar'?'إضافة عميل':'Add Customer'}</button>
+                <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none; font-family:inherit;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
+            </div>
         </div>
-        <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?'التارجت':'Target'}</div><div class="vl">${typeof aFmt==='function'?aFmt(tt):tt}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'المحقق':'Achieved'}</div><div class="vl">${typeof aFmt==='function'?aFmt(ta):ta}</div></div>
-            <div class="ki"><div class="lb">%</div><div class="vl">${typeof aFmt==='function'?aFmt(tt>0?ta/tt*100:0,true):(tt>0?(ta/tt*100).toFixed(1)+'%':'0%')}</div></div>
+        <div class="kg" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+            <div class="ki"><div class="lb">${L==='ar'?'إجمالي التارجت':'Total Target'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(tt):tt}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'إجمالي المحقق':'Total Achieved'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(ta):ta}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'نسبة الكلي':'Total %'}</div><div class="vl" style="font-size:1.3rem;color:var(--ac);">${typeof aFmt==='function'?aFmt(tt>0?ta/tt*100:0,true):(tt>0?(ta/tt*100).toFixed(1)+'%':'0%')}</div></div>
+            
+            <div class="ki" style="border-left: 3px solid #ff9800;"><div class="lb">${L==='ar'?'تارجت هاردوير':'HW Target'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(hwt):hwt}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'محقق هاردوير':'HW Achieved'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(hwa):hwa}</div></div>
+            <div class="ki"><div class="lb">% HW</div><div class="vl" style="font-size:1.3rem;color:#ff9800;">${typeof aFmt==='function'?aFmt(hwt>0?hwa/hwt*100:0,true):(hwt>0?(hwa/hwt*100).toFixed(1)+'%':'0%')}</div></div>
+            
+            <div class="ki" style="border-left: 3px solid #4caf50;"><div class="lb">${L==='ar'?'تارجت إكسسوار':'Acc Target'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(acct):acct}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'محقق إكسسوار':'Acc Achieved'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(acca):acca}</div></div>
+            <div class="ki"><div class="lb">% Acc</div><div class="vl" style="font-size:1.3rem;color:#4caf50;">${typeof aFmt==='function'?aFmt(acct>0?acca/acct*100:0,true):(acct>0?(acca/acct*100).toFixed(1)+'%':'0%')}</div></div>
         </div>
         <div class="tb">
             <div class="tbt"><h3>${typeof t==='function'?t('targets'):(L==='ar'?'المستهدفات':'Targets')}</h3><input class="sbox" id="tsr" placeholder="..."></div>
@@ -323,15 +341,15 @@ window.rTgt = function() {
                 <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
                     <thead>
                         <tr>
-                            <th>${L==='ar'?'العميل':'Customer'}</th>
-                            <th>${L==='ar'?'التارجت':'Target'}</th>
+                            <th>${L==='ar'?'العميل / اتصال':'Customer / Contact'}</th>
+                            <th>${L==='ar'?'التارجت الكلي':'Total Target'}</th>
                             <th>${L==='ar'?'المحقق':'Achieved'}</th>
                             <th style="width:200px;">${L==='ar'?'نسبة التحقيق':'% Progress'}</th>
-                            <th>Acc</th>
-                            <th>Acc P</th>
-                            <th>HW</th>
-                            <th>HW P</th>
-                            <th>St</th>
+                            <th>HW Tgt</th>
+                            <th>HW Ach</th>
+                            <th>Acc Tgt</th>
+                            <th>Acc Ach</th>
+                            <th>${L==='ar'?'إجراء':'Act'}</th>
                         </tr>
                     </thead>
                     <tbody id="ttb"></tbody>
@@ -341,7 +359,7 @@ window.rTgt = function() {
     `;
     
     if(document.getElementById('bExTgt') && typeof exportToExcel === 'function') {
-        document.getElementById('bExTgt').onclick = () => exportToExcel(tData.map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
+        document.getElementById('bExTgt').onclick = () => exportToExcel(tData.map(r => ({ Customer: r.Customer, Phone: r.phone||'', Address: r.address||'', Target: Number(r.Target)||0, Achieved: cS(r.Customer), HW_Target: r.hwTarget||0, HW_Achieved: cSF(r.Customer,window.isHW), Acc_Target: r.accTarget||0, Acc_Achieved: cSF(r.Customer,window.isAcc) })), 'Targets_Report');
     }
 
     function fTg(d){
@@ -349,22 +367,33 @@ window.rTgt = function() {
         if(!ttb) return;
         ttb.innerHTML = d.map(r => {
             let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
+            let hwT = Number(r.hwTarget)||0, hwA = cSF(r.Customer,window.isHW);
+            let accT = Number(r.accTarget)||0, accA = cSF(r.Customer,window.isAcc);
             let pColor = p >= 100 ? 'var(--gn)' : p >= 60 ? 'var(--am)' : 'var(--rd)';
             let pBar = `<div style="width:100%;background:var(--bg3);border-radius:10px;height:12px;overflow:hidden;position:relative;min-width:150px;border:1px solid var(--bd);">
                             <div style="width:${Math.min(p, 100)}%;background:${pColor};height:100%;transition:width 0.5s;"></div>
                         </div>
                         <div style="font-size:0.85rem;color:var(--tx1);font-weight:bold;margin-top:4px;">${typeof pc==='function'?pc(p):p.toFixed(1)+'%'}</div>`;
             
+            let contactHTML = '';
+            if(r.phone || r.address) {
+                contactHTML = `<div style="font-size:0.8rem; color:var(--tx2); margin-top:4px;">&#x1F4DE; ${r.phone||'-'} <br/>&#x1F4CD; ${r.address||'-'}</div>`;
+            }
+            
             return `<tr>
-                <td style="font-weight:bold;">${r.Customer}</td>
+                <td style="font-weight:bold;">${r.Customer}${contactHTML}</td>
                 <td style="color:var(--tx2);">${typeof fmt==='function'?fmt(tg):tg}</td>
                 <td style="color:var(--ac);font-weight:bold;">${typeof fmt==='function'?fmt(a):a}</td>
                 <td style="vertical-align:middle;padding:10px;">${pBar}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,window.isAcc)):0}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,window.isAcc)):0}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cSF(r.Customer,window.isHW)):0}</td>
-                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(cPF(r.Customer,window.isHW)):0}</td>
-                <td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(hwT):hwT}</td>
+                <td style="font-size:0.9rem;">${typeof fmt==='function'?fmt(hwA):hwA}</td>
+                <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(accT):accT}</td>
+                <td style="font-size:0.9rem;">${typeof fmt==='function'?fmt(accA):accA}</td>
+                <td>
+                    <button onclick="window.editCustomerTarget('${r.Customer.replace(/'/g, "\\'")}')" class="btn" style="padding:4px 8px; font-size:0.8rem; background:var(--bg3); border:1px solid var(--bd); font-family:inherit;">
+                        ${L==='ar'?'تعديل':'Edit'}
+                    </button>
+                </td>
             </tr>`;
         }).join('');
     }
