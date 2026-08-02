@@ -2813,6 +2813,65 @@ function rSales() {
 }
 
 // 3. Targets
+window.editCustomerTarget = function(name) {
+    let idx = name ? T.findIndex(x => x.Customer === name) : -1;
+    let r = idx !== -1 ? T[idx] : { Customer: '', phone: '', address: '', hwTarget: 0, accTarget: 0, Target: 0 };
+    let m = document.createElement('div');
+    m.id = 'custModal';
+    m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;';
+    m.innerHTML = `
+        <div style="background:var(--bg); padding:25px; border-radius:12px; width:90%; max-width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.5); border:1px solid var(--bd);">
+            <h3 style="margin-top:0;">${idx===-1 ? (L==='ar'?'إضافة عميل وتارجت':'Add Customer') : (L==='ar'?'تعديل العميل':'Edit Customer')}</h3>
+            <label style="display:block;margin-top:10px;font-size:0.9rem;">${L==='ar'?'اسم العميل':'Customer Name'}</label>
+            <input id="cmName" value="${r.Customer}" class="sbox" style="width:100%;margin-bottom:10px;box-sizing:border-box;" ${idx!==-1?'readonly':''}>
+            <label style="display:block;font-size:0.9rem;">${L==='ar'?'رقم الهاتف':'Phone'}</label>
+            <input id="cmPhone" value="${r.phone||''}" class="sbox" style="width:100%;margin-bottom:10px;box-sizing:border-box;">
+            <label style="display:block;font-size:0.9rem;">${L==='ar'?'العنوان':'Address'}</label>
+            <input id="cmAddr" value="${r.address||''}" class="sbox" style="width:100%;margin-bottom:10px;box-sizing:border-box;">
+            <label style="display:block;font-size:0.9rem;">${L==='ar'?'تارجت الهاردوير':'HW Target'}</label>
+            <input type="number" id="cmHW" value="${r.hwTarget||0}" class="sbox" style="width:100%;margin-bottom:10px;box-sizing:border-box;">
+            <label style="display:block;font-size:0.9rem;">${L==='ar'?'تارجت الإكسسوارات':'Acc Target'}</label>
+            <input type="number" id="cmAcc" value="${r.accTarget||0}" class="sbox" style="width:100%;margin-bottom:20px;box-sizing:border-box;">
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button class="btn" style="background:var(--bd);color:var(--tx);" onclick="document.body.removeChild(document.getElementById('custModal'))">${L==='ar'?'إلغاء':'Cancel'}</button>
+                <button class="btn btn-p" onclick="saveCustomerTarget('${idx!==-1 ? name.replace(/'/g, "\\'") : ''}')">${L==='ar'?'حفظ':'Save'}</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(m);
+};
+
+window.saveCustomerTarget = function(origName) {
+    let name = document.getElementById('cmName').value.trim();
+    if(!name) { alert(L==='ar'?'اسم العميل مطلوب':'Name required'); return; }
+    let hw = Number(document.getElementById('cmHW').value)||0;
+    let acc = Number(document.getElementById('cmAcc').value)||0;
+    let total = hw + acc;
+    
+    let newData = {
+        Customer: name,
+        phone: document.getElementById('cmPhone').value.trim(),
+        address: document.getElementById('cmAddr').value.trim(),
+        hwTarget: hw,
+        accTarget: acc,
+        Target: total
+    };
+    
+    if(!origName) {
+        let exist = T.findIndex(x => x.Customer.toLowerCase() === name.toLowerCase());
+        if(exist !== -1) { alert(L==='ar'?'العميل موجود مسبقاً':'Customer already exists'); return; }
+        T.push(newData);
+    } else {
+        let idx = T.findIndex(x => x.Customer === origName);
+        if(idx !== -1) T[idx] = { ...T[idx], ...newData };
+    }
+    
+    sv('targetData', T);
+    document.body.removeChild(document.getElementById('custModal'));
+    rTgt();
+    if(typeof window.cloudAutoSave === 'function') window.cloudAutoSave('تحديث تارجت عميل');
+};
+
 function rTgt() {
     let sData = typeof getFilteredSales === 'function' ? getFilteredSales() : S;
     let sMap = {}, accSMap = {}, hwSMap = {};
@@ -2833,37 +2892,77 @@ function rTgt() {
     let cSF = (c, f) => f === isAcc ? (accSMap[c] || 0) : (hwSMap[c] || 0);
     let cPF = (c, f) => f === isAcc ? (accPMap[c] || 0) : (hwPMap[c] || 0);
 
-    let tt=0, ta=0;
-    T.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
+    let tt=0, ta=0, hwt=0, acct=0, hwa=0, acca=0;
+    T.forEach(r => { 
+        tt += Number(r.Target)||0; 
+        ta += cS(r.Customer); 
+        hwt += Number(r.hwTarget)||0;
+        acct += Number(r.accTarget)||0;
+        hwa += cSF(r.Customer, isHW);
+        acca += cSF(r.Customer, isAcc);
+    });
     $('M').innerHTML = `
-        <div class="ph" style="display:flex;align-items:center;gap:12px;">
+        <div class="ph" style="display:flex;align-items:center;gap:12px; flex-wrap:wrap;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}"</h1>
-            <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
+            <div style="margin-left:auto; display:flex; gap:10px;">
+                <button onclick="window.editCustomerTarget('')" class="btn btn-p" style="font-weight:bold;">+ ${L==='ar'?'إضافة عميل':'Add Customer'}</button>
+                <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
+            </div>
         </div>
-        <div class="kg">
-            <div class="ki"><div class="lb">Target</div><div class="vl">${aFmt(tt)}</div></div>
-            <div class="ki"><div class="lb">Achieved</div><div class="vl">${aFmt(ta)}</div></div>
-            <div class="ki"><div class="lb">%</div><div class="vl">${aFmt(tt>0?ta/tt*100:0,true)}</div></div>
+        <div class="kg" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+            <div class="ki"><div class="lb">${L==='ar'?'إجمالي التارجت':'Total Target'}</div><div class="vl" style="font-size:1.3rem;">${aFmt(tt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'إجمالي المحقق':'Total Achieved'}</div><div class="vl" style="font-size:1.3rem;">${aFmt(ta)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'نسبة الكلي':'Total %'}</div><div class="vl" style="font-size:1.3rem;color:var(--ac);">${aFmt(tt>0?ta/tt*100:0,true)}</div></div>
+            
+            <div class="ki" style="border-left: 3px solid #ff9800;"><div class="lb">${L==='ar'?'تارجت هاردوير':'HW Target'}</div><div class="vl" style="font-size:1.3rem;">${aFmt(hwt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'محقق هاردوير':'HW Achieved'}</div><div class="vl" style="font-size:1.3rem;">${aFmt(hwa)}</div></div>
+            <div class="ki"><div class="lb">% HW</div><div class="vl" style="font-size:1.3rem;color:#ff9800;">${aFmt(hwt>0?hwa/hwt*100:0,true)}</div></div>
+            
+            <div class="ki" style="border-left: 3px solid #4caf50;"><div class="lb">${L==='ar'?'تارجت إكسسوار':'Acc Target'}</div><div class="vl" style="font-size:1.3rem;">${aFmt(acct)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'محقق إكسسوار':'Acc Achieved'}</div><div class="vl" style="font-size:1.3rem;">${aFmt(acca)}</div></div>
+            <div class="ki"><div class="lb">% Acc</div><div class="vl" style="font-size:1.3rem;color:#4caf50;">${aFmt(acct>0?acca/acct*100:0,true)}</div></div>
         </div>
         <div class="tb">
             <div class="tbt"><h3>Targets</h3><input class="sbox" id="tsr" placeholder="..."></div>
-            <div class="tbs"><table><thead><tr><th>Customer</th><th>Target</th><th>Achieved</th><th>%</th><th>Acc</th><th>Acc P</th><th>HW</th><th>HW P</th><th>St</th></tr></thead><tbody id="ttb"></tbody></table></div>
+            <div class="tbs"><table><thead><tr><th>Customer / Contact</th><th>Target (Total)</th><th>Achieved</th><th>%</th><th>HW Tgt</th><th>HW Ach</th><th>Acc Tgt</th><th>Acc Ach</th><th>Act</th></tr></thead><tbody id="ttb"></tbody></table></div>
         </div>
     `;
     
-    $('bExTgt').onclick = () => exportToExcel(T.map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
+    $('bExTgt').onclick = () => exportToExcel(T.map(r => ({ Customer: r.Customer, Phone: r.phone||'', Address: r.address||'', Target: Number(r.Target)||0, Achieved: cS(r.Customer), HW_Target: r.hwTarget||0, HW_Achieved: cSF(r.Customer,isHW), Acc_Target: r.accTarget||0, Acc_Achieved: cSF(r.Customer,isAcc) })), 'Targets_Report');
 
     function fTg(d){
         $('ttb').innerHTML = d.map(r => {
             let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
-            return `<tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>`;
+            let hwT = Number(r.hwTarget)||0, hwA = cSF(r.Customer,isHW);
+            let accT = Number(r.accTarget)||0, accA = cSF(r.Customer,isAcc);
+            
+            let contactHTML = '';
+            if(r.phone || r.address) {
+                contactHTML = `<div style="font-size:0.8rem; color:var(--tx2); margin-top:4px;">&#x1F4DE; ${r.phone||'-'} <br/>&#x1F4CD; ${r.address||'-'}</div>`;
+            }
+            
+            return `<tr>
+                <td><strong>${r.Customer}</strong>${contactHTML}</td>
+                <td><strong>${fmt(tg)}</strong></td>
+                <td><strong>${fmt(a)}</strong></td>
+                <td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${pc(p)}</span></td>
+                <td><span style="color:var(--tx2);">${fmt(hwT)}</span></td>
+                <td>${fmt(hwA)}</td>
+                <td><span style="color:var(--tx2);">${fmt(accT)}</span></td>
+                <td>${fmt(accA)}</td>
+                <td>
+                    <button onclick="window.editCustomerTarget('${r.Customer.replace(/'/g, "\\'")}')" class="btn" style="padding:4px 8px; font-size:0.8rem; background:var(--bg3); border:1px solid var(--bd);">
+                        ${L==='ar'?'تعديل':'Edit'}
+                    </button>
+                </td>
+            </tr>`;
         }).join('');
     }
     fTg(T);
     
     $('tsr').oninput = debounce(e => {
         let v = e.target.value.toLowerCase();
-        fTg(v ? T.filter(r => (r.Customer||'').toLowerCase().includes(v)) : T);
+        fTg(v ? T.filter(r => (r.Customer||'').toLowerCase().includes(v) || (r.phone||'').toLowerCase().includes(v) || (r.address||'').toLowerCase().includes(v)) : T);
     });
     initAnm && initAnm();
 }
@@ -4370,7 +4469,19 @@ function rSetup() {
             }
         };
         if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) onAllDone(); }); }
-        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) onAllDone(); }); }
+        if(fT) { total++; parseFile(fT, d => { 
+            let norm = d.map(r => {
+                let Customer = r.Customer || r['العميل'] || r['Customer Name'] || r['اسم العميل'] || r['الاسم'];
+                let Target = r.Target || r['التارجت'] || r['Total Target'] || r['تارجت'] || 0;
+                let phone = r.Phone || r['رقم الموبايل'] || r['موبايل'] || r['رقم الهاتف'] || r['Mobile'] || r.phone || '';
+                let address = r.Address || r['العنوان'] || r['عنوان'] || r.address || '';
+                let hwTarget = r['Target HW'] || r['تارجت هاردوير'] || r['Hardware Target'] || r.hwTarget || 0;
+                let accTarget = r['Target Acc'] || r['تارجت اكسسوارات'] || r['Accessories Target'] || r['تارجت اكسسوار'] || r.accTarget || 0;
+                if(!Target && (hwTarget || accTarget)) Target = Number(hwTarget||0) + Number(accTarget||0);
+                return { ...r, Customer, Target: Number(Target)||0, phone, address, hwTarget: Number(hwTarget)||0, accTarget: Number(accTarget)||0 };
+            }).filter(r => r.Customer);
+            T = norm; sv('targetData', norm); done++; if(done===total) onAllDone(); 
+        }); }
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) onAllDone(); }, 'Payment Ref'); }
     };
 
