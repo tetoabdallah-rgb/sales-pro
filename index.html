@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -3833,7 +3833,11 @@ function rPros() {
     $('M').innerHTML = `
         <div class="ph" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.prospects}</span> ${L==='ar'?'نظام إدارة المحتملين (CRM)':'Leads CRM'}</h1>
-            <div style="display:flex; gap:10px;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button onclick="window.openGizaSearch()" class="btn" style="background:#ff9800; color:#fff; padding:8px 16px; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> 
+                    ${L==='ar'?'البحث الذكي بالجيزة':'Smart Search in Giza'}
+                </button>
                 <button onclick="window.addLead()" class="btn" style="background:var(--ac); color:#fff; padding:8px 16px;">+ ${L==='ar'?'إضافة عميل':'Add Lead'}</button>
             </div>
         </div>
@@ -3842,6 +3846,126 @@ function rPros() {
         </div>
     `;
 }
+
+// Map Search API Injection
+window.openGizaSearch = function() {
+    if(document.getElementById('gizaModal')) return;
+    let m = document.createElement('div');
+    m.id = 'gizaModal';
+    m.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);';
+    m.innerHTML = `
+        <div style="background:var(--bg); padding:30px; border-radius:15px; width:90%; max-width:550px; box-shadow:0 15px 40px rgba(0,0,0,0.5); border:1px solid var(--bd); position:relative; overflow:hidden;">
+            <div style="position:absolute; top:-20px; right:-20px; background:var(--ac); width:100px; height:100px; border-radius:50%; opacity:0.1;"></div>
+            <h2 style="margin-top:0; color:var(--tx); display:flex; align-items:center; gap:10px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#ff9800;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                ${L==='ar'?'بحث عن عملاء جدد - الجيزة':'Find New Leads - Giza Governorate'}
+            </h2>
+            <p style="color:var(--tx2); margin-bottom:20px; font-size:15px;">${L==='ar'?'اختر نشاط العملاء للبحث عنهم في جميع مناطق الجيزة وضواحيها (أكتوبر، زايد، الهرم، المهندسين.. الخ):':'Select business type to search across all Giza and its suburbs:'}</p>
+            
+            <label style="display:block; margin-bottom:8px; color:var(--tx); font-weight:bold;">${L==='ar'?'نوع النشاط (الفئة المستهدفة):':'Business Category:'}</label>
+            <select id="gizaCategory" style="width:100%; padding:12px; margin-bottom:20px; border-radius:8px; border:2px solid var(--bd); background:var(--bg2); color:var(--tx); font-size:16px; outline:none; cursor:pointer;">
+                <option value='["amenity"="pharmacy"]'>صيدليات (Pharmacies)</option>
+                <option value='["shop"~"supermarket|convenience"]'>سوبر ماركت (Supermarkets)</option>
+                <option value='["amenity"~"restaurant|cafe|fast_food"]'>مطاعم وكافيهات (Restaurants & Cafes)</option>
+                <option value='["shop"~"clothes|boutique|shoes"]'>ملابس وأحذية (Clothing & Shoes)</option>
+                <option value='["shop"~"electronics|mobile_phone"]'>موبايلات وإلكترونيات (Electronics)</option>
+                <option value='["amenity"~"clinic|hospital"]'>عيادات ومستشفيات (Clinics & Hospitals)</option>
+                <option value='["shop"~"hairdresser|beauty"]'>صالونات تجميل (Beauty & Salons)</option>
+                <option value='["shop"~"bakery|pastry"]'>مخابز وحلويات (Bakeries)</option>
+                <option value='["amenity"="bank"]'>بنوك وخدمات مالية (Banks)</option>
+                <option value='["shop"~"hardware|doityourself"]'>أدوات منزلية وخردوات (Hardware & Home)</option>
+            </select>
+            
+            <div id="gizaLoading" style="display:none; color:var(--ac); margin-bottom:20px; font-weight:bold; text-align:center; padding:15px; background:rgba(33, 150, 243, 0.1); border-radius:8px; border:1px dashed var(--ac);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin" style="margin-bottom:-6px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg><br/>
+                ${L==='ar'?'جاري مسح الخريطة واستخراج بيانات العملاء، يرجى الانتظار (قد يستغرق بضع ثوانٍ)...':'Scanning map and extracting leads data, please wait...'}
+            </div>
+            
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
+                <button onclick="document.body.removeChild(document.getElementById('gizaModal'))" class="btn" style="background:var(--bd); color:var(--tx); padding:10px 20px; border-radius:8px;">${L==='ar'?'إلغاء':'Cancel'}</button>
+                <button onclick="window.fetchGizaLeads()" id="gizaSearchBtn" class="btn" style="background:#ff9800; color:#fff; padding:10px 20px; font-weight:bold; border-radius:8px; box-shadow:0 4px 10px rgba(255, 152, 0, 0.3);">${L==='ar'?'بحث وإضافة للسيستم':'Search & Add to CRM'}</button>
+            </div>
+        </div>
+    `;
+    
+    // Add spin css if not exists
+    if(!document.getElementById('gizaStyles')) {
+        let st = document.createElement('style');
+        st.id = 'gizaStyles';
+        st.innerHTML = `@keyframes spin { 100% { transform:rotate(360deg); } } .spin { animation:spin 1s linear infinite; }`;
+        document.head.appendChild(st);
+    }
+    document.body.appendChild(m);
+};
+
+window.fetchGizaLeads = async function() {
+    let cat = document.getElementById('gizaCategory').value;
+    document.getElementById('gizaLoading').style.display = 'block';
+    document.getElementById('gizaSearchBtn').disabled = true;
+    document.getElementById('gizaSearchBtn').style.opacity = '0.6';
+    
+    // Overpass API Query for Giza Governorate explicitly mapping the large area bounds
+    let query = `[out:json][timeout:25];
+area["name:ar"="محافظة الجيزة"]->.searchArea;
+nwr${cat}(area.searchArea);
+out center 150;`; 
+    
+    try {
+        let res = await fetch('https://overpass-api.de/api/interpreter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'data=' + encodeURIComponent(query)
+        });
+        
+        if(!res.ok) throw new Error('API Error');
+        let data = await res.json();
+        
+        if(data && data.elements && data.elements.length > 0) {
+            let lds = JSON.parse(localStorage.getItem('leadsData') || '[]');
+            let addedCount = 0;
+            
+            data.elements.forEach(el => {
+                let name = el.tags.name || el.tags['name:ar'] || el.tags['name:en'] || (L==='ar'?'موقع تجاري - الجيزة':'Commercial Place - Giza');
+                // Ensure no duplicates by name (case-insensitive trim)
+                let nm = name.trim().toLowerCase();
+                if(!lds.find(x => x.name && x.name.trim().toLowerCase() === nm)) {
+                    let city = el.tags['addr:city'] || el.tags['addr:suburb'] || '';
+                    let street = el.tags['addr:street'] || '';
+                    let fullBranch = 'الجيزة';
+                    if(city) fullBranch += ' - ' + city;
+                    if(street) fullBranch += ' (' + street + ')';
+                    
+                    lds.push({ 
+                        id: Date.now() + Math.random(), 
+                        name: name, 
+                        phone: el.tags.phone || el.tags['contact:phone'] || el.tags['contact:mobile'] || '', 
+                        branch: fullBranch, 
+                        status: 'Targeted', 
+                        note: (L==='ar'?'المصدر: بحث الخرائط الذكي':'Source: Smart Map Search') 
+                    });
+                    addedCount++;
+                }
+            });
+            
+            if(addedCount > 0) {
+                localStorage.setItem('leadsData', JSON.stringify(lds));
+                if(typeof rPros === 'function') rPros();
+                alert(L==='ar'? `نجاح! تم العثور على ${addedCount} عميل جديد في الجيزة وتم إضافتهم لقائمة المحتملين.` : `Success! Found and added ${addedCount} new leads in Giza.`);
+            } else {
+                alert(L==='ar'? 'لم يتم إضافة أي عملاء جدد (العملاء الموجودين في هذه المنطقة مسجلين لديك مسبقاً).' : 'No new leads added (they already exist in your system).');
+            }
+        } else {
+            alert(L==='ar'? 'عفواً، لم يتم العثور على أي بيانات مطابقة في خريطة الجيزة حالياً.' : 'Sorry, no matching places found in Giza currently.');
+        }
+    } catch(e) {
+        console.error(e);
+        // Fallback bounding box for Giza if area query fails
+        alert(L==='ar'? 'حدث خطأ أثناء الاتصال بالخريطة، يرجى التأكد من اتصال الإنترنت أو المحاولة لاحقاً.' : 'Map connection error, please try again.');
+    }
+    
+    let m = document.getElementById('gizaModal');
+    if(m) document.body.removeChild(m);
+};
 
 // Opportunities (customers below 50% of target)
 function rPot() {
