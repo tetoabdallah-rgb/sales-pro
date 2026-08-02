@@ -823,8 +823,13 @@ window.rAn = function() {
         let dsTop = {};
         let dsClass = {'إكسسوارات':0, 'هاردوير':0, 'أخرى':0};
         let dsRegion = {};
+        let dsItems = {};
 
         ds.forEach(r => {
+            let valForItems = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
+            let itmDesc = r['Item Description'] || 'غير محدد';
+            dsItems[itmDesc] = (dsItems[itmDesc] || 0) + valForItems;
+
             let val = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
             let rDateRaw = r['Invoice Date'] || (r['Invoice Date'] || r['Order Date'] || r['Date']) || r['Date'];
             let rDateStr = typeof pd === 'function' ? pd(rDateRaw) : rDateRaw; 
@@ -846,17 +851,21 @@ window.rAn = function() {
             let reg = r['Customer Class'] || 'Unknown';
             dsRegion[reg] = (dsRegion[reg] || 0) + val;
         });
-        return { daysMap, dsTop, dsClass, dsRegion };
+        return { daysMap, dsTop, dsClass, dsRegion, dsItems };
     };
 
     let today = new Date();
     let currentMonth = today.getMonth();
     let currentYear = today.getFullYear();
-    let { daysMap, dsTop, dsClass, dsRegion } = renderMonth(currentYear, currentMonth);
+    let { daysMap, dsTop, dsClass, dsRegion, dsItems } = renderMonth(currentYear, currentMonth);
 
     let topCats = Object.entries(dsTop).sort((a,b)=>b[1]-a[1]).slice(0,5);
     let classArr = Object.entries(dsClass).filter(x => x[1] > 0);
     let regArr = Object.entries(dsRegion).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    
+    let allItemsArr = Object.entries(dsItems || {}).sort((a,b)=>b[1]-a[1]);
+    let topItems = allItemsArr.slice(0, 10);
+    let bottomItems = allItemsArr.slice(-10).reverse();
 
     let m = document.getElementById('M');
     
@@ -947,6 +956,16 @@ window.rAn = function() {
         '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">📍 مبيعات المناطق</h3>' +
         '<div style="height:450px; width:100%;"><canvas id="premChart4"></canvas></div></div>' +
         
+        '</div>' +
+        '<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top:20px;">' +
+        '<div class="card" style="padding:20px; width:100%; border-top:4px solid var(--gn);">' +
+        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">أفضل 10 أصناف مبيعاً</h3>' +
+        topItems.map(x => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;" title="${x[0]}">${x[0]}</span><strong style="color:var(--gn);">${typeof fmt==='function'?fmt(x[1]):x[1]}</strong></div>`).join('') +
+        '</div>' +
+        '<div class="card" style="padding:20px; width:100%; border-top:4px solid var(--rd);">' +
+        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">أقل 10 أصناف مبيعاً</h3>' +
+        bottomItems.map(x => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;" title="${x[0]}">${x[0]}</span><strong style="color:var(--rd);">${typeof fmt==='function'?fmt(x[1]):x[1]}</strong></div>`).join('') +
+        '</div>' +
         '</div>';
 
     setTimeout(() => {
@@ -1133,5 +1152,6 @@ if (originalRVisits && !window.gpsInjected) {
         }
     };
 }
+
 
 
