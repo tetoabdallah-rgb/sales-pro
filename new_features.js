@@ -1,4 +1,4 @@
-﻿
+
 // new_features.js - Universal, Safe, and Dynamic Injection
 
 // --- DATA ACCESS HELPERS ---
@@ -957,14 +957,14 @@ window.rAn = function() {
         '<div style="height:450px; width:100%;"><canvas id="premChart4"></canvas></div></div>' +
         
         '</div>' +
-        '<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top:20px;">' +
-        '<div class="card" style="padding:20px; width:100%; border-top:4px solid var(--gn);">' +
+        '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top:20px;">' +
+        '<div class="card" style="padding:20px; width:100%; border-top:4px solid var(--gn); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' +
         '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">أفضل 10 أصناف مبيعاً</h3>' +
-        topItems.map(x => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;" title="${x[0]}">${x[0]}</span><strong style="color:var(--gn);">${typeof fmt==='function'?fmt(x[1]):x[1]}</strong></div>`).join('') +
+        topItems.map(x => `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd);font-size:0.9rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:15px;" title="${x[0]}">${x[0]}</span><strong style="color:var(--gn); font-size:0.95rem;">${typeof fmt==='function'?fmt(x[1]):x[1]}</strong></div>`).join('') +
         '</div>' +
-        '<div class="card" style="padding:20px; width:100%; border-top:4px solid var(--rd);">' +
+        '<div class="card" style="padding:20px; width:100%; border-top:4px solid var(--rd); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' +
         '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">أقل 10 أصناف مبيعاً</h3>' +
-        bottomItems.map(x => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;" title="${x[0]}">${x[0]}</span><strong style="color:var(--rd);">${typeof fmt==='function'?fmt(x[1]):x[1]}</strong></div>`).join('') +
+        bottomItems.map(x => `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd);font-size:0.9rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:15px;" title="${x[0]}">${x[0]}</span><strong style="color:var(--rd); font-size:0.95rem;">${typeof fmt==='function'?fmt(x[1]):x[1]}</strong></div>`).join('') +
         '</div>' +
         '</div>';
 
