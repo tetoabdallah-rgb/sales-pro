@@ -271,6 +271,38 @@ window.saveLead = function() {
     if(typeof toast === 'function') toast('تم الحفظ بنجاح', 'success');
 };
 
+window.handleTargetImport = function(e) {
+    let file = e.target.files[0];
+    if(!file) return;
+    let reader = new FileReader();
+    reader.onload = ev => {
+        try {
+            let wb = typeof XLSX !== 'undefined' ? XLSX.read(new Uint8Array(ev.target.result), {type:'array'}) : null;
+            if(!wb) { alert('Excel library not found!'); return; }
+            let ws = wb.Sheets[wb.SheetNames[0]];
+            let d = XLSX.utils.sheet_to_json(ws);
+            let norm = d.map(r => {
+                let Customer = r.Customer || r['العميل'] || r['Customer Name'] || r['اسم العميل'] || r['الاسم'];
+                let Target = r.Target || r['التارجت'] || r['Total Target'] || r['تارجت'] || 0;
+                let phone = r.Phone || r['رقم الموبايل'] || r['موبايل'] || r['رقم الهاتف'] || r['Mobile'] || r.phone || '';
+                let address = r.Address || r['العنوان'] || r['عنوان'] || r.address || '';
+                let hwTarget = r['Target HW'] || r['تارجت هاردوير'] || r['Hardware Target'] || r.hwTarget || 0;
+                let accTarget = r['Target Acc'] || r['تارجت اكسسوارات'] || r['Accessories Target'] || r['تارجت اكسسوار'] || r.accTarget || 0;
+                if(!Target && (hwTarget || accTarget)) Target = Number(hwTarget||0) + Number(accTarget||0);
+                return { ...r, Customer, Target: Number(Target)||0, phone, address, hwTarget: Number(hwTarget)||0, accTarget: Number(accTarget)||0 };
+            }).filter(r => r.Customer);
+            T = norm;
+            if(typeof sv === 'function') sv('targetData', norm);
+            alert(localStorage.getItem('sp_lang')==='ar'?'تم استيراد البيانات بنجاح!':'Data imported successfully!');
+            if(typeof window.rTgt === 'function') window.rTgt();
+            if(typeof window.cloudAutoSave === 'function') window.cloudAutoSave('استيراد تارجت من إكسيل');
+        } catch(err) {
+            alert('Error reading file');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+};
+
 // --- TARGETS ---
 window.rTgt = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
@@ -319,7 +351,9 @@ window.rTgt = function() {
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${window.ICONS ? window.ICONS.targets : '🎯'}</span> ${typeof t==='function'?t('targets'):(L==='ar'?'المستهدفات':'Targets')}</h1>
             <div style="margin-left:auto; display:flex; gap:10px;">
                 <button onclick="window.editCustomerTarget('')" class="btn btn-p" style="font-weight:bold; font-family:inherit;">+ ${L==='ar'?'إضافة عميل':'Add Customer'}</button>
-                <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none; font-family:inherit;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
+                <input type="file" id="fImportTgt" accept=".xlsx,.xls,.csv" style="display:none;" onchange="window.handleTargetImport(event)">
+                <button onclick="document.getElementById('fImportTgt').click()" class="btn" style="background:var(--ac);color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">&#x1F4E4;</span> ${L==='ar'?'استيراد إكسيل':'Import'}</button>
+                <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">&#x1F4E5;</span> ${L==='ar'?'تصدير إكسيل':'Export'}</button>
             </div>
         </div>
         <div class="kg" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
