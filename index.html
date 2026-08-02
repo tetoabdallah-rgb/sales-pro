@@ -3283,21 +3283,27 @@ function rBrands() {
 // Analytics
 function rAn() {
     let ds = getFilteredSales();
-    let monthly = {}, cats = {}, regions = {};
+    let monthly = {}, cats = {}, regions = {}, items = {};
     ds.forEach(r => {
         let d = pd(r['Order Date']); if(!d) return;
         let m = d.slice(0,7);
+        let s = getSalesVal(r);
         if(!monthly[m]) monthly[m] = {s:0,p:0};
-        monthly[m].s += getSalesVal(r);
+        monthly[m].s += s;
         monthly[m].p += getProfitVal(r);
         let c = r['Item Class Name']||'Other';
-        cats[c] = (cats[c]||0) + (getSalesVal(r));
+        cats[c] = (cats[c]||0) + s;
         let rg = r['Customer Class']||'Other';
-        regions[rg] = (regions[rg]||0) + (getSalesVal(r));
+        regions[rg] = (regions[rg]||0) + s;
+        let itm = r['Item Description']||'غير محدد';
+        items[itm] = (items[itm]||0) + s;
     });
     let months = Object.keys(monthly).sort();
     let topCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,8);
     let topReg = Object.entries(regions).sort((a,b)=>b[1]-a[1]);
+    let allItems = Object.entries(items).sort((a,b)=>b[1]-a[1]);
+    let topItems = allItems.slice(0,10);
+    let bottomItems = allItems.slice(-10).reverse();
 
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.analytics}</span> ${t('analytics')}</h1></div>
@@ -3313,6 +3319,16 @@ function rAn() {
             <div class="card">
                 <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Top Categories'):'Top Categories'}</h3>
                 ${topCats.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:0.8rem;"><span>${n}</span><strong>${fmt(v)}</strong></div>`).join('')}
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+            <div class="card" style="border-top:4px solid var(--gn);">
+                <h3 style="margin-bottom:12px;">${L==='ar'?'أفضل 10 أصناف مبيعاً':'Top 10 Items'}</h3>
+                ${topItems.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;" title="${n}">${n}</span><strong style="color:var(--gn);">${fmt(v)}</strong></div>`).join('')}
+            </div>
+            <div class="card" style="border-top:4px solid var(--rd);">
+                <h3 style="margin-bottom:12px;">${L==='ar'?'أقل 10 أصناف مبيعاً':'Bottom 10 Items'}</h3>
+                ${bottomItems.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;" title="${n}">${n}</span><strong style="color:var(--rd);">${fmt(v)}</strong></div>`).join('')}
             </div>
         </div>
     `;
