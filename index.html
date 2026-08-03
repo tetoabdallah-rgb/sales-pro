@@ -3929,10 +3929,51 @@ function rPros() {
         `;
     }).join('');
 
+    window.openRouteOptimizer = function() {
+        let lds = JSON.parse(localStorage.getItem('leadsData') || '[]');
+        let targets = lds.filter(x => x.status === 'Targeted' || x.status === 'Contacted');
+        if (targets.length === 0) {
+            alert(L==='ar'?'لا يوجد عملاء محتملين في مرحلة الاستهداف أو التواصل.':'No prospects in Targeted or Contacted stages.');
+            return;
+        }
+        let url = "https://www.google.com/maps/dir/";
+        let count = 0;
+        targets.forEach(t => {
+            if (count < 9) { // Google maps URL supports around 9-10 waypoints
+                if(t.lat && t.lon) { url += `${t.lat},${t.lon}/`; count++; }
+                else if (t.branch) { url += `${encodeURIComponent(t.branch + ' ' + t.name)}/`; count++; }
+            }
+        });
+        window.open(url, '_blank');
+    };
+
+    window.openBulkWA = function() {
+        let lds = JSON.parse(localStorage.getItem('leadsData') || '[]');
+        let targets = lds.filter(x => (x.status === 'Targeted' || x.status === 'Contacted') && x.phone);
+        if (targets.length === 0) {
+            alert(L==='ar'?'لا يوجد عملاء محتملين بأرقام هواتف لعمل حملة.':'No prospects with phone numbers available.');
+            return;
+        }
+        let msg = prompt(L==='ar'?'اكتب الرسالة الجماعية التي سيتم إرسالها للعملاء:':'Type the bulk message for the leads:');
+        if(!msg) return;
+        
+        let sent = 0;
+        targets.forEach(t => {
+            if(sent < 10) { // Limit to 10 at once to avoid browser popup blocks
+                let m = msg.replace('{name}', t.name);
+                window.open(`https://wa.me/2${t.phone.replace(/\D/g,'')}?text=${encodeURIComponent(m)}`, '_blank');
+                sent++;
+            }
+        });
+        alert(L==='ar'?`تم فتح محادثات واتساب لـ ${sent} عميل.`:`Opened WhatsApp chats for ${sent} leads.`);
+    };
+
     $('M').innerHTML = `
         <div class="ph" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.prospects}</span> ${L==='ar'?'نظام إدارة المحتملين (CRM)':'Leads CRM'}</h1>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button onclick="window.openRouteOptimizer()" class="btn" style="background:#2196f3; color:#fff; padding:8px 16px; font-weight:bold;" title="${L==='ar'?'تخطيط مسار الزيارات لليوم':'Plan route'}">📍 ${L==='ar'?'مسار الزيارات':'Route Plan'}</button>
+                <button onclick="window.openBulkWA()" class="btn" style="background:#25D366; color:#fff; padding:8px 16px; font-weight:bold;" title="${L==='ar'?'إرسال واتساب جماعي':'Bulk WhatsApp'}">💬 ${L==='ar'?'حملة واتساب':'Bulk WA'}</button>
                 <button onclick="window.openGizaSearch()" class="btn" style="background:#ff9800; color:#fff; padding:8px 16px; font-weight:bold; display:flex; align-items:center; gap:5px;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> 
                     ${L==='ar'?'البحث الذكي بالجيزة':'Smart Search in Giza'}
@@ -4039,6 +4080,8 @@ out center 150;`;
                         phone: el.tags.phone || el.tags['contact:phone'] || el.tags['contact:mobile'] || '', 
                         branch: fullBranch, 
                         status: 'Targeted', 
+                        lat: el.center ? el.center.lat : el.lat,
+                        lon: el.center ? el.center.lon : el.lon,
                         note: (L==='ar'?'المصدر: بحث الخرائط الذكي':'Source: Smart Map Search') 
                     });
                     addedCount++;
