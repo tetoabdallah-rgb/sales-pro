@@ -1218,3 +1218,144 @@ if (originalRVisits && !window.gpsInjected) {
 
 
 
+// --- PHASE 2: SALES INTELLIGENCE & RFM ---
+if (typeof I !== 'undefined') I['intel'] = {ar: 'ذكاء البيع', en: 'Sales Intel'};
+if (typeof NAV !== 'undefined' && !NAV.find(x => x.p === 'intel')) {
+    let idx = NAV.findIndex(x => x.p === 'prospects');
+    if(idx > -1) NAV.splice(idx + 1, 0, {p: 'intel', ic: '🧠'});
+    else NAV.push({p: 'intel', ic: '🧠'});
+}
+if (typeof BNV !== 'undefined' && !BNV.includes('intel')) {
+    let bIdx = BNV.indexOf('prospects');
+    if(bIdx > -1) BNV.splice(bIdx + 1, 0, 'intel');
+}
+
+// Monkey patch render
+if (typeof window.originalRenderForIntel === 'undefined' && typeof window.render === 'function') {
+    window.originalRenderForIntel = window.render;
+    window.render = function() {
+        if(window.P === 'intel') {
+            if (typeof window.rIntel === 'function') window.rIntel();
+            if (typeof window.initAnm === 'function') window.initAnm();
+            if (typeof window.enhanceUI === 'function') setTimeout(window.enhanceUI, 50);
+        } else {
+            window.originalRenderForIntel();
+        }
+    };
+}
+
+window.rIntel = function() {
+    let L = localStorage.getItem('sp_lang') || 'ar';
+    let sData = typeof getFilteredSales === 'function' ? getFilteredSales() : (typeof getS === 'function' ? getS() : []);
+    
+    // 1. Cross-Sell Engine
+    let cMap = {};
+    sData.forEach(r => {
+        let c = r.Customer; if(!c) return;
+        let s = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
+        let isA = typeof window.isAcc === 'function' ? window.isAcc(r['Item Class Name']) : false;
+        let isH = typeof window.isHW === 'function' ? window.isHW(r['Item Class Name']) : false;
+        
+        if(!cMap[c]) cMap[c] = {hw:0, acc:0, total:0, phone: r.Phone||r['رقم الموبايل']||r.phone||''};
+        cMap[c].total += s;
+        if(isH) cMap[c].hw += s;
+        if(isA) cMap[c].acc += s;
+        if(!cMap[c].phone && (r.Phone || r['رقم الموبايل'] || r.phone)) cMap[c].phone = r.Phone || r['رقم الموبايل'] || r.phone;
+    });
+
+    let crossSell = [];
+    Object.keys(cMap).forEach(c => {
+        let d = cMap[c];
+        if (d.hw > 1000 && d.acc === 0) {
+            crossSell.push({c: c, type: 'hw_no_acc', opp: L==='ar'?'يشتري هاردوير ولا يشتري إكسسوارات':'Buys HW, no Acc', phone: d.phone});
+        } else if (d.acc > 1000 && d.hw === 0) {
+            crossSell.push({c: c, type: 'acc_no_hw', opp: L==='ar'?'يشتري إكسسوارات ولا يشتري هاردوير':'Buys Acc, no HW', phone: d.phone});
+        }
+    });
+
+    let crossHTML = crossSell.map(x => {
+        let msg = L==='ar' ? 'أهلاً بك، لاحظنا أنك من عملائنا المميزين، ولدينا عرض خاص لك اليوم على المنتجات التي قد تهمك.' : 'Hello, as a valued customer, we have a special offer for you today!';
+        let btn = `<button onclick="window.open('https://wa.me/2${x.phone.replace(/\\D/g,'')}?text=${encodeURIComponent(msg)}', '_blank')" class="btn" style="background:#25D366;color:#fff;padding:4px 8px;font-size:0.8rem;border:none;">WhatsApp</button>`;
+        return `<tr>
+            <td><strong>${x.c}</strong></td>
+            <td><span style="color:var(--ac);font-size:0.85rem;">${x.opp}</span></td>
+            <td>${x.phone ? btn : '<span style="color:var(--tx3);">-</span>'}</td>
+        </tr>`;
+    }).join('');
+
+    // 2. RFM Score
+    let rfmMap = {};
+    let now = new Date();
+    sData.forEach(r => {
+        let c = r.Customer; if(!c) return;
+        let s = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
+        let dStr = r.Date || r['التاريخ'] || r['Invoice Date'];
+        let dt = dStr ? new Date(dStr) : now;
+        
+        if(!rfmMap[c]) rfmMap[c] = {lastDate: dt, freq: 0, total: 0};
+        if(dt > rfmMap[c].lastDate) rfmMap[c].lastDate = dt;
+        rfmMap[c].freq += 1;
+        rfmMap[c].total += s;
+    });
+
+    let rfmArr = Object.keys(rfmMap).map(c => {
+        let d = rfmMap[c];
+        let days = Math.floor((now - d.lastDate)/(1000*60*60*24));
+        let score = 'Dormant';
+        let color = 'var(--rd)';
+        if (days <= 30 && d.total > 5000) { score = 'VIP'; color = 'var(--gn)'; }
+        else if (days > 30 && days <= 60) { score = 'At Risk'; color = 'var(--am)'; }
+        else if (days <= 30) { score = 'Active'; color = '#2196f3'; }
+        
+        return {c: c, days: days, freq: d.freq, total: d.total, score: score, color: color};
+    }).sort((a,b) => b.total - a.total);
+
+    let rfmHTML = rfmArr.map(x => `
+        <tr>
+            <td><strong>${x.c}</strong></td>
+            <td>${typeof window.fmt==='function'?window.fmt(x.total):x.total}</td>
+            <td>${x.freq}</td>
+            <td>${x.days} ${L==='ar'?'يوم':'days'}</td>
+            <td><span class="badge" style="background:${x.color};color:#fff;">${L==='ar' && x.score==='VIP'?'VIP': L==='ar' && x.score==='At Risk'?'في خطر': L==='ar' && x.score==='Active'?'نشط': L==='ar' && x.score==='Dormant'?'خامل': x.score}</span></td>
+        </tr>
+    `).join('');
+
+    let mDiv = document.getElementById('M');
+    if(!mDiv) return;
+    mDiv.innerHTML = `
+        <div class="ph">
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🧠</span> ${L==='ar'?'ذكاء المبيعات (Sales Intel)':'Sales Intelligence'}</h1>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:20px; margin-top:20px;">
+            
+            <div style="flex:1; min-width:300px; background:var(--bg2); padding:20px; border-radius:12px; border:1px solid var(--bd);">
+                <h3 style="color:#ff9800; margin-bottom:15px; border-bottom:2px solid #ff9800; padding-bottom:10px;">${L==='ar'?'محرك البيع المتقاطع (Cross-Sell)':'Cross-Sell Engine'}</h3>
+                <p style="font-size:0.9rem; color:var(--tx2); margin-bottom:15px;">${L==='ar'?'عملاء يشترون فئة معينة ويتجاهلون الأخرى، فرصة ذهبية لعرض منتجاتك عليهم!':'Customers who buy one category but ignore the other. Great upsell opportunity!'}</p>
+                <div class="tbs" style="max-height: 400px; overflow-y: auto;">
+                    <table style="width:100%; text-align:left; border-collapse:collapse; white-space:nowrap;">
+                        <thead><tr><th>${L==='ar'?'العميل':'Customer'}</th><th>${L==='ar'?'الفرصة':'Opportunity'}</th><th>${L==='ar'?'إجراء':'Action'}</th></tr></thead>
+                        <tbody>${crossHTML || `<tr><td colspan="3" style="text-align:center;">${L==='ar'?'لا توجد بيانات':'No data'}</td></tr>`}</tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="flex:1; min-width:300px; background:var(--bg2); padding:20px; border-radius:12px; border:1px solid var(--bd);">
+                <h3 style="color:#2196f3; margin-bottom:15px; border-bottom:2px solid #2196f3; padding-bottom:10px;">${L==='ar'?'تقييم العملاء (RFM Score)':'Customer RFM Score'}</h3>
+                <p style="font-size:0.9rem; color:var(--tx2); margin-bottom:15px;">${L==='ar'?'تصنيف العملاء حسب حداثة وتكرار وحجم الشراء.':'Customer ranking based on Recency, Frequency, and Monetary value.'}</p>
+                <div class="tbs" style="max-height: 400px; overflow-y: auto;">
+                    <table style="width:100%; text-align:left; border-collapse:collapse; white-space:nowrap;">
+                        <thead><tr>
+                            <th>${L==='ar'?'العميل':'Customer'}</th>
+                            <th>${L==='ar'?'المبيعات':'Sales'}</th>
+                            <th>${L==='ar'?'المرات':'Freq'}</th>
+                            <th>${L==='ar'?'آخر شراء':'Last'}</th>
+                            <th>${L==='ar'?'التصنيف':'Score'}</th>
+                        </tr></thead>
+                        <tbody>${rfmHTML || `<tr><td colspan="5" style="text-align:center;">${L==='ar'?'لا توجد بيانات':'No data'}</td></tr>`}</tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    `;
+};
