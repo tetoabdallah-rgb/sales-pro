@@ -1234,7 +1234,7 @@ if (typeof BNV !== 'undefined' && !BNV.includes('intel')) {
 if (typeof window.originalRenderForIntel === 'undefined' && typeof window.render === 'function') {
     window.originalRenderForIntel = window.render;
     window.render = function() {
-        if(window.P === 'intel') {
+        if(typeof P !== 'undefined' && P === 'intel') {
             if (typeof window.rIntel === 'function') window.rIntel();
             if (typeof window.initAnm === 'function') window.initAnm();
             if (typeof window.enhanceUI === 'function') setTimeout(window.enhanceUI, 50);
