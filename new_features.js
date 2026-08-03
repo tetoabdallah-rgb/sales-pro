@@ -1493,15 +1493,68 @@ window.enhancePhase4 = function() {
             });
         }
         
-        // Add Map Button
+        // Kanban Cards (index.html rPros)
+        let kCards = document.querySelectorAll('.card[style*="border-right"]');
+        kCards.forEach(card => {
+            if (card.hasAttribute('data-ph4')) return;
+            card.setAttribute('data-ph4', '1');
+            
+            let nameDiv = card.querySelector('div:first-child');
+            if(!nameDiv) return;
+            let cName = nameDiv.textContent.trim();
+            
+            let leads = JSON.parse(localStorage.getItem('leadsData') || '[]');
+            let ld = leads.find(l => l.name === cName) || {};
+            
+            let fDate = ld.followUp || '';
+            let isDue = false;
+            if (fDate) {
+                let d = new Date(fDate);
+                let today = new Date();
+                today.setHours(0,0,0,0);
+                if (d <= today) isDue = true;
+            }
+            
+            let btnsRow = card.lastElementChild;
+            if (btnsRow && btnsRow.style.display.includes('flex')) {
+                // inject follow up row before btnsRow
+                let fRow = document.createElement('div');
+                fRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:0.85rem;';
+                
+                let dpId = 'fdate_' + Math.random().toString(36).substr(2,9);
+                fRow.innerHTML = `
+                    <span style="color:var(--tx2);">${L==='ar'?'المتابعة:':'Follow-up:'}</span>
+                    <input type="date" id="${dpId}" value="${fDate}" style="padding:4px; border-radius:4px; border:1px solid ${isDue?'#ef4444':'var(--bd)'}; background:var(--bg); color:${isDue?'#ef4444':'var(--tx1)'}; font-weight:${isDue?'bold':'normal'}; width:120px;" onchange="window.saveLeadFollowUp('${cName}', this.value)">
+                `;
+                card.insertBefore(fRow, btnsRow);
+                
+                // inject Quote button in btnsRow
+                let qBtn = document.createElement('button');
+                qBtn.className = 'btn';
+                qBtn.style.cssText = 'background:#8b5cf6; color:#fff; padding:6px; border:none; border-radius:4px; margin-left:4px; margin-right:4px;';
+                qBtn.textContent = 'PDF';
+                qBtn.onclick = () => { if(typeof window.generateQuote==='function') window.generateQuote(cName); };
+                btnsRow.insertBefore(qBtn, btnsRow.firstElementChild); // insert before whatsapp
+            }
+        });
+        
+        // Add Map Button safely
         let ph = document.querySelector('#M .ph');
         if (ph && !ph.querySelector('.hm-btn')) {
+            let actionsWrap = ph.querySelector('div[style*="display:flex;gap:10px"]');
+            
             let btn = document.createElement('button');
             btn.className = 'btn bg-p hm-btn';
-            btn.style.cssText = 'color:#fff;border:none;margin-right:10px;margin-left:10px;background:#f43f5e;';
+            btn.style.cssText = 'color:#fff;border:none;background:#f43f5e;';
             btn.innerHTML = '🗺️ ' + (L==='ar'?'الخريطة الحرارية':'Heatmap');
             btn.onclick = window.openSalesHeatmap;
-            ph.appendChild(btn);
+            
+            if (actionsWrap) {
+                actionsWrap.style.flexWrap = 'wrap'; // Fix overflow
+                actionsWrap.insertBefore(btn, actionsWrap.firstChild);
+            } else {
+                ph.appendChild(btn);
+            }
         }
     }
     
