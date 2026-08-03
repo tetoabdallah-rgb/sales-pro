@@ -1359,3 +1359,289 @@ window.rIntel = function() {
         </div>
     `;
 };
+
+// --- PHASE 4: ADVANCED CRM & ANALYTICS ---
+
+// 1. Hook into Render Cycle safely
+let phase4OldRender = window.render;
+window.render = function() {
+    if (typeof phase4OldRender === 'function') phase4OldRender();
+    setTimeout(window.enhancePhase4, 60);
+};
+
+window.enhancePhase4 = function() {
+    let p = typeof P !== 'undefined' ? P : '';
+    
+    // A. Goal Tracking Dashboards
+    if (p === 'dashboard' || p === 'dash') {
+        if (!document.getElementById('phase4_goals')) {
+            let kg = document.querySelector('.kg');
+            if (kg) {
+                let hA = 0, aA = 0, hT = 0, aT = 0;
+                let L = localStorage.getItem('sp_lang') || 'ar';
+                let sData = typeof getS==='function'?getS():(window.S||[]);
+                let tData = typeof getT==='function'?getT():(window.T||[]);
+                
+                sData.forEach(s => {
+                    let v = Number(s['Sales Without Tax']||s['Total']||0);
+                    let isH = typeof window.isHW==='function' ? window.isHW(s['Item Class Name']) : false;
+                    let isA = typeof window.isAcc==='function' ? window.isAcc(s['Item Class Name']) : false;
+                    if (isH) hA += v;
+                    if (isA) aA += v;
+                });
+                
+                tData.forEach(t => {
+                    hT += Number(t.hwTarget||0);
+                    aT += Number(t.accTarget||0);
+                });
+                
+                // Fallback to total target logic if explicit hw/acc missing
+                if (hT === 0 && aT === 0) {
+                    let tt = 0; tData.forEach(t => tt += Number(t.Target||0));
+                    hT = tt * 0.7; aT = tt * 0.3;
+                }
+                
+                let hp = hT > 0 ? (hA/hT)*100 : 0;
+                let ap = aT > 0 ? (aA/aT)*100 : 0;
+                
+                let div = document.createElement('div');
+                div.id = 'phase4_goals';
+                div.style.cssText = 'background:var(--bg2);padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:var(--sh-md);border:1px solid var(--bd);width:100%; animation: fadeUp 0.5s ease-out;';
+                div.innerHTML = `
+                    <h3 style="margin-bottom:15px;display:flex;align-items:center;gap:8px;">🎯 ${L==='ar'?'تحقيق أهداف الأقسام':'Department Target Achievement'}</h3>
+                    
+                    <div style="margin-bottom:15px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                            <span style="font-weight:bold;color:#ff9800;">💻 ${L==='ar'?'الهاردوير':'Hardware'}</span>
+                            <span style="font-size:0.9rem;">${typeof window.fmt==='function'?window.fmt(hA):hA} / ${typeof window.fmt==='function'?window.fmt(hT):hT} (${hp.toFixed(1)}%)</span>
+                        </div>
+                        <div style="height:14px;background:var(--bg3);border-radius:7px;overflow:hidden;border:1px solid var(--bd-s);box-shadow:inset 0 1px 3px rgba(0,0,0,0.2);">
+                            <div style="width:${Math.min(hp,100)}%;height:100%;background:linear-gradient(90deg, #ffb74d, #ff9800);border-radius:7px;transition:width 1s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                            <span style="font-weight:bold;color:#e91e63;">🎧 ${L==='ar'?'الإكسسوارات':'Accessories'}</span>
+                            <span style="font-size:0.9rem;">${typeof window.fmt==='function'?window.fmt(aA):aA} / ${typeof window.fmt==='function'?window.fmt(aT):aT} (${ap.toFixed(1)}%)</span>
+                        </div>
+                        <div style="height:14px;background:var(--bg3);border-radius:7px;overflow:hidden;border:1px solid var(--bd-s);box-shadow:inset 0 1px 3px rgba(0,0,0,0.2);">
+                            <div style="width:${Math.min(ap,100)}%;height:100%;background:linear-gradient(90deg, #f48fb1, #e91e63);border-radius:7px;transition:width 1s ease;"></div>
+                        </div>
+                    </div>
+                `;
+                kg.parentNode.insertBefore(div, kg);
+            }
+        }
+    }
+    
+    // B. Follow-ups & Quotes in Leads/Prospects
+    if (p === 'prospects' || p === 'leads') {
+        let L = localStorage.getItem('sp_lang') || 'ar';
+        let thead = document.querySelector('#M table thead tr');
+        let tbody = document.querySelector('#M table tbody');
+        
+        if (thead && tbody && !thead.hasAttribute('data-ph4')) {
+            thead.setAttribute('data-ph4', '1');
+            
+            // Add Follow up column to header
+            let th = document.createElement('th');
+            th.textContent = L==='ar'?'المتابعة':'Follow-up';
+            th.style.cssText = 'padding:15px 10px;color:var(--tx2);';
+            // Insert before the last column (Action)
+            thead.insertBefore(th, thead.lastElementChild);
+            
+            // Re-render rows
+            Array.from(tbody.children).forEach(tr => {
+                let nameCell = tr.querySelector('td:first-child');
+                if(!nameCell) return;
+                let cName = nameCell.textContent.trim();
+                
+                let leads = JSON.parse(localStorage.getItem('leadsData') || '[]');
+                let ld = leads.find(l => l.name === cName) || {};
+                
+                let tdF = document.createElement('td');
+                tdF.style.cssText = 'padding:15px 10px;';
+                let fDate = ld.followUp || '';
+                let isDue = false;
+                if (fDate) {
+                    let d = new Date(fDate);
+                    let today = new Date();
+                    today.setHours(0,0,0,0);
+                    if (d <= today) isDue = true;
+                }
+                
+                let dpId = 'fdate_' + Math.random().toString(36).substr(2,9);
+                tdF.innerHTML = `
+                    <input type="date" id="${dpId}" value="${fDate}" style="padding:4px 8px;font-size:0.8rem;border-radius:6px;border:1px solid ${isDue?'#ef4444':'var(--bd)'};background:var(--bg);color:${isDue?'#ef4444':'var(--tx1)'};font-weight:${isDue?'bold':'normal'};outline:none;" onchange="window.saveLeadFollowUp('${cName}', this.value)">
+                `;
+                tr.insertBefore(tdF, tr.lastElementChild);
+                
+                // Add Quote Button
+                let actionTd = tr.lastElementChild;
+                if (actionTd) {
+                    let btnWrap = actionTd.querySelector('div') || actionTd;
+                    if (!btnWrap.innerHTML.includes('generateQuote')) {
+                        let btn = document.createElement('button');
+                        btn.className = 'btn';
+                        btn.style.cssText = 'background:#8b5cf6; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.8rem; margin-left:4px; margin-right:4px; border:none; cursor:pointer;';
+                        btn.textContent = L==='ar'?'تسعير':'Quote';
+                        btn.onclick = () => { if(typeof window.generateQuote==='function') window.generateQuote(cName); };
+                        btnWrap.appendChild(btn);
+                    }
+                }
+            });
+        }
+        
+        // Add Map Button
+        let ph = document.querySelector('#M .ph');
+        if (ph && !ph.querySelector('.hm-btn')) {
+            let btn = document.createElement('button');
+            btn.className = 'btn bg-p hm-btn';
+            btn.style.cssText = 'color:#fff;border:none;margin-right:10px;margin-left:10px;background:#f43f5e;';
+            btn.innerHTML = '🗺️ ' + (L==='ar'?'الخريطة الحرارية':'Heatmap');
+            btn.onclick = window.openSalesHeatmap;
+            ph.appendChild(btn);
+        }
+    }
+    
+    // C. Update Badges
+    window.updateFollowUpBadge();
+};
+
+window.saveLeadFollowUp = function(name, dateStr) {
+    let leads = JSON.parse(localStorage.getItem('leadsData') || '[]');
+    let idx = leads.findIndex(l => l.name === name);
+    if(idx > -1) {
+        leads[idx].followUp = dateStr;
+        localStorage.setItem('leadsData', JSON.stringify(leads));
+        window.updateFollowUpBadge();
+        if (typeof toast === 'function') toast(localStorage.getItem('sp_lang')==='ar'?'تم الحفظ':'Saved');
+        
+        // Update input style if due
+        let d = new Date(dateStr);
+        let today = new Date();
+        today.setHours(0,0,0,0);
+        let isDue = (d <= today);
+        let input = document.querySelector(`input[onchange*="${name}"]`);
+        if (input) {
+            input.style.borderColor = isDue ? '#ef4444' : 'var(--bd)';
+            input.style.color = isDue ? '#ef4444' : 'var(--tx1)';
+            input.style.fontWeight = isDue ? 'bold' : 'normal';
+        }
+    }
+};
+
+window.updateFollowUpBadge = function() {
+    let leads = JSON.parse(localStorage.getItem('leadsData') || '[]');
+    let dueCount = 0;
+    let today = new Date();
+    today.setHours(0,0,0,0);
+    
+    leads.forEach(l => {
+        if(l.followUp) {
+            let d = new Date(l.followUp);
+            if (d <= today && l.status !== 'Customer') dueCount++;
+        }
+    });
+    
+    let el = document.querySelector('.ni[data-p="prospects"]');
+    if (!el) el = document.querySelector('.ni[data-p="leads"]');
+    
+    if (el) {
+        let b = el.querySelector('.f-badge');
+        if (dueCount > 0) {
+            if(!b) {
+                b = document.createElement('span');
+                b.className = 'f-badge';
+                b.style.cssText = 'background:#ef4444;color:white;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:bold;margin-left:auto;margin-right:auto;box-shadow:0 0 5px rgba(239,68,68,0.5);';
+                el.appendChild(b);
+            }
+            b.textContent = dueCount;
+        } else if (b) {
+            b.remove();
+        }
+    }
+};
+
+// Heatmap Integration
+window.openSalesHeatmap = function() {
+    let L = localStorage.getItem('sp_lang') || 'ar';
+    let mDiv = document.getElementById('M');
+    mDiv.innerHTML = `
+        <div class="ph" style="display:flex; justify-content:space-between; align-items:center;">
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🗺️</span> ${L==='ar'?'الخريطة الحرارية للمبيعات':'Sales Territory Heatmap'}</h1>
+            <button class="btn bg-p" onclick="window.render()" style="color:#fff;border:none;">${L==='ar'?'رجوع':'Back'}</button>
+        </div>
+        
+        <div style="display:flex; gap:15px; margin:15px 0;">
+            <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#ef4444;display:inline-block;"></span> <span style="font-size:0.85rem;color:var(--tx2);">${L==='ar'?'مستهدف':'Targeted'}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#3b82f6;display:inline-block;"></span> <span style="font-size:0.85rem;color:var(--tx2);">${L==='ar'?'تم التواصل':'Contacted'}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#10b981;display:inline-block;"></span> <span style="font-size:0.85rem;color:var(--tx2);">${L==='ar'?'أصبح عميل':'Customer'}</span></div>
+        </div>
+        
+        <div id="sp_map_container" style="width:100%;height:70vh;border-radius:16px;box-shadow:var(--sh-lg);border:1px solid var(--bd);z-index:1;overflow:hidden;position:relative;">
+            <div id="map_loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:2;font-size:1.2rem;font-weight:bold;color:var(--tx2);">
+                ${L==='ar'?'جاري تحميل الخريطة...':'Loading Map...'}
+            </div>
+        </div>
+    `;
+    
+    if (!window.L_map_loaded) {
+        let link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+        
+        let script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.onload = () => {
+            let heatScript = document.createElement('script');
+            heatScript.src = 'https://unpkg.com/leaflet.heat/dist/leaflet-heat.js';
+            heatScript.onload = () => { window.L_map_loaded = true; window.renderMap(); };
+            document.head.appendChild(heatScript);
+        };
+        document.head.appendChild(script);
+    } else {
+        window.renderMap();
+    }
+};
+
+window.renderMap = function() {
+    let container = document.getElementById('sp_map_container');
+    if(!container) return;
+    
+    let loader = document.getElementById('map_loader');
+    if(loader) loader.remove();
+    
+    // Clear and recreate map div to avoid Leaflet "map already initialized" error
+    container.innerHTML = '<div id="real_map" style="width:100%;height:100%;"></div>';
+    
+    var map = L.map('real_map').setView([30.0131, 31.2089], 12);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    
+    let leads = JSON.parse(localStorage.getItem('leadsData') || '[]');
+    let heatPoints = [];
+    
+    leads.forEach(l => {
+        if(l.lat && l.lon) {
+            let intensity = (l.status === 'Customer' || l.status === 'عميل') ? 1.0 : (l.status === 'Contacted' || l.status === 'تم التواصل' ? 0.7 : 0.4);
+            heatPoints.push([l.lat, l.lon, intensity]);
+            
+            let color = (l.status === 'Customer' || l.status === 'عميل') ? '#10b981' : ((l.status === 'Contacted' || l.status === 'تم التواصل') ? '#3b82f6' : '#ef4444');
+            L.circleMarker([l.lat, l.lon], {radius: 6, color: color, fillColor: color, fillOpacity: 0.8, weight: 1})
+             .bindPopup(`<b style="color:#000;">${l.name}</b><br><span style="color:#555;">${l.status}</span><br>${l.phone||''}`)
+             .addTo(map);
+        }
+    });
+    
+    if(heatPoints.length > 0 && typeof L.heatLayer === 'function') {
+        L.heatLayer(heatPoints, {radius: 35, blur: 20, maxZoom: 17, gradient: {0.4: 'red', 0.7: 'blue', 1.0: 'lime'}}).addTo(map);
+        
+        // Fit bounds to points
+        let bounds = L.latLngBounds(heatPoints.map(p => [p[0], p[1]]));
+        map.fitBounds(bounds, {padding: [50, 50]});
+    }
+};
