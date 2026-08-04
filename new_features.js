@@ -1946,7 +1946,7 @@ window.generateQuote = function(customerName) {
             { name: 'sales', getArr: () => window.S || [], setArr: (val) => window.S = val, trigger: () => { if(window.pState && window.pState.currentTab === 'dash' && typeof window.rDash === 'function') window.rDash(); } },
             { name: 'targets', getArr: () => window.T || [], setArr: (val) => window.T = val, trigger: () => { if(window.pState && window.pState.currentTab === 'tgt' && typeof window.rTgt === 'function') window.rTgt(); } },
             { name: 'customers', getArr: () => window.C || [], setArr: (val) => window.C = val, trigger: () => {} },
-            { name: 'leads', getArr: () => JSON.parse(localStorage.getItem('sp_leads') || '[]'), setArr: (val) => localStorage.setItem('sp_leads', JSON.stringify(val)), trigger: () => { if(typeof window.rLeads === 'function') window.rLeads(); } }
+            { name: 'leads', getArr: () => JSON.parse(localStorage.getItem('sp_leads') || '[]'), setArr: (val) => localStorage.setItem('sp_leads', JSON.stringify(val)), trigger: () => { if(typeof P !== 'undefined' && P === 'leads' && typeof window.rLeads === 'function') window.rLeads(); } }
         ];
 
         // 1. Listeners
