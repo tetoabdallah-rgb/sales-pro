@@ -2286,3 +2286,117 @@ window.openCustomerProfile = function(cName) {
     
     document.body.appendChild(modal);
 };
+// --- PHASE 8: UI and Settings Improvements ---
+(function() {
+    let L = localStorage.getItem('sp_lang') || 'ar';
+    
+    // 1. Force Dashboard on Initial Load (Override 'prospects' bug)
+    // If we just loaded and P isn't dash, force it to dash
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            if (typeof P !== 'undefined' && P !== 'dash') {
+                P = 'dash';
+                if (typeof buildNav === 'function') buildNav();
+                if (typeof render === 'function') render();
+            }
+        }, 100);
+    });
+
+    // 2. Global CSS Fixes for Tables and Font Sizes
+    let sysStyles = document.createElement('style');
+    sysStyles.id = 'phase8_styles';
+    sysStyles.innerHTML = `
+        /* Better table layout for large data */
+        .tb table {
+            table-layout: auto !important;
+            width: 100%;
+            min-width: 600px; /* Force minimum width to prevent squishing */
+        }
+        .tb {
+            overflow-x: auto !important; /* Enable horizontal scrolling for wide tables */
+            -webkit-overflow-scrolling: touch;
+        }
+        .tb td, .tb th {
+            word-break: break-word; /* Allow text wrapping if needed */
+            white-space: normal !important;
+        }
+        
+        /* Font size scaling variables */
+        :root {
+            --font-scale: ${localStorage.getItem('sp_font_scale') || '100'}%;
+        }
+        body {
+            font-size: var(--font-scale) !important;
+        }
+        
+        /* Ensure Inputs and Buttons inherit correctly */
+        input, button, select, textarea {
+            font-size: inherit;
+        }
+    `;
+    document.head.appendChild(sysStyles);
+
+    // 3. Inject Font Size settings into Settings Page
+    const origRender = window.render;
+    if (typeof origRender === 'function') {
+        window.render = function() {
+            origRender();
+            if (typeof P !== 'undefined' && P === 'settings') {
+                setTimeout(() => {
+                    let m = document.getElementById('M');
+                    if (m && !document.getElementById('fontSizeSettingBlock')) {
+                        // Find a good place to inject (before the danger zone / clear data)
+                        let dangerZone = m.querySelector('div[style*="background:var(--bg2)"] button[onclick*="localStorage.clear"]');
+                        if (dangerZone) {
+                            let parentDiv = dangerZone.closest('div[style*="background:var(--bg2)"]');
+                            if (parentDiv) {
+                                let fSizeBlock = document.createElement('div');
+                                fSizeBlock.id = 'fontSizeSettingBlock';
+                                fSizeBlock.className = 'card';
+                                fSizeBlock.style.cssText = 'margin-top:20px; padding:20px;';
+                                fSizeBlock.innerHTML = `
+                                    <h3 style="margin-bottom:15px; color:var(--p); display:flex; align-items:center; gap:10px;">
+                                        <span style="font-size:1.5rem;">🔎</span> 
+                                        ${L==='ar'?'حجم الخط والشاشة':'Display & Font Size'}
+                                    </h3>
+                                    <p style="color:var(--tx2); margin-bottom:15px;">
+                                        ${L==='ar'?'تحكم في حجم خط التطبيق إذا كنت تواجه صعوبة في قراءة النصوص الكبيرة أو الصغيرة.':'Control the application font size.'}
+                                    </p>
+                                    <div style="display:flex; align-items:center; gap:15px;">
+                                        <button class="btn" style="background:var(--bg3); font-size:1.2rem; padding:10px 15px;" onclick="window.changeAppFontSize(-10)">A-</button>
+                                        <div id="currentFontSizeLbl" style="font-size:1.2rem; font-weight:bold; min-width:60px; text-align:center;">${localStorage.getItem('sp_font_scale') || '100'}%</div>
+                                        <button class="btn" style="background:var(--bg3); font-size:1.2rem; padding:10px 15px;" onclick="window.changeAppFontSize(10)">A+</button>
+                                    </div>
+                                    <div style="margin-top:15px;">
+                                        <button class="btn btn-p" onclick="window.changeAppFontSize(0, true)">${L==='ar'?'إعادة الافتراضي':'Reset Default'}</button>
+                                    </div>
+                                `;
+                                m.insertBefore(fSizeBlock, parentDiv);
+                            }
+                        }
+                    }
+                }, 100);
+            }
+        };
+    }
+
+    // Font size changer function
+    window.changeAppFontSize = function(delta, reset = false) {
+        let current = parseInt(localStorage.getItem('sp_font_scale') || '100');
+        if (reset) {
+            current = 100;
+        } else {
+            current += delta;
+            if (current < 70) current = 70;
+            if (current > 150) current = 150;
+        }
+        localStorage.setItem('sp_font_scale', current);
+        document.documentElement.style.setProperty('--font-scale', current + '%');
+        
+        let lbl = document.getElementById('currentFontSizeLbl');
+        if (lbl) lbl.textContent = current + '%';
+        
+        if (typeof toast === 'function') toast(L==='ar'?'تم تغيير حجم الخط':'Font size updated');
+    };
+
+})();
