@@ -424,6 +424,9 @@ window.rTgt = function() {
                 <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(accT):accT}</td>
                 <td style="font-size:0.9rem;">${typeof fmt==='function'?fmt(accA):accA}</td>
                 <td>
+                    <button onclick="window.openCustomerProfile('${r.Customer.replace(/'/g, "\\'")}')" class="btn btn-p" style="padding:4px 8px; font-size:0.8rem; margin-right:5px; font-family:inherit;">
+                        👤 ${L==='ar'?'بروفايل':'Profile'}
+                    </button>
                     <button onclick="window.editCustomerTarget('${r.Customer.replace(/'/g, "\\'")}')" class="btn" style="padding:4px 8px; font-size:0.8rem; background:var(--bg3); border:1px solid var(--bd); font-family:inherit;">
                         ${L==='ar'?'تعديل':'Edit'}
                     </button>
@@ -1535,6 +1538,14 @@ window.enhancePhase4 = function() {
                 qBtn.textContent = 'PDF';
                 qBtn.onclick = () => { if(typeof window.generateQuote==='function') window.generateQuote(cName); };
                 btnsRow.insertBefore(qBtn, btnsRow.firstElementChild); // insert before whatsapp
+                
+                // inject Profile button
+                let pBtn = document.createElement('button');
+                pBtn.className = 'btn btn-p';
+                pBtn.style.cssText = 'padding:6px; border:none; border-radius:4px; margin-left:4px; margin-right:4px;';
+                pBtn.textContent = '👤';
+                pBtn.onclick = () => { if(typeof window.openCustomerProfile==='function') window.openCustomerProfile(cName); };
+                btnsRow.insertBefore(pBtn, btnsRow.firstElementChild);
             }
         });
         
@@ -2126,3 +2137,152 @@ function executeRenderMap() {
         document.getElementById('btnClearRoute').style.display = 'none';
     };
 }
+// --- PHASE 7: Merchant Profile ---
+
+window.openCustomerProfile = function(cName) {
+    let L = localStorage.getItem('sp_lang') || 'ar';
+    let sData = typeof getS === 'function' ? getS() : (window.S || []);
+    let cData = typeof getC === 'function' ? getC() : (window.C || []);
+    let tData = typeof getT === 'function' ? getT() : (window.T || []);
+    
+    // 1. Get Master Data
+    let tRow = tData.find(r => r.Customer === cName) || { Customer: cName, phone: '', address: '', hwTarget: 0, accTarget: 0 };
+    
+    // 2. Aggregate Sales
+    let cSales = sData.filter(r => r.Customer === cName);
+    let totalSales = 0;
+    let hwSales = 0;
+    let accSales = 0;
+    
+    cSales.forEach(s => {
+        let val = parseFloat(s.Value) || 0;
+        totalSales += val;
+        let isHw = (s['Item Name']||s.item||s.name||'').toLowerCase().includes('hw') || (s.Category === 'Hardware');
+        let isAcc = (s['Item Name']||s.item||s.name||'').toLowerCase().includes('acc') || (s.Category === 'Accessories');
+        // Default inference if category is unknown (Phase 1 logic used this)
+        if(!isHw && !isAcc) {
+            if(s.Value > 1000) isHw = true; else isAcc = true;
+        }
+        if(isHw) hwSales += val;
+        if(isAcc) accSales += val;
+    });
+    
+    // 3. Aggregate Collections
+    let cColls = cData.filter(r => r.Customer === cName);
+    let totalColls = 0;
+    cColls.forEach(c => {
+        totalColls += (parseFloat(c.Value) || 0);
+    });
+    
+    // 4. Calculate Balance
+    let balance = totalSales - totalColls;
+    
+    // Build Modal UI
+    let modal = document.createElement("div");
+    modal.className = "sp-modal-overlay";
+    modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(5px);z-index:10000;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px;";
+    
+    let content = `
+    <div class="sp-modal-content" style="background:var(--bg); color:var(--tx); border-radius:24px; padding:30px; width:100%; max-width:900px; box-shadow:var(--sh-lg); border:1px solid var(--bd); max-height:90vh; overflow-y:auto;">
+        <!-- Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--bd); padding-bottom:15px; margin-bottom:25px;">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div style="width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg, var(--p), var(--ac)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:2rem; font-weight:bold;">
+                    ${cName.charAt(0)}
+                </div>
+                <div>
+                    <h2 style="margin:0; font-size:1.8rem;">${cName}</h2>
+                    <p style="margin:5px 0 0; color:var(--tx2); font-size:1rem;">
+                        ${tRow.phone ? '📞 ' + tRow.phone : ''} 
+                        ${tRow.address ? ' | 📍 ' + tRow.address : ''}
+                    </p>
+                </div>
+            </div>
+            <button onclick="this.closest('.sp-modal-overlay').remove()" style="background:transparent; border:none; color:var(--tx2); font-size:1.8rem; cursor:pointer;">&times;</button>
+        </div>
+        
+        <!-- KPIs -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:30px;">
+            <div style="background:var(--bg2); padding:20px; border-radius:16px; border:1px solid var(--bd); text-align:center;">
+                <h3 style="margin:0 0 10px; color:var(--tx2); font-size:1rem;">${L==='ar'?'إجمالي المسحوبات (فواتير)':'Total Purchases'}</h3>
+                <div style="font-size:1.8rem; font-weight:bold; color:var(--p);">${typeof fmt==='function'?fmt(totalSales):totalSales}</div>
+            </div>
+            <div style="background:var(--bg2); padding:20px; border-radius:16px; border:1px solid var(--bd); text-align:center;">
+                <h3 style="margin:0 0 10px; color:var(--tx2); font-size:1rem;">${L==='ar'?'إجمالي التحصيلات (دفعات)':'Total Collections'}</h3>
+                <div style="font-size:1.8rem; font-weight:bold; color:var(--ac);">${typeof fmt==='function'?fmt(totalColls):totalColls}</div>
+            </div>
+            <div style="background:var(--bg2); padding:20px; border-radius:16px; border:1px solid var(--bd); text-align:center;">
+                <h3 style="margin:0 0 10px; color:var(--tx2); font-size:1rem;">${L==='ar'?'الرصيد المتبقي (مديونية)':'Balance'}</h3>
+                <div style="font-size:1.8rem; font-weight:bold; color:${balance > 0 ? '#f44336' : '#4caf50'};">${typeof fmt==='function'?fmt(balance):balance}</div>
+            </div>
+        </div>
+
+        <!-- History Tables -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <!-- Sales -->
+            <div style="background:var(--bg2); border-radius:16px; border:1px solid var(--bd); padding:20px; overflow:hidden;">
+                <h3 style="margin:0 0 15px; color:var(--tx); border-bottom:1px solid var(--bd); padding-bottom:10px;">🛒 ${L==='ar'?'سجل الفواتير':'Sales History'}</h3>
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table style="width:100%; border-collapse:collapse; text-align:left;">
+                        <thead>
+                            <tr style="color:var(--tx2); font-size:0.9rem;">
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'التاريخ':'Date'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'الصنف':'Item'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'القيمة':'Value'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${cSales.length > 0 ? cSales.sort((a,b)=>new Date(b.Date)-new Date(a.Date)).map(s => `
+                                <tr>
+                                    <td style="padding:10px; border-bottom:1px solid var(--bd); font-size:0.9rem;">${new Date(s.Date).toLocaleDateString(L==='ar'?'ar-EG':'en-US')}</td>
+                                    <td style="padding:10px; border-bottom:1px solid var(--bd); font-size:0.9rem;">${s['Item Name']||s.item||s.name||'--'}</td>
+                                    <td style="padding:10px; border-bottom:1px solid var(--bd); font-weight:bold; color:var(--p);">${typeof fmt==='function'?fmt(s.Value):s.Value}</td>
+                                </tr>
+                            `).join('') : `<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--tx2);">${L==='ar'?'لا توجد مبيعات':'No sales'}</td></tr>`}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Collections -->
+            <div style="background:var(--bg2); border-radius:16px; border:1px solid var(--bd); padding:20px; overflow:hidden;">
+                <h3 style="margin:0 0 15px; color:var(--tx); border-bottom:1px solid var(--bd); padding-bottom:10px;">💵 ${L==='ar'?'سجل التحصيلات':'Collections History'}</h3>
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table style="width:100%; border-collapse:collapse; text-align:left;">
+                        <thead>
+                            <tr style="color:var(--tx2); font-size:0.9rem;">
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'التاريخ':'Date'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'الملاحظات':'Notes'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'المبلغ':'Amount'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${cColls.length > 0 ? cColls.sort((a,b)=>new Date(b.Date)-new Date(a.Date)).map(c => `
+                                <tr>
+                                    <td style="padding:10px; border-bottom:1px solid var(--bd); font-size:0.9rem;">${new Date(c.Date).toLocaleDateString(L==='ar'?'ar-EG':'en-US')}</td>
+                                    <td style="padding:10px; border-bottom:1px solid var(--bd); font-size:0.9rem;">${c.Notes||c.notes||'--'}</td>
+                                    <td style="padding:10px; border-bottom:1px solid var(--bd); font-weight:bold; color:var(--ac);">${typeof fmt==='function'?fmt(c.Value):c.Value}</td>
+                                </tr>
+                            `).join('') : `<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--tx2);">${L==='ar'?'لا توجد تحصيلات':'No collections'}</td></tr>`}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    modal.innerHTML = content;
+    
+    // Add CSS for mobile responsiveness
+    let style = document.createElement('style');
+    style.innerHTML = `
+        @media (max-width: 768px) {
+            .sp-modal-content > div:last-child {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    `;
+    modal.appendChild(style);
+    
+    document.body.appendChild(modal);
+};
