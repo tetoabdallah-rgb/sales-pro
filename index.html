@@ -3929,9 +3929,9 @@ function rPros() {
             </div>
         `).join('');
         return `
-            <div style="flex:1; min-width:280px; background: var(--bg); border-radius:8px; padding:15px; border:1px solid var(--bd);">
+            <div style="flex: 0 0 320px; min-width:320px; background: var(--bg); border-radius:12px; padding:15px; border:1px solid var(--bd); box-shadow: var(--sh);">
                 <h3 style="margin-bottom:15px; color:${st.color}; border-bottom:2px solid ${st.color}; padding-bottom:5px;">${st.name} (${items.length})</h3>
-                <div style="min-height: 400px;">${itemsHTML}</div>
+                <div style="min-height: 400px; display:flex; flex-direction:column; gap:10px;">${itemsHTML}</div>
             </div>
         `;
     }).join('');
@@ -3988,7 +3988,7 @@ function rPros() {
                 <button onclick="window.addLead()" class="btn" style="background:var(--ac); color:#fff; padding:8px 16px;">+ ${L==='ar'?'إضافة عميل':'Add Lead'}</button>
             </div>
         </div>
-        <div style="display:flex; gap:20px; overflow-x:auto; padding-bottom:20px; margin-top:20px;">
+        <div style="display:flex; gap:20px; overflow-x:auto; padding-bottom:20px; margin-top:20px; flex-wrap:nowrap; align-items:flex-start; width:100%;">
             ${colsHTML}
         </div>
     `;
