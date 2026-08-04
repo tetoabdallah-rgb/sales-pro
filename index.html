@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -4943,7 +4943,32 @@ function rSettings() {
             </div>
         </div>
         
-        <div class="card" style="margin-bottom:20px;">
+                <div class="card" style="margin-bottom:20px;">
+            <h3>Aa ${L==='ar'?'الخطوط والمظهر':'Typography & Appearance'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'تغيير حجم ونوع الخط في التطبيق':'Change app font size and family'}</p>
+            <div style="display:flex;gap:15px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:200px;">
+                    <label style="display:block;margin-bottom:5px;font-size:0.9rem;">${L==='ar'?'حجم الخط':'Font Size'}</label>
+                    <select onchange="if(window.setAppFontSize) window.setAppFontSize(this.value);" class="sbox" style="width:100%;padding:10px;">
+                        <option value="0" ${localStorage.getItem('sp_font_size')==='0'?'selected':''}>${L==='ar'?'عادي (15px)':'Normal (15px)'}</option>
+                        <option value="1" ${localStorage.getItem('sp_font_size')==='1'?'selected':''}>${L==='ar'?'متوسط (16px)':'Medium (16px)'}</option>
+                        <option value="2" ${localStorage.getItem('sp_font_size')==='2'?'selected':''}>${L==='ar'?'كبير (18px)':'Large (18px)'}</option>
+                        <option value="3" ${localStorage.getItem('sp_font_size')==='3'?'selected':''}>${L==='ar'?'ضخم (20px)':'Huge (20px)'}</option>
+                    </select>
+                </div>
+                <div style="flex:1;min-width:200px;">
+                    <label style="display:block;margin-bottom:5px;font-size:0.9rem;">${L==='ar'?'نوع الخط':'Font Family'}</label>
+                    <select onchange="if(window.setAppFontFamily) window.setAppFontFamily(this.value);" class="sbox" style="width:100%;padding:10px;">
+                        <option value="Tajawal" ${localStorage.getItem('sp_font_family')==='Tajawal'?'selected':''}>Tajawal</option>
+                        <option value="Cairo" ${localStorage.getItem('sp_font_family')==='Cairo'?'selected':''}>Cairo</option>
+                        <option value="Almarai" ${localStorage.getItem('sp_font_family')==='Almarai'?'selected':''}>Almarai</option>
+                        <option value="Outfit" ${localStorage.getItem('sp_font_family')==='Outfit'?'selected':''}>Outfit</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+<div class="card" style="margin-bottom:20px;">
             <h3>☁️ ${L==='ar'?'النسخ الاحتياطي السحابي (Google Drive)':'Cloud Sync (Google Drive)'}</h3>
             <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'حفظ البيانات واسترجاعها مباشرة من حسابك في جوجل درايف.':'Backup and restore data directly from your Google Drive.'}</p>
             
@@ -6181,3 +6206,4 @@ window.generateQuote = function(customerName) {
 </script>
 </body>
 </html>
+
