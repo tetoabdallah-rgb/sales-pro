@@ -1698,3 +1698,117 @@ window.renderMap = function() {
         map.fitBounds(bounds, {padding: [50, 50]});
     }
 };
+
+// --- PHASE 5: Target Management ---
+
+window.editCustomerTarget = function(cName) {
+    let L = localStorage.getItem('sp_lang') || 'ar';
+    let tData = typeof getT === 'function' ? getT() : (window.T || []);
+    let customerData = tData.find(r => r.Customer === cName) || { Customer: '', phone: '', address: '', hwTarget: 0, accTarget: 0 };
+    
+    // Remove existing modal if any
+    let existing = document.getElementById('sp_tgt_modal');
+    if (existing) existing.remove();
+    
+    let modal = document.createElement('div');
+    modal.id = 'sp_tgt_modal';
+    modal.className = 'sp-modal-overlay';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+    
+    let title = cName ? (L==='ar'?'تعديل بيانات العميل':'Edit Customer Data') : (L==='ar'?'إضافة عميل جديد':'Add New Customer');
+    
+    modal.innerHTML = `
+        <div class="card" style="width:90%; max-width:500px; padding:25px; border-radius:16px; background:var(--bg); box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative; max-height:90vh; overflow-y:auto;">
+            <button onclick="document.getElementById('sp_tgt_modal').remove()" style="position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.5rem;color:var(--tx2);cursor:pointer;padding:5px;">&times;</button>
+            <h2 style="margin-bottom:20px; display:flex; align-items:center; gap:10px;"><span style="font-size:1.5rem;">👤</span> ${title}</h2>
+            
+            <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:var(--tx2);">${L==='ar'?'اسم العميل':'Customer Name'} <span style="color:red">*</span></label>
+            <input type="text" id="tgt_name" class="sbox" value="${customerData.Customer}" ${cName?'disabled':''} style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:${cName?'var(--bg2)':'var(--bg)'};color:var(--tx1);font-size:1rem;">
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <div>
+                    <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:var(--tx2);">${L==='ar'?'رقم الهاتف':'Phone'}</label>
+                    <input type="tel" id="tgt_phone" class="sbox" value="${customerData.phone||''}" style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx1);font-size:1rem;">
+                </div>
+                <div>
+                    <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:var(--tx2);">${L==='ar'?'العنوان (أو المنطقة)':'Address/Region'}</label>
+                    <input type="text" id="tgt_address" class="sbox" value="${customerData.address||''}" style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx1);font-size:1rem;">
+                </div>
+            </div>
+            
+            <div style="background:var(--bg3); padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid var(--bd);">
+                <h4 style="margin-bottom:15px; color:var(--tx1);">${L==='ar'?'الاستهداف (Target)':'Targets'}</h4>
+                
+                <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:#ff9800;">💻 ${L==='ar'?'تارجت الهاردوير':'HW Target'}</label>
+                <input type="number" id="tgt_hw" class="sbox" value="${customerData.hwTarget||0}" style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx1);font-size:1rem;">
+                
+                <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:#4caf50;">🎧 ${L==='ar'?'تارجت الإكسسوارات':'Acc Target'}</label>
+                <input type="number" id="tgt_acc" class="sbox" value="${customerData.accTarget||0}" style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx1);font-size:1rem;">
+            </div>
+            
+            <button onclick="window.saveCustomerTarget('${cName.replace(/'/g, "\\'")}')" class="btn btn-p" style="width:100%; padding:14px; font-size:1.1rem; border-radius:8px; display:flex; justify-content:center; align-items:center; gap:10px;">
+                <span>💾</span> ${L==='ar'?'حفظ التعديلات':'Save Changes'}
+            </button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+};
+
+window.saveCustomerTarget = function(originalName) {
+    let name = document.getElementById('tgt_name').value.trim();
+    let phone = document.getElementById('tgt_phone').value.trim();
+    let address = document.getElementById('tgt_address').value.trim();
+    let hw = Number(document.getElementById('tgt_hw').value) || 0;
+    let acc = Number(document.getElementById('tgt_acc').value) || 0;
+    
+    if(!name) {
+        alert(localStorage.getItem('sp_lang')==='ar'?'يرجى إدخال اسم العميل':'Please enter customer name');
+        return;
+    }
+    
+    let tData = typeof getT === 'function' ? getT() : (window.T || []);
+    let totalTarget = hw + acc;
+    
+    if (originalName) {
+        // Edit existing
+        let idx = tData.findIndex(r => r.Customer === originalName);
+        if (idx > -1) {
+            tData[idx].phone = phone;
+            tData[idx].address = address;
+            tData[idx].hwTarget = hw;
+            tData[idx].accTarget = acc;
+            tData[idx].Target = totalTarget;
+        }
+    } else {
+        // Add new
+        let exists = tData.find(r => r.Customer === name);
+        if (exists) {
+            alert(localStorage.getItem('sp_lang')==='ar'?'هذا العميل مسجل بالفعل، يرجى البحث عنه وتعديله.':'Customer already exists.');
+            return;
+        }
+        tData.unshift({
+            Customer: name,
+            phone: phone,
+            address: address,
+            hwTarget: hw,
+            accTarget: acc,
+            Target: totalTarget,
+            'Customer Name': name,
+            'Total Target': totalTarget
+        });
+    }
+    
+    window.T = tData;
+    localStorage.setItem('sp_target', JSON.stringify(tData));
+    
+    let modal = document.getElementById('sp_tgt_modal');
+    if (modal) modal.remove();
+    
+    if (typeof window.rTgt === 'function') window.rTgt();
+    
+    if(typeof window.cloudAutoSave === 'function') {
+        window.cloudAutoSave(localStorage.getItem('sp_lang')==='ar'?'تم حفظ بيانات العميل يدوياً':'Customer data saved manually');
+    }
+    
+    if (typeof toast === 'function') toast(localStorage.getItem('sp_lang')==='ar'?'تم الحفظ بنجاح!':'Saved successfully!');
+};
