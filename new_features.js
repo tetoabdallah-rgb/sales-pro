@@ -187,32 +187,39 @@ window.saveVisit = function() {
 
 
 
-// --- LEADS ---
+﻿// --- LEADS ---
 window.rLeads = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
     let html = `
-        <div class="ph">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🤝</span> ${L==='ar'?'عملاء محتملين (Leads)':'Potential Leads'}</h1>
-            <button class="btn bg-p" onclick="addLeadModal()" style="color:#fff;border:none;">${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</button>
-        </div>
-        <div class="card" id="leadsList" style="margin-top:20px;">
-            <div style="overflow-x:auto;">
-                <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
-                    <thead>
-                        <tr style="border-bottom:2px solid var(--bd);">
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'اسم العميل':'Lead Name'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'رقم الهاتف':'Phone'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'المصدر':'Source'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الحالة':'Status'}</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lTbody"></tbody>
-                </table>
+        <div style="width: 100%; display: block;">
+            <div class="ph" style="width: 100%;">
+                <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🤝</span> ${L==='ar'?'عملاء محتملين (Leads)':'Potential Leads'}</h1>
+                <button class="btn bg-p" onclick="addLeadModal()" style="color:#fff;border:none;">${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</button>
+            </div>
+            <div class="card" id="leadsList" style="margin-top:20px; width: 100%;">
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--bd);">
+                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'اسم العميل':'Lead Name'}</th>
+                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'رقم الهاتف':'Phone'}</th>
+                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'المصدر':'Source'}</th>
+                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الحالة':'Status'}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lTbody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     `;
     let M = document.getElementById('M');
-    if(M) { M.innerHTML = html; loadLeads(); }
+    if(M) { 
+        M.style.flex = "1";
+        M.style.width = "100%";
+        M.innerHTML = html; 
+        loadLeads(); 
+    }
 };
 
 function loadLeads() {
@@ -246,14 +253,14 @@ window.addLeadModal = function() {
         <input type="text" id="nlName" class="sp-form-input">
         <label class="sp-form-label">${L==='ar'?'رقم الهاتف':'Phone'}</label>
         <input type="text" id="nlPhone" class="sp-form-input">
-        <label class="sp-form-label">${L==='ar'?'المصدر (فيسبوك، زيارة، الخ)':'Source'}</label>
+        <label class="sp-form-label">${L==='ar'?'المصدر (فيسبوك، إعلان، الخ)':'Source'}</label>
         <input type="text" id="nlSource" class="sp-form-input">
         <button class="sp-btn-primary" onclick="saveLead()">${L==='ar'?'حفظ العميل':'Save Lead'}</button>
     `;
     let m = document.createElement('div');
     m.className = 'sp-modal-overlay';
     m.id = 'lModal';
-    m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
+    m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">x</span>${h}</div>`;
     document.body.appendChild(m);
 };
 
@@ -261,17 +268,24 @@ window.saveLead = function() {
     let n = document.getElementById('nlName').value;
     let p = document.getElementById('nlPhone').value;
     let s = document.getElementById('nlSource').value;
-    if(!n) { alert('الاسم مطلوب'); return; }
+    if(!n) { alert(localStorage.getItem('sp_lang')==='ar'?'الرجاء إدخال اسم العميل':'Please enter lead name'); return; }
+    
+    let l = { id: Date.now(), name: n, phone: p, source: s, status: 'New' };
     let leadsData = JSON.parse(localStorage.getItem('sp_leads') || '[]');
-    leadsData.push({ id: Date.now(), name: n, phone: p, source: s, status: 'New' });
+    leadsData.push(l);
     localStorage.setItem('sp_leads', JSON.stringify(leadsData));
+    
     let modal = document.getElementById('lModal');
     if(modal) modal.remove();
     loadLeads();
-    if(typeof toast === 'function') toast('تم الحفظ بنجاح', 'success');
+    if(typeof toast === 'function') toast(localStorage.getItem('sp_lang')==='ar'?'تم إضافة العميل بنجاح':'Lead added successfully', 'success');
+    
+    if (typeof auth !== 'undefined' && auth.currentUser && typeof db !== 'undefined') {
+        db.collection('users').doc(auth.currentUser.uid).collection('leads').add(l).catch(e => console.error(e));
+    }
 };
 
-window.handleTargetImport = function(e) {
+  window.handleTargetImport = function(e) {
     let file = e.target.files[0];
     if(!file) return;
     let reader = new FileReader();
