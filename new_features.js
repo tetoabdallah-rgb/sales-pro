@@ -1888,3 +1888,241 @@ window.generateQuote = function(customerName) {
     `;
     document.body.appendChild(modal);
 };
+// --- PHASE 6: Firestore Realtime Sync & Offline Persistence ---
+(function() {
+    let fCheck = setInterval(() => {
+        if (typeof firebase !== 'undefined' && typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) {
+            clearInterval(fCheck);
+            initRealtimeSync();
+        }
+    }, 1000);
+
+    let isSyncingFromServer = false;
+    let localHashes = { sales: {}, targets: {}, customers: {}, leads: {} };
+    
+    // Simple hash function for diffing
+    function hashObj(obj) {
+        let str = JSON.stringify(obj);
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            let char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return hash;
+    }
+
+    function initRealtimeSync() {
+        const uid = currentUser.uid;
+        console.log("Initializing Realtime Sync for UID:", uid);
+
+        // Define collections to sync
+        const collections = [
+            { name: 'sales', getArr: () => window.S || [], setArr: (val) => window.S = val, trigger: () => { if(window.pState && window.pState.currentTab === 'dash' && typeof window.rDash === 'function') window.rDash(); } },
+            { name: 'targets', getArr: () => window.T || [], setArr: (val) => window.T = val, trigger: () => { if(window.pState && window.pState.currentTab === 'tgt' && typeof window.rTgt === 'function') window.rTgt(); } },
+            { name: 'customers', getArr: () => window.C || [], setArr: (val) => window.C = val, trigger: () => {} },
+            { name: 'leads', getArr: () => JSON.parse(localStorage.getItem('sp_leads') || '[]'), setArr: (val) => localStorage.setItem('sp_leads', JSON.stringify(val)), trigger: () => { if(typeof window.rLeads === 'function') window.rLeads(); } }
+        ];
+
+        // 1. Listeners
+        collections.forEach(col => {
+            db.collection('users').doc(uid).collection(col.name).onSnapshot(snap => {
+                if (snap.metadata.hasPendingWrites) return; 
+                let newArr = [];
+                localHashes[col.name] = {};
+                
+                snap.forEach(doc => {
+                    let data = doc.data();
+                    data._id = doc.id;
+                    newArr.push(data);
+                    
+                    // Cache the hash so we don't re-upload it
+                    let hashData = {...data}; delete hashData._id;
+                    localHashes[col.name][doc.id] = hashObj(hashData);
+                });
+                
+                if (col.name === 'sales') newArr.sort((a, b) => new Date(b.Date||0) - new Date(a.Date||0));
+                
+                isSyncingFromServer = true;
+                col.setArr(newArr);
+                
+                // Keep localStorage in sync just in case
+                if (col.name === 'sales') localStorage.setItem('sp_sales', JSON.stringify(newArr));
+                if (col.name === 'targets') localStorage.setItem('sp_target', JSON.stringify(newArr));
+                if (col.name === 'customers') localStorage.setItem('sp_customers', JSON.stringify(newArr));
+                
+                col.trigger();
+                isSyncingFromServer = false;
+            });
+        });
+        
+        // 2. Override cloudAutoSave to push diffs
+        window.cloudAutoSave = async function(msg) {
+            if (isSyncingFromServer) return;
+            if (!currentUser || !db) return;
+            
+            try {
+                const uid = currentUser.uid;
+                
+                const syncArray = async (colDef) => {
+                    let arr = colDef.getArr();
+                    let colRef = db.collection('users').doc(uid).collection(colDef.name);
+                    
+                    let batch = db.batch();
+                    let count = 0;
+                    
+                    for (let i = 0; i < arr.length; i++) {
+                        let item = arr[i];
+                        
+                        // Copy for hashing
+                        let hashData = {...item}; 
+                        delete hashData._id;
+                        let currentHash = hashObj(hashData);
+                        
+                        if (!item._id) {
+                            item._id = db.collection('users').doc().id; 
+                        }
+                        
+                        // If it's new or changed
+                        if (localHashes[colDef.name][item._id] !== currentHash) {
+                            let docRef = colRef.doc(item._id);
+                            batch.set(docRef, item);
+                            localHashes[colDef.name][item._id] = currentHash; // Update cache
+                            count++;
+                        }
+                        
+                        if (count === 490) {
+                            await batch.commit();
+                            batch = db.batch();
+                            count = 0;
+                        }
+                    }
+                    if (count > 0) await batch.commit();
+                };
+                
+                for (let col of collections) {
+                    await syncArray(col);
+                }
+                
+                if (typeof toast === 'function') toast('تم مزامنة التعديلات مع السحابة', 'success');
+                console.log("Realtime Sync Complete:", msg);
+            } catch(e) {
+                console.error("Realtime Sync Error:", e);
+                if (typeof toast === 'function') toast('خطأ في المزامنة', 'error');
+            }
+        };
+        
+        window.saveToFirebaseCloud = window.cloudAutoSave;
+    }
+})();
+// --- PHASE 6: Maps Routing (Leaflet Routing Machine) ---
+
+window.L_routing_loaded = false;
+
+// Override renderMap to include Routing
+const originalRenderMap = window.renderMap;
+window.renderMap = function() {
+    let container = document.getElementById('sp_map_container');
+    if(!container) return;
+    
+    // Load Leaflet Routing CSS if not present
+    if (!document.getElementById('lrm-css')) {
+        let css = document.createElement('link');
+        css.id = 'lrm-css';
+        css.rel = 'stylesheet';
+        css.href = 'https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css';
+        document.head.appendChild(css);
+    }
+    
+    // Load Leaflet Routing Script
+    if (!window.L_routing_loaded) {
+        let script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js';
+        script.onload = () => { 
+            window.L_routing_loaded = true; 
+            executeRenderMap(); 
+        };
+        document.head.appendChild(script);
+        return; // wait for script
+    }
+    
+    executeRenderMap();
+};
+
+function executeRenderMap() {
+    let L_lang = localStorage.getItem('sp_lang') || 'ar';
+    let container = document.getElementById('sp_map_container');
+    let loader = document.getElementById('map_loader');
+    if(loader) loader.remove();
+    
+    // Add routing controls UI above the map
+    container.innerHTML = `
+        <div style="position:absolute; top:10px; right:10px; z-index:1000; display:flex; gap:10px; background:var(--bg); padding:10px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
+            <button id="btnRoute" class="btn btn-p" style="font-size:0.9rem; padding:6px 12px; font-weight:bold;">${L_lang==='ar'?'🗺️ رسم خط السير (Routing)':'🗺️ Draw Route'}</button>
+            <button id="btnClearRoute" class="btn bg-r" style="font-size:0.9rem; padding:6px 12px; font-weight:bold; display:none;">${L_lang==='ar'?'❌ مسح الخط':'❌ Clear Route'}</button>
+        </div>
+        <div id="real_map" style="width:100%;height:100%;"></div>
+    `;
+    
+    var map = L.map('real_map').setView([30.0444, 31.2357], 12); // Default to Cairo
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    
+    let heatPoints = [];
+    let waypoints = []; // for routing
+    
+    // Add Leads
+    let leadsData = typeof getLeads === 'function' ? getLeads() : (JSON.parse(localStorage.getItem('sp_leads')||'[]'));
+    leadsData.forEach(l => {
+        if(l.lat && l.lng) {
+            let lat = parseFloat(l.lat), lng = parseFloat(l.lng);
+            heatPoints.push([lat, lng, 1]);
+            waypoints.push(L.latLng(lat, lng));
+            L.marker([lat, lng]).bindPopup(`<b style="color:#000;">${l.name}</b><br><span style="color:#555;">${l.status}</span><br>${l.phone||''}`).addTo(map);
+        }
+    });
+
+    if(heatPoints.length > 0 && typeof L.heatLayer === 'function') {
+        L.heatLayer(heatPoints, {radius: 35, blur: 20, maxZoom: 17, gradient: {0.4: 'red', 0.7: 'blue', 1.0: 'lime'}}).addTo(map);
+        let bounds = L.latLngBounds(heatPoints.map(p => [p[0], p[1]]));
+        map.fitBounds(bounds, {padding: [50, 50]});
+    } else {
+        // Try to locate user if no points
+        map.locate({setView: true, maxZoom: 14});
+    }
+    
+    let routingControl = null;
+    
+    document.getElementById('btnRoute').onclick = () => {
+        if (waypoints.length < 2) {
+            alert(L_lang==='ar'?'يجب إضافة موقعين على الأقل للعملاء لرسم خط السير!':'You need at least 2 locations to draw a route!');
+            return;
+        }
+        
+        document.getElementById('btnRoute').style.display = 'none';
+        document.getElementById('btnClearRoute').style.display = 'block';
+        
+        if (typeof toast === 'function') toast(L_lang==='ar'?'جاري رسم خط السير الأقصر...':'Calculating shortest route...', 'info');
+        
+        routingControl = L.Routing.control({
+            waypoints: waypoints,
+            routeWhileDragging: false,
+            fitSelectedRoutes: true,
+            showAlternatives: false,
+            lineOptions: {
+                styles: [{color: '#0ea5e9', opacity: 0.8, weight: 6}]
+            },
+            createMarker: function() { return null; } // Don't add extra markers
+        }).addTo(map);
+    };
+    
+    document.getElementById('btnClearRoute').onclick = () => {
+        if(routingControl) {
+            map.removeControl(routingControl);
+            routingControl = null;
+        }
+        document.getElementById('btnRoute').style.display = 'block';
+        document.getElementById('btnClearRoute').style.display = 'none';
+    };
+}
