@@ -1989,16 +1989,16 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-firebase.firestore().enablePersistence().catch(err => {
-    console.warn("Firestore offline persistence error:", err);
-});
-
 const db = firebase.firestore();
 
 // Force long-polling to bypass strict Antiviruses or Firewalls that block WebSockets
 db.settings({
     experimentalForceLongPolling: true,
     cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+});
+
+firebase.firestore().enablePersistence().catch(err => {
+    console.warn("Firestore offline persistence error:", err);
 });
 
 const auth = firebase.auth();
