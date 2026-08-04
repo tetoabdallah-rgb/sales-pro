@@ -2291,15 +2291,16 @@ window.openCustomerProfile = function(cName) {
     let L = localStorage.getItem('sp_lang') || 'ar';
     
     // 1. Force Dashboard on Initial Load (Override 'prospects' bug)
-    // If we just loaded and P isn't dash, force it to dash
-    document.addEventListener('DOMContentLoaded', () => {
+    // The issue was window.onload reading window.location.hash
+    window.addEventListener('load', () => {
         setTimeout(() => {
-            if (typeof P !== 'undefined' && P !== 'dash') {
+            if (window.location.hash) {
+                history.replaceState(null, null, ' '); // clear hash
                 P = 'dash';
                 if (typeof buildNav === 'function') buildNav();
                 if (typeof render === 'function') render();
             }
-        }, 100);
+        }, 50);
     });
 
     // 2. Global CSS Fixes for Tables and Font Sizes
