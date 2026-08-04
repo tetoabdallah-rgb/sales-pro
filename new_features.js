@@ -2146,7 +2146,9 @@ window.openCustomerProfile = function(cName) {
     let tData = typeof getT === 'function' ? getT() : (window.T || []);
     
     // 1. Get Master Data
-    let tRow = tData.find(r => r.Customer === cName) || { Customer: cName, phone: '', address: '', hwTarget: 0, accTarget: 0 };
+    let tRow = tData.find(r => (r.Customer||'').trim() === cName.trim() || (r.Name||'').trim() === cName.trim() || (r.Merchant||'').trim() === cName.trim()) || { Customer: cName, phone: '', address: '' };
+    let targetValue = parseFloat(tRow.Target || tRow['Target Value'] || tRow.target || tRow.hwTarget || 0);
+    if(tRow.hwTarget && tRow.accTarget) targetValue = parseFloat(tRow.hwTarget) + parseFloat(tRow.accTarget);
     
     // 2. Aggregate Sales
     let cSales = sData.filter(r => r.Customer === cName);
@@ -2202,18 +2204,25 @@ window.openCustomerProfile = function(cName) {
         </div>
         
         <!-- KPIs -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:30px;">
-            <div style="background:var(--bg2); padding:20px; border-radius:16px; border:1px solid var(--bd); text-align:center;">
-                <h3 style="margin:0 0 10px; color:var(--tx2); font-size:1rem;">${L==='ar'?'إجمالي المسحوبات (فواتير)':'Total Purchases'}</h3>
-                <div style="font-size:1.8rem; font-weight:bold; color:var(--p);">${typeof fmt==='function'?fmt(totalSales):totalSales}</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin-bottom:30px;">
+            <div style="background:var(--bg2); padding:15px; border-radius:12px; border:1px solid var(--bd); text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'الهدف (التارجت)':'Target'}</h3>
+                <div style="font-size:1.5rem; font-weight:bold; color:var(--am);">${typeof fmt==='function'?fmt(targetValue):targetValue}</div>
             </div>
-            <div style="background:var(--bg2); padding:20px; border-radius:16px; border:1px solid var(--bd); text-align:center;">
-                <h3 style="margin:0 0 10px; color:var(--tx2); font-size:1rem;">${L==='ar'?'إجمالي التحصيلات (دفعات)':'Total Collections'}</h3>
-                <div style="font-size:1.8rem; font-weight:bold; color:var(--ac);">${typeof fmt==='function'?fmt(totalColls):totalColls}</div>
+            <div style="background:var(--bg2); padding:15px; border-radius:12px; border:1px solid var(--bd); text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'المسحوبات (مبيعات)':'Sales'}</h3>
+                <div style="font-size:1.5rem; font-weight:bold; color:var(--p);">${typeof fmt==='function'?fmt(totalSales):totalSales}</div>
+                <div style="font-size:0.8rem; color:var(--gn); font-weight:bold; margin-top:5px;">
+                    ${targetValue > 0 ? ((totalSales / targetValue) * 100).toFixed(1) + '% تحقيق' : ''}
+                </div>
             </div>
-            <div style="background:var(--bg2); padding:20px; border-radius:16px; border:1px solid var(--bd); text-align:center;">
-                <h3 style="margin:0 0 10px; color:var(--tx2); font-size:1rem;">${L==='ar'?'الرصيد المتبقي (مديونية)':'Balance'}</h3>
-                <div style="font-size:1.8rem; font-weight:bold; color:${balance > 0 ? '#f44336' : '#4caf50'};">${typeof fmt==='function'?fmt(balance):balance}</div>
+            <div style="background:var(--bg2); padding:15px; border-radius:12px; border:1px solid var(--bd); text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'التحصيلات (دفعات)':'Collections'}</h3>
+                <div style="font-size:1.5rem; font-weight:bold; color:var(--ac);">${typeof fmt==='function'?fmt(totalColls):totalColls}</div>
+            </div>
+            <div style="background:var(--bg2); padding:15px; border-radius:12px; border:1px solid var(--bd); text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'الرصيد المتبقي (مديونية)':'Balance'}</h3>
+                <div style="font-size:1.5rem; font-weight:bold; color:${balance > 0 ? '#f44336' : '#4caf50'};">${typeof fmt==='function'?fmt(balance):balance}</div>
             </div>
         </div>
 
