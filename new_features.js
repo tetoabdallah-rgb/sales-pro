@@ -1,4 +1,4 @@
-
+﻿
 // new_features.js - Universal, Safe, and Dynamic Injection
 
 // --- DATA ACCESS HELPERS ---
@@ -98,18 +98,18 @@ window.rVisits = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
     let html = `
         <div class="ph">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🚗</span> ${L==='ar'?'الزيارات ومتابعة العملاء':'Visits & Follow-up'}</h1>
-            <button class="btn" onclick="addVisitModal()" style="background:var(--ac);color:#fff;font-weight:bold;">➕ ${L==='ar'?'زيارة جديدة':'New Visit'}</button>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">ðŸš—</span> ${L==='ar'?'Ø§Ù„Ø²ÙŠØ§Ø±Ø§Øª ÙˆÙ…ØªØ§Ø¨Ø¹Ø© Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡':'Visits & Follow-up'}</h1>
+            <button class="btn" onclick="addVisitModal()" style="background:var(--ac);color:#fff;font-weight:bold;">âž• ${L==='ar'?'Ø²ÙŠØ§Ø±Ø© Ø¬Ø¯ÙŠØ¯Ø©':'New Visit'}</button>
         </div>
         <div class="card" id="visitsList" style="margin-top:20px;">
             <div style="overflow-x:auto;">
                 <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
                     <thead>
                         <tr style="border-bottom:2px solid var(--bd);">
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'التاريخ':'Date'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'العميل':'Customer'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'النتيجة':'Outcome'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الزيارة القادمة':'Next Visit'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø§Ù„ØªØ§Ø±ÙŠØ®':'Date'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø§Ù„Ù†ØªÙŠØ¬Ø©':'Outcome'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø§Ù„Ø²ÙŠØ§Ø±Ø© Ø§Ù„Ù‚Ø§Ø¯Ù…Ø©':'Next Visit'}</th>
                         </tr>
                     </thead>
                     <tbody id="vTbody"></tbody>
@@ -128,7 +128,7 @@ function loadVisits() {
     if (!tb) return;
     tb.innerHTML = '';
     if (visitsData.length === 0) {
-        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'لا توجد زيارات مسجلة. ابدأ بإضافة زيارة جديدة!':'No visits logged'}</td></tr>`;
+        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø²ÙŠØ§Ø±Ø§Øª Ù…Ø³Ø¬Ù„Ø©. Ø§Ø¨Ø¯Ø£ Ø¨Ø¥Ø¶Ø§ÙØ© Ø²ÙŠØ§Ø±Ø© Ø¬Ø¯ÙŠØ¯Ø©!':'No visits logged'}</td></tr>`;
         return;
     }
     visitsData.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(v => {
@@ -149,24 +149,24 @@ window.addVisitModal = function() {
     let S_data = getS();
     let cList = [...new Set(S_data.map(r=>r.Customer).filter(Boolean))];
     let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
-    if(!opts) opts = `<option value="">${L==='ar'?'لا يوجد عملاء (يرجى رفع ملف المبيعات)':'No customers found'}</option>`;
+    if(!opts) opts = `<option value="">${L==='ar'?'Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø¹Ù…Ù„Ø§Ø¡ (ÙŠØ±Ø¬Ù‰ Ø±ÙØ¹ Ù…Ù„Ù Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª)':'No customers found'}</option>`;
     
     let h = `
-        <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">🚗 ${L==='ar'?'تسجيل زيارة جديدة':'Log New Visit'}</h3>
-        <label class="sp-form-label">${L==='ar'?'العميل':'Customer'}</label>
+        <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">ðŸš— ${L==='ar'?'ØªØ³Ø¬ÙŠÙ„ Ø²ÙŠØ§Ø±Ø© Ø¬Ø¯ÙŠØ¯Ø©':'Log New Visit'}</h3>
+        <label class="sp-form-label">${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</label>
         <select id="nvCust" class="sp-form-input">${opts}</select>
-        <label class="sp-form-label">${L==='ar'?'تاريخ الزيارة':'Visit Date'}</label>
+        <label class="sp-form-label">${L==='ar'?'ØªØ§Ø±ÙŠØ® Ø§Ù„Ø²ÙŠØ§Ø±Ø©':'Visit Date'}</label>
         <input type="date" id="nvDate" class="sp-form-input" value="${new Date().toISOString().split('T')[0]}">
-        <label class="sp-form-label">${L==='ar'?'نتائج الزيارة / ملاحظات':'Outcome / Notes'}</label>
-        <textarea id="nvOutcome" class="sp-form-input" style="height:80px;resize:vertical;" placeholder="${L==='ar'?'ماذا حدث في الزيارة؟':'What happened?'}"></textarea>
-        <label class="sp-form-label">${L==='ar'?'موعد الزيارة القادمة':'Next Visit Date'}</label>
+        <label class="sp-form-label">${L==='ar'?'Ù†ØªØ§Ø¦Ø¬ Ø§Ù„Ø²ÙŠØ§Ø±Ø© / Ù…Ù„Ø§Ø­Ø¸Ø§Øª':'Outcome / Notes'}</label>
+        <textarea id="nvOutcome" class="sp-form-input" style="height:80px;resize:vertical;" placeholder="${L==='ar'?'Ù…Ø§Ø°Ø§ Ø­Ø¯Ø« ÙÙŠ Ø§Ù„Ø²ÙŠØ§Ø±Ø©ØŸ':'What happened?'}"></textarea>
+        <label class="sp-form-label">${L==='ar'?'Ù…ÙˆØ¹Ø¯ Ø§Ù„Ø²ÙŠØ§Ø±Ø© Ø§Ù„Ù‚Ø§Ø¯Ù…Ø©':'Next Visit Date'}</label>
         <input type="date" id="nvNext" class="sp-form-input">
-        <button class="sp-btn-primary" onclick="saveVisit()">${L==='ar'?'حفظ الزيارة':'Save Visit'}</button>
+        <button class="sp-btn-primary" onclick="saveVisit()">${L==='ar'?'Ø­ÙØ¸ Ø§Ù„Ø²ÙŠØ§Ø±Ø©':'Save Visit'}</button>
     `;
     let m = document.createElement('div');
     m.className = 'sp-modal-overlay';
     m.id = 'vModal';
-    m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
+    m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">Ã—</span>${h}</div>`;
     document.body.appendChild(m);
 };
 
@@ -175,36 +175,36 @@ window.saveVisit = function() {
     let d = document.getElementById('nvDate').value;
     let o = document.getElementById('nvOutcome').value;
     let n = document.getElementById('nvNext').value;
-    if(!c || !d) { alert('العميل والتاريخ مطلوبان'); return; }
+    if(!c || !d) { alert('Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙˆØ§Ù„ØªØ§Ø±ÙŠØ® Ù…Ø·Ù„ÙˆØ¨Ø§Ù†'); return; }
     let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
     visitsData.push({ id: Date.now(), customer: c, date: d, outcome: o, nextDate: n });
     localStorage.setItem('sp_visits', JSON.stringify(visitsData));
     let modal = document.getElementById('vModal');
     if(modal) modal.remove();
     loadVisits();
-    if(typeof toast === 'function') toast('تم حفظ الزيارة بنجاح', 'success');
+    if(typeof toast === 'function') toast('ØªÙ… Ø­ÙØ¸ Ø§Ù„Ø²ÙŠØ§Ø±Ø© Ø¨Ù†Ø¬Ø§Ø­', 'success');
 };
 
 
 
-﻿// --- LEADS ---
+// --- LEADS ---
 window.rLeads = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
     let html = `
         <div style="width: 100%; display: block;">
             <div class="ph" style="width: 100%;">
-                <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🤝</span> ${L==='ar'?'عملاء محتملين (Leads)':'Potential Leads'}</h1>
-                <button class="btn bg-p" onclick="addLeadModal()" style="color:#fff;border:none;">${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</button>
+                <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">ðŸ¤</span> ${L==='ar'?'Ø¹Ù…Ù„Ø§Ø¡ Ù…Ø­ØªÙ…Ù„ÙŠÙ† (Leads)':'Potential Leads'}</h1>
+                <button class="btn bg-p" onclick="addLeadModal()" style="color:#fff;border:none;">${L==='ar'?'Ø¥Ø¶Ø§ÙØ© Ø¹Ù…ÙŠÙ„ Ù…Ø­ØªÙ…Ù„':'Add Lead'}</button>
             </div>
             <div class="card" id="leadsList" style="margin-top:20px; width: 100%;">
                 <div style="overflow-x:auto;">
                     <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
                         <thead>
                             <tr style="border-bottom:2px solid var(--bd);">
-                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'اسم العميل':'Lead Name'}</th>
-                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'رقم الهاتف':'Phone'}</th>
-                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'المصدر':'Source'}</th>
-                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الحالة':'Status'}</th>
+                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø§Ø³Ù… Ø§Ù„Ø¹Ù…ÙŠÙ„':'Lead Name'}</th>
+                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ':'Phone'}</th>
+                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø§Ù„Ù…ØµØ¯Ø±':'Source'}</th>
+                                <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø§Ù„Ø­Ø§Ù„Ø©':'Status'}</th>
                             </tr>
                         </thead>
                         <tbody id="lTbody"></tbody>
@@ -229,7 +229,7 @@ function loadLeads() {
     if (!tb) return;
     tb.innerHTML = '';
     if (leadsData.length === 0) {
-        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'لا يوجد عملاء محتملين بعد.':'No leads yet.'}</td></tr>`;
+        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø¹Ù…Ù„Ø§Ø¡ Ù…Ø­ØªÙ…Ù„ÙŠÙ† Ø¨Ø¹Ø¯.':'No leads yet.'}</td></tr>`;
         return;
     }
     leadsData.forEach(v => {
@@ -248,14 +248,14 @@ function loadLeads() {
 window.addLeadModal = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
     let h = `
-        <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">🤝 ${L==='ar'?'إضافة عميل محتمل':'Add New Lead'}</h3>
-        <label class="sp-form-label">${L==='ar'?'الاسم':'Name'}</label>
+        <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">ðŸ¤ ${L==='ar'?'Ø¥Ø¶Ø§ÙØ© Ø¹Ù…ÙŠÙ„ Ù…Ø­ØªÙ…Ù„':'Add New Lead'}</h3>
+        <label class="sp-form-label">${L==='ar'?'Ø§Ù„Ø§Ø³Ù…':'Name'}</label>
         <input type="text" id="nlName" class="sp-form-input">
-        <label class="sp-form-label">${L==='ar'?'رقم الهاتف':'Phone'}</label>
+        <label class="sp-form-label">${L==='ar'?'Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ':'Phone'}</label>
         <input type="text" id="nlPhone" class="sp-form-input">
-        <label class="sp-form-label">${L==='ar'?'المصدر (فيسبوك، إعلان، الخ)':'Source'}</label>
+        <label class="sp-form-label">${L==='ar'?'Ø§Ù„Ù…ØµØ¯Ø± (ÙÙŠØ³Ø¨ÙˆÙƒØŒ Ø¥Ø¹Ù„Ø§Ù†ØŒ Ø§Ù„Ø®)':'Source'}</label>
         <input type="text" id="nlSource" class="sp-form-input">
-        <button class="sp-btn-primary" onclick="saveLead()">${L==='ar'?'حفظ العميل':'Save Lead'}</button>
+        <button class="sp-btn-primary" onclick="saveLead()">${L==='ar'?'Ø­ÙØ¸ Ø§Ù„Ø¹Ù…ÙŠÙ„':'Save Lead'}</button>
     `;
     let m = document.createElement('div');
     m.className = 'sp-modal-overlay';
@@ -268,7 +268,7 @@ window.saveLead = function() {
     let n = document.getElementById('nlName').value;
     let p = document.getElementById('nlPhone').value;
     let s = document.getElementById('nlSource').value;
-    if(!n) { alert(localStorage.getItem('sp_lang')==='ar'?'الرجاء إدخال اسم العميل':'Please enter lead name'); return; }
+    if(!n) { alert(localStorage.getItem('sp_lang')==='ar'?'Ø§Ù„Ø±Ø¬Ø§Ø¡ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ø³Ù… Ø§Ù„Ø¹Ù…ÙŠÙ„':'Please enter lead name'); return; }
     
     let l = { id: Date.now(), name: n, phone: p, source: s, status: 'New' };
     let leadsData = JSON.parse(localStorage.getItem('sp_leads') || '[]');
@@ -278,7 +278,7 @@ window.saveLead = function() {
     let modal = document.getElementById('lModal');
     if(modal) modal.remove();
     loadLeads();
-    if(typeof toast === 'function') toast(localStorage.getItem('sp_lang')==='ar'?'تم إضافة العميل بنجاح':'Lead added successfully', 'success');
+    if(typeof toast === 'function') toast(localStorage.getItem('sp_lang')==='ar'?'ØªÙ… Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ø¹Ù…ÙŠÙ„ Ø¨Ù†Ø¬Ø§Ø­':'Lead added successfully', 'success');
     
     if (typeof auth !== 'undefined' && auth.currentUser && typeof db !== 'undefined') {
         db.collection('users').doc(auth.currentUser.uid).collection('leads').add(l).catch(e => console.error(e));
@@ -296,20 +296,20 @@ window.saveLead = function() {
             let ws = wb.Sheets[wb.SheetNames[0]];
             let d = XLSX.utils.sheet_to_json(ws);
             let norm = d.map(r => {
-                let Customer = r.Customer || r['العميل'] || r['Customer Name'] || r['اسم العميل'] || r['الاسم'];
-                let Target = r.Target || r['التارجت'] || r['Total Target'] || r['تارجت'] || 0;
-                let phone = r.Phone || r['رقم الموبايل'] || r['موبايل'] || r['رقم الهاتف'] || r['Mobile'] || r.phone || '';
-                let address = r.Address || r['العنوان'] || r['عنوان'] || r.address || '';
-                let hwTarget = r['Target HW'] || r['تارجت هاردوير'] || r['Hardware Target'] || r.hwTarget || 0;
-                let accTarget = r['Target Acc'] || r['تارجت اكسسوارات'] || r['Accessories Target'] || r['تارجت اكسسوار'] || r.accTarget || 0;
+                let Customer = r.Customer || r['Ø§Ù„Ø¹Ù…ÙŠÙ„'] || r['Customer Name'] || r['Ø§Ø³Ù… Ø§Ù„Ø¹Ù…ÙŠÙ„'] || r['Ø§Ù„Ø§Ø³Ù…'];
+                let Target = r.Target || r['Ø§Ù„ØªØ§Ø±Ø¬Øª'] || r['Total Target'] || r['ØªØ§Ø±Ø¬Øª'] || 0;
+                let phone = r.Phone || r['Ø±Ù‚Ù… Ø§Ù„Ù…ÙˆØ¨Ø§ÙŠÙ„'] || r['Ù…ÙˆØ¨Ø§ÙŠÙ„'] || r['Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ'] || r['Mobile'] || r.phone || '';
+                let address = r.Address || r['Ø§Ù„Ø¹Ù†ÙˆØ§Ù†'] || r['Ø¹Ù†ÙˆØ§Ù†'] || r.address || '';
+                let hwTarget = r['Target HW'] || r['ØªØ§Ø±Ø¬Øª Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±'] || r['Hardware Target'] || r.hwTarget || 0;
+                let accTarget = r['Target Acc'] || r['ØªØ§Ø±Ø¬Øª Ø§ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª'] || r['Accessories Target'] || r['ØªØ§Ø±Ø¬Øª Ø§ÙƒØ³Ø³ÙˆØ§Ø±'] || r.accTarget || 0;
                 if(!Target && (hwTarget || accTarget)) Target = Number(hwTarget||0) + Number(accTarget||0);
                 return { ...r, Customer, Target: Number(Target)||0, phone, address, hwTarget: Number(hwTarget)||0, accTarget: Number(accTarget)||0 };
             }).filter(r => r.Customer);
             T = norm;
             if(typeof sv === 'function') sv('targetData', norm);
-            alert(localStorage.getItem('sp_lang')==='ar'?'تم استيراد البيانات بنجاح!':'Data imported successfully!');
+            alert(localStorage.getItem('sp_lang')==='ar'?'ØªÙ… Ø§Ø³ØªÙŠØ±Ø§Ø¯ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø¨Ù†Ø¬Ø§Ø­!':'Data imported successfully!');
             if(typeof window.rTgt === 'function') window.rTgt();
-            if(typeof window.cloudAutoSave === 'function') window.cloudAutoSave('استيراد تارجت من إكسيل');
+            if(typeof window.cloudAutoSave === 'function') window.cloudAutoSave('Ø§Ø³ØªÙŠØ±Ø§Ø¯ ØªØ§Ø±Ø¬Øª Ù…Ù† Ø¥ÙƒØ³ÙŠÙ„');
         } catch(err) {
             alert('Error reading file');
         }
@@ -362,42 +362,42 @@ window.rTgt = function() {
     
     mDiv.innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px; flex-wrap:wrap;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${window.ICONS ? window.ICONS.targets : '🎯'}</span> ${typeof t==='function'?t('targets'):(L==='ar'?'المستهدفات':'Targets')}</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${window.ICONS ? window.ICONS.targets : 'ðŸŽ¯'}</span> ${typeof t==='function'?t('targets'):(L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯ÙØ§Øª':'Targets')}</h1>
             <div style="margin-left:auto; display:flex; gap:10px;">
-                <button onclick="window.editCustomerTarget('')" class="btn btn-p" style="font-weight:bold; font-family:inherit;">+ ${L==='ar'?'إضافة عميل':'Add Customer'}</button>
+                <button onclick="window.editCustomerTarget('')" class="btn btn-p" style="font-weight:bold; font-family:inherit;">+ ${L==='ar'?'Ø¥Ø¶Ø§ÙØ© Ø¹Ù…ÙŠÙ„':'Add Customer'}</button>
                 <input type="file" id="fImportTgt" accept=".xlsx,.xls,.csv" style="display:none;" onchange="window.handleTargetImport(event)">
-                <button onclick="document.getElementById('fImportTgt').click()" class="btn" style="background:var(--ac);color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">&#x1F4E4;</span> ${L==='ar'?'استيراد إكسيل':'Import'}</button>
-                <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">&#x1F4E5;</span> ${L==='ar'?'تصدير إكسيل':'Export'}</button>
+                <button onclick="document.getElementById('fImportTgt').click()" class="btn" style="background:var(--ac);color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">&#x1F4E4;</span> ${L==='ar'?'Ø§Ø³ØªÙŠØ±Ø§Ø¯ Ø¥ÙƒØ³ÙŠÙ„':'Import'}</button>
+                <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">&#x1F4E5;</span> ${L==='ar'?'ØªØµØ¯ÙŠØ± Ø¥ÙƒØ³ÙŠÙ„':'Export'}</button>
             </div>
         </div>
         <div class="kg" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
-            <div class="ki"><div class="lb">${L==='ar'?'إجمالي التارجت':'Total Target'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(tt):tt}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'إجمالي المحقق':'Total Achieved'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(ta):ta}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'نسبة الكلي':'Total %'}</div><div class="vl" style="font-size:1.3rem;color:var(--ac);">${typeof aFmt==='function'?aFmt(tt>0?ta/tt*100:0,true):(tt>0?(ta/tt*100).toFixed(1)+'%':'0%')}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ØªØ§Ø±Ø¬Øª':'Total Target'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(tt):tt}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø­Ù‚Ù‚':'Total Achieved'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(ta):ta}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'Ù†Ø³Ø¨Ø© Ø§Ù„ÙƒÙ„ÙŠ':'Total %'}</div><div class="vl" style="font-size:1.3rem;color:var(--ac);">${typeof aFmt==='function'?aFmt(tt>0?ta/tt*100:0,true):(tt>0?(ta/tt*100).toFixed(1)+'%':'0%')}</div></div>
             
-            <div class="ki" style="border-left: 3px solid #ff9800;"><div class="lb">${L==='ar'?'تارجت هاردوير':'HW Target'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(hwt):hwt}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'محقق هاردوير':'HW Achieved'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(hwa):hwa}</div></div>
+            <div class="ki" style="border-left: 3px solid #ff9800;"><div class="lb">${L==='ar'?'ØªØ§Ø±Ø¬Øª Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'HW Target'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(hwt):hwt}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'Ù…Ø­Ù‚Ù‚ Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'HW Achieved'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(hwa):hwa}</div></div>
             <div class="ki"><div class="lb">% HW</div><div class="vl" style="font-size:1.3rem;color:#ff9800;">${typeof aFmt==='function'?aFmt(hwt>0?hwa/hwt*100:0,true):(hwt>0?(hwa/hwt*100).toFixed(1)+'%':'0%')}</div></div>
             
-            <div class="ki" style="border-left: 3px solid #4caf50;"><div class="lb">${L==='ar'?'تارجت إكسسوار':'Acc Target'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(acct):acct}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'محقق إكسسوار':'Acc Achieved'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(acca):acca}</div></div>
+            <div class="ki" style="border-left: 3px solid #4caf50;"><div class="lb">${L==='ar'?'ØªØ§Ø±Ø¬Øª Ø¥ÙƒØ³Ø³ÙˆØ§Ø±':'Acc Target'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(acct):acct}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'Ù…Ø­Ù‚Ù‚ Ø¥ÙƒØ³Ø³ÙˆØ§Ø±':'Acc Achieved'}</div><div class="vl" style="font-size:1.3rem;">${typeof aFmt==='function'?aFmt(acca):acca}</div></div>
             <div class="ki"><div class="lb">% Acc</div><div class="vl" style="font-size:1.3rem;color:#4caf50;">${typeof aFmt==='function'?aFmt(acct>0?acca/acct*100:0,true):(acct>0?(acca/acct*100).toFixed(1)+'%':'0%')}</div></div>
         </div>
         <div class="tb">
-            <div class="tbt"><h3>${typeof t==='function'?t('targets'):(L==='ar'?'المستهدفات':'Targets')}</h3><input class="sbox" id="tsr" placeholder="..."></div>
+            <div class="tbt"><h3>${typeof t==='function'?t('targets'):(L==='ar'?'Ø§Ù„Ù…Ø³ØªÙ‡Ø¯ÙØ§Øª':'Targets')}</h3><input class="sbox" id="tsr" placeholder="..."></div>
             <div class="tbs">
                 <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
                     <thead>
                         <tr>
-                            <th>${L==='ar'?'العميل / اتصال':'Customer / Contact'}</th>
-                            <th>${L==='ar'?'التارجت الكلي':'Total Target'}</th>
-                            <th>${L==='ar'?'المحقق':'Achieved'}</th>
-                            <th style="width:200px;">${L==='ar'?'نسبة التحقيق':'% Progress'}</th>
+                            <th>${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„ / Ø§ØªØµØ§Ù„':'Customer / Contact'}</th>
+                            <th>${L==='ar'?'Ø§Ù„ØªØ§Ø±Ø¬Øª Ø§Ù„ÙƒÙ„ÙŠ':'Total Target'}</th>
+                            <th>${L==='ar'?'Ø§Ù„Ù…Ø­Ù‚Ù‚':'Achieved'}</th>
+                            <th style="width:200px;">${L==='ar'?'Ù†Ø³Ø¨Ø© Ø§Ù„ØªØ­Ù‚ÙŠÙ‚':'% Progress'}</th>
                             <th>HW Tgt</th>
                             <th>HW Ach</th>
                             <th>Acc Tgt</th>
                             <th>Acc Ach</th>
-                            <th>${L==='ar'?'إجراء':'Act'}</th>
+                            <th>${L==='ar'?'Ø¥Ø¬Ø±Ø§Ø¡':'Act'}</th>
                         </tr>
                     </thead>
                     <tbody id="ttb"></tbody>
@@ -439,10 +439,10 @@ window.rTgt = function() {
                 <td style="font-size:0.9rem;">${typeof fmt==='function'?fmt(accA):accA}</td>
                 <td>
                     <button onclick="window.openCustomerProfile('${r.Customer.replace(/'/g, "\\'")}')" class="btn btn-p" style="padding:4px 8px; font-size:0.8rem; margin-right:5px; font-family:inherit;">
-                        👤 ${L==='ar'?'بروفايل':'Profile'}
+                        ðŸ‘¤ ${L==='ar'?'Ø¨Ø±ÙˆÙØ§ÙŠÙ„':'Profile'}
                     </button>
                     <button onclick="window.editCustomerTarget('${r.Customer.replace(/'/g, "\\'")}')" class="btn" style="padding:4px 8px; font-size:0.8rem; background:var(--bg3); border:1px solid var(--bd); font-family:inherit;">
-                        ${L==='ar'?'تعديل':'Edit'}
+                        ${L==='ar'?'ØªØ¹Ø¯ÙŠÙ„':'Edit'}
                     </button>
                 </td>
             </tr>`;
@@ -465,16 +465,16 @@ window.rDormant30 = function() {
     let sData = getS();
     let html = `
         <div class="ph">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🛌</span> ${L==='ar'?'عملاء خاملين (30 يوم)':'30-Day Dormant'}</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">ðŸ›Œ</span> ${L==='ar'?'Ø¹Ù…Ù„Ø§Ø¡ Ø®Ø§Ù…Ù„ÙŠÙ† (30 ÙŠÙˆÙ…)':'30-Day Dormant'}</h1>
         </div>
         <div class="card" style="margin-top:20px;">
             <div style="overflow-x:auto;">
                 <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
                     <thead>
                         <tr style="border-bottom:2px solid var(--bd);">
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'العميل':'Customer'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'آخر فاتورة':'Last Invoice Date'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'أيام الخمول':'Days Dormant'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø¢Ø®Ø± ÙØ§ØªÙˆØ±Ø©':'Last Invoice Date'}</th>
+                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'Ø£ÙŠØ§Ù… Ø§Ù„Ø®Ù…ÙˆÙ„':'Days Dormant'}</th>
                         </tr>
                     </thead>
                     <tbody id="dorm30Tbody"></tbody>
@@ -507,7 +507,7 @@ window.rDormant30 = function() {
     });
     
     if(dormants.length === 0) {
-        tb.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'لا يوجد عملاء خاملين.':'No dormant customers.'}</td></tr>`;
+        tb.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø¹Ù…Ù„Ø§Ø¡ Ø®Ø§Ù…Ù„ÙŠÙ†.':'No dormant customers.'}</td></tr>`;
         return;
     }
     
@@ -517,7 +517,7 @@ window.rDormant30 = function() {
         tr.innerHTML = `
             <td style="padding:15px 10px;font-weight:bold;color:var(--tx1);">${d.c}</td>
             <td style="padding:15px 10px;color:var(--tx2);">${d.last.toISOString().split('T')[0]}</td>
-            <td style="padding:15px 10px;"><span style="background:var(--rd);color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold;">${d.days} ${L==='ar'?'يوم':'days'}</span></td>
+            <td style="padding:15px 10px;"><span style="background:var(--rd);color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold;">${d.days} ${L==='ar'?'ÙŠÙˆÙ…':'days'}</span></td>
         `;
         tb.appendChild(tr);
     });
@@ -545,10 +545,10 @@ window.checkDailyAlerts = function() {
     let mailSentToday = localStorage.getItem('sp_auto_mail_sent') === today;
     
     if (delayCount > 0 && lastCheck !== today) {
-        let emailBody = encodeURIComponent(`تنبيه يومي: يوجد ${delayCount} عملاء متأخرين عن تحقيق 50% من المستهدف. يرجى المتابعة العاجلة.`);
+        let emailBody = encodeURIComponent(`ØªÙ†Ø¨ÙŠÙ‡ ÙŠÙˆÙ…ÙŠ: ÙŠÙˆØ¬Ø¯ ${delayCount} Ø¹Ù…Ù„Ø§Ø¡ Ù…ØªØ£Ø®Ø±ÙŠÙ† Ø¹Ù† ØªØ­Ù‚ÙŠÙ‚ 50% Ù…Ù† Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù. ÙŠØ±Ø¬Ù‰ Ø§Ù„Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„Ø¹Ø§Ø¬Ù„Ø©.`);
         let emailAddress = localStorage.getItem('repEmailInput') || ''; // if they saved an email somewhere
         
-        let mailLink = `mailto:${emailAddress}?subject=تنبيه تأخير تارجت العملاء&body=${emailBody}`;
+        let mailLink = `mailto:${emailAddress}?subject=ØªÙ†Ø¨ÙŠÙ‡ ØªØ£Ø®ÙŠØ± ØªØ§Ø±Ø¬Øª Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡&body=${emailBody}`;
         
         // AUTO SEND EMAIL upon opening if not sent today
         if(!mailSentToday) {
@@ -565,18 +565,18 @@ window.checkDailyAlerts = function() {
         
         let h = `
             <div style="text-align:center;padding:10px;">
-                <div style="font-size:3.5rem;margin-bottom:10px;">⚠️</div>
-                <h2 style="color:var(--rd);margin:0 0 10px 0;">تنبيه المتأخرات اليومي</h2>
-                <p style="margin-bottom:20px;color:var(--tx2);line-height:1.5;">يوجد <strong>${delayCount}</strong> عملاء متأخرين عن تحقيق المستهدف (أقل من 50%). يرجى مراجعة صفحة التنبيهات.</p>
+                <div style="font-size:3.5rem;margin-bottom:10px;">âš ï¸</div>
+                <h2 style="color:var(--rd);margin:0 0 10px 0;">ØªÙ†Ø¨ÙŠÙ‡ Ø§Ù„Ù…ØªØ£Ø®Ø±Ø§Øª Ø§Ù„ÙŠÙˆÙ…ÙŠ</h2>
+                <p style="margin-bottom:20px;color:var(--tx2);line-height:1.5;">ÙŠÙˆØ¬Ø¯ <strong>${delayCount}</strong> Ø¹Ù…Ù„Ø§Ø¡ Ù…ØªØ£Ø®Ø±ÙŠÙ† Ø¹Ù† ØªØ­Ù‚ÙŠÙ‚ Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù (Ø£Ù‚Ù„ Ù…Ù† 50%). ÙŠØ±Ø¬Ù‰ Ù…Ø±Ø§Ø¬Ø¹Ø© ØµÙØ­Ø© Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª.</p>
                 <div style="display:flex;gap:10px;flex-direction:column;">
-                    <button class="sp-btn-primary" onclick="this.closest('.sp-modal-overlay').remove(); if(typeof P!=='undefined'){ P='alerts'; if(typeof buildNav==='function') buildNav(); if(typeof render==='function') render(); }">مراجعة التنبيهات في التطبيق</button>
-                    <a href="${mailLink}" target="_blank" class="btn" style="background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);padding:12px;border-radius:8px;text-decoration:none;display:block;">📧 فتح تطبيق الإيميل يدوياً</a>
+                    <button class="sp-btn-primary" onclick="this.closest('.sp-modal-overlay').remove(); if(typeof P!=='undefined'){ P='alerts'; if(typeof buildNav==='function') buildNav(); if(typeof render==='function') render(); }">Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª ÙÙŠ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚</button>
+                    <a href="${mailLink}" target="_blank" class="btn" style="background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);padding:12px;border-radius:8px;text-decoration:none;display:block;">ðŸ“§ ÙØªØ­ ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„Ø¥ÙŠÙ…ÙŠÙ„ ÙŠØ¯ÙˆÙŠØ§Ù‹</a>
                 </div>
             </div>
         `;
         let m = document.createElement('div');
         m.className = 'sp-modal-overlay';
-        m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
+        m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">Ã—</span>${h}</div>`;
         document.body.appendChild(m);
     }
     
@@ -602,7 +602,7 @@ window.injectBranchCards = function() {
             let val = Number(s['Sales Without Tax'] || 0);
             let c = (s.Customer || '').toLowerCase();
             let ref = (s['Payment Ref.'] || '').toLowerCase();
-            if(c.includes('أقصر') || c.includes('اقصر') || c.includes('luxor') || ref.includes('luxor')) {
+            if(c.includes('Ø£Ù‚ØµØ±') || c.includes('Ø§Ù‚ØµØ±') || c.includes('luxor') || ref.includes('luxor')) {
                 luxorSales += val;
             } else {
                 qobbahSales += val;
@@ -614,11 +614,11 @@ window.injectBranchCards = function() {
             let L = localStorage.getItem('sp_lang') || 'ar';
             let html = `
                 <div class="ki" id="branchLuxor" style="border-left: 3px solid var(--ac); background: var(--bg3); cursor:pointer;" onclick="if(typeof P!=='undefined'){ P='dormant30'; if(typeof render==='function') render(); }">
-                    <div class="lb">${L==='ar'?'مبيعات الأقصر':'Luxor Sales'}</div>
+                    <div class="lb">${L==='ar'?'Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„Ø£Ù‚ØµØ±':'Luxor Sales'}</div>
                     <div class="vl" style="color:var(--tx1);">${typeof fmt==='function'?fmt(luxorSales):luxorSales}</div>
                 </div>
                 <div class="ki" id="branchQobbah" style="border-left: 3px solid var(--pu); background: var(--bg3); cursor:pointer;" onclick="if(typeof P!=='undefined'){ P='dormant30'; if(typeof render==='function') render(); }">
-                    <div class="lb">${L==='ar'?'مبيعات حدائق القبة':'Qobbah Sales'}</div>
+                    <div class="lb">${L==='ar'?'Ù…Ø¨ÙŠØ¹Ø§Øª Ø­Ø¯Ø§Ø¦Ù‚ Ø§Ù„Ù‚Ø¨Ø©':'Qobbah Sales'}</div>
                     <div class="vl" style="color:var(--tx1);">${typeof fmt==='function'?fmt(qobbahSales):qobbahSales}</div>
                 </div>
             `;
@@ -633,9 +633,9 @@ window.injectBranchCards = function() {
         if (!NAV.find(n => n.p === 'visits')) {
             let advIdx = NAV.findIndex(n => n.p === 'dormant');
             if (advIdx > -1) {
-                NAV.splice(advIdx + 1, 0, {p:'dormant30', ic:'🛌'}, {p:'visits',ic:'🚗'}, {p:'leads',ic:'🤝'});
+                NAV.splice(advIdx + 1, 0, {p:'dormant30', ic:'ðŸ›Œ'}, {p:'visits',ic:'ðŸš—'}, {p:'leads',ic:'ðŸ¤'});
             } else {
-                NAV.push({p:'dormant30', ic:'🛌'}, {p:'visits',ic:'🚗'}, {p:'leads',ic:'🤝'});
+                NAV.push({p:'dormant30', ic:'ðŸ›Œ'}, {p:'visits',ic:'ðŸš—'}, {p:'leads',ic:'ðŸ¤'});
             }
         }
     }
@@ -648,16 +648,16 @@ window.buildNav = function() {
     setTimeout(() => {
         let L = localStorage.getItem('sp_lang') || 'ar';
         let elVisits = document.querySelector('.ni[data-p="visits"] span:nth-child(2)');
-        if(elVisits) elVisits.textContent = L==='ar' ? 'الزيارات' : 'Visits';
+        if(elVisits) elVisits.textContent = L==='ar' ? 'Ø§Ù„Ø²ÙŠØ§Ø±Ø§Øª' : 'Visits';
         
         let elLeads = document.querySelector('.ni[data-p="leads"] span:nth-child(2)');
-        if(elLeads) elLeads.textContent = L==='ar' ? 'محتملين' : 'Leads';
+        if(elLeads) elLeads.textContent = L==='ar' ? 'Ù…Ø­ØªÙ…Ù„ÙŠÙ†' : 'Leads';
         
         let elCol = document.querySelector('.ni[data-p="collections"] span:nth-child(2)');
-        if(elCol) elCol.textContent = L==='ar' ? 'التحصيلات' : 'Collections';
+        if(elCol) elCol.textContent = L==='ar' ? 'Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª' : 'Collections';
         
         let elDorm = document.querySelector('.ni[data-p="dormant30"] span:nth-child(2)');
-        if(elDorm) elDorm.textContent = L==='ar' ? 'خاملين (30 يوم)' : '30-Day Dormant';
+        if(elDorm) elDorm.textContent = L==='ar' ? 'Ø®Ø§Ù…Ù„ÙŠÙ† (30 ÙŠÙˆÙ…)' : '30-Day Dormant';
     }, 50);
 };
 
@@ -721,7 +721,7 @@ if (typeof window.fSl === 'function' && !window.whatsappInjected) {
             if (sth) {
                 let trh = sth.querySelector('tr');
                 if (trh && !trh.querySelector('.wa-th')) {
-                    trh.insertAdjacentHTML('beforeend', '<th class="wa-th">💬 واتساب</th>');
+                    trh.insertAdjacentHTML('beforeend', '<th class="wa-th">ðŸ’¬ ÙˆØ§ØªØ³Ø§Ø¨</th>');
                 }
             }
             let rows = document.querySelectorAll('#stb tr');
@@ -731,8 +731,8 @@ if (typeof window.fSl === 'function' && !window.whatsappInjected) {
                 let r = data[start + idx];
                 if(r && !tr.querySelector('.wa-btn')) {
                     let s = typeof getSalesVal === 'function' ? getSalesVal(r) : r['Sales After Discount'];
-                    let msg = "مرحباً بك عميلنا المميز " + (r.Customer || '') + "، تم تسجيل فاتورة مبيعات لحسابكم بقيمة " + s + " بتاريخ " + ((r['Invoice Date'] || r['Order Date'] || r['Date'])||'') + ". شكراً لتعاملكم معنا!";
-                    tr.insertAdjacentHTML('beforeend', '<td><button class="wa-btn" onclick="window.open(\'https://wa.me/?text=' + encodeURIComponent(msg) + '\')" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.2)\'" onmouseout="this.style.transform=\'scale(1)\'">💬</button></td>');
+                    let msg = "Ù…Ø±Ø­Ø¨Ø§Ù‹ Ø¨Ùƒ Ø¹Ù…ÙŠÙ„Ù†Ø§ Ø§Ù„Ù…Ù…ÙŠØ² " + (r.Customer || '') + "ØŒ ØªÙ… ØªØ³Ø¬ÙŠÙ„ ÙØ§ØªÙˆØ±Ø© Ù…Ø¨ÙŠØ¹Ø§Øª Ù„Ø­Ø³Ø§Ø¨ÙƒÙ… Ø¨Ù‚ÙŠÙ…Ø© " + s + " Ø¨ØªØ§Ø±ÙŠØ® " + ((r['Invoice Date'] || r['Order Date'] || r['Date'])||'') + ". Ø´ÙƒØ±Ø§Ù‹ Ù„ØªØ¹Ø§Ù…Ù„ÙƒÙ… Ù…Ø¹Ù†Ø§!";
+                    tr.insertAdjacentHTML('beforeend', '<td><button class="wa-btn" onclick="window.open(\'https://wa.me/?text=' + encodeURIComponent(msg) + '\')" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.2)\'" onmouseout="this.style.transform=\'scale(1)\'">ðŸ’¬</button></td>');
                 }
             });
         }, 50);
@@ -777,7 +777,7 @@ if (originalRCol && !window.waColInjected) {
                 let due = sTot - cTot;
                 if(due > 0 && sTot > 0) {
                     hasDues = true;
-                    duesHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid rgba(255,0,0,0.2);"><strong style="color:var(--tx);font-size:0.9rem;">${c}</strong><span class="badge bg-r" style="font-size:0.9rem;">متبقي: ${due.toLocaleString()}</span></div>`;
+                    duesHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid rgba(255,0,0,0.2);"><strong style="color:var(--tx);font-size:0.9rem;">${c}</strong><span class="badge bg-r" style="font-size:0.9rem;">Ù…ØªØ¨Ù‚ÙŠ: ${due.toLocaleString()}</span></div>`;
                 }
             });
             
@@ -786,7 +786,7 @@ if (originalRCol && !window.waColInjected) {
                 let ph = m.querySelector('.ph');
                 if(ph) {
                     let duesCard = `<div class="card" style="margin-top:15px; border-top:3px solid var(--rd); max-height:250px; overflow-y:auto;">
-                        <h3 style="color:var(--rd); margin-bottom:10px; display:flex; align-items:center; gap:8px;">⚠️ تنبيهات المتأخرات (ديون العملاء)</h3>
+                        <h3 style="color:var(--rd); margin-bottom:10px; display:flex; align-items:center; gap:8px;">âš ï¸ ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ø§Ù„Ù…ØªØ£Ø®Ø±Ø§Øª (Ø¯ÙŠÙˆÙ† Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡)</h3>
                         ${duesHtml}
                     </div>`;
                     ph.insertAdjacentHTML('afterend', duesCard);
@@ -796,7 +796,7 @@ if (originalRCol && !window.waColInjected) {
             
             let trh = document.querySelector('.tb table thead tr');
             if(trh && !trh.querySelector('.wa-th')) {
-                trh.insertAdjacentHTML('beforeend', '<th class="wa-th">💬 واتساب</th>');
+                trh.insertAdjacentHTML('beforeend', '<th class="wa-th">ðŸ’¬ ÙˆØ§ØªØ³Ø§Ø¨</th>');
             }
             let rows = document.querySelectorAll('.tb table tbody tr');
             rows.forEach((tr, idx) => {
@@ -810,8 +810,8 @@ if (originalRCol && !window.waColInjected) {
                     let rawVal = getVal(['Amount', 'Collection']) || 0;
                     let cName = getVal(['Customer Name', 'Customer']) || '';
                     let d = getVal(['Date']) || '';
-                    let msg = "مرحباً " + cName + "، تم استلام دفعة نقدية (تحصيل) بقيمة " + rawVal + " بتاريخ " + d + ". نشكركم لتعاونكم!";
-                    tr.insertAdjacentHTML('beforeend', '<td><button class="wa-btn" onclick="window.open(\'https://wa.me/?text=' + encodeURIComponent(msg) + '\')" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.2)\'" onmouseout="this.style.transform=\'scale(1)\'">💬</button></td>');
+                    let msg = "Ù…Ø±Ø­Ø¨Ø§Ù‹ " + cName + "ØŒ ØªÙ… Ø§Ø³ØªÙ„Ø§Ù… Ø¯ÙØ¹Ø© Ù†Ù‚Ø¯ÙŠØ© (ØªØ­ØµÙŠÙ„) Ø¨Ù‚ÙŠÙ…Ø© " + rawVal + " Ø¨ØªØ§Ø±ÙŠØ® " + d + ". Ù†Ø´ÙƒØ±ÙƒÙ… Ù„ØªØ¹Ø§ÙˆÙ†ÙƒÙ…!";
+                    tr.insertAdjacentHTML('beforeend', '<td><button class="wa-btn" onclick="window.open(\'https://wa.me/?text=' + encodeURIComponent(msg) + '\')" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.2)\'" onmouseout="this.style.transform=\'scale(1)\'">ðŸ’¬</button></td>');
                 }
             });
         }, 100);
@@ -839,16 +839,16 @@ if (originalRTgt && !window.tgtGamInjected) {
             let m = document.getElementById('M');
             if(!m) return;
             let pgHTML = '<div style="background:var(--bg3); border-radius:12px; padding:20px; margin:20px 0; border:1px solid var(--bd); position:relative; overflow:hidden;">' +
-                         '<h3 style="margin-bottom:12px; text-align:center;">🏆 نسبة تحقيق التارجت الإجمالي 🏆</h3>' +
+                         '<h3 style="margin-bottom:12px; text-align:center;">ðŸ† Ù†Ø³Ø¨Ø© ØªØ­Ù‚ÙŠÙ‚ Ø§Ù„ØªØ§Ø±Ø¬Øª Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ ðŸ†</h3>' +
                          '<div style="background:var(--bg); border-radius:20px; height:24px; width:100%; overflow:hidden; box-shadow:inset 0 2px 4px rgba(0,0,0,0.1);">' +
                          '<div style="background:linear-gradient(90deg, #f5af19, #f12711); height:100%; width:' + Math.min(perc, 100) + '%; transition:width 1s; display:flex; align-items:center; justify-content:flex-end; padding-right:10px; color:white; font-weight:bold; font-size:0.8rem;">' +
                          perc.toFixed(1) + '%' +
                          '</div></div>';
                          
             if(perc >= 100) {
-                pgHTML += '<div style="text-align:center; margin-top:10px; color:#2ecc71; font-weight:bold;">🎉 مبروك! لقد حققت التارجت المطلوب! 🎉</div>';
+                pgHTML += '<div style="text-align:center; margin-top:10px; color:#2ecc71; font-weight:bold;">ðŸŽ‰ Ù…Ø¨Ø±ÙˆÙƒ! Ù„Ù‚Ø¯ Ø­Ù‚Ù‚Øª Ø§Ù„ØªØ§Ø±Ø¬Øª Ø§Ù„Ù…Ø·Ù„ÙˆØ¨! ðŸŽ‰</div>';
             } else {
-                pgHTML += '<div style="text-align:center; margin-top:10px; color:var(--tx2); font-size:0.85rem;">متبقي ' + Math.max(0, tTot - aTot).toLocaleString() + ' للوصول للهدف 🚀</div>';
+                pgHTML += '<div style="text-align:center; margin-top:10px; color:var(--tx2); font-size:0.85rem;">Ù…ØªØ¨Ù‚ÙŠ ' + Math.max(0, tTot - aTot).toLocaleString() + ' Ù„Ù„ÙˆØµÙˆÙ„ Ù„Ù„Ù‡Ø¯Ù ðŸš€</div>';
             }
             pgHTML += '</div>';
             
@@ -876,13 +876,13 @@ window.rAn = function() {
         for(let i=1; i<=daysInMonth; i++) daysMap[i] = 0;
         
         let dsTop = {};
-        let dsClass = {'إكسسوارات':0, 'هاردوير':0, 'أخرى':0};
+        let dsClass = {'Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':0, 'Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':0, 'Ø£Ø®Ø±Ù‰':0};
         let dsRegion = {};
         let dsItems = {};
 
         ds.forEach(r => {
             let valForItems = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
-            let itmDesc = r['Item Description'] || 'غير محدد';
+            let itmDesc = r['Item Description'] || 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯';
             dsItems[itmDesc] = (dsItems[itmDesc] || 0) + valForItems;
 
             let val = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
@@ -899,9 +899,9 @@ window.rAn = function() {
             dsTop[c] = (dsTop[c] || 0) + val;
             
             let cls = r['Item Class Name'] || '';
-            if(typeof isAcc === 'function' && isAcc(cls)) dsClass['إكسسوارات'] += val;
-            else if(typeof isHW === 'function' && isHW(cls)) dsClass['هاردوير'] += val;
-            else dsClass['أخرى'] += val;
+            if(typeof isAcc === 'function' && isAcc(cls)) dsClass['Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª'] += val;
+            else if(typeof isHW === 'function' && isHW(cls)) dsClass['Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±'] += val;
+            else dsClass['Ø£Ø®Ø±Ù‰'] += val;
             
             let reg = r['Customer Class'] || 'Unknown';
             dsRegion[reg] = (dsRegion[reg] || 0) + val;
@@ -970,22 +970,22 @@ window.rAn = function() {
         });
     }
     let restockHTML = restockAlerts.length > 0 ? 
-        restockAlerts.slice(0,3).map(a => `<div style="font-size:0.85rem; color:var(--am);"><span style="font-size:1rem;">⚠️</span> العميل <b>${a.c}</b> قد يحتاج لطلب بضاعة اليوم (متوسط الشراء كل ${a.avgDays} يوم)</div>`).join('') :
-        `<div style="font-size:0.85rem; color:var(--gn);"><span style="font-size:1rem;">✅</span> لا يوجد نواقص متوقعة لعملائك اليوم.</div>`;
+        restockAlerts.slice(0,3).map(a => `<div style="font-size:0.85rem; color:var(--am);"><span style="font-size:1rem;">âš ï¸</span> Ø§Ù„Ø¹Ù…ÙŠÙ„ <b>${a.c}</b> Ù‚Ø¯ ÙŠØ­ØªØ§Ø¬ Ù„Ø·Ù„Ø¨ Ø¨Ø¶Ø§Ø¹Ø© Ø§Ù„ÙŠÙˆÙ… (Ù…ØªÙˆØ³Ø· Ø§Ù„Ø´Ø±Ø§Ø¡ ÙƒÙ„ ${a.avgDays} ÙŠÙˆÙ…)</div>`).join('') :
+        `<div style="font-size:0.85rem; color:var(--gn);"><span style="font-size:1rem;">âœ…</span> Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù†ÙˆØ§Ù‚Øµ Ù…ØªÙˆÙ‚Ø¹Ø© Ù„Ø¹Ù…Ù„Ø§Ø¦Ùƒ Ø§Ù„ÙŠÙˆÙ….</div>`;
 
-    m.innerHTML = '<div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">📊</span> إحصائيات المبيعات</h1></div>' +
+    m.innerHTML = '<div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">ðŸ“Š</span> Ø¥Ø­ØµØ§Ø¦ÙŠØ§Øª Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</h1></div>' +
         '<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top:20px;">' +
         
         // Micro-targeting Widget
         '<div class="card" style="padding:20px; width:100%; border-left: 4px solid var(--p); background: var(--bg2);">' +
-        '<h3 style="margin-bottom:10px; color:var(--p);">🎯 الهدف اليومي المطلوب (تكسير التارجت)</h3>' +
-        `<div style="font-size:1.8rem; font-weight:bold; margin-bottom:10px;">${fmt(dailyRequired)} ج.م</div>` +
-        `<div style="font-size:0.9rem; color:var(--tx2);">المتبقي من الهدف الشهري: ${fmt(remainingTarget)} | أيام العمل المتبقية: ${workingDaysLeft} يوم</div>` +
+        '<h3 style="margin-bottom:10px; color:var(--p);">ðŸŽ¯ Ø§Ù„Ù‡Ø¯Ù Ø§Ù„ÙŠÙˆÙ…ÙŠ Ø§Ù„Ù…Ø·Ù„ÙˆØ¨ (ØªÙƒØ³ÙŠØ± Ø§Ù„ØªØ§Ø±Ø¬Øª)</h3>' +
+        `<div style="font-size:1.8rem; font-weight:bold; margin-bottom:10px;">${fmt(dailyRequired)} Ø¬.Ù…</div>` +
+        `<div style="font-size:0.9rem; color:var(--tx2);">Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ Ù…Ù† Ø§Ù„Ù‡Ø¯Ù Ø§Ù„Ø´Ù‡Ø±ÙŠ: ${fmt(remainingTarget)} | Ø£ÙŠØ§Ù… Ø§Ù„Ø¹Ù…Ù„ Ø§Ù„Ù…ØªØ¨Ù‚ÙŠØ©: ${workingDaysLeft} ÙŠÙˆÙ…</div>` +
         '</div>' +
         
         // AI Predictor Widget
         '<div class="card" style="padding:20px; width:100%; border-left: 4px solid var(--am); background: var(--bg2);">' +
-        '<h3 style="margin-bottom:10px; color:var(--am);">🤖 توقعات نفاد المخزون (الذكاء الاصطناعي)</h3>' +
+        '<h3 style="margin-bottom:10px; color:var(--am);">ðŸ¤– ØªÙˆÙ‚Ø¹Ø§Øª Ù†ÙØ§Ø¯ Ø§Ù„Ù…Ø®Ø²ÙˆÙ† (Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ)</h3>' +
         `<div style="display:flex; flex-direction:column; gap:8px;">${restockHTML}</div>` +
         '</div>' +
         '</div>' +
@@ -994,31 +994,31 @@ window.rAn = function() {
         
         '<div class="card" style="padding:20px; width:100%;">' +
         '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">' +
-        '<h3>📈 المبيعات اليومية</h3>' +
+        '<h3>ðŸ“ˆ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„ÙŠÙˆÙ…ÙŠØ©</h3>' +
         '<input type="month" id="anMonthSel" value="' + monthVal + '" style="padding:6px; border-radius:6px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-family:Cairo;">' +
         '</div>' +
         '<div style="height:450px; width:100%;"><canvas id="premChart1"></canvas></div></div>' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
-        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">🏆 أفضل 5 عملاء (الإجمالي)</h3>' +
+        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">ðŸ† Ø£ÙØ¶Ù„ 5 Ø¹Ù…Ù„Ø§Ø¡ (Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ)</h3>' +
         '<div style="height:450px; width:100%;"><canvas id="premChart2"></canvas></div></div>' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
-        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">🎧 إكسسوارات مقابل هاردوير 📱</h3>' +
+        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">ðŸŽ§ Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª Ù…Ù‚Ø§Ø¨Ù„ Ù‡Ø§Ø±Ø¯ÙˆÙŠØ± ðŸ“±</h3>' +
         '<div style="height:450px; width:100%;"><canvas id="premChart3"></canvas></div></div>' +
         
         '<div class="card" style="padding:20px; width:100%;">' +
-        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">📍 مبيعات المناطق</h3>' +
+        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">ðŸ“ Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„Ù…Ù†Ø§Ø·Ù‚</h3>' +
         '<div style="height:450px; width:100%;"><canvas id="premChart4"></canvas></div></div>' +
         
         '</div>' +
         '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top:20px;">' +
         '<div class="card" style="padding:20px; width:100%; border-top:4px solid var(--gn); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' +
-        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">أفضل 10 أصناف مبيعاً</h3>' +
+        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">Ø£ÙØ¶Ù„ 10 Ø£ØµÙ†Ø§Ù Ù…Ø¨ÙŠØ¹Ø§Ù‹</h3>' +
         topItems.map(x => `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd);font-size:0.9rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:15px;" title="${x[0]}">${x[0]}</span><strong style="color:var(--gn); font-size:0.95rem;">${typeof fmt==='function'?fmt(x[1]):x[1]}</strong></div>`).join('') +
         '</div>' +
         '<div class="card" style="padding:20px; width:100%; border-top:4px solid var(--rd); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' +
-        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">أقل 10 أصناف مبيعاً</h3>' +
+        '<h3 style="margin-bottom:15px; border-bottom:1px solid var(--bd); padding-bottom:10px;">Ø£Ù‚Ù„ 10 Ø£ØµÙ†Ø§Ù Ù…Ø¨ÙŠØ¹Ø§Ù‹</h3>' +
         bottomItems.map(x => `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd);font-size:0.9rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:15px;" title="${x[0]}">${x[0]}</span><strong style="color:var(--rd); font-size:0.95rem;">${typeof fmt==='function'?fmt(x[1]):x[1]}</strong></div>`).join('') +
         '</div>' +
         '</div>';
@@ -1064,7 +1064,7 @@ window.rAn = function() {
                 data: {
                     labels: Object.keys(daysMap),
                     datasets: [{
-                        label: 'المبيعات',
+                        label: 'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª',
                         data: Object.values(daysMap),
                         backgroundColor: '#4285F4',
                         borderRadius: 4
@@ -1143,14 +1143,14 @@ if (originalRVisits && !window.gpsInjected) {
         originalRVisits();
         setTimeout(() => {
             let addBtn = document.querySelector('#M .card .btn-p');
-            if (addBtn && addBtn.innerText.includes('تسجيل')) {
+            if (addBtn && addBtn.innerText.includes('ØªØ³Ø¬ÙŠÙ„')) {
                 addBtn.removeAttribute('onclick');
                 addBtn.onclick = () => {
                     let c = document.getElementById('vCust').value;
                     let n = document.getElementById('vNotes').value;
-                    if(!c) return typeof toast === 'function' ? toast('اختر العميل أولاً', 'error') : alert('اختر العميل');
+                    if(!c) return typeof toast === 'function' ? toast('Ø§Ø®ØªØ± Ø§Ù„Ø¹Ù…ÙŠÙ„ Ø£ÙˆÙ„Ø§Ù‹', 'error') : alert('Ø§Ø®ØªØ± Ø§Ù„Ø¹Ù…ÙŠÙ„');
                     
-                    addBtn.innerText = 'جاري تحديد الموقع...';
+                    addBtn.innerText = 'Ø¬Ø§Ø±ÙŠ ØªØ­Ø¯ÙŠØ¯ Ø§Ù„Ù…ÙˆÙ‚Ø¹...';
                     addBtn.style.opacity = '0.5';
                     addBtn.disabled = true;
 
@@ -1158,7 +1158,7 @@ if (originalRVisits && !window.gpsInjected) {
                         let visits = JSON.parse(localStorage.getItem('sp_visits')||'[]');
                         visits.unshift({ c: c, n: n, d: new Date().toISOString(), lat: lat, lng: lng });
                         localStorage.setItem('sp_visits', JSON.stringify(visits));
-                        if(typeof toast === 'function') toast('تم تسجيل الزيارة بنجاح', 'success');
+                        if(typeof toast === 'function') toast('ØªÙ… ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø²ÙŠØ§Ø±Ø© Ø¨Ù†Ø¬Ø§Ø­', 'success');
                         window.rVisits();
                     };
 
@@ -1167,7 +1167,7 @@ if (originalRVisits && !window.gpsInjected) {
                             pos => saveWithLoc(pos.coords.latitude, pos.coords.longitude),
                             err => {
                                 console.log(err);
-                                if(typeof toast === 'function') toast('فشل تحديد الموقع، تم الحفظ بدون موقع', 'error');
+                                if(typeof toast === 'function') toast('ÙØ´Ù„ ØªØ­Ø¯ÙŠØ¯ Ø§Ù„Ù…ÙˆÙ‚Ø¹ØŒ ØªÙ… Ø§Ù„Ø­ÙØ¸ Ø¨Ø¯ÙˆÙ† Ù…ÙˆÙ‚Ø¹', 'error');
                                 saveWithLoc(null, null);
                             },
                             { timeout: 5000 }
@@ -1183,23 +1183,23 @@ if (originalRVisits && !window.gpsInjected) {
                 let h = '';
                 visits.forEach((v, i) => {
                     let d = new Date(v.d).toLocaleString('ar-EG');
-                    let mapLink = (v.lat && v.lng) ? '<a href="https://maps.google.com/?q=' + v.lat + ',' + v.lng + '" target="_blank" class="badge bg-g" style="text-decoration:none; display:inline-block; padding:4px 8px;">🗺️ عرض الموقع</a>' : '<span style="color:var(--tx2);font-size:0.8rem;">لا يوجد موقع</span>';
-                    h += '<tr><td>' + d + '</td><td>' + v.c + '</td><td>' + (v.n||'') + '</td><td>' + mapLink + '</td><td><button class="btn bg-r" style="padding:4px 8px;font-size:0.8rem;" onclick="deleteVisit(' + i + ')">حذف</button></td></tr>';
+                    let mapLink = (v.lat && v.lng) ? '<a href="https://maps.google.com/?q=' + v.lat + ',' + v.lng + '" target="_blank" class="badge bg-g" style="text-decoration:none; display:inline-block; padding:4px 8px;">ðŸ—ºï¸ Ø¹Ø±Ø¶ Ø§Ù„Ù…ÙˆÙ‚Ø¹</a>' : '<span style="color:var(--tx2);font-size:0.8rem;">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù…ÙˆÙ‚Ø¹</span>';
+                    h += '<tr><td>' + d + '</td><td>' + v.c + '</td><td>' + (v.n||'') + '</td><td>' + mapLink + '</td><td><button class="btn bg-r" style="padding:4px 8px;font-size:0.8rem;" onclick="deleteVisit(' + i + ')">Ø­Ø°Ù</button></td></tr>';
                 });
                 tbody.innerHTML = h;
                 
                 let trh = document.querySelector('.tb table thead tr');
-                if (trh && !trh.innerHTML.includes('الموقع')) {
+                if (trh && !trh.innerHTML.includes('Ø§Ù„Ù…ÙˆÙ‚Ø¹')) {
                     let lastTh = trh.lastElementChild;
                     trh.removeChild(lastTh);
-                    trh.insertAdjacentHTML('beforeend', '<th>الموقع 🗺️</th><th>إجراء</th>');
+                    trh.insertAdjacentHTML('beforeend', '<th>Ø§Ù„Ù…ÙˆÙ‚Ø¹ ðŸ—ºï¸</th><th>Ø¥Ø¬Ø±Ø§Ø¡</th>');
                 }
             }
         }, 100);
     };
     
     window.deleteVisit = function(i) {
-        if(confirm('هل أنت متأكد من الحذف؟')) {
+        if(confirm('Ù‡Ù„ Ø£Ù†Øª Ù…ØªØ£ÙƒØ¯ Ù…Ù† Ø§Ù„Ø­Ø°ÙØŸ')) {
             let visits = JSON.parse(localStorage.getItem('sp_visits')||'[]');
             visits.splice(i, 1);
             localStorage.setItem('sp_visits', JSON.stringify(visits));
@@ -1211,11 +1211,11 @@ if (originalRVisits && !window.gpsInjected) {
 
 
 // --- PHASE 2: SALES INTELLIGENCE & RFM ---
-if (typeof I !== 'undefined') I['intel'] = {ar: 'ذكاء البيع', en: 'Sales Intel'};
+if (typeof I !== 'undefined') I['intel'] = {ar: 'Ø°ÙƒØ§Ø¡ Ø§Ù„Ø¨ÙŠØ¹', en: 'Sales Intel'};
 if (typeof NAV !== 'undefined' && !NAV.find(x => x.p === 'intel')) {
     let idx = NAV.findIndex(x => x.p === 'prospects');
-    if(idx > -1) NAV.splice(idx + 1, 0, {p: 'intel', ic: '🧠'});
-    else NAV.push({p: 'intel', ic: '🧠'});
+    if(idx > -1) NAV.splice(idx + 1, 0, {p: 'intel', ic: 'ðŸ§ '});
+    else NAV.push({p: 'intel', ic: 'ðŸ§ '});
 }
 if (typeof BNV !== 'undefined' && !BNV.includes('intel')) {
     let bIdx = BNV.indexOf('prospects');
@@ -1248,25 +1248,25 @@ window.rIntel = function() {
         let isA = typeof window.isAcc === 'function' ? window.isAcc(r['Item Class Name']) : false;
         let isH = typeof window.isHW === 'function' ? window.isHW(r['Item Class Name']) : false;
         
-        if(!cMap[c]) cMap[c] = {hw:0, acc:0, total:0, phone: r.Phone||r['رقم الموبايل']||r.phone||''};
+        if(!cMap[c]) cMap[c] = {hw:0, acc:0, total:0, phone: r.Phone||r['Ø±Ù‚Ù… Ø§Ù„Ù…ÙˆØ¨Ø§ÙŠÙ„']||r.phone||''};
         cMap[c].total += s;
         if(isH) cMap[c].hw += s;
         if(isA) cMap[c].acc += s;
-        if(!cMap[c].phone && (r.Phone || r['رقم الموبايل'] || r.phone)) cMap[c].phone = r.Phone || r['رقم الموبايل'] || r.phone;
+        if(!cMap[c].phone && (r.Phone || r['Ø±Ù‚Ù… Ø§Ù„Ù…ÙˆØ¨Ø§ÙŠÙ„'] || r.phone)) cMap[c].phone = r.Phone || r['Ø±Ù‚Ù… Ø§Ù„Ù…ÙˆØ¨Ø§ÙŠÙ„'] || r.phone;
     });
 
     let crossSell = [];
     Object.keys(cMap).forEach(c => {
         let d = cMap[c];
         if (d.hw > 1000 && d.acc === 0) {
-            crossSell.push({c: c, type: 'hw_no_acc', opp: L==='ar'?'يشتري هاردوير ولا يشتري إكسسوارات':'Buys HW, no Acc', phone: d.phone});
+            crossSell.push({c: c, type: 'hw_no_acc', opp: L==='ar'?'ÙŠØ´ØªØ±ÙŠ Ù‡Ø§Ø±Ø¯ÙˆÙŠØ± ÙˆÙ„Ø§ ÙŠØ´ØªØ±ÙŠ Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Buys HW, no Acc', phone: d.phone});
         } else if (d.acc > 1000 && d.hw === 0) {
-            crossSell.push({c: c, type: 'acc_no_hw', opp: L==='ar'?'يشتري إكسسوارات ولا يشتري هاردوير':'Buys Acc, no HW', phone: d.phone});
+            crossSell.push({c: c, type: 'acc_no_hw', opp: L==='ar'?'ÙŠØ´ØªØ±ÙŠ Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª ÙˆÙ„Ø§ ÙŠØ´ØªØ±ÙŠ Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'Buys Acc, no HW', phone: d.phone});
         }
     });
 
     let crossHTML = crossSell.map(x => {
-        let msg = L==='ar' ? 'أهلاً بك، لاحظنا أنك من عملائنا المميزين، ولدينا عرض خاص لك اليوم على المنتجات التي قد تهمك.' : 'Hello, as a valued customer, we have a special offer for you today!';
+        let msg = L==='ar' ? 'Ø£Ù‡Ù„Ø§Ù‹ Ø¨ÙƒØŒ Ù„Ø§Ø­Ø¸Ù†Ø§ Ø£Ù†Ùƒ Ù…Ù† Ø¹Ù…Ù„Ø§Ø¦Ù†Ø§ Ø§Ù„Ù…Ù…ÙŠØ²ÙŠÙ†ØŒ ÙˆÙ„Ø¯ÙŠÙ†Ø§ Ø¹Ø±Ø¶ Ø®Ø§Øµ Ù„Ùƒ Ø§Ù„ÙŠÙˆÙ… Ø¹Ù„Ù‰ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ù‚Ø¯ ØªÙ‡Ù…Ùƒ.' : 'Hello, as a valued customer, we have a special offer for you today!';
         let btn = `<button onclick="window.open('https://wa.me/2${x.phone.replace(/\\D/g,'')}?text=${encodeURIComponent(msg)}', '_blank')" class="btn" style="background:#25D366;color:#fff;padding:4px 8px;font-size:0.8rem;border:none;">WhatsApp</button>`;
         return `<tr>
             <td><strong>${x.c}</strong></td>
@@ -1281,7 +1281,7 @@ window.rIntel = function() {
     sData.forEach(r => {
         let c = r.Customer; if(!c) return;
         let s = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
-        let dStr = r.Date || r['التاريخ'] || r['Invoice Date'];
+        let dStr = r.Date || r['Ø§Ù„ØªØ§Ø±ÙŠØ®'] || r['Invoice Date'];
         let dt = dStr ? new Date(dStr) : now;
         
         if(!rfmMap[c]) rfmMap[c] = {lastDate: dt, freq: 0, total: 0};
@@ -1307,8 +1307,8 @@ window.rIntel = function() {
             <td><strong>${x.c}</strong></td>
             <td>${typeof window.fmt==='function'?window.fmt(x.total):x.total}</td>
             <td>${x.freq}</td>
-            <td>${x.days} ${L==='ar'?'يوم':'days'}</td>
-            <td><span class="badge" style="background:${x.color};color:#fff;">${L==='ar' && x.score==='VIP'?'VIP': L==='ar' && x.score==='At Risk'?'في خطر': L==='ar' && x.score==='Active'?'نشط': L==='ar' && x.score==='Dormant'?'خامل': x.score}</span></td>
+            <td>${x.days} ${L==='ar'?'ÙŠÙˆÙ…':'days'}</td>
+            <td><span class="badge" style="background:${x.color};color:#fff;">${L==='ar' && x.score==='VIP'?'VIP': L==='ar' && x.score==='At Risk'?'ÙÙŠ Ø®Ø·Ø±': L==='ar' && x.score==='Active'?'Ù†Ø´Ø·': L==='ar' && x.score==='Dormant'?'Ø®Ø§Ù…Ù„': x.score}</span></td>
         </tr>
     `).join('');
 
@@ -1316,34 +1316,34 @@ window.rIntel = function() {
     if(!mDiv) return;
     mDiv.innerHTML = `
         <div class="ph">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🧠</span> ${L==='ar'?'ذكاء المبيعات (Sales Intel)':'Sales Intelligence'}</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">ðŸ§ </span> ${L==='ar'?'Ø°ÙƒØ§Ø¡ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª (Sales Intel)':'Sales Intelligence'}</h1>
         </div>
         <div style="display:flex; flex-wrap:wrap; gap:20px; margin-top:20px;">
             
             <div style="flex:1; min-width:300px; background:var(--bg2); padding:20px; border-radius:12px; border:1px solid var(--bd);">
-                <h3 style="color:#ff9800; margin-bottom:15px; border-bottom:2px solid #ff9800; padding-bottom:10px;">${L==='ar'?'محرك البيع المتقاطع (Cross-Sell)':'Cross-Sell Engine'}</h3>
-                <p style="font-size:0.9rem; color:var(--tx2); margin-bottom:15px;">${L==='ar'?'عملاء يشترون فئة معينة ويتجاهلون الأخرى، فرصة ذهبية لعرض منتجاتك عليهم!':'Customers who buy one category but ignore the other. Great upsell opportunity!'}</p>
+                <h3 style="color:#ff9800; margin-bottom:15px; border-bottom:2px solid #ff9800; padding-bottom:10px;">${L==='ar'?'Ù…Ø­Ø±Ùƒ Ø§Ù„Ø¨ÙŠØ¹ Ø§Ù„Ù…ØªÙ‚Ø§Ø·Ø¹ (Cross-Sell)':'Cross-Sell Engine'}</h3>
+                <p style="font-size:0.9rem; color:var(--tx2); margin-bottom:15px;">${L==='ar'?'Ø¹Ù…Ù„Ø§Ø¡ ÙŠØ´ØªØ±ÙˆÙ† ÙØ¦Ø© Ù…Ø¹ÙŠÙ†Ø© ÙˆÙŠØªØ¬Ø§Ù‡Ù„ÙˆÙ† Ø§Ù„Ø£Ø®Ø±Ù‰ØŒ ÙØ±ØµØ© Ø°Ù‡Ø¨ÙŠØ© Ù„Ø¹Ø±Ø¶ Ù…Ù†ØªØ¬Ø§ØªÙƒ Ø¹Ù„ÙŠÙ‡Ù…!':'Customers who buy one category but ignore the other. Great upsell opportunity!'}</p>
                 <div class="tbs" style="max-height: 400px; overflow-y: auto;">
                     <table style="width:100%; text-align:left; border-collapse:collapse; white-space:nowrap;">
-                        <thead><tr><th>${L==='ar'?'العميل':'Customer'}</th><th>${L==='ar'?'الفرصة':'Opportunity'}</th><th>${L==='ar'?'إجراء':'Action'}</th></tr></thead>
-                        <tbody>${crossHTML || `<tr><td colspan="3" style="text-align:center;">${L==='ar'?'لا توجد بيانات':'No data'}</td></tr>`}</tbody>
+                        <thead><tr><th>${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</th><th>${L==='ar'?'Ø§Ù„ÙØ±ØµØ©':'Opportunity'}</th><th>${L==='ar'?'Ø¥Ø¬Ø±Ø§Ø¡':'Action'}</th></tr></thead>
+                        <tbody>${crossHTML || `<tr><td colspan="3" style="text-align:center;">${L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data'}</td></tr>`}</tbody>
                     </table>
                 </div>
             </div>
 
             <div style="flex:1; min-width:300px; background:var(--bg2); padding:20px; border-radius:12px; border:1px solid var(--bd);">
-                <h3 style="color:#2196f3; margin-bottom:15px; border-bottom:2px solid #2196f3; padding-bottom:10px;">${L==='ar'?'تقييم العملاء (RFM Score)':'Customer RFM Score'}</h3>
-                <p style="font-size:0.9rem; color:var(--tx2); margin-bottom:15px;">${L==='ar'?'تصنيف العملاء حسب حداثة وتكرار وحجم الشراء.':'Customer ranking based on Recency, Frequency, and Monetary value.'}</p>
+                <h3 style="color:#2196f3; margin-bottom:15px; border-bottom:2px solid #2196f3; padding-bottom:10px;">${L==='ar'?'ØªÙ‚ÙŠÙŠÙ… Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ (RFM Score)':'Customer RFM Score'}</h3>
+                <p style="font-size:0.9rem; color:var(--tx2); margin-bottom:15px;">${L==='ar'?'ØªØµÙ†ÙŠÙ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ Ø­Ø³Ø¨ Ø­Ø¯Ø§Ø«Ø© ÙˆØªÙƒØ±Ø§Ø± ÙˆØ­Ø¬Ù… Ø§Ù„Ø´Ø±Ø§Ø¡.':'Customer ranking based on Recency, Frequency, and Monetary value.'}</p>
                 <div class="tbs" style="max-height: 400px; overflow-y: auto;">
                     <table style="width:100%; text-align:left; border-collapse:collapse; white-space:nowrap;">
                         <thead><tr>
-                            <th>${L==='ar'?'العميل':'Customer'}</th>
-                            <th>${L==='ar'?'المبيعات':'Sales'}</th>
-                            <th>${L==='ar'?'المرات':'Freq'}</th>
-                            <th>${L==='ar'?'آخر شراء':'Last'}</th>
-                            <th>${L==='ar'?'التصنيف':'Score'}</th>
+                            <th>${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer'}</th>
+                            <th>${L==='ar'?'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales'}</th>
+                            <th>${L==='ar'?'Ø§Ù„Ù…Ø±Ø§Øª':'Freq'}</th>
+                            <th>${L==='ar'?'Ø¢Ø®Ø± Ø´Ø±Ø§Ø¡':'Last'}</th>
+                            <th>${L==='ar'?'Ø§Ù„ØªØµÙ†ÙŠÙ':'Score'}</th>
                         </tr></thead>
-                        <tbody>${rfmHTML || `<tr><td colspan="5" style="text-align:center;">${L==='ar'?'لا توجد بيانات':'No data'}</td></tr>`}</tbody>
+                        <tbody>${rfmHTML || `<tr><td colspan="5" style="text-align:center;">${L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª':'No data'}</td></tr>`}</tbody>
                     </table>
                 </div>
             </div>
@@ -1400,11 +1400,11 @@ window.enhancePhase4 = function() {
                 div.id = 'phase4_goals';
                 div.style.cssText = 'background:var(--bg2);padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:var(--sh-md);border:1px solid var(--bd);width:100%; animation: fadeUp 0.5s ease-out;';
                 div.innerHTML = `
-                    <h3 style="margin-bottom:15px;display:flex;align-items:center;gap:8px;">🎯 ${L==='ar'?'تحقيق أهداف الأقسام':'Department Target Achievement'}</h3>
+                    <h3 style="margin-bottom:15px;display:flex;align-items:center;gap:8px;">ðŸŽ¯ ${L==='ar'?'ØªØ­Ù‚ÙŠÙ‚ Ø£Ù‡Ø¯Ø§Ù Ø§Ù„Ø£Ù‚Ø³Ø§Ù…':'Department Target Achievement'}</h3>
                     
                     <div style="margin-bottom:15px;">
                         <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-                            <span style="font-weight:bold;color:#ff9800;">💻 ${L==='ar'?'الهاردوير':'Hardware'}</span>
+                            <span style="font-weight:bold;color:#ff9800;">ðŸ’» ${L==='ar'?'Ø§Ù„Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'Hardware'}</span>
                             <span style="font-size:0.9rem;">${typeof window.fmt==='function'?window.fmt(hA):hA} / ${typeof window.fmt==='function'?window.fmt(hT):hT} (${hp.toFixed(1)}%)</span>
                         </div>
                         <div style="height:14px;background:var(--bg3);border-radius:7px;overflow:hidden;border:1px solid var(--bd-s);box-shadow:inset 0 1px 3px rgba(0,0,0,0.2);">
@@ -1414,7 +1414,7 @@ window.enhancePhase4 = function() {
                     
                     <div>
                         <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-                            <span style="font-weight:bold;color:#e91e63;">🎧 ${L==='ar'?'الإكسسوارات':'Accessories'}</span>
+                            <span style="font-weight:bold;color:#e91e63;">ðŸŽ§ ${L==='ar'?'Ø§Ù„Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Accessories'}</span>
                             <span style="font-size:0.9rem;">${typeof window.fmt==='function'?window.fmt(aA):aA} / ${typeof window.fmt==='function'?window.fmt(aT):aT} (${ap.toFixed(1)}%)</span>
                         </div>
                         <div style="height:14px;background:var(--bg3);border-radius:7px;overflow:hidden;border:1px solid var(--bd-s);box-shadow:inset 0 1px 3px rgba(0,0,0,0.2);">
@@ -1438,7 +1438,7 @@ window.enhancePhase4 = function() {
             
             // Add Follow up column to header
             let th = document.createElement('th');
-            th.textContent = L==='ar'?'المتابعة':'Follow-up';
+            th.textContent = L==='ar'?'Ø§Ù„Ù…ØªØ§Ø¨Ø¹Ø©':'Follow-up';
             th.style.cssText = 'padding:15px 10px;color:var(--tx2);';
             // Insert before the last column (Action)
             thead.insertBefore(th, thead.lastElementChild);
@@ -1477,7 +1477,7 @@ window.enhancePhase4 = function() {
                         let btn = document.createElement('button');
                         btn.className = 'btn';
                         btn.style.cssText = 'background:#8b5cf6; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.8rem; margin-left:4px; margin-right:4px; border:none; cursor:pointer;';
-                        btn.textContent = L==='ar'?'تسعير':'Quote';
+                        btn.textContent = L==='ar'?'ØªØ³Ø¹ÙŠØ±':'Quote';
                         btn.onclick = () => { if(typeof window.generateQuote==='function') window.generateQuote(cName); };
                         btnWrap.appendChild(btn);
                     }
@@ -1515,7 +1515,7 @@ window.enhancePhase4 = function() {
                 
                 let dpId = 'fdate_' + Math.random().toString(36).substr(2,9);
                 fRow.innerHTML = `
-                    <span style="color:var(--tx2);">${L==='ar'?'المتابعة:':'Follow-up:'}</span>
+                    <span style="color:var(--tx2);">${L==='ar'?'Ø§Ù„Ù…ØªØ§Ø¨Ø¹Ø©:':'Follow-up:'}</span>
                     <input type="date" id="${dpId}" value="${fDate}" style="padding:4px; border-radius:4px; border:1px solid ${isDue?'#ef4444':'var(--bd)'}; background:var(--bg); color:${isDue?'#ef4444':'var(--tx1)'}; font-weight:${isDue?'bold':'normal'}; width:120px;" onchange="window.saveLeadFollowUp('${cName}', this.value)">
                 `;
                 card.insertBefore(fRow, btnsRow);
@@ -1532,7 +1532,7 @@ window.enhancePhase4 = function() {
                 let pBtn = document.createElement('button');
                 pBtn.className = 'btn btn-p';
                 pBtn.style.cssText = 'flex:1; padding:6px; border:none; border-radius:4px; display:flex; justify-content:center; align-items:center; min-width:40px;';
-                pBtn.textContent = '👤';
+                pBtn.textContent = 'ðŸ‘¤';
                 pBtn.onclick = () => { if(typeof window.openCustomerProfile==='function') window.openCustomerProfile(cName); };
                 btnsRow.insertBefore(pBtn, btnsRow.firstElementChild);
             }
@@ -1546,7 +1546,7 @@ window.enhancePhase4 = function() {
             let btn = document.createElement('button');
             btn.className = 'btn bg-p hm-btn';
             btn.style.cssText = 'color:#fff;border:none;background:#f43f5e;';
-            btn.innerHTML = '🗺️ ' + (L==='ar'?'الخريطة الحرارية':'Heatmap');
+            btn.innerHTML = 'ðŸ—ºï¸ ' + (L==='ar'?'Ø§Ù„Ø®Ø±ÙŠØ·Ø© Ø§Ù„Ø­Ø±Ø§Ø±ÙŠØ©':'Heatmap');
             btn.onclick = window.openSalesHeatmap;
             
             if (actionsWrap) {
@@ -1569,7 +1569,7 @@ window.saveLeadFollowUp = function(name, dateStr) {
         leads[idx].followUp = dateStr;
         localStorage.setItem('leadsData', JSON.stringify(leads));
         window.updateFollowUpBadge();
-        if (typeof toast === 'function') toast(localStorage.getItem('sp_lang')==='ar'?'تم الحفظ':'Saved');
+        if (typeof toast === 'function') toast(localStorage.getItem('sp_lang')==='ar'?'ØªÙ… Ø§Ù„Ø­ÙØ¸':'Saved');
         
         // Update input style if due
         let d = new Date(dateStr);
@@ -1623,19 +1623,19 @@ window.openSalesHeatmap = function() {
     let mDiv = document.getElementById('M');
     mDiv.innerHTML = `
         <div class="ph" style="display:flex; justify-content:space-between; align-items:center;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🗺️</span> ${L==='ar'?'الخريطة الحرارية للمبيعات':'Sales Territory Heatmap'}</h1>
-            <button class="btn bg-p" onclick="window.render()" style="color:#fff;border:none;">${L==='ar'?'رجوع':'Back'}</button>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">ðŸ—ºï¸</span> ${L==='ar'?'Ø§Ù„Ø®Ø±ÙŠØ·Ø© Ø§Ù„Ø­Ø±Ø§Ø±ÙŠØ© Ù„Ù„Ù…Ø¨ÙŠØ¹Ø§Øª':'Sales Territory Heatmap'}</h1>
+            <button class="btn bg-p" onclick="window.render()" style="color:#fff;border:none;">${L==='ar'?'Ø±Ø¬ÙˆØ¹':'Back'}</button>
         </div>
         
         <div style="display:flex; gap:15px; margin:15px 0;">
-            <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#ef4444;display:inline-block;"></span> <span style="font-size:0.85rem;color:var(--tx2);">${L==='ar'?'مستهدف':'Targeted'}</span></div>
-            <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#3b82f6;display:inline-block;"></span> <span style="font-size:0.85rem;color:var(--tx2);">${L==='ar'?'تم التواصل':'Contacted'}</span></div>
-            <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#10b981;display:inline-block;"></span> <span style="font-size:0.85rem;color:var(--tx2);">${L==='ar'?'أصبح عميل':'Customer'}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#ef4444;display:inline-block;"></span> <span style="font-size:0.85rem;color:var(--tx2);">${L==='ar'?'Ù…Ø³ØªÙ‡Ø¯Ù':'Targeted'}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#3b82f6;display:inline-block;"></span> <span style="font-size:0.85rem;color:var(--tx2);">${L==='ar'?'ØªÙ… Ø§Ù„ØªÙˆØ§ØµÙ„':'Contacted'}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#10b981;display:inline-block;"></span> <span style="font-size:0.85rem;color:var(--tx2);">${L==='ar'?'Ø£ØµØ¨Ø­ Ø¹Ù…ÙŠÙ„':'Customer'}</span></div>
         </div>
         
         <div id="sp_map_container" style="width:100%;height:70vh;border-radius:16px;box-shadow:var(--sh-lg);border:1px solid var(--bd);z-index:1;overflow:hidden;position:relative;">
             <div id="map_loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:2;font-size:1.2rem;font-weight:bold;color:var(--tx2);">
-                ${L==='ar'?'جاري تحميل الخريطة...':'Loading Map...'}
+                ${L==='ar'?'Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ø®Ø±ÙŠØ·Ø©...':'Loading Map...'}
             </div>
         </div>
     `;
@@ -1680,10 +1680,10 @@ window.renderMap = function() {
     
     leads.forEach(l => {
         if(l.lat && l.lon) {
-            let intensity = (l.status === 'Customer' || l.status === 'عميل') ? 1.0 : (l.status === 'Contacted' || l.status === 'تم التواصل' ? 0.7 : 0.4);
+            let intensity = (l.status === 'Customer' || l.status === 'Ø¹Ù…ÙŠÙ„') ? 1.0 : (l.status === 'Contacted' || l.status === 'ØªÙ… Ø§Ù„ØªÙˆØ§ØµÙ„' ? 0.7 : 0.4);
             heatPoints.push([l.lat, l.lon, intensity]);
             
-            let color = (l.status === 'Customer' || l.status === 'عميل') ? '#10b981' : ((l.status === 'Contacted' || l.status === 'تم التواصل') ? '#3b82f6' : '#ef4444');
+            let color = (l.status === 'Customer' || l.status === 'Ø¹Ù…ÙŠÙ„') ? '#10b981' : ((l.status === 'Contacted' || l.status === 'ØªÙ… Ø§Ù„ØªÙˆØ§ØµÙ„') ? '#3b82f6' : '#ef4444');
             L.circleMarker([l.lat, l.lon], {radius: 6, color: color, fillColor: color, fillOpacity: 0.8, weight: 1})
              .bindPopup(`<b style="color:#000;">${l.name}</b><br><span style="color:#555;">${l.status}</span><br>${l.phone||''}`)
              .addTo(map);
@@ -1715,39 +1715,39 @@ window.editCustomerTarget = function(cName) {
     modal.className = 'sp-modal-overlay';
     modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
     
-    let title = cName ? (L==='ar'?'تعديل بيانات العميل':'Edit Customer Data') : (L==='ar'?'إضافة عميل جديد':'Add New Customer');
+    let title = cName ? (L==='ar'?'ØªØ¹Ø¯ÙŠÙ„ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø¹Ù…ÙŠÙ„':'Edit Customer Data') : (L==='ar'?'Ø¥Ø¶Ø§ÙØ© Ø¹Ù…ÙŠÙ„ Ø¬Ø¯ÙŠØ¯':'Add New Customer');
     
     modal.innerHTML = `
         <div class="card" style="width:90%; max-width:500px; padding:25px; border-radius:16px; background:var(--bg); box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative; max-height:90vh; overflow-y:auto;">
             <button onclick="document.getElementById('sp_tgt_modal').remove()" style="position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.5rem;color:var(--tx2);cursor:pointer;padding:5px;">&times;</button>
-            <h2 style="margin-bottom:20px; display:flex; align-items:center; gap:10px;"><span style="font-size:1.5rem;">👤</span> ${title}</h2>
+            <h2 style="margin-bottom:20px; display:flex; align-items:center; gap:10px;"><span style="font-size:1.5rem;">ðŸ‘¤</span> ${title}</h2>
             
-            <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:var(--tx2);">${L==='ar'?'اسم العميل':'Customer Name'} <span style="color:red">*</span></label>
+            <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:var(--tx2);">${L==='ar'?'Ø§Ø³Ù… Ø§Ù„Ø¹Ù…ÙŠÙ„':'Customer Name'} <span style="color:red">*</span></label>
             <input type="text" id="tgt_name" class="sbox" value="${customerData.Customer}" ${cName?'disabled':''} style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:${cName?'var(--bg2)':'var(--bg)'};color:var(--tx1);font-size:1rem;">
             
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                 <div>
-                    <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:var(--tx2);">${L==='ar'?'رقم الهاتف':'Phone'}</label>
+                    <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:var(--tx2);">${L==='ar'?'Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ':'Phone'}</label>
                     <input type="tel" id="tgt_phone" class="sbox" value="${customerData.phone||''}" style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx1);font-size:1rem;">
                 </div>
                 <div>
-                    <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:var(--tx2);">${L==='ar'?'العنوان (أو المنطقة)':'Address/Region'}</label>
+                    <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:var(--tx2);">${L==='ar'?'Ø§Ù„Ø¹Ù†ÙˆØ§Ù† (Ø£Ùˆ Ø§Ù„Ù…Ù†Ø·Ù‚Ø©)':'Address/Region'}</label>
                     <input type="text" id="tgt_address" class="sbox" value="${customerData.address||''}" style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx1);font-size:1rem;">
                 </div>
             </div>
             
             <div style="background:var(--bg3); padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid var(--bd);">
-                <h4 style="margin-bottom:15px; color:var(--tx1);">${L==='ar'?'الاستهداف (Target)':'Targets'}</h4>
+                <h4 style="margin-bottom:15px; color:var(--tx1);">${L==='ar'?'Ø§Ù„Ø§Ø³ØªÙ‡Ø¯Ø§Ù (Target)':'Targets'}</h4>
                 
-                <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:#ff9800;">💻 ${L==='ar'?'تارجت الهاردوير':'HW Target'}</label>
+                <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:#ff9800;">ðŸ’» ${L==='ar'?'ØªØ§Ø±Ø¬Øª Ø§Ù„Ù‡Ø§Ø±Ø¯ÙˆÙŠØ±':'HW Target'}</label>
                 <input type="number" id="tgt_hw" class="sbox" value="${customerData.hwTarget||0}" style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx1);font-size:1rem;">
                 
-                <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:#4caf50;">🎧 ${L==='ar'?'تارجت الإكسسوارات':'Acc Target'}</label>
+                <label class="sp-form-label" style="display:block;margin-bottom:8px;font-weight:bold;color:#4caf50;">ðŸŽ§ ${L==='ar'?'ØªØ§Ø±Ø¬Øª Ø§Ù„Ø¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª':'Acc Target'}</label>
                 <input type="number" id="tgt_acc" class="sbox" value="${customerData.accTarget||0}" style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx1);font-size:1rem;">
             </div>
             
             <button onclick="window.saveCustomerTarget('${cName.replace(/'/g, "\\'")}')" class="btn btn-p" style="width:100%; padding:14px; font-size:1.1rem; border-radius:8px; display:flex; justify-content:center; align-items:center; gap:10px;">
-                <span>💾</span> ${L==='ar'?'حفظ التعديلات':'Save Changes'}
+                <span>ðŸ’¾</span> ${L==='ar'?'Ø­ÙØ¸ Ø§Ù„ØªØ¹Ø¯ÙŠÙ„Ø§Øª':'Save Changes'}
             </button>
         </div>
     `;
@@ -1762,7 +1762,7 @@ window.saveCustomerTarget = function(originalName) {
     let acc = Number(document.getElementById('tgt_acc').value) || 0;
     
     if(!name) {
-        alert(localStorage.getItem('sp_lang')==='ar'?'يرجى إدخال اسم العميل':'Please enter customer name');
+        alert(localStorage.getItem('sp_lang')==='ar'?'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ø³Ù… Ø§Ù„Ø¹Ù…ÙŠÙ„':'Please enter customer name');
         return;
     }
     
@@ -1783,7 +1783,7 @@ window.saveCustomerTarget = function(originalName) {
         // Add new
         let exists = tData.find(r => r.Customer === name);
         if (exists) {
-            alert(localStorage.getItem('sp_lang')==='ar'?'هذا العميل مسجل بالفعل، يرجى البحث عنه وتعديله.':'Customer already exists.');
+            alert(localStorage.getItem('sp_lang')==='ar'?'Ù‡Ø°Ø§ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù…Ø³Ø¬Ù„ Ø¨Ø§Ù„ÙØ¹Ù„ØŒ ÙŠØ±Ø¬Ù‰ Ø§Ù„Ø¨Ø­Ø« Ø¹Ù†Ù‡ ÙˆØªØ¹Ø¯ÙŠÙ„Ù‡.':'Customer already exists.');
             return;
         }
         tData.unshift({
@@ -1807,10 +1807,10 @@ window.saveCustomerTarget = function(originalName) {
     if (typeof window.rTgt === 'function') window.rTgt();
     
     if(typeof window.cloudAutoSave === 'function') {
-        window.cloudAutoSave(localStorage.getItem('sp_lang')==='ar'?'تم حفظ بيانات العميل يدوياً':'Customer data saved manually');
+        window.cloudAutoSave(localStorage.getItem('sp_lang')==='ar'?'ØªÙ… Ø­ÙØ¸ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙŠØ¯ÙˆÙŠØ§Ù‹':'Customer data saved manually');
     }
     
-    if (typeof toast === 'function') toast(localStorage.getItem('sp_lang')==='ar'?'تم الحفظ بنجاح!':'Saved successfully!');
+    if (typeof toast === 'function') toast(localStorage.getItem('sp_lang')==='ar'?'ØªÙ… Ø§Ù„Ø­ÙØ¸ Ø¨Ù†Ø¬Ø§Ø­!':'Saved successfully!');
 };
 
 // --- FIX: Override corrupted generateQuote from index.html ---
@@ -1824,9 +1824,9 @@ window.generateQuote = function(customerName) {
     
     let renderItems = () => items.map((it, i) => `
         <div style="display:flex;gap:10px;margin-bottom:10px;">
-            <input type="text" value="${it.desc}" onchange="window.updateQItem(${i},'desc',this.value)" style="flex:2;padding:8px;" class="sbox" placeholder="${L==='ar'?'الصنف / الوصف':'Item / Description'}">
-            <input type="number" value="${it.qty}" onchange="window.updateQItem(${i},'qty',this.value)" style="flex:1;padding:8px;" class="sbox" placeholder="${L==='ar'?'الكمية':'Qty'}">
-            <input type="number" value="${it.price}" onchange="window.updateQItem(${i},'price',this.value)" style="flex:1;padding:8px;" class="sbox" placeholder="${L==='ar'?'السعر':'Price'}">
+            <input type="text" value="${it.desc}" onchange="window.updateQItem(${i},'desc',this.value)" style="flex:2;padding:8px;" class="sbox" placeholder="${L==='ar'?'Ø§Ù„ØµÙ†Ù / Ø§Ù„ÙˆØµÙ':'Item / Description'}">
+            <input type="number" value="${it.qty}" onchange="window.updateQItem(${i},'qty',this.value)" style="flex:1;padding:8px;" class="sbox" placeholder="${L==='ar'?'Ø§Ù„ÙƒÙ…ÙŠØ©':'Qty'}">
+            <input type="number" value="${it.price}" onchange="window.updateQItem(${i},'price',this.value)" style="flex:1;padding:8px;" class="sbox" placeholder="${L==='ar'?'Ø§Ù„Ø³Ø¹Ø±':'Price'}">
             <button onclick="window.delQItem(${i})" class="btn" style="background:#f44336;color:white;padding:8px;">X</button>
         </div>
     `).join("");
@@ -1839,7 +1839,7 @@ window.generateQuote = function(customerName) {
         let total = items.reduce((s, it) => s + (it.qty * it.price), 0);
         let printWin = window.open("", "", "width=800,height=900");
         printWin.document.write(`
-            <html dir="${L==='ar'?'rtl':'ltr'}"><head><title>${L==='ar'?'عرض سعر':'Quote'} - ${customerName}</title>
+            <html dir="${L==='ar'?'rtl':'ltr'}"><head><title>${L==='ar'?'Ø¹Ø±Ø¶ Ø³Ø¹Ø±':'Quote'} - ${customerName}</title>
             <style>
                 body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
                 .header { border-bottom: 2px solid #0056b3; padding-bottom: 20px; margin-bottom: 30px; display:flex; justify-content:space-between; align-items:center; }
@@ -1853,17 +1853,17 @@ window.generateQuote = function(customerName) {
             </style>
             </head><body>
                 <div class="header">
-                    <div><h1>${L==='ar'?'عرض سعر':'Quotation'}</h1><p>${L==='ar'?'التاريخ:':'Date:'} ${new Date().toLocaleDateString(L==='ar'?"ar-EG":"en-US")}</p></div>
-                    <div style="text-align:${L==='ar'?'left':'right'};"><h3>${L==='ar'?'العميل /':'Client /'} ${customerName}</h3><p>${L==='ar'?'تحية طيبة وبعد،':'Dear Sir/Madam,'}</p></div>
+                    <div><h1>${L==='ar'?'Ø¹Ø±Ø¶ Ø³Ø¹Ø±':'Quotation'}</h1><p>${L==='ar'?'Ø§Ù„ØªØ§Ø±ÙŠØ®:':'Date:'} ${new Date().toLocaleDateString(L==='ar'?"ar-EG":"en-US")}</p></div>
+                    <div style="text-align:${L==='ar'?'left':'right'};"><h3>${L==='ar'?'Ø§Ù„Ø¹Ù…ÙŠÙ„ /':'Client /'} ${customerName}</h3><p>${L==='ar'?'ØªØ­ÙŠØ© Ø·ÙŠØ¨Ø© ÙˆØ¨Ø¹Ø¯ØŒ':'Dear Sir/Madam,'}</p></div>
                 </div>
                 <table>
-                    <thead><tr><th>#</th><th>${L==='ar'?'الصنف / الوصف':'Description'}</th><th>${L==='ar'?'الكمية':'Qty'}</th><th>${L==='ar'?'السعر':'Price'}</th><th>${L==='ar'?'الإجمالي':'Total'}</th></tr></thead>
+                    <thead><tr><th>#</th><th>${L==='ar'?'Ø§Ù„ØµÙ†Ù / Ø§Ù„ÙˆØµÙ':'Description'}</th><th>${L==='ar'?'Ø§Ù„ÙƒÙ…ÙŠØ©':'Qty'}</th><th>${L==='ar'?'Ø§Ù„Ø³Ø¹Ø±':'Price'}</th><th>${L==='ar'?'Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ':'Total'}</th></tr></thead>
                     <tbody>
                         ${items.map((it,idx) => `<tr><td>${idx+1}</td><td>${it.desc}</td><td>${it.qty}</td><td>${typeof fmt==='function'?fmt(it.price):it.price}</td><td>${typeof fmt==='function'?fmt(it.qty * it.price):it.qty * it.price}</td></tr>`).join("")}
                     </tbody>
                 </table>
-                <div class="total">${L==='ar'?'الإجمالي الكلي:':'Grand Total:'} ${typeof fmt==='function'?fmt(total):total}</div>
-                <div class="footer">${L==='ar'?'نشكركم لثقتكم بنا. نتمنى لكم يوماً سعيداً.':'Thank you for your business.'}</div>
+                <div class="total">${L==='ar'?'Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ÙƒÙ„ÙŠ:':'Grand Total:'} ${typeof fmt==='function'?fmt(total):total}</div>
+                <div class="footer">${L==='ar'?'Ù†Ø´ÙƒØ±ÙƒÙ… Ù„Ø«Ù‚ØªÙƒÙ… Ø¨Ù†Ø§. Ù†ØªÙ…Ù†Ù‰ Ù„ÙƒÙ… ÙŠÙˆÙ…Ø§Ù‹ Ø³Ø¹ÙŠØ¯Ø§Ù‹.':'Thank you for your business.'}</div>
             </body></html>
         `);
         printWin.document.close();
@@ -1873,16 +1873,16 @@ window.generateQuote = function(customerName) {
     modal.innerHTML = `
         <div class="card" style="width:90%;max-width:600px;padding:20px;position:relative;background:var(--bg);box-shadow:0 10px 30px rgba(0,0,0,0.5);border-radius:12px;">
             <button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5rem;color:var(--tx2);cursor:pointer;">&times;</button>
-            <h2 style="margin-bottom:20px;">📄 ${L==='ar'?'عرض سعر للعميل:':'Quote for:'} <span style="color:var(--p);">${customerName}</span></h2>
+            <h2 style="margin-bottom:20px;">ðŸ“„ ${L==='ar'?'Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ù„Ù„Ø¹Ù…ÙŠÙ„:':'Quote for:'} <span style="color:var(--p);">${customerName}</span></h2>
             
             <div id="qItemsList" style="max-height:40vh;overflow-y:auto;margin-bottom:15px;">
                 ${renderItems()}
             </div>
             
-            <button onclick="window.addQItem()" class="btn" style="background:var(--bg3);color:var(--tx1);width:100%;margin-bottom:20px;border:1px dashed var(--bd);">+ ${L==='ar'?'إضافة صنف':'Add Item'}</button>
+            <button onclick="window.addQItem()" class="btn" style="background:var(--bg3);color:var(--tx1);width:100%;margin-bottom:20px;border:1px dashed var(--bd);">+ ${L==='ar'?'Ø¥Ø¶Ø§ÙØ© ØµÙ†Ù':'Add Item'}</button>
             
             <button onclick="window.printQuote()" class="btn btn-p" style="width:100%;padding:12px;font-size:1.1rem;display:flex;justify-content:center;gap:10px;">
-                <span style="font-size:1.2rem;">🖨️</span> ${L==='ar'?'طباعة / استخراج PDF':'Print / Export PDF'}
+                <span style="font-size:1.2rem;">ðŸ–¨ï¸</span> ${L==='ar'?'Ø·Ø¨Ø§Ø¹Ø© / Ø§Ø³ØªØ®Ø±Ø§Ø¬ PDF':'Print / Export PDF'}
             </button>
         </div>
     `;
@@ -2004,11 +2004,11 @@ window.generateQuote = function(customerName) {
                     await syncArray(col);
                 }
                 
-                if (typeof toast === 'function') toast('تم مزامنة التعديلات مع السحابة', 'success');
+                if (typeof toast === 'function') toast('ØªÙ… Ù…Ø²Ø§Ù…Ù†Ø© Ø§Ù„ØªØ¹Ø¯ÙŠÙ„Ø§Øª Ù…Ø¹ Ø§Ù„Ø³Ø­Ø§Ø¨Ø©', 'success');
                 console.log("Realtime Sync Complete:", msg);
             } catch(e) {
                 console.error("Realtime Sync Error:", e);
-                if (typeof toast === 'function') toast('خطأ في المزامنة', 'error');
+                if (typeof toast === 'function') toast('Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ù…Ø²Ø§Ù…Ù†Ø©', 'error');
             }
         };
         
@@ -2058,8 +2058,8 @@ function executeRenderMap() {
     // Add routing controls UI above the map
     container.innerHTML = `
         <div style="position:absolute; top:10px; right:10px; z-index:1000; display:flex; gap:10px; background:var(--bg); padding:10px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
-            <button id="btnRoute" class="btn btn-p" style="font-size:0.9rem; padding:6px 12px; font-weight:bold;">${L_lang==='ar'?'🗺️ رسم خط السير (Routing)':'🗺️ Draw Route'}</button>
-            <button id="btnClearRoute" class="btn bg-r" style="font-size:0.9rem; padding:6px 12px; font-weight:bold; display:none;">${L_lang==='ar'?'❌ مسح الخط':'❌ Clear Route'}</button>
+            <button id="btnRoute" class="btn btn-p" style="font-size:0.9rem; padding:6px 12px; font-weight:bold;">${L_lang==='ar'?'ðŸ—ºï¸ Ø±Ø³Ù… Ø®Ø· Ø§Ù„Ø³ÙŠØ± (Routing)':'ðŸ—ºï¸ Draw Route'}</button>
+            <button id="btnClearRoute" class="btn bg-r" style="font-size:0.9rem; padding:6px 12px; font-weight:bold; display:none;">${L_lang==='ar'?'âŒ Ù…Ø³Ø­ Ø§Ù„Ø®Ø·':'âŒ Clear Route'}</button>
         </div>
         <div id="real_map" style="width:100%;height:100%;"></div>
     `;
@@ -2096,14 +2096,14 @@ function executeRenderMap() {
     
     document.getElementById('btnRoute').onclick = () => {
         if (waypoints.length < 2) {
-            alert(L_lang==='ar'?'يجب إضافة موقعين على الأقل للعملاء لرسم خط السير!':'You need at least 2 locations to draw a route!');
+            alert(L_lang==='ar'?'ÙŠØ¬Ø¨ Ø¥Ø¶Ø§ÙØ© Ù…ÙˆÙ‚Ø¹ÙŠÙ† Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„ Ù„Ù„Ø¹Ù…Ù„Ø§Ø¡ Ù„Ø±Ø³Ù… Ø®Ø· Ø§Ù„Ø³ÙŠØ±!':'You need at least 2 locations to draw a route!');
             return;
         }
         
         document.getElementById('btnRoute').style.display = 'none';
         document.getElementById('btnClearRoute').style.display = 'block';
         
-        if (typeof toast === 'function') toast(L_lang==='ar'?'جاري رسم خط السير الأقصر...':'Calculating shortest route...', 'info');
+        if (typeof toast === 'function') toast(L_lang==='ar'?'Ø¬Ø§Ø±ÙŠ Ø±Ø³Ù… Ø®Ø· Ø§Ù„Ø³ÙŠØ± Ø§Ù„Ø£Ù‚ØµØ±...':'Calculating shortest route...', 'info');
         
         routingControl = L.Routing.control({
             waypoints: waypoints,
@@ -2184,8 +2184,8 @@ window.openCustomerProfile = function(cName) {
                 <div>
                     <h2 style="margin:0; font-size:1.8rem;">${cName}</h2>
                     <p style="margin:5px 0 0; color:var(--tx2); font-size:1rem;">
-                        ${tRow.phone ? '📞 ' + tRow.phone : ''} 
-                        ${tRow.address ? ' | 📍 ' + tRow.address : ''}
+                        ${tRow.phone ? 'ðŸ“ž ' + tRow.phone : ''} 
+                        ${tRow.address ? ' | ðŸ“ ' + tRow.address : ''}
                     </p>
                 </div>
             </div>
@@ -2195,22 +2195,22 @@ window.openCustomerProfile = function(cName) {
         <!-- KPIs -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin-bottom:30px;">
             <div style="background:var(--bg2); padding:15px; border-radius:12px; border:1px solid var(--bd); text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'الهدف (التارجت)':'Target'}</h3>
+                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'Ø§Ù„Ù‡Ø¯Ù (Ø§Ù„ØªØ§Ø±Ø¬Øª)':'Target'}</h3>
                 <div style="font-size:1.5rem; font-weight:bold; color:var(--am);">${typeof fmt==='function'?fmt(targetValue):targetValue}</div>
             </div>
             <div style="background:var(--bg2); padding:15px; border-radius:12px; border:1px solid var(--bd); text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'المسحوبات (مبيعات)':'Sales'}</h3>
+                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'Ø§Ù„Ù…Ø³Ø­ÙˆØ¨Ø§Øª (Ù…Ø¨ÙŠØ¹Ø§Øª)':'Sales'}</h3>
                 <div style="font-size:1.5rem; font-weight:bold; color:var(--p);">${typeof fmt==='function'?fmt(totalSales):totalSales}</div>
                 <div style="font-size:0.8rem; color:var(--gn); font-weight:bold; margin-top:5px;">
-                    ${targetValue > 0 ? ((totalSales / targetValue) * 100).toFixed(1) + '% تحقيق' : ''}
+                    ${targetValue > 0 ? ((totalSales / targetValue) * 100).toFixed(1) + '% ØªØ­Ù‚ÙŠÙ‚' : ''}
                 </div>
             </div>
             <div style="background:var(--bg2); padding:15px; border-radius:12px; border:1px solid var(--bd); text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'التحصيلات (دفعات)':'Collections'}</h3>
+                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª (Ø¯ÙØ¹Ø§Øª)':'Collections'}</h3>
                 <div style="font-size:1.5rem; font-weight:bold; color:var(--ac);">${typeof fmt==='function'?fmt(totalColls):totalColls}</div>
             </div>
             <div style="background:var(--bg2); padding:15px; border-radius:12px; border:1px solid var(--bd); text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'الرصيد المتبقي (مديونية)':'Balance'}</h3>
+                <h3 style="margin:0 0 5px; color:var(--tx2); font-size:0.9rem;">${L==='ar'?'Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ (Ù…Ø¯ÙŠÙˆÙ†ÙŠØ©)':'Balance'}</h3>
                 <div style="font-size:1.5rem; font-weight:bold; color:${balance > 0 ? '#f44336' : '#4caf50'};">${typeof fmt==='function'?fmt(balance):balance}</div>
             </div>
         </div>
@@ -2219,14 +2219,14 @@ window.openCustomerProfile = function(cName) {
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
             <!-- Sales -->
             <div style="background:var(--bg2); border-radius:16px; border:1px solid var(--bd); padding:20px; overflow:hidden;">
-                <h3 style="margin:0 0 15px; color:var(--tx); border-bottom:1px solid var(--bd); padding-bottom:10px;">🛒 ${L==='ar'?'سجل الفواتير':'Sales History'}</h3>
+                <h3 style="margin:0 0 15px; color:var(--tx); border-bottom:1px solid var(--bd); padding-bottom:10px;">ðŸ›’ ${L==='ar'?'Ø³Ø¬Ù„ Ø§Ù„ÙÙˆØ§ØªÙŠØ±':'Sales History'}</h3>
                 <div style="max-height:300px; overflow-y:auto;">
                     <table style="width:100%; border-collapse:collapse; text-align:left;">
                         <thead>
                             <tr style="color:var(--tx2); font-size:0.9rem;">
-                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'التاريخ':'Date'}</th>
-                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'الصنف':'Item'}</th>
-                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'القيمة':'Value'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'Ø§Ù„ØªØ§Ø±ÙŠØ®':'Date'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'Ø§Ù„ØµÙ†Ù':'Item'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'Ø§Ù„Ù‚ÙŠÙ…Ø©':'Value'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2236,7 +2236,7 @@ window.openCustomerProfile = function(cName) {
                                     <td style="padding:10px; border-bottom:1px solid var(--bd); font-size:0.9rem;">${s['Item Name']||s.item||s.name||'--'}</td>
                                     <td style="padding:10px; border-bottom:1px solid var(--bd); font-weight:bold; color:var(--p);">${typeof fmt==='function'?fmt(s.Value):s.Value}</td>
                                 </tr>
-                            `).join('') : `<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--tx2);">${L==='ar'?'لا توجد مبيعات':'No sales'}</td></tr>`}
+                            `).join('') : `<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--tx2);">${L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ø¨ÙŠØ¹Ø§Øª':'No sales'}</td></tr>`}
                         </tbody>
                     </table>
                 </div>
@@ -2244,14 +2244,14 @@ window.openCustomerProfile = function(cName) {
 
             <!-- Collections -->
             <div style="background:var(--bg2); border-radius:16px; border:1px solid var(--bd); padding:20px; overflow:hidden;">
-                <h3 style="margin:0 0 15px; color:var(--tx); border-bottom:1px solid var(--bd); padding-bottom:10px;">💵 ${L==='ar'?'سجل التحصيلات':'Collections History'}</h3>
+                <h3 style="margin:0 0 15px; color:var(--tx); border-bottom:1px solid var(--bd); padding-bottom:10px;">ðŸ’µ ${L==='ar'?'Ø³Ø¬Ù„ Ø§Ù„ØªØ­ØµÙŠÙ„Ø§Øª':'Collections History'}</h3>
                 <div style="max-height:300px; overflow-y:auto;">
                     <table style="width:100%; border-collapse:collapse; text-align:left;">
                         <thead>
                             <tr style="color:var(--tx2); font-size:0.9rem;">
-                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'التاريخ':'Date'}</th>
-                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'الملاحظات':'Notes'}</th>
-                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'المبلغ':'Amount'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'Ø§Ù„ØªØ§Ø±ÙŠØ®':'Date'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'Ø§Ù„Ù…Ù„Ø§Ø­Ø¸Ø§Øª':'Notes'}</th>
+                                <th style="padding:10px; border-bottom:1px solid var(--bd);">${L==='ar'?'Ø§Ù„Ù…Ø¨Ù„Øº':'Amount'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2261,7 +2261,7 @@ window.openCustomerProfile = function(cName) {
                                     <td style="padding:10px; border-bottom:1px solid var(--bd); font-size:0.9rem;">${c.Notes||c.notes||'--'}</td>
                                     <td style="padding:10px; border-bottom:1px solid var(--bd); font-weight:bold; color:var(--ac);">${typeof fmt==='function'?fmt(c.Value):c.Value}</td>
                                 </tr>
-                            `).join('') : `<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--tx2);">${L==='ar'?'لا توجد تحصيلات':'No collections'}</td></tr>`}
+                            `).join('') : `<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--tx2);">${L==='ar'?'Ù„Ø§ ØªÙˆØ¬Ø¯ ØªØ­ØµÙŠÙ„Ø§Øª':'No collections'}</td></tr>`}
                         </tbody>
                     </table>
                 </div>
@@ -2355,11 +2355,11 @@ window.openCustomerProfile = function(cName) {
                                 fSizeBlock.style.cssText = 'margin-top:20px; padding:20px;';
                                 fSizeBlock.innerHTML = `
                                     <h3 style="margin-bottom:15px; color:var(--p); display:flex; align-items:center; gap:10px;">
-                                        <span style="font-size:1.5rem;">🔎</span> 
-                                        ${L==='ar'?'حجم الخط والشاشة':'Display & Font Size'}
+                                        <span style="font-size:1.5rem;">ðŸ”Ž</span> 
+                                        ${L==='ar'?'Ø­Ø¬Ù… Ø§Ù„Ø®Ø· ÙˆØ§Ù„Ø´Ø§Ø´Ø©':'Display & Font Size'}
                                     </h3>
                                     <p style="color:var(--tx2); margin-bottom:15px;">
-                                        ${L==='ar'?'تحكم في حجم خط التطبيق إذا كنت تواجه صعوبة في قراءة النصوص الكبيرة أو الصغيرة.':'Control the application font size.'}
+                                        ${L==='ar'?'ØªØ­ÙƒÙ… ÙÙŠ Ø­Ø¬Ù… Ø®Ø· Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ø¥Ø°Ø§ ÙƒÙ†Øª ØªÙˆØ§Ø¬Ù‡ ØµØ¹ÙˆØ¨Ø© ÙÙŠ Ù‚Ø±Ø§Ø¡Ø© Ø§Ù„Ù†ØµÙˆØµ Ø§Ù„ÙƒØ¨ÙŠØ±Ø© Ø£Ùˆ Ø§Ù„ØµØºÙŠØ±Ø©.':'Control the application font size.'}
                                     </p>
                                     <div style="display:flex; align-items:center; gap:15px;">
                                         <button class="btn" style="background:var(--bg3); font-size:1.2rem; padding:10px 15px;" onclick="window.changeAppFontSize(-10)">A-</button>
@@ -2367,7 +2367,7 @@ window.openCustomerProfile = function(cName) {
                                         <button class="btn" style="background:var(--bg3); font-size:1.2rem; padding:10px 15px;" onclick="window.changeAppFontSize(10)">A+</button>
                                     </div>
                                     <div style="margin-top:15px;">
-                                        <button class="btn btn-p" onclick="window.changeAppFontSize(0, true)">${L==='ar'?'إعادة الافتراضي':'Reset Default'}</button>
+                                        <button class="btn btn-p" onclick="window.changeAppFontSize(0, true)">${L==='ar'?'Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠ':'Reset Default'}</button>
                                     </div>
                                 `;
                                 m.insertBefore(fSizeBlock, parentDiv);
@@ -2395,7 +2395,9 @@ window.openCustomerProfile = function(cName) {
         let lbl = document.getElementById('currentFontSizeLbl');
         if (lbl) lbl.textContent = current + '%';
         
-        if (typeof toast === 'function') toast(L==='ar'?'تم تغيير حجم الخط':'Font size updated');
+        if (typeof toast === 'function') toast(L==='ar'?'ØªÙ… ØªØºÙŠÙŠØ± Ø­Ø¬Ù… Ø§Ù„Ø®Ø·':'Font size updated');
     };
 
 })();
+
+
