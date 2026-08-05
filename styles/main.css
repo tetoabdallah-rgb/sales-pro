@@ -1684,15 +1684,17 @@ html[dir="rtl"] .ph::before {
 
     /* Main Wrapper Adjustment */
     .mw {
-      margin-right: calc(var(--sidebar-w) + 32px) !important;
+      margin-right: 312px !important;
       margin-left: 0 !important;
       padding: 24px 32px !important;
       min-height: 100vh !important;
+      max-width: 100% !important;
+      width: auto !important;
       transition: margin 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
     }
 
     body.en .mw {
-      margin-left: calc(var(--sidebar-w) + 32px) !important;
+      margin-left: 312px !important;
       margin-right: 0 !important;
     }
 
