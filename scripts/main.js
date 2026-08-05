@@ -170,6 +170,11 @@ let CH = {}; // Chart Instances
 let L = localStorage.getItem('sp_lang') || 'ar';
 L = L.replace(/"/g, ''); // Strip quotes if JSON stringified
 if (L !== 'ar' && L !== 'en') L = 'ar';
+if (L === 'en') {
+    document.body.classList.add('en');
+    document.documentElement.dir = 'ltr';
+    document.documentElement.lang = 'en';
+}
 let P = 'dash'; // Current Page
 let _cache = { salesData: S, targetData: T, accCats: accCats, hwCats: hwCats, payData: C, duesData: D };
 let _chkC = {};
