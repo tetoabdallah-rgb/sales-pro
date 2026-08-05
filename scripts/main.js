@@ -2724,12 +2724,16 @@ function rSetup() {
 // 1. Full-Page Kanban Tasks Board (Enterprise V8 - Drag & Drop)
 window.rTodo = function() {
     let todos = [];
-    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    try { 
+        let raw = localStorage.getItem('sp_todos');
+        if (raw) todos = JSON.parse(raw);
+    } catch(e) {}
+    if (!Array.isArray(todos)) todos = [];
     
     // Migrate old format (done: boolean) to new format (status: 'todo' | 'in_progress' | 'done')
     let migrated = false;
     todos = todos.map(t => {
-        if (typeof t.done !== 'undefined') {
+        if (t && typeof t.done !== 'undefined') {
             migrated = true;
             let status = t.done ? 'done' : 'todo';
             return { text: t.text, status: status };
@@ -2833,14 +2837,24 @@ window.toggleTodoDrawer = function() {
 
 window.addTodoItem = function() {
     let input = document.getElementById('newTodoInput');
-    if(!input || !input.value.trim()) return;
+    if(!input || !input.value.trim()) {
+        if(typeof toast==='function') toast(L==='ar'?'الرجاء إدخال اسم المهمة':'Please enter a task name', 'error');
+        return;
+    }
     let todos = [];
-    try { todos = JSON.parse(localStorage.getItem('sp_todos') || '[]'); } catch(e) {}
+    try { 
+        let raw = localStorage.getItem('sp_todos');
+        if (raw) todos = JSON.parse(raw);
+    } catch(e) {}
+    if (!Array.isArray(todos)) todos = [];
+    
     todos.push({ text: input.value.trim(), status: 'todo' });
     localStorage.setItem('sp_todos', JSON.stringify(todos));
     input.value = '';
-    if (typeof rTodo === 'function' && typeof P !== 'undefined' && P === 'todo') rTodo();
-    else initTodoUI();
+    
+    if (typeof rTodo === 'function') rTodo();
+    else if (typeof initTodoUI === 'function') initTodoUI();
+    
     if(typeof toast==='function') toast(L==='ar'?'تمت إضافة المهمة بنجاح':'Task added', 'success');
 };
 
