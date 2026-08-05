@@ -1523,7 +1523,7 @@ window.enhancePhase4 = function() {
                 // inject Quote button in btnsRow
                 let qBtn = document.createElement('button');
                 qBtn.className = 'btn';
-                qBtn.style.cssText = 'background:#8b5cf6; color:#fff; padding:6px; border:none; border-radius:4px; margin-left:4px; margin-right:4px;';
+                qBtn.style.cssText = 'flex:1; background:#8b5cf6; color:#fff; padding:6px; border:none; border-radius:4px; display:flex; justify-content:center; align-items:center; min-width:40px;';
                 qBtn.textContent = 'PDF';
                 qBtn.onclick = () => { if(typeof window.generateQuote==='function') window.generateQuote(cName); };
                 btnsRow.insertBefore(qBtn, btnsRow.firstElementChild); // insert before whatsapp
@@ -1531,7 +1531,7 @@ window.enhancePhase4 = function() {
                 // inject Profile button
                 let pBtn = document.createElement('button');
                 pBtn.className = 'btn btn-p';
-                pBtn.style.cssText = 'padding:6px; border:none; border-radius:4px; margin-left:4px; margin-right:4px;';
+                pBtn.style.cssText = 'flex:1; padding:6px; border:none; border-radius:4px; display:flex; justify-content:center; align-items:center; min-width:40px;';
                 pBtn.textContent = '👤';
                 pBtn.onclick = () => { if(typeof window.openCustomerProfile==='function') window.openCustomerProfile(cName); };
                 btnsRow.insertBefore(pBtn, btnsRow.firstElementChild);
