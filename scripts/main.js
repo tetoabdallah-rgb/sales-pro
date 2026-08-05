@@ -1026,6 +1026,75 @@ window.saveCustomerTarget = function(origName) {
     if(typeof window.cloudAutoSave === 'function') window.cloudAutoSave('تحديث تارجت عميل');
 };
 
+window.importCustomerTargets = function() {
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx, .xls';
+    input.onchange = function(e) {
+        let file = e.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                let data = new Uint8Array(evt.target.result);
+                let workbook = XLSX.read(data, {type: 'array'});
+                let firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                let rows = XLSX.utils.sheet_to_json(firstSheet);
+                let added = 0;
+                rows.forEach(r => {
+                    let name = r.Customer || r['اسم العميل'] || r['Customer Name'] || r['العميل'];
+                    if (name) {
+                        name = name.toString().trim();
+                        let existing = T.find(t => t.Customer && t.Customer.toLowerCase() === name.toLowerCase());
+                        
+                        let target = Number(r.Target || r['Target (Total)'] || r['Total Target'] || r['إجمالي التارجت'] || r['التارجت'] || 0);
+                        let hw = Number(r.HW_Target || r['HW Target'] || r['تارجت هاردوير'] || r['هاردوير'] || 0);
+                        let acc = Number(r.Acc_Target || r['Acc Target'] || r['تارجت إكسسوار'] || r['إكسسوار'] || 0);
+                        
+                        if (target === 0 && (hw > 0 || acc > 0)) {
+                            target = hw + acc;
+                        }
+                        
+                        let phone = r.Phone || r.phone || r['التليفون'] || r['رقم الهاتف'] || '';
+                        let addr = r.Address || r.address || r['العنوان'] || '';
+
+                        if (existing) {
+                            if(phone) existing.phone = phone;
+                            if(addr) existing.address = addr;
+                            existing.Target = target;
+                            existing.hwTarget = hw;
+                            existing.accTarget = acc;
+                        } else {
+                            T.push({
+                                Customer: name,
+                                phone: phone,
+                                address: addr,
+                                Target: target,
+                                hwTarget: hw,
+                                accTarget: acc
+                            });
+                        }
+                        added++;
+                    }
+                });
+                if (added > 0) {
+                    sv('targetData', T);
+                    if (typeof toast === 'function') toast(L === 'ar' ? \`تم استيراد/تحديث \${added} عميل بنجاح\` : \`Imported/Updated \${added} customers successfully\`, 'success');
+                    rTgt();
+                    if(typeof window.cloudAutoSave === 'function') window.cloudAutoSave('استيراد تارجت عملاء');
+                } else {
+                    if (typeof toast === 'function') toast(L === 'ar' ? 'لم يتم العثور على بيانات صالحة في الملف' : 'No valid data found in file', 'error');
+                }
+            } catch(ex) {
+                console.error(ex);
+                if (typeof toast === 'function') toast(L === 'ar' ? 'حدث خطأ أثناء قراءة الملف' : 'Error reading file', 'error');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    };
+    input.click();
+};
+
 function rTgt() {
     let sData = typeof getFilteredSales === 'function' ? getFilteredSales() : S;
     let sMap = {}, accSMap = {}, hwSMap = {};
@@ -1060,6 +1129,7 @@ function rTgt() {
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}"</h1>
             <div style="margin-left:auto; display:flex; gap:10px;">
                 <button onclick="window.editCustomerTarget('')" class="btn btn-p" style="font-weight:bold;">+ ${L==='ar'?'إضافة عميل':'Add Customer'}</button>
+                <button onclick="window.importCustomerTargets()" class="btn bg-g" style="color:#fff;border:none;background:#2196F3;"><span style="font-size:1rem;">&#x1F4E4;</span> Import</button>
                 <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
             </div>
         </div>
