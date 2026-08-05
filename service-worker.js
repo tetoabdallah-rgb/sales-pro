@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'salespro-v62';
+﻿const CACHE_NAME = 'salespro-v63';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -88,6 +88,7 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
 
 
 
