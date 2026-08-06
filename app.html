@@ -1675,16 +1675,17 @@ html[dir="rtl"] .ph::before {
 
     /* Main Wrapper Adjustment */
     .mw {
-      margin-right: calc(var(--sidebar-w) + 32px) !important;
+      margin-right: 0 !important;
       margin-left: 0 !important;
-      padding: 24px 32px !important;
+      padding: 24px 312px 24px 32px !important;
       min-height: 100vh !important;
       transition: margin 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
     }
 
     body.en .mw {
-      margin-left: calc(var(--sidebar-w) + 32px) !important;
+      margin-left: 0 !important;
       margin-right: 0 !important;
+      padding: 24px 32px 24px 312px !important;
     }
 
     /* Cards */
@@ -1778,6 +1779,23 @@ html[dir="rtl"] .ph::before {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 
+<style id="ultimate-layout-fix">
+  @media (min-width: 901px) {
+    .mw {
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+      padding-right: 312px !important;
+      padding-left: 32px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      max-width: 100% !important;
+    }
+    body.en .mw {
+      padding-left: 312px !important;
+      padding-right: 32px !important;
+    }
+  }
+</style>
 </head>
 <body>
 
@@ -5864,7 +5882,24 @@ window.generateQuote = function(customerName) {
                 .footer { margin-top: 50px; text-align: center; color: #777; font-size: 0.9em; padding-top:20px; border-top:1px solid #ddd; }
                 @media print { body { padding:0; margin:0; } }
             </style>
-            </head><body>
+            <style id="ultimate-layout-fix">
+  @media (min-width: 901px) {
+    .mw {
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+      padding-right: 312px !important;
+      padding-left: 32px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      max-width: 100% !important;
+    }
+    body.en .mw {
+      padding-left: 312px !important;
+      padding-right: 32px !important;
+    }
+  }
+</style>
+</head><body>
                 <div class="header">
                     <div><h1>??? ???</h1><p>???????: ${new Date().toLocaleDateString("ar-EG")}</p></div>
                     <div style="text-align:left;"><h3>?????? / ${customerName}</h3><p>???? ???? ?????</p></div>
@@ -5899,4 +5934,6 @@ window.generateQuote = function(customerName) {
 </script>
 </body>
 </html>
+
+
 
