@@ -1049,7 +1049,7 @@ window.importCustomerTargets = function() {
                         
                         let target = Number(r.Target || r['Target (Total)'] || r['Total Target'] || r['إجمالي التارجت'] || r['التارجت'] || 0);
                         let hw = Number(r.HW_Target || r['HW Target'] || r['تارجت هاردوير'] || r['هاردوير'] || 0);
-                        let acc = Number(r.Acc_Target || r['Acc Target'] || r['تارجت إكسسوار'] || r['إكسسوار'] || 0);
+                        let acc = Number(r.Acc_Target || r['Acc Target'] || r['تارجت اكسسوارات'] || r['اكسسوارات'] || 0);
                         
                         if (target === 0 && (hw > 0 || acc > 0)) {
                             target = hw + acc;
@@ -1087,7 +1087,7 @@ window.importCustomerTargets = function() {
                 }
             } catch(ex) {
                 console.error(ex);
-                if (typeof toast === 'function') toast(L === 'ar' ? 'حدث خطأ أثناء قراءة الملف' : 'Error reading file', 'error');
+                if (typeof toast === 'function') toast(L === 'ar' ? 'خطأ أثناء قراءة الملف' : 'Error reading file', 'error');
             }
         };
         reader.readAsArrayBuffer(file);
