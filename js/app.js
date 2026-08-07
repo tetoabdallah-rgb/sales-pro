@@ -354,7 +354,7 @@ async function initPromoterSales() {
             cachedProducts.forEach(p => { select.innerHTML += `<option value="${p.itemCode}">${p.itemCode} - ${p.description} (${p.company || 'بدون شركة'})</option>`; });
         }
         loadMySales();
-    } catch(err) { $('loader').classList.remove('hidden'); }
+    } catch(err) { $('loader').classList.add('hidden'); }
 }
 
 let html5QrcodeScanner = null;
@@ -650,7 +650,7 @@ async function loadAllSales() {
         });
         tb.innerHTML += htmlAcc;
     } catch(err) { console.log(err); }
-    $('loader').classList.remove('hidden');
+    $('loader').classList.add('hidden');
 }
 
 async function exportSalesToPDF() {
@@ -674,7 +674,7 @@ async function exportSalesToPDF() {
     };
     
     html2pdf().set(opt).from(element).save().then(() => {
-        $('loader').classList.remove('hidden');
+        $('loader').classList.add('hidden');
     });
 }
 
@@ -759,7 +759,7 @@ async function adminAddUser() {
     $('loader').classList.remove('hidden');
     try {
         let snap = await db.collection('auth_users').where('email', '==', e.toLowerCase()).get();
-        if (!snap.empty && !editingUserUid) { $('loader').classList.remove('hidden'); return toast('مسجل بالفعل', 'error'); }
+        if (!snap.empty && !editingUserUid) { $('loader').classList.add('hidden'); return toast('البريد مستخدم مسبقاً', 'error'); }
         let uid = editingUserUid || 'usr_' + Date.now();
         await db.collection('auth_users').doc(uid).set({uid: uid, email: e.toLowerCase(), password: p});
         await db.collection('users').doc(uid).set({ uid: uid, email: e.toLowerCase(), role: r, promoterCode: code, branch: br, company: comp, target: tgt, commissionRate: comm, adminId: currentUser.uid });
@@ -1165,7 +1165,7 @@ async function deleteCompanyFromSystem(id) {
     $('loader').classList.remove('hidden');
     await db.collection('companies_list').doc(id).delete();
     if (currentSelectedCompany.id === id) $('cmpDetailsModal').classList.add('hidden');
-    $('loader').classList.remove('hidden');
+    $('loader').classList.add('hidden');
     toast('تم الحذف', 'success');
 }
 
