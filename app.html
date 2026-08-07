@@ -1038,19 +1038,20 @@ async function uploadProductsExcel() {
     reader.readAsArrayBuffer(fileInput.files[0]);
 }
 
+let unsubAdminProducts = null;
 async function loadAdminProducts() {
     let tb = $('productsTable'); if(!tb) return;
-    tb.innerHTML = `<tr><th>${t('company')}</th><th>${t('sale_code')}</th><th>${t('sale_desc')}</th><th>${t('sale_price')}</th><th>${t('delete')}</th></tr>`;
     $('loader').classList.remove('hidden');
     let isMasterAdmin = (!userData.adminId || userData.adminId === currentUser.uid);
-    db.collection('products').where('adminId', '==', userData.adminId || currentUser.uid).limit(100).onSnapshot(snap => {
+    if(unsubAdminProducts) unsubAdminProducts();
+    unsubAdminProducts = db.collection('products').where('adminId', '==', userData.adminId || currentUser.uid).limit(100).onSnapshot(snap => {
         let htmlAcc = "";
         snap.docs.forEach(doc => {
             let p = doc.data();
             if (!isMasterAdmin && p.company !== userData.company) return;
             htmlAcc += `<tr><td>${p.company}</td><td>${p.itemCode}</td><td>${p.description}</td><td>${p.price}</td><td><button class="btn btn-danger" style="padding:4px;" onclick="db.collection('products').doc('${doc.id}').delete()">❌</button></td></tr>`;
         });
-        $('productsTable').innerHTML += htmlAcc;
+        $('productsTable').innerHTML = `<tr><th>${t('company')}</th><th>${t('sale_code')}</th><th>${t('sale_desc')}</th><th>${t('sale_price')}</th><th>${t('delete')}</th></tr>` + htmlAcc;
         $('loader').classList.add('hidden');
     }, err => { console.error('Load Error:', err); toast(err.message, 'error'); $('loader').classList.add('hidden'); });
 }
@@ -1132,12 +1133,14 @@ async function uploadStockExcel() {
     reader.readAsArrayBuffer(fileInput.files[0]);
 }
 
+let unsubAdminStock = null;
 function loadAdminStock() {
     let tb = $('stockTable'); if(!tb) return;
     tb.innerHTML = `<tr><th>الشركة</th><th>كود الصنف</th><th>الوصف</th><th>السعر</th><th>الكمية</th><th>حذف</th></tr>`;
     $('loader').classList.remove('hidden');
     let isMasterAdmin = (!userData.adminId || userData.adminId === currentUser.uid);
-    db.collection('company_stock').where('adminId', '==', userData.adminId || currentUser.uid).limit(100).onSnapshot(snap => {
+    if(unsubAdminStock) unsubAdminStock();
+    unsubAdminStock = db.collection('company_stock').where('adminId', '==', userData.adminId || currentUser.uid).limit(100).onSnapshot(snap => {
         let htmlAcc = "";
         snap.docs.forEach(doc => {
             let p = doc.data();
@@ -1304,8 +1307,10 @@ async function addCompanyToSystem() {
     $('loader').classList.add('hidden');
 }
 
+let unsubCompaniesList = null;
 function loadCompaniesManagerUI() {
-    db.collection('companies_list').where('adminId', '==', currentUser.uid).onSnapshot(snap => {
+    if(unsubCompaniesList) unsubCompaniesList();
+    unsubCompaniesList = db.collection('companies_list').where('adminId', '==', currentUser.uid).onSnapshot(snap => {
         let cont = $('cmpList');
         if (!cont) return;
         cont.innerHTML = '';
@@ -1325,17 +1330,21 @@ async function deleteCompanyFromSystem(id) {
     $('loader').classList.remove('hidden');
     await db.collection('companies_list').doc(id).delete();
     if (currentSelectedCompany.id === id) $('cmpDetailsModal').classList.add('hidden');
-    $('loader').classList.add('hidden');
+    $('loader').classList.remove('hidden');
     toast('تم الحذف', 'success');
 }
 
+let unsubManageCompanyDoc = null;
+let unsubManageCompanyPromoters = null;
+let unsubManageCompanyStock = null;
+
 function showCompanyDetails(id, name) {
-    currentSelectedCompany = { id, name };
+    currentSelectedCompany = {id: id, name: name};
     $('cmpDetailsTitle').innerText = 'تفاصيل الشركة: ' + name;
     $('cmpDetailsModal').classList.remove('hidden');
     
-    // Load Branches
-    db.collection('companies_list').doc(id).onSnapshot(doc => {
+    if(unsubManageCompanyDoc) unsubManageCompanyDoc();
+    unsubManageCompanyDoc = db.collection('companies_list').doc(id).onSnapshot(doc => {
         if (!doc.exists) return;
         let d = doc.data();
         let blist = $('cmpBranchesList');
@@ -1347,8 +1356,8 @@ function showCompanyDetails(id, name) {
         }
     });
 
-    // Load Promoters
-    db.collection('users').where('company', '==', name).where('adminId', '==', currentUser.uid).onSnapshot(snap => {
+    if(unsubManageCompanyPromoters) unsubManageCompanyPromoters();
+    unsubManageCompanyPromoters = db.collection('users').where('company', '==', name).where('adminId', '==', currentUser.uid).onSnapshot(snap => {
         let plist = $('cmpPromotersList');
         if(plist) {
             plist.innerHTML = '';
@@ -1359,8 +1368,8 @@ function showCompanyDetails(id, name) {
         }
     });
 
-    // Load Stock
-    db.collection('company_stock').where('company', '==', name).where('adminId', '==', currentUser.uid).onSnapshot(snap => {
+    if(unsubManageCompanyStock) unsubManageCompanyStock();
+    unsubManageCompanyStock = db.collection('company_stock').where('company', '==', name).where('adminId', '==', currentUser.uid).onSnapshot(snap => {
         let stb = $('cmpStockTable');
         if(stb) {
             stb.innerHTML = `<tr><th>الكود</th><th>الوصف</th><th>السعر</th><th>الكمية</th></tr>`;
