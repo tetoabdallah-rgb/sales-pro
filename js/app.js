@@ -18,8 +18,8 @@ window.onunhandledrejection = function(e) {
 let currentUser = null, userData = null, currentRole = null, currentLang = localStorage.getItem('appLang') || 'ar', editingUserUid = null, chart1 = null, chart2 = null;
 const ADMIN_EMAILS = ['tetoabdallah@gmail.com'];
 const dict = {
-    ar: { login_title: "👤 تسجيل الدخول (السحابي)", login_subtitle: "تطبيق إدارة البروموتر والمبيعات", email_ph: "البريد الإلكتروني", pass_ph: "كلمة المرور", login_btn: "دخول", logout: "خروج 🚪", admin_dash: "📊 لوحة التحكم", admin_sales: "💰 كل المبيعات", admin_users: "👥 البروموترز", admin_products: "📦 المنتجات", admin_companies: "🏢 الشركات والمخزون", admin_companies_manager: "🏢 إدارة الشركات الشاملة", prm_dash: "🏠 الرئيسية", prm_sales: "➕ مبيعات", prm_att: "⏱️ الحضور", sale_code: "كود الصنف", sale_price: "السعر", sale_date: "التاريخ", sale_desc: "الوصف", company: "الشركة", branch: "الفرع", promoter: "البروموتر", delete: "حذف", add_new_account: "إضافة حساب جديد", email: "البريد", password: "كلمة المرور", role: "الصلاحية", role_promoter: "بروموتر", role_admin: "مدير", promoter_code: "كود البروموتر", target_monthly: "التارجت (شهري)", commission_rate: "نسبة العمولة (%)", add_btn: "إضافة ➕", cancel_btn: "إلغاء ✖️", edit_account_title: "تعديل بيانات الحساب", save_btn: "حفظ 💾", confirm_delete: "هل أنت متأكد من الحذف؟", upload_excel_title: "رفع المنتجات (Excel)", excel_file: "ملف إكسيل (.xlsx)", upload_btn: "رفع 📤", fill_fields: "يرجى تعبئة الحقول", upload_success: "تم رفع وحفظ البيانات بنجاح!", sale_photo: "صورة الفاتورة (اختياري)", save_sales: "حفظ المبيعات 💾", save_success: "تم الحفظ بنجاح!", share_wa: "مشاركة الفاتورة عبر واتساب 💬", recent_sales: "مبيعاتي الأخيرة", att_title: "تسجيل الحضور اليومي", att_desc: "سيطلب التطبيق إذن الموقع (GPS) لتوثيق حضورك في الفرع.", shift_1: "الفترة الأولى", shift_2: "الفترة الثانية", sales_by_company: "المبيعات حسب الشركة", sales_by_branch: "المبيعات حسب الفرع", top_products: "أكثر المنتجات مبيعاً", upload_stock_title: "رفع مخزون الشركة (Excel)", stock_qty: "الكمية", action: "إجراء", login_tab_promoter: "👤 دخول البروموتر", login_tab_admin: "👑 دخول الإدارة", search: "بحث 🔍", export_excel: "تصدير 📥", break_title: "وقت الراحة (البريك)", break_desc: "لك الحق في ساعة راحة مقسمة إلى فترتين (30 دقيقة لكل فترة).", break_1_start: "بدء راحة 1 (30د)", break_2_start: "بدء راحة 2 (30د)", break_end: "إنهاء الراحة", break_started: "بدأ وقت الراحة", break_ended: "انتهى وقت الراحة", break_completed: "مكتملة", break_already_completed: "لقد أخذت هذه الراحة مسبقاً", admin_attendance: "📅 سجل الحضور" },
-    en: { login_title: "👤 Login (Cloud)", login_subtitle: "Promoter & Sales Management", email_ph: "Email Address", pass_ph: "Password", login_btn: "Login", logout: "Logout 🚪", admin_dash: "📊 Dashboard", admin_sales: "💰 All Sales", admin_users: "👥 Promoters", admin_products: "📦 Products", admin_companies: "🏢 Companies & Stock", admin_companies_manager: "🏢 Comprehensive Companies Manager", prm_dash: "🏠 Home", prm_sales: "➕ Add Sales", prm_att: "⏱️ Attendance", sale_code: "Item Code", sale_price: "Price", sale_date: "Date", sale_desc: "Description", company: "Company", branch: "Branch", promoter: "Promoter", delete: "Delete", add_new_account: "Add New Account", email: "Email", password: "Password", role: "Role", role_promoter: "Promoter", role_admin: "Admin", promoter_code: "Promoter Code", target_monthly: "Monthly Target", commission_rate: "Commission Rate (%)", add_btn: "Add ➕", cancel_btn: "Cancel ✖️", edit_account_title: "Edit Account", save_btn: "Save 💾", confirm_delete: "Are you sure to delete?", upload_excel_title: "Upload Products (Excel)", excel_file: "Excel File (.xlsx)", upload_btn: "Upload 📤", fill_fields: "Please fill all fields", upload_success: "Uploaded and saved successfully!", sale_photo: "Invoice Photo (Optional)", save_sales: "Save Sales 💾", save_success: "Saved Successfully!", share_wa: "Share via WhatsApp 💬", recent_sales: "My Recent Sales", att_title: "Daily Attendance Registration", att_desc: "The app will request GPS permission to verify your branch attendance.", shift_1: "First Shift", shift_2: "Second Shift", sales_by_company: "Sales by Company", sales_by_branch: "Sales by Branch", top_products: "Top Selling Products", upload_stock_title: "Upload Company Stock (Excel)", stock_qty: "Quantity", action: "Action", login_tab_promoter: "👤 Promoter Login", login_tab_admin: "👑 Admin Login", search: "Search 🔍", export_excel: "Export 📥", break_title: "Break Time", break_desc: "You have a 1-hour break divided into two halves (30 minutes each).", break_1_start: "Start Break 1 (30m)", break_2_start: "Start Break 2 (30m)", break_end: "End Break", break_started: "Break Started", break_ended: "Break Ended", break_completed: "Completed", break_already_completed: "Break already taken", admin_attendance: "📅 Attendance Log" }
+    ar: { login_title: "👤 تسجيل الدخول (السحابي)", login_subtitle: "تطبيق إدارة البروموتر والمبيعات", email_ph: "البريد الإلكتروني", pass_ph: "كلمة المرور", login_btn: "دخول", logout: "خروج 🚪", admin_dash: "📊 لوحة التحكم", admin_sales: "💰 كل المبيعات", admin_users: "👥 البروموترز", admin_products: "📦 المنتجات", admin_companies: "🏢 الشركات والمخزون", admin_companies_manager: "🏢 إدارة الشركات الشاملة", admin_promoters: "👥 البروموترز", admin_admins: "👑 المديرين", prm_dash: "🏠 الرئيسية", prm_sales: "➕ مبيعات", prm_att: "⏱️ الحضور", sale_code: "كود الصنف", sale_price: "السعر", sale_date: "التاريخ", sale_desc: "الوصف", company: "الشركة", branch: "الفرع", promoter: "البروموتر", delete: "حذف", add_new_account: "إضافة حساب جديد", email: "البريد", password: "كلمة المرور", role: "الصلاحية", role_promoter: "بروموتر", role_admin: "مدير", promoter_code: "كود البروموتر", target_monthly: "التارجت (شهري)", commission_rate: "نسبة العمولة (%)", add_btn: "إضافة ➕", cancel_btn: "إلغاء ✖️", edit_account_title: "تعديل بيانات الحساب", save_btn: "حفظ 💾", confirm_delete: "هل أنت متأكد من الحذف؟", upload_excel_title: "رفع المنتجات (Excel)", excel_file: "ملف إكسيل (.xlsx)", upload_btn: "رفع 📤", fill_fields: "يرجى تعبئة الحقول", upload_success: "تم رفع وحفظ البيانات بنجاح!", sale_photo: "صورة الفاتورة (اختياري)", save_sales: "حفظ المبيعات 💾", save_success: "تم الحفظ بنجاح!", share_wa: "مشاركة الفاتورة عبر واتساب 💬", recent_sales: "مبيعاتي الأخيرة", att_title: "تسجيل الحضور اليومي", att_desc: "سيطلب التطبيق إذن الموقع (GPS) لتوثيق حضورك في الفرع.", shift_1: "الفترة الأولى", shift_2: "الفترة الثانية", sales_by_company: "المبيعات حسب الشركة", sales_by_branch: "المبيعات حسب الفرع", top_products: "أكثر المنتجات مبيعاً", upload_stock_title: "رفع مخزون الشركة (Excel)", stock_qty: "الكمية", action: "إجراء", login_tab_promoter: "👤 دخول البروموتر", login_tab_admin: "👑 دخول الإدارة", search: "بحث 🔍", export_excel: "تصدير 📥", break_title: "وقت الراحة (البريك)", break_desc: "لك الحق في ساعة راحة مقسمة إلى فترتين (30 دقيقة لكل فترة).", break_1_start: "بدء راحة 1 (30د)", break_2_start: "بدء راحة 2 (30د)", break_end: "إنهاء الراحة", break_started: "بدأ وقت الراحة", break_ended: "انتهى وقت الراحة", break_completed: "مكتملة", break_already_completed: "لقد أخذت هذه الراحة مسبقاً", admin_attendance: "📅 سجل الحضور" },
+    en: { login_title: "👤 Login (Cloud)", login_subtitle: "Promoter & Sales Management", email_ph: "Email Address", pass_ph: "Password", login_btn: "Login", logout: "Logout 🚪", admin_dash: "📊 Dashboard", admin_sales: "💰 All Sales", admin_users: "👥 Promoters", admin_products: "📦 Products", admin_companies: "🏢 Companies & Stock", admin_companies_manager: "🏢 Comprehensive Companies Manager", admin_promoters: "👥 Promoters", admin_admins: "👑 Admins", prm_dash: "🏠 Home", prm_sales: "➕ Add Sales", prm_att: "⏱️ Attendance", sale_code: "Item Code", sale_price: "Price", sale_date: "Date", sale_desc: "Description", company: "Company", branch: "Branch", promoter: "Promoter", delete: "Delete", add_new_account: "Add New Account", email: "Email", password: "Password", role: "Role", role_promoter: "Promoter", role_admin: "Admin", promoter_code: "Promoter Code", target_monthly: "Monthly Target", commission_rate: "Commission Rate (%)", add_btn: "Add ➕", cancel_btn: "Cancel ✖️", edit_account_title: "Edit Account", save_btn: "Save 💾", confirm_delete: "Are you sure to delete?", upload_excel_title: "Upload Products (Excel)", excel_file: "Excel File (.xlsx)", upload_btn: "Upload 📤", fill_fields: "Please fill all fields", upload_success: "Uploaded and saved successfully!", sale_photo: "Invoice Photo (Optional)", save_sales: "Save Sales 💾", save_success: "Saved Successfully!", share_wa: "Share via WhatsApp 💬", recent_sales: "My Recent Sales", att_title: "Daily Attendance Registration", att_desc: "The app will request GPS permission to verify your branch attendance.", shift_1: "First Shift", shift_2: "Second Shift", sales_by_company: "Sales by Company", sales_by_branch: "Sales by Branch", top_products: "Top Selling Products", upload_stock_title: "Upload Company Stock (Excel)", stock_qty: "Quantity", action: "Action", login_tab_promoter: "👤 Promoter Login", login_tab_admin: "👑 Admin Login", search: "Search 🔍", export_excel: "Export 📥", break_title: "Break Time", break_desc: "You have a 1-hour break divided into two halves (30 minutes each).", break_1_start: "Start Break 1 (30m)", break_2_start: "Start Break 2 (30m)", break_end: "End Break", break_started: "Break Started", break_ended: "Break Ended", break_completed: "Completed", break_already_completed: "Break already taken", admin_attendance: "📅 Attendance Log" }
 };
 
 function t(key) { return dict[currentLang][key] || key; }
@@ -142,7 +142,8 @@ function buildNav() {
     if (currentRole === 'admin') {
         links += `<li onclick="nav('admin_dash')">${t('admin_dash')}</li>`;
         links += `<li onclick="nav('admin_sales')">${t('admin_sales')}</li>`;
-        links += `<li onclick="nav('admin_users')">${t('admin_users')}</li>`;
+        links += `<li onclick="nav('admin_promoters')">${t('admin_promoters')}</li>`;
+        links += `<li onclick="nav('admin_admins')">${t('admin_admins')}</li>`;
         links += `<li onclick="nav('admin_attendance')">${t('admin_attendance')}</li>`;
         links += `<li onclick="nav('admin_products')">${t('admin_products')}</li>`;
         links += `<li onclick="nav('admin_companies')">${t('admin_companies')}</li>`;
@@ -186,10 +187,12 @@ function nav(page) {
         content = `<div class="grid-2"><div class="glass-card"><h4 style="text-align:center; margin-bottom:10px;">${t('sales_by_company')}</h4><canvas id="companyChart"></canvas></div><div class="glass-card"><h4 style="text-align:center; margin-bottom:10px;">${t('sales_by_branch')}</h4><canvas id="branchChart"></canvas></div></div><div class="glass-card" style="margin-top: 20px;"><h3 style="margin-bottom:15px;">🏆 أبطال المبيعات (أفضل 3 بروموترز)</h3><div id="leaderboardContainer" class="grid-3" style="gap:15px;"></div></div><div class="glass-card" style="margin-top: 20px;"><h3 style="margin-bottom:15px;">${t('top_products')}</h3><div id="topProductsContainer" class="grid-3"></div></div>`;
         setTimeout(loadDashboard, 100);
     }
-    else if (page === 'admin_users') {
-        title = t('admin_users');
-        content = `<div class="glass-card" style="margin-bottom: 20px;"><h3 id="formUserTitle">${t('add_new_account')}</h3><div class="grid-3" style="margin-top:15px;"><div class="fg"><label>${t('email')}</label><input type="email" id="nuEmail" class="input-box"></div><div class="fg"><label>${t('password')}</label><input type="text" id="nuPass" class="input-box"></div><div class="fg"><label>${t('role')}</label><select id="nuRole" class="input-box"><option value="promoter">${t('role_promoter')}</option><option value="admin">${t('role_admin')}</option></select></div><div class="fg"><label>${t('company')}</label><input type="text" id="nuCompany" class="input-box"></div><div class="fg"><label>${t('branch')}</label><input type="text" id="nuBranch" class="input-box"></div><div class="fg"><label>${t('promoter_code')}</label><input type="text" id="nuCode" class="input-box"></div><div class="fg"><label>${t('target_monthly')}</label><input type="number" id="nuTarget" class="input-box" placeholder="0"></div><div class="fg"><label>${t('commission_rate')}</label><input type="number" id="nuCommission" class="input-box" placeholder="0"></div><div class="fg" style="display:flex; flex-direction:row; gap:10px; align-items:flex-end;"><button id="btnUserAction" class="btn btn-primary" onclick="adminAddUser()">${t('add_btn')}</button><button id="btnUserCancel" class="btn btn-danger hidden" onclick="cancelEditUser()">${t('cancel_btn')}</button></div></div></div><div class="search-bar"><input type="text" id="s_usersTable" class="input-box" placeholder="${t('search')}..." onkeyup="filterTable('s_usersTable', 'usersTable')"><button class="btn export-btn" onclick="exportTableToExcel('usersTable', 'Promoters')">${t('export_excel')}</button></div><div class="glass-card" style="overflow-x:auto;"><table id="usersTable"></table></div>`;
-        setTimeout(loadAdminUsers, 100);
+    else if (page === 'admin_promoters' || page === 'admin_admins') {
+        let isPromoter = page === 'admin_promoters';
+        title = isPromoter ? t('admin_promoters') : t('admin_admins');
+        let roleFilter = isPromoter ? 'promoter' : 'admin';
+        content = `<div class="glass-card" style="margin-bottom: 20px;"><h3 id="formUserTitle">${t('add_new_account')} (${isPromoter ? 'بروموتر' : 'مدير'})</h3><div class="grid-3" style="margin-top:15px;"><div class="fg"><label>${t('email')}</label><input type="email" id="nuEmail" class="input-box"></div><div class="fg"><label>${t('password')}</label><input type="text" id="nuPass" class="input-box"></div><input type="hidden" id="nuRole" value="${roleFilter}"><div class="fg"><label>${t('company')}</label><input type="text" id="nuCompany" class="input-box"></div><div class="fg"><label>${t('branch')}</label><input type="text" id="nuBranch" class="input-box"></div><div class="fg"><label>${t('promoter_code')}</label><input type="text" id="nuCode" class="input-box"></div><div class="fg"><label>${t('target_monthly')}</label><input type="number" id="nuTarget" class="input-box" placeholder="0"></div><div class="fg"><label>${t('commission_rate')}</label><input type="number" id="nuCommission" class="input-box" placeholder="0"></div><div class="fg" style="display:flex; flex-direction:row; gap:10px; align-items:flex-end;"><button id="btnUserAction" class="btn btn-primary" onclick="adminAddUser()">${t('add_btn')}</button><button id="btnUserCancel" class="btn btn-danger hidden" onclick="cancelEditUser()">${t('cancel_btn')}</button></div></div></div><div class="search-bar"><input type="text" id="s_usersTable" class="input-box" placeholder="${t('search')}..." onkeyup="filterTable('s_usersTable', 'usersTable')"><button class="btn export-btn" onclick="exportTableToExcel('usersTable', 'Users')">${t('export_excel')}</button></div><div class="glass-card" style="overflow-x:auto;"><table id="usersTable"></table></div>`;
+        setTimeout(() => loadAdminUsers(roleFilter), 100);
     }
     else if (page === 'admin_products') {
         title = t('admin_products');
@@ -233,7 +236,20 @@ function nav(page) {
                     <ul id="cmpPromotersList" style="margin-top:10px; color:var(--tx2); list-style:none;"></ul>
                 </div>
                 <div style="grid-column: 1 / -1; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px;">
-                    <h4>منتجات الشركة (إضافة سريعة)</h4>
+                    <h4>رفع مخزون الشركة (إكسيل)</h4>
+                    <div class="grid-2" style="margin-top:10px;">
+                        <input type="file" id="cmpStockFile" class="input-box" accept=".xlsx">
+                        <button class="btn btn-primary" onclick="uploadCmpStockExcel()">رفع المخزون 📤</button>
+                    </div>
+                </div>
+                <div style="grid-column: 1 / -1; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin-top:15px;">
+                    <h4>منتجات ومخزون الشركة</h4>
+                    <div style="overflow-x:auto; margin-top:10px;">
+                        <table id="cmpStockTable"></table>
+                    </div>
+                </div>
+                <div style="grid-column: 1 / -1; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin-top:15px;">
+                    <h4>منتجات الشركة (إضافة سريعة يدوية)</h4>
                     <div class="grid-3" style="margin-top:10px;">
                         <input type="text" id="newPrdCode" class="input-box" placeholder="كود الصنف">
                         <input type="text" id="newPrdDesc" class="input-box" placeholder="الوصف">
@@ -267,12 +283,12 @@ let cachedProducts = [];
 async function initPromoterSales() {
     $('loader').classList.remove('hidden');
     try {
-        let snap = await db.collection('products').where('company', '==', userData.company).where('adminId', '==', userData.adminId || currentUser.uid).get();
+        let snap = await db.collection('products').where('adminId', '==', userData.adminId || currentUser.uid).get();
         cachedProducts = snap.docs.map(d => ({id: d.id, ...d.data()}));
         let select = $('sCode');
         if(select) {
             select.innerHTML = `<option value="">اختر الصنف</option>`;
-            let selHtml = ""; cachedProducts.forEach(p => { selHtml += `<option value="${p.itemCode}">${p.itemCode} - ${p.description}</option>`; }); select.innerHTML += selHtml;
+            cachedProducts.forEach(p => { select.innerHTML += `<option value="${p.itemCode}">${p.itemCode} - ${p.description} (${p.company || 'بدون شركة'})</option>`; });
         }
         loadMySales();
     } catch(err) { $('loader').classList.add('hidden'); }
@@ -612,12 +628,12 @@ async function adminAddUser() {
         let uid = editingUserUid || 'usr_' + Date.now();
         await db.collection('auth_users').doc(uid).set({uid: uid, email: e.toLowerCase(), password: p});
         await db.collection('users').doc(uid).set({ uid: uid, email: e.toLowerCase(), role: r, promoterCode: code, branch: br, company: comp, target: tgt, commissionRate: comm, adminId: currentUser.uid });
-        toast('تم الحفظ', 'success'); cancelEditUser(); loadAdminUsers();
+        toast('تم الحفظ', 'success'); cancelEditUser(); loadAdminUsers(r);
     } catch(err) { toast(err.message, 'error'); }
     $('loader').classList.add('hidden');
 }
 
-async function loadAdminUsers() {
+async function loadAdminUsers(roleFilter) {
     let tb = $('usersTable'); if(!tb) return;
     $('loader').classList.remove('hidden');
     try {
@@ -629,9 +645,10 @@ async function loadAdminUsers() {
                 $('usersTable').innerHTML = `<tr><th>${t('role')}</th><th>${t('email')}</th><th>${t('company')}/${t('branch')}</th><th>${t('promoter_code')}</th><th>${t('target_monthly')}</th><th>${t('commission_rate')}</th><th>${t('action')}</th></tr>`;
                 let htmlAcc = "";
                 cachedAdminUsers.forEach(u => {
+                    if (roleFilter && u.role !== roleFilter) return;
                     let progressHtml = u.target > 0 ? `<div class="progress-bg"><div class="progress-bar" style="width: 50%; background: var(--am);"></div></div>` : '';
                     htmlAcc += `<tr><td><span class="badge">${u.role}</span></td><td>${u.email}</td><td>${u.company} / ${u.branch}</td><td>${u.promoterCode}</td><td>${u.target || 0} ${progressHtml}</td><td>${u.commissionRate || 0}%</td>
-                        <td><button class="btn btn-primary" style="padding:6px; font-size:12px;" onclick="editUser('${u.uid}')">✏️</button> <button class="btn btn-danger" style="padding:6px; font-size:12px;" onclick="deleteUser('${u.uid}')">✖️</button></td></tr>`;
+                        <td><button class="btn btn-primary" style="padding:6px; font-size:12px;" onclick="editUser('${u.uid}')">✏️</button> <button class="btn btn-danger" style="padding:6px; font-size:12px;" onclick="deleteUser('${u.uid}', '${roleFilter}')">✖️</button></td></tr>`;
                 });
                 $('usersTable').innerHTML += htmlAcc;
                 $('loader').classList.add('hidden');
@@ -652,9 +669,9 @@ function editUser(uid) {
 function cancelEditUser() {
     editingUserUid = null; $('nuEmail').value = ''; $('nuPass').value = ''; $('nuCompany').value = ''; $('nuBranch').value = ''; $('nuCode').value = ''; $('nuTarget').value = ''; $('nuCommission').value = ''; $('btnUserAction').innerText = 'إضافة ➕'; $('btnUserCancel').classList.add('hidden');
 }
-async function deleteUser(uid) {
+async function deleteUser(uid, roleFilter) {
     if(!confirm('حذف؟')) return;
-    await db.collection('auth_users').doc(uid).delete(); await db.collection('users').doc(uid).delete(); loadAdminUsers();
+    await db.collection('auth_users').doc(uid).delete(); await db.collection('users').doc(uid).delete(); loadAdminUsers(roleFilter);
 }
 
 async function uploadProductsExcel() {
@@ -1027,6 +1044,60 @@ function showCompanyDetails(id, name) {
             });
         }
     });
+
+    // Load Stock
+    db.collection('company_stock').where('company', '==', name).where('adminId', '==', currentUser.uid).onSnapshot(snap => {
+        let stb = $('cmpStockTable');
+        if(stb) {
+            stb.innerHTML = `<tr><th>الكود</th><th>الوصف</th><th>السعر</th><th>الكمية</th></tr>`;
+            let htmlAcc = "";
+            snap.forEach(doc => {
+                let d = doc.data();
+                htmlAcc += `<tr><td>${d.code}</td><td>${d.name}</td><td>${d.price}</td><td><strong style="color:var(--gn);">${d.quantity}</strong></td></tr>`;
+            });
+            stb.innerHTML += htmlAcc;
+        }
+    });
+}
+
+async function uploadCmpStockExcel() {
+    let compName = currentSelectedCompany.name, fileInput = $('cmpStockFile');
+    if(!compName) return toast('يرجى اختيار شركة أولاً', 'error');
+    if(!fileInput.files.length) return toast(t('fill_fields'), 'error');
+    
+    $('loader').classList.remove('hidden');
+    let reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            let data = new Uint8Array(e.target.result), workbook = XLSX.read(data, {type: 'array'});
+            let json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
+            if(json.length < 2) throw new Error("الملف فارغ");
+            
+            const batch = db.batch();
+            for(let i = 1; i < json.length; i++) {
+                let row = json[i];
+                if(row.length > 0) {
+                    let code = String(row[0] || '');
+                    let name = String(row[1] || '');
+                    let price = Number(row[2] || 0);
+                    let qty = Number(row[3] || 0);
+                    
+                    if(code && code !== 'undefined') {
+                        let stockRef = db.collection('company_stock').doc();
+                        batch.set(stockRef, { company: compName, code: code, name: name, price: price, quantity: qty, adminId: currentUser.uid });
+                        
+                        let prodRef = db.collection('products').doc();
+                        batch.set(prodRef, { company: compName, itemCode: code, description: name, price: price, adminId: currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                    }
+                }
+            }
+            await batch.commit();
+            toast('تم رفع وحفظ المخزون للشركة بنجاح', 'success'); 
+            fileInput.value = '';
+        } catch(err) { console.error('Upload Error:', err); toast('Error parsing Excel: '+err.message, 'error'); }
+        $('loader').classList.add('hidden');
+    };
+    reader.readAsArrayBuffer(fileInput.files[0]);
 }
 
 async function addBranchToSystem() {
