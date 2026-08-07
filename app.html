@@ -142,8 +142,16 @@ tr:hover { background-color: rgba(255,255,255,0.04); }
         </nav>
 
         <main class="main-content">
-            <header class="topbar glass-card">
+            <header class="topbar glass-card" style="display:flex; justify-content:space-between; align-items:center;">
                 <h2 id="pageTitle">لوحة التحكم</h2>
+                <div id="notifBell" style="position:relative; cursor:pointer; display:none;" onclick="toggleNotifPanel()">
+                    <span style="font-size:1.5rem;">🔔</span>
+                    <span id="notifBadge" style="position:absolute; top:-5px; right:-5px; background:var(--rd); color:white; border-radius:50%; padding:2px 6px; font-size:0.7rem; display:none;">0</span>
+                    <div id="notifPanel" class="glass-card" style="position:absolute; top:40px; left:0; width:300px; max-height:300px; overflow-y:auto; z-index:1000; display:none; flex-direction:column; gap:10px;">
+                        <h4 style="margin-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px;">الإشعارات</h4>
+                        <div id="notifList" style="font-size:0.85rem; text-align:right;"></div>
+                    </div>
+                </div>
             </header>
             <div id="pageContent" class="page-container"></div>
         </main>
@@ -234,6 +242,51 @@ async function checkAuth() {
     $('loader').classList.add('hidden');
 }
 
+function toggleNotifPanel() {
+    let p = $('notifPanel');
+    if (p.style.display === 'none') {
+        p.style.display = 'flex';
+        // Mark as read (hide badge)
+        $('notifBadge').style.display = 'none';
+        $('notifBadge').innerText = '0';
+    } else {
+        p.style.display = 'none';
+    }
+}
+
+let notifUnsubscribe = null;
+function startNotificationsListener() {
+    if(notifUnsubscribe) notifUnsubscribe();
+    if(currentRole !== 'promoter') return;
+    $('notifBell').style.display = 'block';
+    
+    notifUnsubscribe = db.collection('notifications')
+        .where('targetUid', 'in', ['ALL', currentUser.uid])
+        .orderBy('timestamp', 'desc')
+        .limit(20)
+        .onSnapshot(snap => {
+            let list = $('notifList');
+            if(!list) return;
+            list.innerHTML = '';
+            let unread = 0;
+            if(snap.empty) {
+                list.innerHTML = '<div style="color:gray;">لا توجد إشعارات</div>';
+                return;
+            }
+            snap.docs.forEach(doc => {
+                let d = doc.data();
+                // We don't have read receipts per user for 'ALL' messages, but for simplicity we just show a red dot if new messages arrived in this session
+                let dateStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString() : 'الآن';
+                list.innerHTML += `<div style="background:rgba(0,0,0,0.3); padding:8px; border-radius:5px;"><strong style="color:var(--am);">${d.title}</strong><br><span style="color:#ddd;">${d.message}</span><div style="font-size:0.7rem; color:gray; margin-top:3px;">${dateStr}</div></div>`;
+                unread++;
+            });
+            if(unread > 0 && $('notifPanel').style.display === 'none') {
+                $('notifBadge').style.display = 'block';
+                $('notifBadge').innerText = unread;
+            }
+        });
+}
+
 let loginMode = 'promoter';
 function switchLogin(mode) {
     loginMode = mode;
@@ -269,6 +322,7 @@ async function login() {
             if (loginMode === 'promoter' && isAdmin) { $('loader').classList.add('hidden'); $('authError').innerText = 'يرجى الدخول من تبويب الإدارة.'; $('authError').style.display = 'block'; return; }
             localStorage.setItem('currentUser', JSON.stringify({uid: user.uid, email: user.email}));
             $('authError').style.display = 'none'; checkAuth();
+            if(currentRole === 'promoter') startNotificationsListener();
         } else {
             $('loader').classList.add('hidden'); $('authError').innerText = 'البيانات غير صحيحة.'; $('authError').style.display = 'block';
         }
@@ -290,24 +344,25 @@ async function registerAdmin() {
             toast('تم إنشاء الحساب بنجاح! يمكنك الدخول الآن.', 'success');
         }
     } catch(err) { toast(err.message, 'error'); }
-    $('loader').classList.add('hidden');
+    $('loader').classList.remove('hidden');
 }
 function logout() { localStorage.removeItem('currentUser'); checkAuth(); }
 
 function buildNav() {
     let links = '';
     if (currentRole === 'admin') {
-        links += `<li onclick="nav('admin_dash')">${t('admin_dash')}</li>`;
-        links += `<li onclick="nav('admin_sales')">${t('admin_sales')}</li>`;
-        links += `<li onclick="nav('admin_promoters')">${t('admin_promoters')}</li>`;
-        links += `<li onclick="nav('admin_admins')">${t('admin_admins')}</li>`;
+        links += `<li onclick="nav('admin_dash')">📊 ${t('admin_dash')}</li>`;
+        links += `<li onclick="nav('admin_sales')">💰 ${t('admin_sales')}</li>`;
         links += `<li onclick="nav('admin_attendance')">${t('admin_attendance')}</li>`;
         links += `<li onclick="nav('admin_products')">${t('admin_products')}</li>`;
-        links += `<li onclick="nav('admin_companies')">${t('admin_companies')}</li>`;
-        links += `<li onclick="nav('admin_companies_manager')">${t('admin_companies_manager')}</li>`;
+        // Hide companies and users management from sub-admins bound to a specific company
+        if (!userData.company || userData.company === 'Main') {
+            links += `<li onclick="nav('admin_companies')">${t('admin_companies')}</li>`;
+            links += `<li onclick="nav('admin_users')">👥 ${t('admin_users')}</li>`;
+        }
+        links += `<li onclick="nav('admin_notifications')">🔔 إرسال إشعار</li>`;
     } else {
-        links += `<li onclick="nav('promoter_dash')">${t('prm_dash')}</li>`;
-        links += `<li onclick="nav('promoter_sales')">${t('prm_sales')}</li>`;
+        links += `<li onclick="nav('promoter_sales')">🛒 ${t('prm_sales')}</li>`;
         links += `<li onclick="nav('promoter_attendance')">${t('prm_att')}</li>`;
     }
     $('navLinks').innerHTML = links;
@@ -346,11 +401,11 @@ function nav(page) {
         <div class="grid-2"><div class="glass-card"><h4 style="text-align:center; margin-bottom:10px;">${t('sales_by_company')}</h4><canvas id="companyChart"></canvas></div><div class="glass-card"><h4 style="text-align:center; margin-bottom:10px;">${t('sales_by_branch')}</h4><canvas id="branchChart"></canvas></div></div><div class="glass-card" style="margin-top: 20px;"><h3 style="margin-bottom:15px;">🏆 أبطال المبيعات (أفضل 3 بروموترز)</h3><div id="leaderboardContainer" class="grid-3" style="gap:15px;"></div></div><div class="glass-card" style="margin-top: 20px;"><h3 style="margin-bottom:15px;">${t('top_products')}</h3><div id="topProductsContainer" class="grid-3"></div></div>`;
         setTimeout(loadDashboard, 100);
     }
-    else if (page === 'admin_promoters' || page === 'admin_admins') {
-        let isPromoter = page === 'admin_promoters';
-        title = isPromoter ? t('admin_promoters') : t('admin_admins');
-        let roleFilter = isPromoter ? 'promoter' : 'admin';
-        content = `<div class="glass-card" style="margin-bottom: 20px;"><h3 id="formUserTitle">${t('add_new_account')} (${isPromoter ? 'بروموتر' : 'مدير'})</h3><div class="grid-3" style="margin-top:15px;"><div class="fg"><label>${t('email')}</label><input type="email" id="nuEmail" class="input-box"></div><div class="fg"><label>${t('password')}</label><input type="text" id="nuPass" class="input-box"></div><input type="hidden" id="nuRole" value="${roleFilter}"><div class="fg"><label>${t('company')}</label><input type="text" id="nuCompany" class="input-box"></div><div class="fg"><label>${t('branch')}</label><input type="text" id="nuBranch" class="input-box"></div><div class="fg"><label>${t('promoter_code')}</label><input type="text" id="nuCode" class="input-box"></div><div class="fg"><label>${t('target_monthly')}</label><input type="number" id="nuTarget" class="input-box" placeholder="0"></div><div class="fg"><label>${t('commission_rate')}</label><input type="number" id="nuCommission" class="input-box" placeholder="0"></div><div class="fg" style="display:flex; flex-direction:row; gap:10px; align-items:flex-end;"><button id="btnUserAction" class="btn btn-primary" onclick="adminAddUser()">${t('add_btn')}</button><button id="btnUserCancel" class="btn btn-danger hidden" onclick="cancelEditUser()">${t('cancel_btn')}</button></div></div></div><div class="search-bar"><input type="text" id="s_usersTable" class="input-box" placeholder="${t('search')}..." onkeyup="filterTable('s_usersTable', 'usersTable')"><button class="btn export-btn" onclick="exportTableToExcel('usersTable', 'Users')">${t('export_excel')}</button></div><div class="glass-card" style="overflow-x:auto;"><table id="usersTable"></table></div>`;
+    else if (page === 'admin_users') {
+        let isPromoter = true;
+        title = t('admin_promoters');
+        let roleFilter = 'promoter';
+        content = `<div class="glass-card" style="margin-bottom: 20px;"><h3 id="formUserTitle">${t('add_new_account')} (${t('role_promoter')})</h3><div class="grid-3" style="margin-top:15px;"><div class="fg"><label>${t('email')}</label><input type="email" id="nuEmail" class="input-box"></div><div class="fg"><label>${t('password')}</label><input type="text" id="nuPass" class="input-box"></div><input type="hidden" id="nuRole" value="${roleFilter}"><div class="fg"><label>${t('company')}</label><input type="text" id="nuCompany" class="input-box"></div><div class="fg"><label>${t('branch')}</label><input type="text" id="nuBranch" class="input-box"></div><div class="fg"><label>${t('promoter_code')}</label><input type="text" id="nuCode" class="input-box"></div><div class="fg"><label>${t('target_monthly')}</label><input type="number" id="nuTarget" class="input-box" placeholder="0"></div><div class="fg"><label>${t('commission_rate')}</label><input type="number" id="nuCommission" class="input-box" placeholder="0"></div><div class="fg" style="display:flex; flex-direction:row; gap:10px; align-items:flex-end;"><button id="btnUserAction" class="btn btn-primary" onclick="adminAddUser()">${t('add_btn')}</button><button id="btnUserCancel" class="btn btn-danger hidden" onclick="cancelEditUser()">${t('cancel_btn')}</button></div></div></div><div class="search-bar"><input type="text" id="s_usersTable" class="input-box" placeholder="${t('search')}..." onkeyup="filterTable('s_usersTable', 'usersTable')"><button class="btn export-btn" onclick="exportTableToExcel('usersTable', 'Users')">${t('export_excel')}</button></div><div class="glass-card" style="overflow-x:auto;"><table id="usersTable"></table></div>`;
         setTimeout(() => loadAdminUsers(roleFilter), 100);
     }
     else if (page === 'admin_products') {
@@ -367,6 +422,18 @@ function nav(page) {
         title = t('admin_attendance');
         content = `<div class="search-bar"><input type="text" id="s_allAtt" class="input-box" placeholder="${t('search')}..." onkeyup="filterTable('s_allAtt', 'allAttTable')"><button class="btn export-btn" onclick="exportTableToExcel('allAttTable', 'Attendance')">${t('export_excel')}</button></div><div class="glass-card" style="overflow-x:auto;"><table id="allAttTable"></table></div>`;
         setTimeout(loadAllAttendance, 100);
+    }
+    else if (page === 'admin_notifications') {
+        title = 'إرسال الإشعارات';
+        content = `<div class="glass-card"><h3>إرسال إشعار جديد للمندوبين</h3>
+        <div class="grid-2">
+            <div class="fg"><label>العنوان</label><input type="text" id="notifTitle" class="input-box" placeholder="مثال: تحديث التارجت"></div>
+            <div class="fg"><label>المستهدف</label><select id="notifTarget" class="input-box"><option value="ALL">الجميع (ALL)</option></select></div>
+        </div>
+        <div class="fg"><label>الرسالة</label><textarea id="notifMsg" class="input-box" rows="3" placeholder="محتوى الإشعار..."></textarea></div>
+        <button class="btn btn-primary" onclick="sendNotification()">إرسال 🚀</button>
+        </div>`;
+        setTimeout(loadNotifTargets, 100);
     }
     else if (page === 'admin_companies_manager') {
         title = t('admin_companies_manager');
@@ -450,7 +517,7 @@ async function initPromoterSales() {
             cachedProducts.forEach(p => { select.innerHTML += `<option value="${p.itemCode}">${p.itemCode} - ${p.description} (${p.company || 'بدون شركة'})</option>`; });
         }
         loadMySales();
-    } catch(err) { $('loader').classList.add('hidden'); }
+    } catch(err) { $('loader').classList.remove('hidden'); }
 }
 
 let html5QrcodeScanner = null;
@@ -738,12 +805,14 @@ async function loadAllSales() {
         let snap = await query.get();
         let htmlAcc = "";
         snap.docs.forEach(doc => {
-            let d = doc.data(), img = d.imageUrl ? `<a href="${d.imageUrl}" target="_blank">رابط</a>` : '-';
+            let d = doc.data();
+            if (userData.company && userData.company !== 'Main' && d.company !== userData.company) return;
+            let img = d.imageUrl ? `<a href="${d.imageUrl}" target="_blank">رابط</a>` : '-';
             htmlAcc += `<tr><td>${d.company} / ${d.branch}</td><td>${d.promoterCode}</td><td>${d.itemCode}</td><td>${d.price}</td><td>${d.date}</td><td data-exclude="true">${img}</td></tr>`;
         });
         tb.innerHTML += htmlAcc;
     } catch(err) { console.log(err); }
-    $('loader').classList.add('hidden');
+    $('loader').classList.remove('hidden');
 }
 
 async function exportSalesToPDF() {
@@ -767,7 +836,7 @@ async function exportSalesToPDF() {
     };
     
     html2pdf().set(opt).from(element).save().then(() => {
-        $('loader').classList.add('hidden');
+        $('loader').classList.remove('hidden');
     });
 }
 
@@ -852,7 +921,7 @@ async function adminAddUser() {
     $('loader').classList.remove('hidden');
     try {
         let snap = await db.collection('auth_users').where('email', '==', e.toLowerCase()).get();
-        if (!snap.empty && !editingUserUid) { $('loader').classList.add('hidden'); return toast('مسجل بالفعل', 'error'); }
+        if (!snap.empty && !editingUserUid) { $('loader').classList.remove('hidden'); return toast('مسجل بالفعل', 'error'); }
         let uid = editingUserUid || 'usr_' + Date.now();
         await db.collection('auth_users').doc(uid).set({uid: uid, email: e.toLowerCase(), password: p});
         await db.collection('users').doc(uid).set({ uid: uid, email: e.toLowerCase(), role: r, promoterCode: code, branch: br, company: comp, target: tgt, commissionRate: comm, adminId: currentUser.uid });
@@ -864,27 +933,23 @@ async function adminAddUser() {
 async function loadAdminUsers(roleFilter) {
     let tb = $('usersTable'); if(!tb) return;
     $('loader').classList.remove('hidden');
-    try {
-        db.collection('auth_users').onSnapshot(snap1 => {
-            cachedAdminAuthUsers = snap1.docs.map(d => d.data());
-            db.collection('users').onSnapshot(snap2 => {
-                cachedAdminUsers = snap2.docs.map(d => d.data());
-                if(!$('usersTable')) return;
-                $('usersTable').innerHTML = `<tr><th>${t('role')}</th><th>${t('email')}</th><th>${t('company')}/${t('branch')}</th><th>${t('promoter_code')}</th><th>${t('target_monthly')}</th><th>${t('commission_rate')}</th><th>${t('action')}</th></tr>`;
-                let htmlAcc = "";
-                cachedAdminUsers.forEach(u => {
-                    if (roleFilter && u.role !== roleFilter) return;
-                    let progressHtml = u.target > 0 ? `<div class="progress-bg"><div class="progress-bar" style="width: 50%; background: var(--am);"></div></div>` : '';
-                    htmlAcc += `<tr><td><span class="badge">${u.role}</span></td><td>${u.email}</td><td>${u.company} / ${u.branch}</td><td>${u.promoterCode}</td><td>${u.target || 0} ${progressHtml}</td><td>${u.commissionRate || 0}%</td>
-                        <td><button class="btn btn-primary" style="padding:6px; font-size:12px;" onclick="editUser('${u.uid}')">✏️</button> <button class="btn btn-danger" style="padding:6px; font-size:12px;" onclick="deleteUser('${u.uid}', '${roleFilter}')">✖️</button></td></tr>`;
-                });
-                $('usersTable').innerHTML += htmlAcc;
-                $('loader').classList.add('hidden');
+    db.collection('auth_users').onSnapshot(snap1 => {
+        cachedAdminAuthUsers = snap1.docs.map(d => d.data());
+        db.collection('users').where('adminId', '==', userData.adminId || currentUser.uid).onSnapshot(snap2 => {
+            cachedAdminUsers = snap2.docs.map(d => d.data());
+            if(!$('usersTable')) return;
+            $('usersTable').innerHTML = `<tr><th>${t('role')}</th><th>${t('email')}</th><th>${t('company')}/${t('branch')}</th><th>${t('promoter_code')}</th><th>${t('target_monthly')}</th><th>${t('commission_rate')}</th><th>${t('action')}</th></tr>`;
+            let htmlAcc = "";
+            cachedAdminUsers.forEach(u => {
+                if (roleFilter && u.role !== roleFilter) return;
+                if (userData.company && userData.company !== 'Main' && u.company !== userData.company) return;
+                htmlAcc += `<tr><td><span class="badge">${u.role}</span></td><td>${u.email}</td><td>${u.company} / ${u.branch}</td><td>${u.promoterCode}</td><td>${u.target || 0}</td><td>${u.commissionRate || 0}%</td>
+                    <td><button class="btn btn-primary" style="padding:6px; font-size:12px;" onclick="editUser('${u.uid}')">✏️</button> <button class="btn btn-danger" style="padding:6px; font-size:12px;" onclick="deleteUser('${u.uid}', '${roleFilter}')">✖️</button></td></tr>`;
             });
+            $('usersTable').innerHTML += htmlAcc;
+            $('loader').classList.add('hidden');
         });
-    } catch(err) {
-        $('loader').classList.add('hidden');
-    }
+    });
 }
 
 function editUser(uid) {
@@ -914,7 +979,6 @@ async function uploadProductsExcel() {
             let json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
             if(json.length < 2) throw new Error("الملف فارغ");
             
-            // Detect format: Exported format has 4+ columns and first column is usually 'الشركة'
             let isExportFormat = (json[0] && json[0].length >= 4 && (String(json[0][0]).includes('شركة') || String(json[0][0]).includes('Company')));
             
             if(!compInput && !isExportFormat) {
@@ -963,14 +1027,14 @@ async function uploadProductsExcel() {
 
 async function loadAdminProducts() {
     let tb = $('productsTable'); if(!tb) return;
+    tb.innerHTML = `<tr><th>${t('company')}</th><th>${t('sale_code')}</th><th>${t('sale_desc')}</th><th>${t('sale_price')}</th><th>${t('delete')}</th></tr>`;
     $('loader').classList.remove('hidden');
-    db.collection('products').where('adminId', '==', currentUser.uid).limit(100).onSnapshot(snap => {
-        if(!$('productsTable')) return;
-        $('productsTable').innerHTML = `<tr><th>${t('company')}</th><th>${t('sale_code')}</th><th>${t('sale_desc')}</th><th>${t('sale_price')}</th><th>${t('action')}</th></tr>`;
+    db.collection('products').where('adminId', '==', userData.adminId || currentUser.uid).limit(100).onSnapshot(snap => {
         let htmlAcc = "";
-        snap.forEach(doc => {
-            let p = doc.data(); 
-            htmlAcc += `<tr><td>${p.company}</td><td>${p.itemCode}</td><td>${p.description}</td><td>${p.price}</td><td><button class="btn btn-danger" style="padding:4px;" onclick="db.collection('products').doc('${doc.id}').delete()">✖️</button></td></tr>`;
+        snap.docs.forEach(doc => {
+            let p = doc.data();
+            if (userData.company && userData.company !== 'Main' && p.company !== userData.company) return;
+            htmlAcc += `<tr><td>${p.company}</td><td>${p.itemCode}</td><td>${p.description}</td><td>${p.price}</td><td><button class="btn btn-danger" style="padding:4px;" onclick="db.collection('products').doc('${doc.id}').delete()">❌</button></td></tr>`;
         });
         $('productsTable').innerHTML += htmlAcc;
         $('loader').classList.add('hidden');
@@ -1056,15 +1120,14 @@ async function uploadStockExcel() {
 
 function loadAdminStock() {
     let tb = $('stockTable'); if(!tb) return;
+    tb.innerHTML = `<tr><th>الشركة</th><th>كود الصنف</th><th>الوصف</th><th>السعر</th><th>الكمية</th><th>حذف</th></tr>`;
     $('loader').classList.remove('hidden');
-    db.collection('company_stock').where('adminId', '==', currentUser.uid).limit(100).onSnapshot(snap => {
-        if(!$('stockTable')) return;
-        $('stockTable').innerHTML = `<tr><th>${t('company')}</th><th>${t('sale_code')}</th><th>الاسم / الوصف</th><th>السعر</th><th>${t('stock_qty')}</th><th>${t('action')}</th></tr>`;
+    db.collection('company_stock').where('adminId', '==', userData.adminId || currentUser.uid).limit(100).onSnapshot(snap => {
         let htmlAcc = "";
-        snap.forEach(doc => {
-            let d = doc.data();
-            htmlAcc += `<tr><td>${d.company}</td><td>${d.code}</td><td>${d.name}</td><td>${d.price}</td><td>${d.quantity}</td>
-                <td><button class="btn btn-danger" style="padding:4px;" onclick="deleteStock('${doc.id}')">✖️</button></td></tr>`;
+        snap.docs.forEach(doc => {
+            let p = doc.data();
+            if (userData.company && userData.company !== 'Main' && p.company !== userData.company) return;
+            htmlAcc += `<tr><td>${p.company}</td><td>${p.code}</td><td>${p.name}</td><td>${p.price}</td><td>${p.quantity}</td><td><button class="btn btn-danger" style="padding:4px;" onclick="deleteStockItem('${doc.id}')">❌</button></td></tr>`;
         });
         $('stockTable').innerHTML += htmlAcc;
         $('loader').classList.add('hidden');
@@ -1088,7 +1151,7 @@ async function deleteAllStock() {
     $('loader').classList.add('hidden');
 }
 
-async function deleteStock(id) {
+async function deleteStockItem(id) {
     if(!confirm(t('confirm_delete'))) return;
     await db.collection('company_stock').doc(id).delete();
 }
@@ -1099,15 +1162,20 @@ async function loadAllAttendance() {
     $('loader').classList.remove('hidden');
     try {
         if (!cachedAdminUsers || cachedAdminUsers.length === 0) {
-            let uSnap = await db.collection('users').where('adminId', '==', currentUser.uid).get();
+            let uSnap = await db.collection('users').where('adminId', '==', userData.adminId || currentUser.uid).get();
             cachedAdminUsers = uSnap.docs.map(d => d.data());
         }
         let snap = await db.collection('attendance').orderBy('date', 'desc').limit(100).get();
+        let htmlAcc = "";
         snap.docs.forEach(doc => {
             let d = doc.data();
+            let user = cachedAdminUsers.find(u => u.uid === d.uid);
+            if (userData.company && userData.company !== 'Main' && (!user || user.company !== userData.company)) return;
+            // Ignore attendance from users not managed by this admin group
+            if (user && user.adminId !== (userData.adminId || currentUser.uid)) return;
+            
             let b1 = d.break1 ? (d.break1.end ? '✅' : '⏳') : '❌';
             let b2 = d.break2 ? (d.break2.end ? '✅' : '⏳') : '❌';
-            let user = cachedAdminUsers.find(u => u.uid === d.uid);
             let promoterName = user ? (user.email.split('@')[0] + ' (' + user.promoterCode + ')') : d.uid.substring(0,8);
             let loc1Link = d.loc1 ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:12px; border-radius:4px;" onclick="window.open('https://maps.google.com/?q=${d.loc1}', '_blank')">خريطة 📍</button>` : '';
             let loc2Link = d.loc2 ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:12px; border-radius:4px;" onclick="window.open('https://maps.google.com/?q=${d.loc2}', '_blank')">خريطة 📍</button>` : '';
