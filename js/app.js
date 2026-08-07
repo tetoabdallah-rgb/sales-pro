@@ -231,7 +231,7 @@ async function initPromoterSales() {
         let select = $('sCode');
         if(select) {
             select.innerHTML = `<option value="">اختر الصنف</option>`;
-            cachedProducts.forEach(p => { select.innerHTML += `<option value="${p.itemCode}">${p.itemCode} - ${p.description}</option>`; });
+            let selHtml = ""; cachedProducts.forEach(p => { selHtml += `<option value="${p.itemCode}">${p.itemCode} - ${p.description}</option>`; }); select.innerHTML += selHtml;
         }
         loadMySales();
     } catch(err) { $('loader').classList.add('hidden'); }
@@ -324,11 +324,16 @@ async function loadMySales() {
     tb.innerHTML = `<tr><th>الكود</th><th>الوصف</th><th>السعر</th><th>صورة</th><th>طباعة</th></tr>`;
     try {
         let snap = await db.collection('sales').where('uid', '==', currentUser.uid).orderBy('timestamp', 'desc').limit(10).get();
+        let htmlAcc = "";
+        let htmlAcc = "";
+        let htmlAcc = "";
+        let htmlAcc = "";
         snap.docs.forEach(doc => {
             let d = doc.data(); let imgLink = d.imageUrl ? `<a href="${d.imageUrl}" target="_blank" style="color:var(--am);">عرض</a>` : '-';
             let printBtn = `<button class="btn btn-primary" style="padding:2px 8px; font-size:0.8rem;" onclick="printReceipt('${d.itemCode}', '${d.price}', '${d.date}')">🖨️</button>`;
-            tb.innerHTML += `<tr><td>${d.itemCode}</td><td>${d.description}</td><td>${d.price}</td><td>${imgLink}</td><td>${printBtn}</td></tr>`;
+            htmlAcc += `<tr><td>${d.itemCode}</td><td>${d.description}</td><td>${d.price}</td><td>${imgLink}</td><td>${printBtn}</td></tr>`;
         });
+        htmlAcc += htmlAcc;
     } catch(err) {}
     $('loader').classList.add('hidden');
 }
@@ -492,12 +497,13 @@ async function loadMyAttendance() {
             let d = doc.data();
             let b1 = d.break1 ? (d.break1.end ? '✅' : '⏳') : '❌';
             let b2 = d.break2 ? (d.break2.end ? '✅' : '⏳') : '❌';
-            tb.innerHTML += `<tr><td>${d.date}</td><td>${d.slot1?'✅':'❌'}</td><td>${d.slot2?'✅':'❌'}</td><td>B1:${b1} B2:${b2}</td></tr>`;
+            htmlAcc += `<tr><td>${d.date}</td><td>${d.slot1?'✅':'❌'}</td><td>${d.slot2?'✅':'❌'}</td><td>B1:${b1} B2:${b2}</td></tr>`;
             if (d.date === today && $('btnBreak1')) {
                 setupBreakUI(1, d.break1);
                 setupBreakUI(2, d.break2);
             }
         });
+        htmlAcc += htmlAcc;
     } catch(err) {}
 }
 
@@ -508,8 +514,9 @@ async function loadAllSales() {
         let snap = await db.collection('sales').orderBy('timestamp', 'desc').limit(50).get();
         snap.docs.forEach(doc => {
             let d = doc.data(), img = d.imageUrl ? `<a href="${d.imageUrl}" target="_blank">رابط</a>` : '-';
-            tb.innerHTML += `<tr><td>${d.company} / ${d.branch}</td><td>${d.promoterCode}</td><td>${d.itemCode}</td><td>${d.price}</td><td>${d.date}</td><td>${img}</td></tr>`;
+            htmlAcc += `<tr><td>${d.company} / ${d.branch}</td><td>${d.promoterCode}</td><td>${d.itemCode}</td><td>${d.price}</td><td>${d.date}</td><td>${img}</td></tr>`;
         });
+        htmlAcc += htmlAcc;
     } catch(err) {}
 }
 
@@ -534,13 +541,15 @@ async function loadDashboard() {
             lbCont.innerHTML = '';
             let topPromoters = Object.entries(promoterObj).sort((a,b) => b[1] - a[1]).slice(0, 3);
             let medals = ['🥇', '🥈', '🥉'];
-            topPromoters.forEach((p, i) => {
-                lbCont.innerHTML += `<div style="background:rgba(16,185,129,0.1); border:1px solid var(--gn); padding:15px; border-radius:8px; text-align:center;">
+            let htmlAcc = "";
+        topPromoters.forEach((p, i) => {
+                htmlAcc += `<div style="background:rgba(16,185,129,0.1); border:1px solid var(--gn); padding:15px; border-radius:8px; text-align:center;">
                     <div style="font-size:3rem; margin-bottom:10px;">${medals[i] || '🏅'}</div>
                     <h4 style="margin:0 0 5px 0;">${p[0]}</h4>
                     <strong style="color:var(--gn); font-size:1.2rem;">${p[1]}</strong>
                 </div>`;
             });
+        lbCont.innerHTML += htmlAcc;
         }
 
         let tpCont = $('topProductsContainer'); tpCont.innerHTML = '';
@@ -578,11 +587,13 @@ async function loadAdminUsers() {
                 cachedAdminUsers = snap2.docs.map(d => d.data());
                 if(!$('usersTable')) return;
                 $('usersTable').innerHTML = `<tr><th>${t('role')}</th><th>${t('email')}</th><th>${t('company')}/${t('branch')}</th><th>${t('promoter_code')}</th><th>${t('target_monthly')}</th><th>${t('commission_rate')}</th><th>${t('action')}</th></tr>`;
+                let htmlAcc = "";
                 cachedAdminUsers.forEach(u => {
                     let progressHtml = u.target > 0 ? `<div class="progress-bg"><div class="progress-bar" style="width: 50%; background: var(--am);"></div></div>` : '';
-                    $('usersTable').innerHTML += `<tr><td><span class="badge">${u.role}</span></td><td>${u.email}</td><td>${u.company} / ${u.branch}</td><td>${u.promoterCode}</td><td>${u.target || 0} ${progressHtml}</td><td>${u.commissionRate || 0}%</td>
+                    htmlAcc += `<tr><td><span class="badge">${u.role}</span></td><td>${u.email}</td><td>${u.company} / ${u.branch}</td><td>${u.promoterCode}</td><td>${u.target || 0} ${progressHtml}</td><td>${u.commissionRate || 0}%</td>
                         <td><button class="btn btn-primary" style="padding:6px; font-size:12px;" onclick="editUser('${u.uid}')">✏️</button> <button class="btn btn-danger" style="padding:6px; font-size:12px;" onclick="deleteUser('${u.uid}')">✖️</button></td></tr>`;
                 });
+                $('usersTable').innerHTML += htmlAcc;
                 $('loader').classList.add('hidden');
             });
         });
@@ -671,10 +682,12 @@ async function loadAdminProducts() {
     db.collection('products').where('adminId', '==', currentUser.uid).onSnapshot(snap => {
         if(!$('productsTable')) return;
         $('productsTable').innerHTML = `<tr><th>${t('company')}</th><th>${t('sale_code')}</th><th>${t('sale_desc')}</th><th>${t('sale_price')}</th><th>${t('action')}</th></tr>`;
+        let htmlAcc = "";
         snap.forEach(doc => {
             let p = doc.data(); 
-            $('productsTable').innerHTML += `<tr><td>${p.company}</td><td>${p.itemCode}</td><td>${p.description}</td><td>${p.price}</td><td><button class="btn btn-danger" style="padding:4px;" onclick="db.collection('products').doc('${doc.id}').delete()">✖️</button></td></tr>`;
+            htmlAcc += `<tr><td>${p.company}</td><td>${p.itemCode}</td><td>${p.description}</td><td>${p.price}</td><td><button class="btn btn-danger" style="padding:4px;" onclick="db.collection('products').doc('${doc.id}').delete()">✖️</button></td></tr>`;
         });
+        $('productsTable').innerHTML += htmlAcc;
         $('loader').classList.add('hidden');
     }, err => { console.error('Load Error:', err); toast(err.message, 'error'); $('loader').classList.add('hidden'); });
 }
@@ -762,11 +775,13 @@ function loadAdminStock() {
     db.collection('company_stock').where('adminId', '==', currentUser.uid).onSnapshot(snap => {
         if(!$('stockTable')) return;
         $('stockTable').innerHTML = `<tr><th>${t('company')}</th><th>${t('sale_code')}</th><th>الاسم / الوصف</th><th>السعر</th><th>${t('stock_qty')}</th><th>${t('action')}</th></tr>`;
+        let htmlAcc = "";
         snap.forEach(doc => {
             let d = doc.data();
-            $('stockTable').innerHTML += `<tr><td>${d.company}</td><td>${d.code}</td><td>${d.name}</td><td>${d.price}</td><td>${d.quantity}</td>
+            htmlAcc += `<tr><td>${d.company}</td><td>${d.code}</td><td>${d.name}</td><td>${d.price}</td><td>${d.quantity}</td>
                 <td><button class="btn btn-danger" style="padding:4px;" onclick="deleteStock('${doc.id}')">✖️</button></td></tr>`;
         });
+        $('stockTable').innerHTML += htmlAcc;
         $('loader').classList.add('hidden');
     }, err => { $('loader').classList.add('hidden'); });
 }
@@ -813,8 +828,9 @@ async function loadAllAttendance() {
             let loc2Link = d.loc2 ? `<a href="https://maps.google.com/?q=${d.loc2}" target="_blank" style="text-decoration:none;">📍</a>` : '';
             let pic1Link = d.photo1 ? `<a href="#" onclick="window.open('${d.photo1}', '_blank')" style="text-decoration:none;">📷</a>` : '';
             let pic2Link = d.photo2 ? `<a href="#" onclick="window.open('${d.photo2}', '_blank')" style="text-decoration:none;">📷</a>` : '';
-            tb.innerHTML += `<tr><td>${promoterName}</td><td>${d.date}</td><td>${d.slot1?'✅':'❌'} ${loc1Link} ${pic1Link}</td><td>${d.slot2?'✅':'❌'} ${loc2Link} ${pic2Link}</td><td>B1:${b1} B2:${b2}</td></tr>`;
+            htmlAcc += `<tr><td>${promoterName}</td><td>${d.date}</td><td>${d.slot1?'✅':'❌'} ${loc1Link} ${pic1Link}</td><td>${d.slot2?'✅':'❌'} ${loc2Link} ${pic2Link}</td><td>B1:${b1} B2:${b2}</td></tr>`;
         });
+        tb.innerHTML += htmlAcc;
     } catch(err) {}
     $('loader').classList.add('hidden');
 }
