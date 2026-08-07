@@ -355,9 +355,11 @@ function buildNav() {
         links += `<li onclick="nav('admin_sales')">💰 ${t('admin_sales')}</li>`;
         links += `<li onclick="nav('admin_attendance')">${t('admin_attendance')}</li>`;
         links += `<li onclick="nav('admin_products')">${t('admin_products')}</li>`;
-        // Hide companies and users management from sub-admins bound to a specific company
-        if (!userData.company || userData.company === 'Main') {
+        
+        let isMasterAdmin = (!userData.adminId || userData.adminId === currentUser.uid);
+        if (isMasterAdmin) {
             links += `<li onclick="nav('admin_companies')">${t('admin_companies')}</li>`;
+            links += `<li onclick="nav('admin_companies_manager')">${t('admin_companies_manager')}</li>`;
             links += `<li onclick="nav('admin_users')">👥 ${t('admin_users')}</li>`;
         }
         links += `<li onclick="nav('admin_notifications')">🔔 إرسال إشعار</li>`;
@@ -804,9 +806,10 @@ async function loadAllSales() {
         
         let snap = await query.get();
         let htmlAcc = "";
+        let isMasterAdmin = (!userData.adminId || userData.adminId === currentUser.uid);
         snap.docs.forEach(doc => {
             let d = doc.data();
-            if (userData.company && userData.company !== 'Main' && d.company !== userData.company) return;
+            if (!isMasterAdmin && d.company !== userData.company) return;
             let img = d.imageUrl ? `<a href="${d.imageUrl}" target="_blank">رابط</a>` : '-';
             htmlAcc += `<tr><td>${d.company} / ${d.branch}</td><td>${d.promoterCode}</td><td>${d.itemCode}</td><td>${d.price}</td><td>${d.date}</td><td data-exclude="true">${img}</td></tr>`;
         });
@@ -930,25 +933,35 @@ async function adminAddUser() {
     $('loader').classList.add('hidden');
 }
 
+let unsubAdminAuth = null;
+let unsubAdminUsers = null;
 async function loadAdminUsers(roleFilter) {
     let tb = $('usersTable'); if(!tb) return;
     $('loader').classList.remove('hidden');
-    db.collection('auth_users').onSnapshot(snap1 => {
+    
+    if (unsubAdminAuth) unsubAdminAuth();
+    if (unsubAdminUsers) unsubAdminUsers();
+    
+    let isMasterAdmin = (!userData.adminId || userData.adminId === currentUser.uid);
+    let masterUid = userData.adminId || currentUser.uid;
+
+    unsubAdminAuth = db.collection('auth_users').onSnapshot(snap1 => {
         cachedAdminAuthUsers = snap1.docs.map(d => d.data());
-        db.collection('users').where('adminId', '==', userData.adminId || currentUser.uid).onSnapshot(snap2 => {
-            cachedAdminUsers = snap2.docs.map(d => d.data());
-            if(!$('usersTable')) return;
-            $('usersTable').innerHTML = `<tr><th>${t('role')}</th><th>${t('email')}</th><th>${t('company')}/${t('branch')}</th><th>${t('promoter_code')}</th><th>${t('target_monthly')}</th><th>${t('commission_rate')}</th><th>${t('action')}</th></tr>`;
-            let htmlAcc = "";
-            cachedAdminUsers.forEach(u => {
-                if (roleFilter && u.role !== roleFilter) return;
-                if (userData.company && userData.company !== 'Main' && u.company !== userData.company) return;
-                htmlAcc += `<tr><td><span class="badge">${u.role}</span></td><td>${u.email}</td><td>${u.company} / ${u.branch}</td><td>${u.promoterCode}</td><td>${u.target || 0}</td><td>${u.commissionRate || 0}%</td>
-                    <td><button class="btn btn-primary" style="padding:6px; font-size:12px;" onclick="editUser('${u.uid}')">✏️</button> <button class="btn btn-danger" style="padding:6px; font-size:12px;" onclick="deleteUser('${u.uid}', '${roleFilter}')">✖️</button></td></tr>`;
-            });
-            $('usersTable').innerHTML += htmlAcc;
-            $('loader').classList.add('hidden');
+    });
+    
+    unsubAdminUsers = db.collection('users').where('adminId', '==', masterUid).onSnapshot(snap2 => {
+        cachedAdminUsers = snap2.docs.map(d => d.data());
+        if(!$('usersTable')) return;
+        $('usersTable').innerHTML = `<tr><th>${t('role')}</th><th>${t('email')}</th><th>${t('company')}/${t('branch')}</th><th>${t('promoter_code')}</th><th>${t('target_monthly')}</th><th>${t('commission_rate')}</th><th>${t('action')}</th></tr>`;
+        let htmlAcc = "";
+        cachedAdminUsers.forEach(u => {
+            if (roleFilter && u.role !== roleFilter) return;
+            if (!isMasterAdmin && u.company !== userData.company) return;
+            htmlAcc += `<tr><td><span class="badge">${u.role}</span></td><td>${u.email}</td><td>${u.company} / ${u.branch}</td><td>${u.promoterCode}</td><td>${u.target || 0}</td><td>${u.commissionRate || 0}%</td>
+                <td><button class="btn btn-primary" style="padding:6px; font-size:12px;" onclick="editUser('${u.uid}')">✏️</button> <button class="btn btn-danger" style="padding:6px; font-size:12px;" onclick="deleteUser('${u.uid}', '${roleFilter}')">❌</button></td></tr>`;
         });
+        $('usersTable').innerHTML += htmlAcc;
+        $('loader').classList.add('hidden');
     });
 }
 
@@ -1029,11 +1042,12 @@ async function loadAdminProducts() {
     let tb = $('productsTable'); if(!tb) return;
     tb.innerHTML = `<tr><th>${t('company')}</th><th>${t('sale_code')}</th><th>${t('sale_desc')}</th><th>${t('sale_price')}</th><th>${t('delete')}</th></tr>`;
     $('loader').classList.remove('hidden');
+    let isMasterAdmin = (!userData.adminId || userData.adminId === currentUser.uid);
     db.collection('products').where('adminId', '==', userData.adminId || currentUser.uid).limit(100).onSnapshot(snap => {
         let htmlAcc = "";
         snap.docs.forEach(doc => {
             let p = doc.data();
-            if (userData.company && userData.company !== 'Main' && p.company !== userData.company) return;
+            if (!isMasterAdmin && p.company !== userData.company) return;
             htmlAcc += `<tr><td>${p.company}</td><td>${p.itemCode}</td><td>${p.description}</td><td>${p.price}</td><td><button class="btn btn-danger" style="padding:4px;" onclick="db.collection('products').doc('${doc.id}').delete()">❌</button></td></tr>`;
         });
         $('productsTable').innerHTML += htmlAcc;
@@ -1122,11 +1136,12 @@ function loadAdminStock() {
     let tb = $('stockTable'); if(!tb) return;
     tb.innerHTML = `<tr><th>الشركة</th><th>كود الصنف</th><th>الوصف</th><th>السعر</th><th>الكمية</th><th>حذف</th></tr>`;
     $('loader').classList.remove('hidden');
+    let isMasterAdmin = (!userData.adminId || userData.adminId === currentUser.uid);
     db.collection('company_stock').where('adminId', '==', userData.adminId || currentUser.uid).limit(100).onSnapshot(snap => {
         let htmlAcc = "";
         snap.docs.forEach(doc => {
             let p = doc.data();
-            if (userData.company && userData.company !== 'Main' && p.company !== userData.company) return;
+            if (!isMasterAdmin && p.company !== userData.company) return;
             htmlAcc += `<tr><td>${p.company}</td><td>${p.code}</td><td>${p.name}</td><td>${p.price}</td><td>${p.quantity}</td><td><button class="btn btn-danger" style="padding:4px;" onclick="deleteStockItem('${doc.id}')">❌</button></td></tr>`;
         });
         $('stockTable').innerHTML += htmlAcc;
@@ -1167,12 +1182,15 @@ async function loadAllAttendance() {
         }
         let snap = await db.collection('attendance').orderBy('date', 'desc').limit(100).get();
         let htmlAcc = "";
+        let isMasterAdmin = (!userData.adminId || userData.adminId === currentUser.uid);
         snap.docs.forEach(doc => {
             let d = doc.data();
             let user = cachedAdminUsers.find(u => u.uid === d.uid);
-            if (userData.company && userData.company !== 'Main' && (!user || user.company !== userData.company)) return;
+            
             // Ignore attendance from users not managed by this admin group
             if (user && user.adminId !== (userData.adminId || currentUser.uid)) return;
+            
+            if (!isMasterAdmin && (!user || user.company !== userData.company)) return;
             
             let b1 = d.break1 ? (d.break1.end ? '✅' : '⏳') : '❌';
             let b2 = d.break2 ? (d.break2.end ? '✅' : '⏳') : '❌';
