@@ -335,12 +335,14 @@ function nav(page) {
     }
     else if (page === 'admin_sales') {
         title = t('admin_sales');
-        content = `<div class="search-bar"><input type="text" id="s_allSales" class="input-box" placeholder="${t('search')}..." onkeyup="filterTable('s_allSales', 'allSalesTable')"><button class="btn export-btn" onclick="exportTableToExcel('allSalesTable', 'Sales')">${t('export_excel')}</button></div><div class="glass-card" style="overflow-x:auto;"><table id="allSalesTable"></table></div>`;
+        content = `<div class="glass-card" style="margin-bottom: 20px;"><div class="grid-3"><div class="fg"><label>من تاريخ</label><input type="date" id="salesStartDate" class="input-box"></div><div class="fg"><label>إلى تاريخ</label><input type="date" id="salesEndDate" class="input-box"></div><div class="fg" style="display:flex; align-items:flex-end;"><button class="btn btn-primary" onclick="loadAllSales()">تطبيق الفلتر 🔍</button></div></div></div><div class="search-bar"><input type="text" id="s_allSales" class="input-box" placeholder="${t('search')}..." onkeyup="filterTable('s_allSales', 'allSalesTable')"><button class="btn export-btn" onclick="exportTableToExcel('allSalesTable', 'Sales')">${t('export_excel')}</button></div><div class="glass-card" style="overflow-x:auto;"><table id="allSalesTable"></table></div>`;
         setTimeout(loadAllSales, 100);
     }
     else if (page === 'admin_dash') {
         title = t('admin_dash');
-        content = `<div class="grid-2"><div class="glass-card"><h4 style="text-align:center; margin-bottom:10px;">${t('sales_by_company')}</h4><canvas id="companyChart"></canvas></div><div class="glass-card"><h4 style="text-align:center; margin-bottom:10px;">${t('sales_by_branch')}</h4><canvas id="branchChart"></canvas></div></div><div class="glass-card" style="margin-top: 20px;"><h3 style="margin-bottom:15px;">🏆 أبطال المبيعات (أفضل 3 بروموترز)</h3><div id="leaderboardContainer" class="grid-3" style="gap:15px;"></div></div><div class="glass-card" style="margin-top: 20px;"><h3 style="margin-bottom:15px;">${t('top_products')}</h3><div id="topProductsContainer" class="grid-3"></div></div>`;
+        content = `<div class="glass-card" style="margin-bottom: 20px;"><div class="grid-3"><div class="fg"><label>من تاريخ</label><input type="date" id="dashStartDate" class="input-box"></div><div class="fg"><label>إلى تاريخ</label><input type="date" id="dashEndDate" class="input-box"></div><div class="fg" style="display:flex; align-items:flex-end;"><button class="btn btn-primary" onclick="loadDashboard()">تطبيق الفلتر 🔍</button></div></div></div>
+        <div class="glass-card" style="margin-bottom: 20px;"><h3 style="color:var(--rd); margin-bottom:15px;">نواقص المخزون ⚠️</h3><div id="lowStockContainer" style="max-height: 200px; overflow-y: auto;"></div></div>
+        <div class="grid-2"><div class="glass-card"><h4 style="text-align:center; margin-bottom:10px;">${t('sales_by_company')}</h4><canvas id="companyChart"></canvas></div><div class="glass-card"><h4 style="text-align:center; margin-bottom:10px;">${t('sales_by_branch')}</h4><canvas id="branchChart"></canvas></div></div><div class="glass-card" style="margin-top: 20px;"><h3 style="margin-bottom:15px;">🏆 أبطال المبيعات (أفضل 3 بروموترز)</h3><div id="leaderboardContainer" class="grid-3" style="gap:15px;"></div></div><div class="glass-card" style="margin-top: 20px;"><h3 style="margin-bottom:15px;">${t('top_products')}</h3><div id="topProductsContainer" class="grid-3"></div></div>`;
         setTimeout(loadDashboard, 100);
     }
     else if (page === 'admin_promoters' || page === 'admin_admins') {
@@ -721,21 +723,54 @@ async function loadMyAttendance() {
 async function loadAllSales() {
     let tb = $('allSalesTable'); if(!tb) return;
     tb.innerHTML = `<tr><th>الشركة/الفرع</th><th>البروموتر</th><th>المنتج</th><th>السعر</th><th>التاريخ</th><th>صورة</th></tr>`;
+    
+    let sd = $('salesStartDate') ? $('salesStartDate').value : '';
+    let ed = $('salesEndDate') ? $('salesEndDate').value : '';
+    
+    $('loader').classList.remove('hidden');
     try {
-        let snap = await db.collection('sales').orderBy('timestamp', 'desc').limit(50).get();
+        let query = db.collection('sales').orderBy('timestamp', 'desc');
+        if (sd) { let start = new Date(sd); start.setHours(0,0,0,0); query = query.where('timestamp', '>=', start); }
+        if (ed) { let end = new Date(ed); end.setHours(23,59,59,999); query = query.where('timestamp', '<=', end); }
+        query = query.limit(200);
+        
+        let snap = await query.get();
         let htmlAcc = "";
         snap.docs.forEach(doc => {
             let d = doc.data(), img = d.imageUrl ? `<a href="${d.imageUrl}" target="_blank">رابط</a>` : '-';
             htmlAcc += `<tr><td>${d.company} / ${d.branch}</td><td>${d.promoterCode}</td><td>${d.itemCode}</td><td>${d.price}</td><td>${d.date}</td><td>${img}</td></tr>`;
         });
         tb.innerHTML += htmlAcc;
-    } catch(err) {}
+    } catch(err) { console.log(err); }
+    $('loader').classList.add('hidden');
 }
 
 async function loadDashboard() {
     let compObj = {}, brObj = {}, prodObj = {}, promoterObj = {};
+    let sd = $('dashStartDate') ? $('dashStartDate').value : '';
+    let ed = $('dashEndDate') ? $('dashEndDate').value : '';
+
+    $('loader').classList.remove('hidden');
     try {
-        let snap = await db.collection('sales').limit(200).get(); 
+        // Low Stock
+        let lsCont = $('lowStockContainer');
+        if(lsCont) {
+            lsCont.innerHTML = '';
+            let stockSnap = await db.collection('company_stock').where('quantity', '<=', 5).limit(20).get();
+            let lsHtml = "";
+            stockSnap.docs.forEach(doc => {
+                let s = doc.data();
+                lsHtml += `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between;"><span>${s.company} - ${s.name} (${s.code})</span> <strong style="color:var(--rd);">${s.quantity} قطع</strong></div>`;
+            });
+            lsCont.innerHTML = lsHtml || '<div style="padding:10px; color:var(--gn);">المخزون ممتاز، لا يوجد نواقص.</div>';
+        }
+
+        // Sales data
+        let query = db.collection('sales').orderBy('timestamp', 'desc');
+        if (sd) { let start = new Date(sd); start.setHours(0,0,0,0); query = query.where('timestamp', '>=', start); }
+        if (ed) { let end = new Date(ed); end.setHours(23,59,59,999); query = query.where('timestamp', '<=', end); }
+        let snap = await query.limit(500).get(); 
+
         snap.docs.forEach(doc => {
             let d = doc.data();
             compObj[d.company] = (compObj[d.company] || 0) + d.price; brObj[d.branch] = (brObj[d.branch] || 0) + d.price;
@@ -753,15 +788,25 @@ async function loadDashboard() {
             lbCont.innerHTML = '';
             let topPromoters = Object.entries(promoterObj).sort((a,b) => b[1] - a[1]).slice(0, 3);
             let medals = ['🥇', '🥈', '🥉'];
+            
+            // Get targets
+            let usersSnap = await db.collection('users').where('role', '==', 'promoter').get();
+            let targets = {}; usersSnap.docs.forEach(d => targets[d.data().promoterCode] = d.data().target || 0);
+
             let htmlAcc = "";
-        topPromoters.forEach((p, i) => {
+            topPromoters.forEach((p, i) => {
+                let target = targets[p[0]] || 0;
+                let pct = target > 0 ? Math.min((p[1]/target)*100, 100) : 0;
+                let pctStr = pct.toFixed(1) + '%';
                 htmlAcc += `<div style="background:rgba(16,185,129,0.1); border:1px solid var(--gn); padding:15px; border-radius:8px; text-align:center;">
                     <div style="font-size:3rem; margin-bottom:10px;">${medals[i] || '🏅'}</div>
                     <h4 style="margin:0 0 5px 0;">${p[0]}</h4>
                     <strong style="color:var(--gn); font-size:1.2rem;">${p[1]}</strong>
+                    <div style="font-size:0.8rem; color:var(--tx2); margin-top:5px;">التارجت: ${target}</div>
+                    <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; margin-top:5px; overflow:hidden;"><div style="width:${pctStr}; height:100%; background:var(--gn);"></div></div>
                 </div>`;
             });
-        lbCont.innerHTML += htmlAcc;
+            lbCont.innerHTML += htmlAcc;
         }
 
         let tpCont = $('topProductsContainer'); tpCont.innerHTML = '';
@@ -770,7 +815,8 @@ async function loadDashboard() {
             let prodsHtml = sortedProds.map(p => `<li style="display:flex; justify-content:space-between; font-size:0.8rem; margin-top:5px; border-bottom:1px solid rgba(255,255,255,0.05);"><span>${p[0]}</span> <strong>${p[1]}</strong></li>`).join('');
             tpCont.innerHTML += `<div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:8px;"><h4 style="color:var(--am); margin-bottom:10px;">${c}</h4><ul style="list-style:none; padding:0;">${prodsHtml}</ul></div>`;
         }
-    } catch(err) {}
+    } catch(err) { console.log(err); }
+    $('loader').classList.add('hidden');
 }
 
 let cachedAdminUsers = [], cachedAdminAuthUsers = [];
