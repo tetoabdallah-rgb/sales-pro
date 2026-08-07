@@ -24,31 +24,28 @@
 
 
 
+
 <style id="ultimate-layout-fix">
   @media screen and (min-width: 901px) {
     #APP {
-      display: flex !important;
-      flex-direction: row !important;
+      display: block !important;
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
       overflow-x: hidden !important;
     }
-    #APP::before {
-      content: "";
-      display: block;
-      width: 280px !important;
-      flex-shrink: 0 !important;
-    }
     .mw {
       margin: 0 !important;
       padding: 24px 32px !important;
-      width: calc(100% - 280px) !important;
-      max-width: calc(100% - 280px) !important;
-      flex: 1 1 0% !important;
-      min-width: 0 !important;
+      padding-right: 312px !important; 
+      width: 100% !important;
+      max-width: 100% !important;
       box-sizing: border-box !important;
       overflow-x: hidden !important;
+    }
+    body.en .mw {
+      padding-right: 32px !important;
+      padding-left: 312px !important;
     }
   }
 </style>
@@ -171,6 +168,7 @@
   <script src="scripts/main.js?v=12"></script>
 </body>
 </html>
+
 
 
 
