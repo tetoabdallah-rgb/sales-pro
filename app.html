@@ -33,6 +33,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -335,7 +336,7 @@ function nav(page) {
     }
     else if (page === 'admin_sales') {
         title = t('admin_sales');
-        content = `<div class="glass-card" style="margin-bottom: 20px;"><div class="grid-3"><div class="fg"><label>من تاريخ</label><input type="date" id="salesStartDate" class="input-box"></div><div class="fg"><label>إلى تاريخ</label><input type="date" id="salesEndDate" class="input-box"></div><div class="fg" style="display:flex; align-items:flex-end;"><button class="btn btn-primary" onclick="loadAllSales()">تطبيق الفلتر 🔍</button></div></div></div><div class="search-bar"><input type="text" id="s_allSales" class="input-box" placeholder="${t('search')}..." onkeyup="filterTable('s_allSales', 'allSalesTable')"><button class="btn export-btn" onclick="exportTableToExcel('allSalesTable', 'Sales')">${t('export_excel')}</button></div><div class="glass-card" style="overflow-x:auto;"><table id="allSalesTable"></table></div>`;
+        content = `<div class="glass-card" style="margin-bottom: 20px;"><div class="grid-3"><div class="fg"><label>من تاريخ</label><input type="date" id="salesStartDate" class="input-box"></div><div class="fg"><label>إلى تاريخ</label><input type="date" id="salesEndDate" class="input-box"></div><div class="fg" style="display:flex; align-items:flex-end;"><button class="btn btn-primary" onclick="loadAllSales()">تطبيق الفلتر 🔍</button></div></div></div><div class="search-bar"><input type="text" id="s_allSales" class="input-box" placeholder="${t('search')}..." onkeyup="filterTable('s_allSales', 'allSalesTable')"><button class="btn export-btn" onclick="exportTableToExcel('allSalesTable', 'Sales')">${t('export_excel')}</button><button class="btn btn-danger" style="margin-right:10px; padding:8px 15px;" onclick="exportSalesToPDF()">تصدير PDF 📄</button></div><div class="glass-card" style="overflow-x:auto;" id="salesTableContainer"><table id="allSalesTable"></table></div>`;
         setTimeout(loadAllSales, 100);
     }
     else if (page === 'admin_dash') {
@@ -738,11 +739,36 @@ async function loadAllSales() {
         let htmlAcc = "";
         snap.docs.forEach(doc => {
             let d = doc.data(), img = d.imageUrl ? `<a href="${d.imageUrl}" target="_blank">رابط</a>` : '-';
-            htmlAcc += `<tr><td>${d.company} / ${d.branch}</td><td>${d.promoterCode}</td><td>${d.itemCode}</td><td>${d.price}</td><td>${d.date}</td><td>${img}</td></tr>`;
+            htmlAcc += `<tr><td>${d.company} / ${d.branch}</td><td>${d.promoterCode}</td><td>${d.itemCode}</td><td>${d.price}</td><td>${d.date}</td><td data-exclude="true">${img}</td></tr>`;
         });
         tb.innerHTML += htmlAcc;
     } catch(err) { console.log(err); }
     $('loader').classList.add('hidden');
+}
+
+async function exportSalesToPDF() {
+    $('loader').classList.remove('hidden');
+    let element = document.getElementById('salesTableContainer').cloneNode(true);
+    let trs = element.querySelectorAll("tr");
+    trs.forEach(tr => {
+        let tds = tr.querySelectorAll("td[data-exclude='true'], th[data-exclude='true']");
+        tds.forEach(td => td.remove());
+        if(tr.children.length > 5) {
+            tr.children[5].remove();
+        }
+    });
+    
+    let opt = {
+      margin:       1,
+      filename:     'Sales_Report.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+    };
+    
+    html2pdf().set(opt).from(element).save().then(() => {
+        $('loader').classList.add('hidden');
+    });
 }
 
 async function loadDashboard() {
@@ -1083,11 +1109,11 @@ async function loadAllAttendance() {
             let b2 = d.break2 ? (d.break2.end ? '✅' : '⏳') : '❌';
             let user = cachedAdminUsers.find(u => u.uid === d.uid);
             let promoterName = user ? (user.email.split('@')[0] + ' (' + user.promoterCode + ')') : d.uid.substring(0,8);
-            let loc1Link = d.loc1 ? `<a href="https://maps.google.com/?q=${d.loc1}" target="_blank" style="text-decoration:none;">📍</a>` : '';
-            let loc2Link = d.loc2 ? `<a href="https://maps.google.com/?q=${d.loc2}" target="_blank" style="text-decoration:none;">📍</a>` : '';
-            let pic1Link = d.photo1 ? `<a href="#" onclick="window.open('${d.photo1}', '_blank')" style="text-decoration:none;">📷</a>` : '';
-            let pic2Link = d.photo2 ? `<a href="#" onclick="window.open('${d.photo2}', '_blank')" style="text-decoration:none;">📷</a>` : '';
-            htmlAcc += `<tr><td>${promoterName}</td><td>${d.date}</td><td>${d.slot1?'✅':'❌'} ${loc1Link} ${pic1Link}</td><td>${d.slot2?'✅':'❌'} ${loc2Link} ${pic2Link}</td><td>B1:${b1} B2:${b2}</td></tr>`;
+            let loc1Link = d.loc1 ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:12px; border-radius:4px;" onclick="window.open('https://maps.google.com/?q=${d.loc1}', '_blank')">خريطة 📍</button>` : '';
+            let loc2Link = d.loc2 ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:12px; border-radius:4px;" onclick="window.open('https://maps.google.com/?q=${d.loc2}', '_blank')">خريطة 📍</button>` : '';
+            let pic1Link = d.photo1 ? `<button class="btn btn-success" style="padding:4px 8px; font-size:12px; border-radius:4px; margin-right:5px;" onclick="window.open('${d.photo1}', '_blank')">صورة 📷</button>` : '';
+            let pic2Link = d.photo2 ? `<button class="btn btn-success" style="padding:4px 8px; font-size:12px; border-radius:4px; margin-right:5px;" onclick="window.open('${d.photo2}', '_blank')">صورة 📷</button>` : '';
+            htmlAcc += `<tr><td>${promoterName}</td><td>${d.date}</td><td>${d.slot1?'✅':'❌'} <div style="margin-top:5px;">${loc1Link} ${pic1Link}</div></td><td>${d.slot2?'✅':'❌'} <div style="margin-top:5px;">${loc2Link} ${pic2Link}</div></td><td>B1:${b1} B2:${b2}</td></tr>`;
         });
         tb.innerHTML += htmlAcc;
     } catch(err) {}
