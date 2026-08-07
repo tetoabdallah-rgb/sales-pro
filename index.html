@@ -22,20 +22,33 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 
+
+
 <style id="ultimate-layout-fix">
-  @media (min-width: 901px) {
-    .mw {
-      margin-right: 0 !important;
-      margin-left: 0 !important;
-      padding-right: 312px !important;
-      padding-left: 32px !important;
+  @media screen and (min-width: 901px) {
+    #APP {
+      display: flex !important;
+      flex-direction: row !important;
       width: 100% !important;
-      box-sizing: border-box !important;
       max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
     }
-    body.en .mw {
-      padding-left: 312px !important;
-      padding-right: 32px !important;
+    #APP::before {
+      content: "";
+      display: block;
+      width: 280px !important;
+      flex-shrink: 0 !important;
+    }
+    .mw {
+      margin: 0 !important;
+      padding: 24px 32px !important;
+      width: calc(100% - 280px) !important;
+      max-width: calc(100% - 280px) !important;
+      flex: 1 1 0% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
     }
   }
 </style>
@@ -158,6 +171,8 @@
   <script src="scripts/main.js?v=12"></script>
 </body>
 </html>
+
+
 
 
 
