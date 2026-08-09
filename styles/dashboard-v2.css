@@ -202,3 +202,19 @@
       .target-ring { width:140px; height:140px; }
     }
   
+
+/* Fix Dark Mode Variable Inheritance */
+html[data-theme="dark"] {
+  --paper: var(--bg);
+  --surface: var(--bg2);
+  --surface-2: var(--bg4);
+  --ink: var(--tx1);
+  --muted: var(--tx2);
+  --line: var(--bd);
+  --line-strong: var(--bd-s);
+}
+
+/* Global Text Contrast Fixes for Dashboard */
+.card, .stat, .panel { color: var(--tx1); }
+.card h1, .card h2, .card h3, .card span, .card strong, .card div, .card small, .stat-value, .stat-head, .stat-foot, .panel-title, .deal-company, .activity small, .activity time, th, td, .customer small, .page-head p, .empty { color: var(--tx1); }
+
