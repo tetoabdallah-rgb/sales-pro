@@ -688,27 +688,26 @@ function rDash() {
     `;
     
     $('M').innerHTML = `
-        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
+        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px; margin-bottom: 24px;">
+            <h1 style="display:flex;align-items:center;gap:12px; margin:0;"><i data-lucide="layout-dashboard" style="width:28px;height:28px;"></i> ${t('dash')}</h1>
             ${dateFilterUI}
         </div>
-        <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Cust.'):'Cust.'}</div><div class="vl">${aFmt(Object.keys(cu).length)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'تحصيل إكسسوارات':'Acc Coll.'}</div><div class="vl">${aFmt(accTot)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?'تحصيل هاردوير':'HW Coll.'}</div><div class="vl">${aFmt(hwTot)}</div></div>
+        <div class="stats">
+          <article class="stat"><div class="stat-head"><span>${L==='ar'?'إجمالي المبيعات':'Total Sales'}</span><span class="stat-icon"><i data-lucide="wallet-cards" width="16" height="16"></i></span></div><div class="stat-value">${aFmt(ts)} <small>${L==='ar'?'ج.م':'EGP'}</small></div><div class="stat-foot"><span>${Object.keys(cu).length} ${L==='ar'?'عميل':'Customers'}</span></div></article>
+          <article class="stat"><div class="stat-head"><span>${L==='ar'?'إجمالي الأرباح':'Total Profit'}</span><span class="stat-icon"><i data-lucide="trending-up" width="16" height="16"></i></span></div><div class="stat-value">${aFmt(tp)} <small>${L==='ar'?'ج.م':'EGP'}</small></div><div class="stat-foot"><span>${L==='ar'?'الهامش:':'Margin:'} ${(ts>0?tp/ts*100:0).toFixed(1)}%</span></div></article>
+          <article class="stat"><div class="stat-head"><span>${L==='ar'?'تحصيل الإكسسوارات':'Acc Collection'}</span><span class="stat-icon"><i data-lucide="headphones" width="16" height="16"></i></span></div><div class="stat-value">${aFmt(accTot)} <small>${L==='ar'?'ج.م':'EGP'}</small></div></article>
+          <article class="stat"><div class="stat-head"><span>${L==='ar'?'تحصيل الهاردوير':'HW Collection'}</span><span class="stat-icon"><i data-lucide="laptop" width="16" height="16"></i></span></div><div class="stat-value">${aFmt(hwTot)} <small>${L==='ar'?'ج.م':'EGP'}</small></div></article>
         </div>
-        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, ts)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tp)}</div>
+
+        <div class="dashboard-grid">
+          <section class="panel"><div class="panel-head"><div><h2 class="panel-title">${L==='ar'?'إيقاع المبيعات':'Sales Rhythm'}</h2><p class="panel-sub">${L==='ar'?'المبيعات اليومية':'Daily Sales'}</p></div></div><div class="chart-wrap"><canvas id="cD"></canvas></div></section>
+          <section class="panel target-panel"><div class="target-top"><div><h2>${L==='ar'?'تقدم التارجت':'Target Progress'}</h2><p>${L==='ar'?'أداء الفريق':'Team Performance'}</p></div></div><div class="target-ring"><svg viewBox="0 0 160 160" aria-hidden="true"><circle class="ring-bg" cx="80" cy="80" r="66" fill="none" stroke-width="12"></circle><circle class="ring-value" cx="80" cy="80" r="66" fill="none" stroke-width="12" stroke-dasharray="414.7" stroke-dashoffset="${414.7 - (Math.min(ap, 100) / 100 * 414.7)}"></circle></svg><div class="ring-content"><strong>${ap.toFixed(0)}%</strong><span>${L==='ar'?'من التارجت':'of Target'}</span></div></div><div class="target-numbers"><div class="target-number"><small>${L==='ar'?'المحقق':'Achieved'}</small><strong>${aFmt(ts)}</strong></div><div class="target-number"><small>${L==='ar'?'المتبقي':'Remaining'}</small><strong>${aFmt(Math.max(0, tt-ts))}</strong></div></div></section>
+        </div>
         
-        <div class="cg">
-            <div class="cc"><h3>${L==='ar'?TUI('Daily'):'Daily'}</h3><div class="cw"><canvas id="cD"></canvas></div></div>
-            <div class="cc"><h3>${L==='ar'?TUI('Cats'):'Cats'}</h3><div class="cw"><canvas id="cC"></canvas></div></div>
+        <div class="dashboard-grid" style="margin-top: 16px;">
+          <section class="panel" style="width:100%;"><div class="panel-head"><div><h2 class="panel-title">${L==='ar'?'المبيعات حسب الفئة':'Sales by Category'}</h2></div></div><div class="chart-wrap"><canvas id="cC"></canvas></div></section>
         </div>
-    `;
+`;
     
     // Attach filter events
     ['dfStart', 'dfEnd'].forEach(id => {
@@ -831,6 +830,8 @@ function rDash() {
                         }
                     }}}
         });
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+
     }
 }
 
