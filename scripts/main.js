@@ -2405,7 +2405,7 @@ function rAl() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.alerts}</span> ${t('alerts')}</h1></div>
         <div class="kg"><div class="ki"><div class="lb">${L==='ar'?TUI('Alerts'):'Alerts'}</div><div class="vl">${aFmt(alerts.length)}</div></div></div>
         <div class="card">
-            ${alerts.length===0?`<p style="text-align:center;color:var(--tx2);">? ${L==='ar'?TUI('No alerts'):'No alerts'}</p>`:alerts.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:10px;margin-bottom:8px;background:var(--bg3);border-radius:8px;border-left:3px solid ${a.type==='danger'?'var(--rd)':'var(--am)'}"><span style="font-size:1.2rem;">${a.icon}</span><span style="font-size:0.85rem;">${a.msg}</span></div>`).join('')}
+            ${alerts.length===0?`<p style="text-align:center;color:var(--tx2);">? ${L==='ar'?TUI('No alerts'):'No alerts'}</p>`:alerts.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:10px;background:var(--bg2);border-radius:10px;border-left:4px solid ${a.type==='danger'?'var(--rd)':'var(--am)'}; box-shadow:var(--sh); color:var(--tx1); font-weight:600;"><span style="font-size:1.3rem;">${a.icon}</span><span style="font-size:0.95rem;">${a.msg}</span></div>`).join('')}
         </div>
     `;
 }
@@ -2439,8 +2439,8 @@ function rAI() {
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.ai}</span> ${t('ai')}</h1></div>
         
         <div class="card" style="margin-bottom:20px;">
-            <h3 style="margin-bottom:16px;">${L==='ar'?TUI('Quick Smart Insights'):'Quick Smart Insights'}</h3>
-            ${insights.length===0?`<p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('Upload your data to get AI insights'):'Upload your data to get AI insights'}</p>`:insights.map(i=>`<div style="display:flex;gap:12px;padding:12px;margin-bottom:10px;background:var(--bg3);border-radius:10px;border-left:3px solid ${i.color};"><span style="font-size:1.3rem;">${i.icon}</span><span style="font-size:0.85rem;line-height:1.5;">${i.text}</span></div>`).join('')}
+            <h3 style="margin-bottom:16px; color:var(--tx1);">${L==='ar'?TUI('Quick Smart Insights'):'Quick Smart Insights'}</h3>
+            ${insights.length===0?`<p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('Upload your data to get AI insights'):'Upload your data to get AI insights'}</p>`:insights.map(i=>`<div style="display:flex;gap:12px;padding:14px;margin-bottom:10px;background:var(--bg2);border-radius:10px;border-left:4px solid ${i.color}; box-shadow:var(--sh); color:var(--tx1); font-weight:600;"><span style="font-size:1.3rem;">${i.icon}</span><span style="font-size:0.95rem;line-height:1.5;">${i.text}</span></div>`).join('')}
         </div>
 
         <div class="card" style="display:flex; flex-direction:column; height:500px;">
