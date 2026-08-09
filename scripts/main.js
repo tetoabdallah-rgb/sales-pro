@@ -1637,22 +1637,22 @@ function rAn() {
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;" class="rg-grid">
             <div class="card">
-                <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Regions'):'Regions'}</h3>
-                ${topReg.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:0.8rem;"><span>${n}</span><strong>${fmt(v)}</strong></div>`).join('')}
+                <h3 style="margin-bottom:12px; color:var(--tx1);">${L==='ar'?TUI('Regions'):'Regions'}</h3>
+                ${topReg.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem; color:var(--tx1);"><span style="color:var(--tx1);">${n}</span><strong style="color:var(--tx1);">${fmt(v)}</strong></div>`).join('')}
             </div>
             <div class="card">
-                <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Top Categories'):'Top Categories'}</h3>
-                ${topCats.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:0.8rem;"><span>${n}</span><strong>${fmt(v)}</strong></div>`).join('')}
+                <h3 style="margin-bottom:12px; color:var(--tx1);">${L==='ar'?TUI('Top Categories'):'Top Categories'}</h3>
+                ${topCats.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem; color:var(--tx1);"><span style="color:var(--tx1);">${n}</span><strong style="color:var(--tx1);">${fmt(v)}</strong></div>`).join('')}
             </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
             <div class="card" style="border-top:4px solid var(--gn);">
-                <h3 style="margin-bottom:12px;">${L==='ar'?'أفضل 10 أصناف مبيعاً':'Top 10 Items'}</h3>
-                ${topItems.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;" title="${n}">${n}</span><strong style="color:var(--gn);">${fmt(v)}</strong></div>`).join('')}
+                <h3 style="margin-bottom:12px; color:var(--tx1);">${L==='ar'?'أفضل 10 أصناف مبيعاً':'Top 10 Items'}</h3>
+                ${topItems.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem; color:var(--tx1);"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px; color:var(--tx1);" title="${n}">${n}</span><strong style="color:var(--gn);">${fmt(v)}</strong></div>`).join('')}
             </div>
             <div class="card" style="border-top:4px solid var(--rd);">
-                <h3 style="margin-bottom:12px;">${L==='ar'?'أقل 10 أصناف مبيعاً':'Bottom 10 Items'}</h3>
-                ${bottomItems.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem;"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;" title="${n}">${n}</span><strong style="color:var(--rd);">${fmt(v)}</strong></div>`).join('')}
+                <h3 style="margin-bottom:12px; color:var(--tx1);">${L==='ar'?'أقل 10 أصناف مبيعاً':'Bottom 10 Items'}</h3>
+                ${bottomItems.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:0.85rem; color:var(--tx1);"><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px; color:var(--tx1);" title="${n}">${n}</span><strong style="color:var(--rd);">${fmt(v)}</strong></div>`).join('')}
             </div>
         </div>
     `;
