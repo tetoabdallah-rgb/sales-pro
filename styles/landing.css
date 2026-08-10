@@ -133,12 +133,12 @@
 .landing-container {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
+  max-width: 1000px;
   width: 100%;
   padding: 40px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 60px;
   align-items: center;
 }
 
@@ -153,6 +153,8 @@
   justify-content: space-between;
   align-items: center;
   z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 .landing-brand {
   font-size: 24px;
