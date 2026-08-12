@@ -541,13 +541,23 @@ if ($('bLog')) {
         
         $('bLog').textContent = 'جاري التحميل...';
         auth.signInWithEmailAndPassword(e, p).catch(err => {
-            if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'){
+            let code = err.code || '';
+            let msg = err.message || '';
+            if(code === 'auth/user-not-found' || code === 'auth/invalid-credential' || code === 'auth/invalid-login-credentials' || code === 'auth/wrong-password' || msg.includes('INVALID_LOGIN_CREDENTIALS')){
                 auth.createUserWithEmailAndPassword(e, p).catch(err2 => {
-                    $('aErr').textContent = err2.message;
+                    let code2 = err2.code || '';
+                    let msg2 = err2.message || '';
+                    if (code2 === 'auth/email-already-in-use' || msg2.includes('EMAIL_EXISTS')) {
+                        $('aErr').textContent = 'كلمة المرور غير صحيحة، أو الحساب موجود بالفعل.';
+                    } else if (code2 === 'auth/weak-password' || msg2.includes('WEAK_PASSWORD')) {
+                        $('aErr').textContent = 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.';
+                    } else {
+                        $('aErr').textContent = msg2.includes('{') ? 'حدث خطأ أثناء إنشاء الحساب، تأكد من صحة البيانات.' : msg2;
+                    }
                     $('bLog').textContent = 'دخول / حساب جديد';
                 });
             } else {
-                $('aErr').textContent = err.message;
+                $('aErr').textContent = msg.includes('{') ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : msg;
                 $('bLog').textContent = 'دخول / حساب جديد';
             }
         });
