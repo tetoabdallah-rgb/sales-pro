@@ -259,6 +259,7 @@ window.rStock = function rStock() {
         <div class="stock-title">📦 إدارة المخزون</div>
         <div class="stock-actions">
             <button class="btn-stock btn-stock-gray" id="stockManageCatsBtn">🗂️ الفئات</button>
+            <button class="btn-stock btn-stock-outline" id="stockExcelImportBtn">📥 رفع Excel</button>
             <button class="btn-stock btn-stock-pdf" id="stockPdfBtn">📄 تصدير PDF</button>
             <button class="btn-stock btn-stock-primary" id="stockAddBtn">+ إضافة منتج</button>
         </div>
@@ -441,7 +442,101 @@ window.rStock = function rStock() {
             </div>
         </div>
     </div>
+
+    <!-- Excel Import Modal -->
+    <div class="stock-modal-overlay" id="excelImportModal">
+        <div class="stock-modal" style="max-width:580px;">
+            <div class="stock-modal-header">
+                <div class="stock-modal-title">📥 استيراد من Excel</div>
+                <button class="stock-modal-close" id="excelImportClose">✕</button>
+            </div>
+            <div class="stock-modal-body">
+
+                <!-- Drop Zone -->
+                <div id="excelDropZone" style="border:2px dashed var(--bd);border-radius:16px;padding:36px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg2);position:relative;margin-bottom:16px;">
+                    <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
+                    <div id="excelDropContent">
+                        <div style="font-size:2.5rem;margin-bottom:10px;">📊</div>
+                        <div style="font-weight:800;font-size:1rem;color:var(--tx1);margin-bottom:6px;">اسحب ملف Excel هنا أو اضغط للاختيار</div>
+                        <div style="font-size:0.82rem;color:var(--tx3);">.xlsx / .xls / .csv — نفس هيكل الشيت (كود، وصف، سعر مستخدم، سعر ديلر، براند، فئة)</div>
+                    </div>
+                    <div id="excelFileChosen" style="display:none;">
+                        <div style="font-size:2rem;margin-bottom:8px;">✅</div>
+                        <div id="excelFileName" style="font-weight:800;color:var(--ac);font-size:0.95rem;"></div>
+                        <div id="excelRowCount" style="font-size:0.82rem;color:var(--tx3);margin-top:4px;"></div>
+                    </div>
+                </div>
+
+                <!-- Column mapping legend -->
+                <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:16px;font-size:0.82rem;">
+                    <div style="font-weight:800;color:var(--tx1);margin-bottom:8px;">🗂️ تعيين الأعمدة المتوقع:</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;color:var(--tx2);">
+                        <span>📌 العمود 1 → كود المنتج</span>
+                        <span>📝 العمود 2 → الاسم / الوصف</span>
+                        <span>💰 العمود 3 → سعر المستخدم</span>
+                        <span>🤝 العمود 4 → سعر الديلر (التكلفة)</span>
+                        <span>🏷️ العمود 5 → البراند (الفئة)</span>
+                        <span>📂 العمود 6 → تصنيف المنتج</span>
+                    </div>
+                </div>
+
+                <!-- Import Mode -->
+                <div style="margin-bottom:16px;">
+                    <div style="font-size:0.82rem;font-weight:700;color:var(--tx2);margin-bottom:8px;">طريقة الاستيراد:</div>
+                    <div style="display:flex;gap:10px;">
+                        <label style="flex:1;display:flex;align-items:center;gap:8px;background:var(--bg2);border:2px solid var(--bd);border-radius:10px;padding:12px 14px;cursor:pointer;transition:.2s;" id="importModeReplaceLabel">
+                            <input type="radio" name="importMode" value="replace" checked style="accent-color:var(--ac);">
+                            <div>
+                                <div style="font-weight:700;font-size:.88rem;color:var(--tx1);">استبدال الكل</div>
+                                <div style="font-size:.75rem;color:var(--tx3);">مسح المخزون الحالي وإستيراد الجديد</div>
+                            </div>
+                        </label>
+                        <label style="flex:1;display:flex;align-items:center;gap:8px;background:var(--bg2);border:2px solid var(--bd);border-radius:10px;padding:12px 14px;cursor:pointer;transition:.2s;" id="importModeMergeLabel">
+                            <input type="radio" name="importMode" value="merge" style="accent-color:var(--ac);">
+                            <div>
+                                <div style="font-weight:700;font-size:.88rem;color:var(--tx1);">دمج / تحديث</div>
+                                <div style="font-size:.75rem;color:var(--tx3);">إضافة للمخزون الحالي (تحديث بنفس الكود)</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div id="excelPreviewSection" style="display:none;">
+                    <div style="font-size:0.82rem;font-weight:700;color:var(--tx2);margin-bottom:8px;">معاينة أول 5 صفوف:</div>
+                    <div style="overflow-x:auto;border:1px solid var(--bd);border-radius:10px;">
+                        <table id="excelPreviewTable" style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+                            <thead style="background:var(--bg3);">
+                                <tr>
+                                    <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap;">الكود</th>
+                                    <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd);">الاسم</th>
+                                    <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap;">سعر المستخدم</th>
+                                    <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap;">سعر الديلر</th>
+                                    <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap;">البراند</th>
+                                    <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd);">الفئة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="excelPreviewBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Progress bar -->
+                <div id="excelProgressWrap" style="display:none;margin-top:16px;">
+                    <div style="font-size:0.82rem;color:var(--tx2);margin-bottom:6px;" id="excelProgressText">جاري الاستيراد...</div>
+                    <div style="background:var(--bg3);border-radius:999px;height:8px;overflow:hidden;">
+                        <div id="excelProgressBar" style="height:100%;background:var(--ac);width:0%;transition:width .3s;border-radius:999px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="stock-modal-footer">
+                <button class="btn-stock btn-stock-gray" id="excelImportCancel">إلغاء</button>
+                <button class="btn-stock btn-stock-primary" id="excelImportConfirm" disabled style="opacity:.5;">📥 استيراد المنتجات</button>
+            </div>
+        </div>
+    </div>
     `;
+
 
     attachStockEvents();
 };
@@ -784,7 +879,183 @@ function attachStockEvents() {
     function closePdfModal() {
         document.getElementById('pdfModal')?.classList.remove('active');
     }
+
+    /* ── Excel Import ── */
+    let parsedExcelRows = [];
+
+    document.getElementById('stockExcelImportBtn')?.addEventListener('click', () => {
+        parsedExcelRows = [];
+        // Reset modal UI
+        const fi = document.getElementById('excelFileInput');
+        if (fi) fi.value = '';
+        const dc = document.getElementById('excelDropContent');
+        const fc = document.getElementById('excelFileChosen');
+        if (dc) dc.style.display = 'block';
+        if (fc) fc.style.display = 'none';
+        const ps = document.getElementById('excelPreviewSection');
+        if (ps) ps.style.display = 'none';
+        const pw = document.getElementById('excelProgressWrap');
+        if (pw) pw.style.display = 'none';
+        const confirmBtn = document.getElementById('excelImportConfirm');
+        if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.style.opacity = '.5'; }
+        document.getElementById('excelImportModal')?.classList.add('active');
+    });
+
+    document.getElementById('excelImportClose')?.addEventListener('click', () => {
+        document.getElementById('excelImportModal')?.classList.remove('active');
+    });
+    document.getElementById('excelImportCancel')?.addEventListener('click', () => {
+        document.getElementById('excelImportModal')?.classList.remove('active');
+    });
+    document.getElementById('excelImportModal')?.addEventListener('click', e => {
+        if (e.target.id === 'excelImportModal') document.getElementById('excelImportModal')?.classList.remove('active');
+    });
+
+    // Drag & drop highlight
+    const dz = document.getElementById('excelDropZone');
+    if (dz) {
+        dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--ac)'; dz.style.background = 'color-mix(in srgb,var(--ac) 5%,var(--bg2))'; });
+        dz.addEventListener('dragleave', () => { dz.style.borderColor = 'var(--bd)'; dz.style.background = 'var(--bg2)'; });
+        dz.addEventListener('drop', e => {
+            e.preventDefault();
+            dz.style.borderColor = 'var(--bd)'; dz.style.background = 'var(--bg2)';
+            const file = e.dataTransfer.files[0];
+            if (file) handleExcelFile(file);
+        });
+    }
+
+    document.getElementById('excelFileInput')?.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) handleExcelFile(file);
+    });
+
+    function handleExcelFile(file) {
+        if (!file) return;
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['xlsx','xls','csv'].includes(ext)) {
+            showToast('❌ الملف يجب يكون .xlsx أو .xls أو .csv', 'error');
+            return;
+        }
+
+        // Check if XLSX library loaded
+        if (typeof XLSX === 'undefined') {
+            showToast('❌ مكتبة قراءة Excel غير محملة. تأكد من الاتصال بالإنترنت', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            try {
+                const data = new Uint8Array(ev.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellText: true, cellDates: false });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                // Read as array of arrays, skip header row (row 1)
+                const rawRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+
+                // Skip row 0 (header)
+                parsedExcelRows = [];
+                for (let i = 1; i < rawRows.length; i++) {
+                    const r = rawRows[i];
+                    // Skip empty rows
+                    if (!r[1] && !r[0]) continue;
+                    parsedExcelRows.push({
+                        code:        String(r[0] || '').trim(),
+                        name:        String(r[1] || '').trim(),
+                        price:       parseFloat(String(r[2] || '0').replace(/,/g,'')) || 0,
+                        cost:        parseFloat(String(r[3] || '0').replace(/,/g,'')) || 0,
+                        category:    String(r[4] || '').trim(),
+                        description: String(r[5] || '').trim(),
+                        qty:         0,
+                        image:       null,
+                        id:          uid(),
+                        createdAt:   new Date().toISOString(),
+                        updatedAt:   new Date().toISOString()
+                    });
+                }
+
+                // Show chosen state
+                document.getElementById('excelDropContent').style.display = 'none';
+                document.getElementById('excelFileChosen').style.display = 'block';
+                document.getElementById('excelFileName').textContent = '📄 ' + file.name;
+                document.getElementById('excelRowCount').textContent = parsedExcelRows.length + ' منتج جاهز للاستيراد';
+
+                // Preview first 5 rows
+                const tbody = document.getElementById('excelPreviewBody');
+                if (tbody) {
+                    tbody.innerHTML = parsedExcelRows.slice(0, 5).map(p => `
+                        <tr style="border-bottom:1px solid var(--bd);">
+                            <td style="padding:7px 10px;color:var(--tx3);white-space:nowrap;">${p.code}</td>
+                            <td style="padding:7px 10px;color:var(--tx1);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</td>
+                            <td style="padding:7px 10px;color:var(--ac);white-space:nowrap;">${fmtPrice(p.price)}</td>
+                            <td style="padding:7px 10px;color:var(--tx2);white-space:nowrap;">${fmtPrice(p.cost)}</td>
+                            <td style="padding:7px 10px;color:var(--tx2);white-space:nowrap;">${p.category}</td>
+                            <td style="padding:7px 10px;color:var(--tx3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.description}</td>
+                        </tr>
+                    `).join('');
+                }
+                document.getElementById('excelPreviewSection').style.display = 'block';
+
+                // Enable confirm button
+                const confirmBtn = document.getElementById('excelImportConfirm');
+                if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.style.opacity = '1'; }
+
+                // Auto-add new brands as categories
+                const newCats = [...new Set(parsedExcelRows.map(p => p.category).filter(Boolean))];
+                newCats.forEach(c => { if (!stockCats.includes(c)) stockCats.push(c); });
+                saveCats(stockCats);
+
+            } catch(err) {
+                showToast('❌ خطأ في قراءة الملف: ' + err.message, 'error');
+                console.error(err);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    document.getElementById('excelImportConfirm')?.addEventListener('click', async () => {
+        if (!parsedExcelRows.length) return;
+
+        const mode = document.querySelector('input[name="importMode"]:checked')?.value || 'replace';
+        const pw   = document.getElementById('excelProgressWrap');
+        const pb   = document.getElementById('excelProgressBar');
+        const pt   = document.getElementById('excelProgressText');
+        const confirmBtn = document.getElementById('excelImportConfirm');
+
+        if (pw) pw.style.display = 'block';
+        if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.style.opacity = '.5'; }
+
+        if (mode === 'replace') {
+            // Replace all
+            stockData = parsedExcelRows;
+        } else {
+            // Merge: update by code, add new
+            parsedExcelRows.forEach((newP, idx) => {
+                const existIdx = stockData.findIndex(p => p.code && p.code === newP.code);
+                if (existIdx !== -1) {
+                    // Keep existing image & qty, update prices and info
+                    const existing = stockData[existIdx];
+                    stockData[existIdx] = { ...newP, id: existing.id, image: existing.image, qty: existing.qty, createdAt: existing.createdAt };
+                } else {
+                    stockData.push(newP);
+                }
+                // Animate progress
+                if (pb) pb.style.width = Math.round(((idx+1)/parsedExcelRows.length)*100) + '%';
+            });
+        }
+
+        if (pb) pb.style.width = '100%';
+        if (pt) pt.textContent = 'تم! جاري الحفظ...';
+
+        saveStock(stockData);
+
+        await new Promise(r => setTimeout(r, 600));
+        document.getElementById('excelImportModal')?.classList.remove('active');
+        showToast(`✅ تم استيراد ${parsedExcelRows.length} منتج بنجاح!`, 'success');
+        parsedExcelRows = [];
+        window.rStock();
+    });
 }
+
 
 function reAttachCatBodyEvents() {
     document.getElementById('catsModalBody')?.addEventListener('click', e => {
