@@ -200,7 +200,8 @@ const I = {
     ai:{ar:'توصيات AI',en:'AI'},account:{ar:'الحساب',en:'Account'},
     backup:{ar:'نسخ احتياطي',en:'Backup'},setup:{ar:'رفع الملفات',en:'Files'},
     logout:{ar:'خروج',en:'Logout'},reset:{ar:'مسح البيانات',en:'Reset App'},
-    settings:{ar:'الإعدادات',en:'Settings'}
+    settings:{ar:'الإعدادات',en:'Settings'},
+    stock:{ar:'المخزون',en:'Stock'}
 };
 
 function t(k) { return I[k] ? I[k][L] : k; }
@@ -3827,6 +3828,7 @@ const NAV = [
     {p:'customers',ic:'🏢'},{p:'todo',ic:'📋'},{p:'brands',ic:'📦'},
     {s:{ar:'الأقسام',en:'Depts'}},
     {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💸'},
+    {p:'stock',ic:'📦'},
     {s:{ar:'متقدم',en:'Advanced'}},
     {p:'potential',ic:'🚀'},{p:'profit',ic:'💰'},
     {p:'keyacc',ic:'👑'},{p:'dormant',ic:'😴'},
@@ -3865,7 +3867,8 @@ const ICONS = {
     setup: getImg('File%20folder/3D/file_folder_3d.png'),
     reset: getImg('Wastebasket/3D/wastebasket_3d.png'),
     settings: getImg('Gear/3D/gear_3d.png'),
-    collections: getImg('Money%20with%20wings/3D/money_with_wings_3d.png')
+    collections: getImg('Money%20with%20wings/3D/money_with_wings_3d.png'),
+    stock: getImg('Package/3D/package_3d.png')
 };
 
 function buildNav() {
@@ -3975,7 +3978,8 @@ function render() {
         customers: rCust, todo: rTodo, brands: rBrands, analytics: rAn, potential: rPot,
         profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
         keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
-        account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
+        account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings,
+        stock: typeof window.rStock === 'function' ? window.rStock : null
     };
     if (fn[P]) fn[P]();
     initAnm();
