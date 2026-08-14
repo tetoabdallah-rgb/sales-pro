@@ -452,18 +452,22 @@ window.rStock = function rStock() {
             </div>
             <div class="stock-modal-body">
 
-                <!-- Drop Zone -->
-                <div id="excelDropZone" style="border:2px dashed var(--bd);border-radius:16px;padding:36px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg2);position:relative;margin-bottom:16px;">
-                    <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
+                <!-- Hidden file input (OUTSIDE drop zone to avoid click blocking) -->
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none;">
+
+                <!-- Drop Zone (click opens file picker programmatically) -->
+                <div id="excelDropZone" style="border:2px dashed var(--bd);border-radius:16px;padding:32px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg2);margin-bottom:16px;">
                     <div id="excelDropContent">
-                        <div style="font-size:2.5rem;margin-bottom:10px;">📊</div>
-                        <div style="font-weight:800;font-size:1rem;color:var(--tx1);margin-bottom:6px;">اسحب ملف Excel هنا أو اضغط للاختيار</div>
-                        <div style="font-size:0.82rem;color:var(--tx3);">.xlsx / .xls / .csv — نفس هيكل الشيت (كود، وصف، سعر مستخدم، سعر ديلر، براند، فئة)</div>
+                        <div style="font-size:2.5rem;margin-bottom:10px;pointer-events:none;">📊</div>
+                        <div style="font-weight:800;font-size:1rem;color:var(--tx1);margin-bottom:8px;pointer-events:none;">اسحب ملف Excel هنا أو اضغط للاختيار</div>
+                        <div style="font-size:0.82rem;color:var(--tx3);margin-bottom:16px;pointer-events:none;">.xlsx / .xls / .csv — كود، وصف، سعر مستخدم، سعر ديلر، براند، فئة</div>
+                        <button id="excelPickFileBtn" class="btn-stock btn-stock-primary" style="pointer-events:all;" onclick="document.getElementById('excelFileInput').click();event.stopPropagation();">📂 اختار الملف</button>
                     </div>
-                    <div id="excelFileChosen" style="display:none;">
+                    <div id="excelFileChosen" style="display:none;pointer-events:none;">
                         <div style="font-size:2rem;margin-bottom:8px;">✅</div>
                         <div id="excelFileName" style="font-weight:800;color:var(--ac);font-size:0.95rem;"></div>
                         <div id="excelRowCount" style="font-size:0.82rem;color:var(--tx3);margin-top:4px;"></div>
+                        <button id="excelChangeFileBtn" class="btn-stock btn-stock-gray" style="margin-top:12px;pointer-events:all;font-size:.8rem;padding:7px 14px;" onclick="document.getElementById('excelFileInput').click();event.stopPropagation();"><small>🔄 تغيير الملف</small></button>
                     </div>
                 </div>
 
@@ -911,14 +915,27 @@ function attachStockEvents() {
         if (e.target.id === 'excelImportModal') document.getElementById('excelImportModal')?.classList.remove('active');
     });
 
-    // Drag & drop highlight
+    // Drop zone: click anywhere on it opens file picker
     const dz = document.getElementById('excelDropZone');
     if (dz) {
-        dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--ac)'; dz.style.background = 'color-mix(in srgb,var(--ac) 5%,var(--bg2))'; });
-        dz.addEventListener('dragleave', () => { dz.style.borderColor = 'var(--bd)'; dz.style.background = 'var(--bg2)'; });
+        dz.addEventListener('click', e => {
+            // Don't trigger if clicking the buttons inside
+            if (e.target.closest('button')) return;
+            document.getElementById('excelFileInput')?.click();
+        });
+        dz.addEventListener('dragover', e => {
+            e.preventDefault();
+            dz.style.borderColor = 'var(--ac)';
+            dz.style.background = 'color-mix(in srgb,var(--ac) 8%,var(--bg2))';
+        });
+        dz.addEventListener('dragleave', () => {
+            dz.style.borderColor = 'var(--bd)';
+            dz.style.background = 'var(--bg2)';
+        });
         dz.addEventListener('drop', e => {
             e.preventDefault();
-            dz.style.borderColor = 'var(--bd)'; dz.style.background = 'var(--bg2)';
+            dz.style.borderColor = 'var(--bd)';
+            dz.style.background = 'var(--bg2)';
             const file = e.dataTransfer.files[0];
             if (file) handleExcelFile(file);
         });
