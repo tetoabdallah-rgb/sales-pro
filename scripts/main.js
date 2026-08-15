@@ -201,7 +201,9 @@ const I = {
     backup:{ar:'نسخ احتياطي',en:'Backup'},setup:{ar:'رفع الملفات',en:'Files'},
     logout:{ar:'خروج',en:'Logout'},reset:{ar:'مسح البيانات',en:'Reset App'},
     settings:{ar:'الإعدادات',en:'Settings'},
-    stock:{ar:'المخزون',en:'Stock'}
+    stock:{ar:'المخزون',en:'Stock'},
+    today:{ar:'سجل اليوم',en:'Daily Feed'},
+    visits:{ar:'الزيارات والمتابعة',en:'Visits'}
 };
 
 function t(k) { return I[k] ? I[k][L] : k; }
@@ -3824,8 +3826,8 @@ window.addEventListener('load', () => {
 
 const NAV = [
     {s:{ar:'الأساسية',en:'Core'}},
-    {p:'dash',ic:'📊'},{p:'analytics',ic:'📈'},{p:'prospects',ic:'🔍'},{p:'sales',ic:'🧾'},{p:'targets',ic:'🎯'},{p:'personal',ic:'🤝'},
-    {p:'customers',ic:'🏢'},{p:'todo',ic:'📋'},{p:'brands',ic:'📦'},
+    {p:'dash',ic:'📊'},{p:'today',ic:'📅'},{p:'analytics',ic:'📈'},{p:'sales',ic:'🧾'},{p:'targets',ic:'🎯'},{p:'personal',ic:'🤝'},
+    {p:'customers',ic:'🏢'},{p:'visits',ic:'🚗'},{p:'todo',ic:'📋'},{p:'brands',ic:'📦'},{p:'prospects',ic:'🔍'},
     {s:{ar:'الأقسام',en:'Depts'}},
     {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💸'},
     {p:'stock',ic:'📦'},
@@ -3868,7 +3870,9 @@ const ICONS = {
     reset: getImg('Wastebasket/3D/wastebasket_3d.png'),
     settings: getImg('Gear/3D/gear_3d.png'),
     collections: getImg('Money%20with%20wings/3D/money_with_wings_3d.png'),
-    stock: getImg('Package/3D/package_3d.png')
+    stock: getImg('Package/3D/package_3d.png'),
+    today: getImg('Spiral%20calendar/3D/spiral_calendar_3d.png'),
+    visits: getImg('Automobile/3D/automobile_3d.png')
 };
 
 function buildNav() {
@@ -3974,8 +3978,10 @@ function initAnm() {
 
 function render() {
     let fn = {
-        dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
-        customers: rCust, todo: rTodo, brands: rBrands, analytics: rAn, potential: rPot,
+        dash: rDash, today: typeof window.rToday === 'function' ? window.rToday : null,
+        sales: rSales, targets: rTgt, personal: rPers,
+        customers: rCust, visits: typeof window.rVisits === 'function' ? window.rVisits : null,
+        todo: rTodo, brands: rBrands, analytics: rAn, potential: rPot,
         profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
         keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
         account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings,
