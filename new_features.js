@@ -146,8 +146,17 @@ function loadVisits() {
 
 window.addVisitModal = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
-    let S_data = getS();
-    let cList = [...new Set(S_data.map(r=>r.Customer).filter(Boolean))];
+    let S_data = typeof getS === 'function' ? getS() : [];
+    let T_data = [];
+    try { T_data = JSON.parse(localStorage.getItem('targetData') || '[]'); } catch(e) {}
+    let customCusts = [];
+    try { customCusts = JSON.parse(localStorage.getItem('sp_custom_customers') || '[]'); } catch(e) {}
+
+    let set1 = S_data.map(r => r.Customer).filter(Boolean);
+    let set2 = T_data.map(r => r.Customer).filter(Boolean);
+    let set3 = customCusts.map(c => typeof c === 'string' ? c : c.name || c.Customer).filter(Boolean);
+
+    let cList = [...new Set([...set1, ...set2, ...set3])].sort((a,b) => a.localeCompare(b, 'ar'));
     let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
     if(!opts) opts = `<option value="">${L==='ar'?'لا يوجد عملاء (يرجى رفع ملف المبيعات)':'No customers found'}</option>`;
     
