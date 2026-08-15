@@ -1367,6 +1367,7 @@ function rCust() {
     let ds = getFilteredSales();
     ds.forEach(r => {
         let c = r.Customer || '';
+        if(!c) return;
         if(!cu[c]) cu[c] = {rg:r['Customer Class']||'', o:{}, s:0, p:0, accS:0, hwS:0, l:''};
         cu[c].o[r['Order Nbr']] = 1;
         cu[c].s += getSalesVal(r);
@@ -1374,10 +1375,30 @@ function rCust() {
         if(isAcc(r['Item Class Name'])) cu[c].accS += getSalesVal(r); else cu[c].hwS += getSalesVal(r);
         let d = pd(r['Order Date']); if(d > cu[c].l) cu[c].l = d;
     });
+
+    // 1. ALSO Include all customers from Targets (T) even if they have no sales yet!
+    let targetList = Array.isArray(T) ? T : [];
+    targetList.forEach(tr => {
+        let c = (tr.Customer || '').trim();
+        if (c && !cu[c]) {
+            cu[c] = { rg: tr.Region || tr.class || tr['Customer Class'] || (L==='ar'?'عميل مستهدف':'Target Client'), o: {}, s: 0, p: 0, accS: 0, hwS: 0, l: '—' };
+        }
+    });
+
+    // 2. ALSO Include any manually added custom customers from localStorage ('sp_custom_customers')
+    let customCusts = [];
+    try { customCusts = JSON.parse(localStorage.getItem('sp_custom_customers') || '[]'); } catch(e) {}
+    customCusts.forEach(cust => {
+        let name = (typeof cust === 'string' ? cust : cust.name || cust.Customer || '').trim();
+        if (name && !cu[name]) {
+            cu[name] = { rg: (typeof cust === 'object' && (cust.region || cust.class)) || (L==='ar'?'عميل مسجل يدوي':'Custom Client'), o: {}, s: 0, p: 0, accS: 0, hwS: 0, l: '—' };
+        }
+    });
+
     let arr = Object.keys(cu).map(n => {
-        let d = cu[n], tr = T.find(t => t.Customer === n), tg = tr ? Number(tr.Target)||0 : 0;
+        let d = cu[n], tr = targetList.find(t => t.Customer && t.Customer.trim().toLowerCase() === n.trim().toLowerCase()), tg = tr ? Number(tr.Target)||0 : 0;
         return {n:n, rg:d.rg, o:Object.keys(d.o).length, s:d.s, p:d.p, accS:d.accS, hwS:d.hwS, l:d.l, m:d.s>0?d.p/d.s*100:0, tg:tg, ach:tg>0?d.s/tg*100:0};
-    }).sort((a,b)=>b.s-a.s);
+    }).sort((a,b)=> (b.s - a.s) || (b.tg - a.tg) || a.n.localeCompare(b.n));
     let len = arr.length;
     let vipCount = Math.max(1, Math.floor(len * 0.20));
     let silverCount = Math.floor(len * 0.30);
@@ -1424,9 +1445,12 @@ function rCust() {
     }
     
     $('M').innerHTML = `
-        <div class="ph" style="display:flex;align-items:center;gap:12px;">
+        <div class="ph" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.customers}</span> ${t('customers')}</h1>
-            <button id="bExCust" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">?</span> Excel</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button onclick="window.addCustomerModal()" class="btn btn-p" style="font-weight:bold;display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;">➕ ${L==='ar'?'إضافة عميل جديد':'Add Customer'}</button>
+                <button id="bExCust" class="btn bg-g" style="color:#fff;border:none;display:flex;align-items:center;gap:6px;"><span style="font-size:1rem;">📥</span> Excel</button>
+            </div>
         </div>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Customers'):'Customers'}</div><div class="vl">${aFmt(arr.length)}</div></div>
@@ -1503,6 +1527,97 @@ function rCust() {
     window.setCustTierFilter(window._custTierFilter);
     $('cusr').oninput = debounce(() => { pState.customers.page = 1; window.doCustSearch(); }, 200);
 }
+
+window.addCustomerModal = function() {
+    let L = localStorage.getItem('sp_lang') || 'ar';
+    let overlay = document.createElement('div');
+    overlay.id = 'addCustModalOverlay';
+    overlay.style.cssText = `
+        position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
+        z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px;
+    `;
+    overlay.innerHTML = `
+        <div style="background: var(--bg1,#0f172a); border: 1px solid var(--bd,rgba(255,255,255,0.12)); border-radius: 18px; width: 100%; max-width: 480px; padding: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.4); position: relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; border-bottom: 1px solid var(--bd,rgba(255,255,255,0.08)); padding-bottom: 12px;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:800; display:flex; align-items:center; gap:8px;">🏢 ${L==='ar'?'إضافة عميل جديد':'Add New Customer'}</h3>
+                <button onclick="document.getElementById('addCustModalOverlay').remove()" style="background:none; border:none; color:var(--tx2); cursor:pointer; font-size:1.2rem;">✕</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div>
+                    <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${L==='ar'?'اسم العميل *':'Customer Name *'}</label>
+                    <input type="text" id="newCustName" placeholder="${L==='ar'?'أدخل اسم العميل أو المحل':'Enter customer or store name'}" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-family:inherit; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${L==='ar'?'التارجت المستهدف (ج.م)':'Target Amount (EGP)'}</label>
+                    <input type="number" id="newCustTarget" placeholder="0" min="0" step="100" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-family:inherit; box-sizing:border-box;">
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div>
+                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${L==='ar'?'رقم الهاتف':'Phone Number'}</label>
+                        <input type="text" id="newCustPhone" placeholder="01xxxxxxxxx" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-family:inherit; box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${L==='ar'?'المنطقة / العنوان':'Region / Address'}</label>
+                        <input type="text" id="newCustRegion" placeholder="${L==='ar'?'مثل: الجيزة / الدقي':'e.g. Giza'}" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-family:inherit; box-sizing:border-box;">
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px; border-top:1px solid var(--bd,rgba(255,255,255,0.08)); padding-top:14px;">
+                <button onclick="document.getElementById('addCustModalOverlay').remove()" class="btn" style="background:var(--bg3); color:var(--tx2); padding:8px 16px; border-radius:8px; cursor:pointer;">${L==='ar'?'إلغاء':'Cancel'}</button>
+                <button onclick="window.saveNewCustomer()" class="btn btn-p" style="background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; padding:8px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">💾 ${L==='ar'?'حفظ العميل':'Save Customer'}</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+};
+
+window.saveNewCustomer = function() {
+    let name = document.getElementById('newCustName')?.value.trim();
+    let target = parseFloat(document.getElementById('newCustTarget')?.value) || 0;
+    let phone = document.getElementById('newCustPhone')?.value.trim() || '';
+    let region = document.getElementById('newCustRegion')?.value.trim() || '';
+    let L = localStorage.getItem('sp_lang') || 'ar';
+
+    if (!name) {
+        if (typeof toast === 'function') toast(L==='ar'?'❌ يرجى إدخال اسم العميل أولاً':'❌ Please enter customer name', 'error');
+        return;
+    }
+
+    let customCusts = [];
+    try { customCusts = JSON.parse(localStorage.getItem('sp_custom_customers') || '[]'); } catch(e) {}
+    
+    // Add to customCusts if not already existing
+    let existingCustom = customCusts.find(c => (typeof c === 'string' ? c : c.name || c.Customer || '').toLowerCase() === name.toLowerCase());
+    if (!existingCustom) {
+        customCusts.push({ name, target, phone, region, Customer: name, createdAt: new Date().toISOString() });
+        localStorage.setItem('sp_custom_customers', JSON.stringify(customCusts));
+    }
+
+    // Also add to Target list T so it reflects target and customer data everywhere
+    if (typeof T !== 'undefined' && Array.isArray(T)) {
+        let existingT = T.find(t => t.Customer && t.Customer.toLowerCase() === name.toLowerCase());
+        if (existingT) {
+            if (target > 0) existingT.Target = target;
+            if (phone) existingT.phone = phone;
+            if (region) existingT.region = region;
+        } else {
+            T.push({
+                Customer: name,
+                Target: target,
+                hwTarget: 0,
+                accTarget: 0,
+                phone: phone,
+                region: region,
+                address: region
+            });
+        }
+        sv('targetData', T);
+    }
+
+    document.getElementById('addCustModalOverlay')?.remove();
+    if (typeof toast === 'function') toast(L==='ar' ? `✅ تمت إضافة العميل "${name}" بنجاح` : `✅ Customer "${name}" added successfully`, 'success');
+    rCust();
+};
 function rReset() {
     $('M').innerHTML=`<div class="ph"><h1>${ICONS.reset} ${t('reset')}</h1></div><div class="card" style="text-align:center;"><p style="margin-bottom:16px;color:var(--tx2);">${L==='ar'?TUI('This will clear all locally stored data. Cloud data is not affected.'):'This will clear all locally stored data. Cloud data is not affected.'}</p><button id="fRst" class="btn btn-p" style="background:var(--rd)">${L==='ar'?TUI('Wipe All Local Data'):'Wipe All Local Data'}</button></div>`;
     $('fRst').onclick = () => {
