@@ -10,13 +10,14 @@
 /* ══════════════════════════════════════════════════════════
    STORAGE
 ══════════════════════════════════════════════════════════ */
+const t = (ar, en) => (typeof L !== 'undefined' && L === 'en') ? en : ar;
 const STOCK_KEY    = 'sp_stock_v1';
 const CATS_KEY     = 'sp_stock_cats_v1';
 const SETTINGS_KEY = 'sp_stock_settings_v1';
 
 const loadStock    = () => { try { return JSON.parse(localStorage.getItem(STOCK_KEY)) || []; } catch(e) { return []; } };
 const saveStock    = d  => localStorage.setItem(STOCK_KEY, JSON.stringify(d));
-const loadCats     = () => { try { const s = JSON.parse(localStorage.getItem(CATS_KEY)); return s && s.length ? s : ['إلكترونيات','أجهزة','ملابس','أخرى']; } catch(e) { return ['إلكترونيات','أجهزة','ملابس','أخرى']; } };
+const loadCats     = () => { try { const s = JSON.parse(localStorage.getItem(CATS_KEY)); return s && s.length ? s : [t('إلكترونيات','Electronics'),t('أجهزة','Appliances'),t('ملابس','Clothing'),t('أخرى','Other')]; } catch(e) { return [t('إلكترونيات','Electronics'),t('أجهزة','Appliances'),t('ملابس','Clothing'),t('أخرى','Other')]; } };
 const saveCats     = d  => localStorage.setItem(CATS_KEY, JSON.stringify(d));
 const loadSettings = () => { try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch(e) { return {}; } };
 const saveSettings = d  => localStorage.setItem(SETTINGS_KEY, JSON.stringify(d));
@@ -41,9 +42,9 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
    HELPERS
 ══════════════════════════════════════════════════════════ */
 const fmtPrice = n => (!n && n !== 0) ? '—' :
-    Number(n).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
+    Number(n).toLocaleString(t('ar-EG','en-US'), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + t('ج.م','EGP');
 
-const fmtNum = n => Number(n || 0).toLocaleString('ar-EG');
+const fmtNum = n => Number(n || 0).toLocaleString(t('ar-EG','en-US'));
 
 // Alert logic based on 'Available' quantity
 const qtyState = q => (q === null || q === undefined) ? 'unset' : q <= 0 ? 'out' : q <= lowThreshold ? 'low' : 'ok';
@@ -51,9 +52,9 @@ const qtyState = q => (q === null || q === undefined) ? 'unset' : q <= 0 ? 'out'
 const qtyBadge = (avail, onHand) => {
     const s = qtyState(avail);
     const styles = { unset:'background:#374151;color:#9ca3af;', out:'background:#fee2e2;color:#991b1b;', low:'background:#fef3c7;color:#92400e;', ok:'background:#d1fae5;color:#065f46;' };
-    const labels = { unset:'— غير محدد', out:'🚫 نفد المتاح', low:'⚠️ متاح: ' + avail, ok:'✅ متاح: ' + fmtNum(avail) };
-    const hTxt = onHand != null ? ` | فعلي: ${onHand}` : '';
-    return '<span class="qty-badge" style="' + styles[s] + '" title="متاح: ' + (avail||0) + ' / فعلي: ' + (onHand||0) + '">' + labels[s] + hTxt + '</span>';
+    const labels = { unset:t('— غير محدد','— Unset'), out:t('🚫 نفد المتاح','🚫 Out of Stock'), low:t('⚠️ متاح: ','⚠️ Avail: ') + avail, ok:t('✅ متاح: ','✅ Avail: ') + fmtNum(avail) };
+    const hTxt = onHand != null ? t(` | فعلي: ${onHand}`,` | On Hand: ${onHand}`) : '';
+    return '<span class="qty-badge" style="' + styles[s] + '" title="' + t('متاح: ','Avail: ') + (avail||0) + t(' / فعلي: ',' / On Hand: ') + (onHand||0) + '">' + labels[s] + hTxt + '</span>';
 };
 
 function getFilteredStock() {
@@ -296,39 +297,40 @@ window.rStock = function rStock() {
   <div class="stk-brand-wrap">
     <div class="stk-logo">📦</div>
     <div>
-      <div class="stk-title">مركز إدارة المخزون</div>
-      <div class="stk-subtitle">Stock Command Center — ${fmtNum(st.total)} منتج · ${st.brands} براند</div>
+      <div class="stk-title">${t('مركز إدارة المخزون','Stock Command Center')}</div>
+      <div class="stk-subtitle">${t('مركز إدارة المخزون —','Stock Command Center —')} ${fmtNum(st.total)} ${t('منتج ·','Items ·')} ${st.brands} ${t('براند','Brands')}</div>
     </div>
   </div>
   <div class="stk-actions">
-    <button class="sbtn sbtn-ghost sbtn-sm" id="stkCatsBtn">🗂️ الفئات</button>
-    <button class="sbtn sbtn-excel sbtn-sm" id="stkXlBtn">📥 استيراد Excel</button>
-    <button class="sbtn sbtn-pdf sbtn-sm" id="stkPdfBtn">📄 كتالوج PDF</button>
-    <button class="sbtn sbtn-primary" id="stkAddBtn">＋ منتج جديد</button>
+    <button class="sbtn sbtn-ghost sbtn-sm" id="stkCatsBtn">🗂️ ${t('الفئات','Categories')}</button>
+    <button class="sbtn sbtn-danger sbtn-sm" id="stkClearAllBtn" style="background:#ef4444;color:#fff;">🗑️ ${t('مسح المخزن','Clear Stock')}</button>
+    <button class="sbtn sbtn-excel sbtn-sm" id="stkXlBtn">📥 ${t('استيراد Excel','Import Excel')}</button>
+    <button class="sbtn sbtn-pdf sbtn-sm" id="stkPdfBtn">📄 ${t('كتالوج PDF','PDF Catalog')}</button>
+    <button class="sbtn sbtn-primary" id="stkAddBtn">＋ ${t('منتج جديد','New Item')}</button>
   </div>
 </div>
 
 <div class="stk-kpis">
-  <div class="kpi-card kpi-blue"><div class="kpi-icon">📦</div><div class="kpi-label">إجمالي المنتجات</div><div class="kpi-val">${fmtNum(st.total)}</div><div class="kpi-sub">${st.brands} براند</div></div>
-  <div class="kpi-card kpi-green"><div class="kpi-icon">💰</div><div class="kpi-label">قيمة المتاح</div><div class="kpi-val" style="font-size:1.05rem;">${fmtPrice(st.totalVal)}</div><div class="kpi-sub">بأسعار المستخدم للمتاح</div></div>
-  <div class="kpi-card kpi-amber"><div class="kpi-icon">⚠️</div><div class="kpi-label">متاح منخفض</div><div class="kpi-val">${fmtNum(st.lowStock)}</div><div class="kpi-sub">أقل من ${lowThreshold} متاح</div></div>
-  <div class="kpi-card kpi-red"><div class="kpi-icon">🚫</div><div class="kpi-label">نفد المتاح</div><div class="kpi-val">${fmtNum(st.outStock)}</div><div class="kpi-sub">يحتاج إعادة طلب</div></div>
-  <div class="kpi-card kpi-purple"><div class="kpi-icon">📋</div><div class="kpi-label">لم تحدد كمية</div><div class="kpi-val">${fmtNum(st.unset)}</div><div class="kpi-sub">انتظار التحديث</div></div>
-  <div class="kpi-card kpi-gray"><div class="kpi-icon">🎯</div><div class="kpi-label">حد التنبيه</div><div class="kpi-val">${lowThreshold}</div><div class="kpi-sub">قطعة متاحة</div></div>
+  <div class="kpi-card kpi-blue"><div class="kpi-icon">📦</div><div class="kpi-label">${t('إجمالي المنتجات','Total Items')}</div><div class="kpi-val">${fmtNum(st.total)}</div><div class="kpi-sub">${st.brands} ${t('براند','Brands')}</div></div>
+  <div class="kpi-card kpi-green"><div class="kpi-icon">💰</div><div class="kpi-label">${t('قيمة المتاح','Available Value')}</div><div class="kpi-val" style="font-size:1.05rem;">${fmtPrice(st.totalVal)}</div><div class="kpi-sub">${t('بأسعار المستخدم للمتاح','At User Prices')}</div></div>
+  <div class="kpi-card kpi-amber"><div class="kpi-icon">⚠️</div><div class="kpi-label">${t('متاح منخفض','Low Available')}</div><div class="kpi-val">${fmtNum(st.lowStock)}</div><div class="kpi-sub">${t('أقل من','Less than')} ${lowThreshold} ${t('متاح','available')}</div></div>
+  <div class="kpi-card kpi-red"><div class="kpi-icon">🚫</div><div class="kpi-label">${t('نفد المتاح','Out of Available')}</div><div class="kpi-val">${fmtNum(st.outStock)}</div><div class="kpi-sub">${t('يحتاج إعادة طلب','Needs Reorder')}</div></div>
+  <div class="kpi-card kpi-purple"><div class="kpi-icon">📋</div><div class="kpi-label">${t('لم تحدد كمية','Qty Unset')}</div><div class="kpi-val">${fmtNum(st.unset)}</div><div class="kpi-sub">${t('انتظار التحديث','Awaiting Update')}</div></div>
+  <div class="kpi-card kpi-gray"><div class="kpi-icon">🎯</div><div class="kpi-label">${t('حد التنبيه','Alert Threshold')}</div><div class="kpi-val">${lowThreshold}</div><div class="kpi-sub">${t('قطعة متاحة','Available Pcs')}</div></div>
 </div>
 
 <div class="thr-row">
-  <div class="thr-lbl">🎯 حد تنبيه المخزون المنخفض (Available) — التنبيه عند أقل من:</div>
+  <div class="thr-lbl">🎯 ${t('حد تنبيه المخزون المنخفض — التنبيه عند أقل من:','Low Stock Alert — Alert when less than:')}</div>
   <input class="thr-inp" type="number" id="stkThrInp" value="${lowThreshold}" min="1" max="500">
-  <span style="font-size:.8rem;color:var(--tx3);">قطعة</span>
-  <button class="sbtn sbtn-ghost sbtn-sm" id="stkThrSave">حفظ</button>
+  <span style="font-size:.8rem;color:var(--tx3);">${t('قطعة','pcs')}</span>
+  <button class="sbtn sbtn-ghost sbtn-sm" id="stkThrSave">${t('حفظ','Save')}</button>
 </div>
 
 ${criticals.length ? `
 <div class="stk-alert-banner">
   <div class="stk-alert-hdr">
-    <div class="stk-alert-title">🔔 تنبيه عاجل — ${criticals.length} منتج المتاح منها نفد أو قارب على الانتهاء</div>
-    <button class="sbtn sbtn-ghost sbtn-sm" id="stkShowLowBtn">عرض الكل (${st.outStock + st.lowStock})</button>
+    <div class="stk-alert-title">🔔 ${t('تنبيه عاجل —','Urgent Alert —')} ${criticals.length} ${t('منتج المتاح منها نفد أو قارب على الانتهاء','Items out of stock or low')}</div>
+    <button class="sbtn sbtn-ghost sbtn-sm" id="stkShowLowBtn">${t('عرض الكل','View All')} (${st.outStock + st.lowStock})</button>
   </div>
   <div class="stk-alert-grid">
     ${criticals.map(p => `
@@ -338,7 +340,7 @@ ${criticals.length ? `
         <div class="alert-chip-code">${p.code || ''}</div>
         <div class="alert-chip-name">${p.name}</div>
       </div>
-      <span class="alert-chip-qty ${p.qty <= 0 ? 'chip-out' : 'chip-low'}">متاح: ${p.qty <= 0 ? 'نفد' : p.qty}</span>
+      <span class="alert-chip-qty ${p.qty <= 0 ? 'chip-out' : 'chip-low'}">${t('متاح: ','Avail: ')}${p.qty <= 0 ? t('نفد','Out') : p.qty}</span>
     </div>`).join('')}
   </div>
 </div>` : ''}
@@ -346,36 +348,36 @@ ${criticals.length ? `
 <div class="stk-toolbar">
   <div class="stk-sw">
     <span class="stk-si">🔍</span>
-    <input type="text" id="stkSearch" placeholder="ابحث بالاسم، الكود، البراند..." value="${stockFilter}">
+    <input type="text" id="stkSearch" placeholder="${t('ابحث بالاسم، الكود، البراند...','Search by name, code, brand...')}" value="${stockFilter}">
   </div>
   <select class="stk-sel" id="stkCatSel">
-    <option value="all">كل الفئات والبراندات</option>
+    <option value="all">${t('كل الفئات والبراندات','All Categories & Brands')}</option>
     ${allBrands.map(b => `<option value="${b}" ${stockCatFilter===b?'selected':''}>${b}</option>`).join('')}
   </select>
   <select class="stk-sel" id="stkSortSel">
-    <option value="import"     ${stockSort==='import'    ?'selected':''}>📊 ترتيب الإكسل</option>
-    <option value="name"       ${stockSort==='name'      ?'selected':''}>🔤 الاسم أ–ي</option>
-    <option value="brand"      ${stockSort==='brand'     ?'selected':''}>🏷️ البراند</option>
-    <option value="price_asc"  ${stockSort==='price_asc' ?'selected':''}>💰 سعر يوزر: الأقل</option>
-    <option value="price_desc" ${stockSort==='price_desc'?'selected':''}>💰 سعر يوزر: الأعلى</option>
-    <option value="low_first"  ${stockSort==='low_first' ?'selected':''}>⚠️ المنخفض أولاً</option>
-    <option value="qty_asc"    ${stockSort==='qty_asc'   ?'selected':''}>📉 المتاح: الأقل</option>
-    <option value="qty_desc"   ${stockSort==='qty_desc'  ?'selected':''}>📈 المتاح: الأكثر</option>
+    <option value="import"     ${stockSort==='import'    ?'selected':''}>📊 ${t('ترتيب الإكسل','Excel Order')}</option>
+    <option value="name"       ${stockSort==='name'      ?'selected':''}>🔤 ${t('الاسم أ–ي','Name A-Z')}</option>
+    <option value="brand"      ${stockSort==='brand'     ?'selected':''}>🏷️ ${t('البراند','Brand')}</option>
+    <option value="price_asc"  ${stockSort==='price_asc' ?'selected':''}>💰 ${t('سعر يوزر: الأقل','User Price: Low')}</option>
+    <option value="price_desc" ${stockSort==='price_desc'?'selected':''}>💰 ${t('سعر يوزر: الأعلى','User Price: High')}</option>
+    <option value="low_first"  ${stockSort==='low_first' ?'selected':''}>⚠️ ${t('المنخفض أولاً','Low Stock First')}</option>
+    <option value="qty_asc"    ${stockSort==='qty_asc'   ?'selected':''}>📉 ${t('المتاح: الأقل','Avail: Low')}</option>
+    <option value="qty_desc"   ${stockSort==='qty_desc'  ?'selected':''}>📈 ${t('المتاح: الأكثر','Avail: High')}</option>
   </select>
   <div class="vbtns">
     <button class="vbtn ${currentView==='list'?'on':''}" id="vList">☰</button>
     <button class="vbtn ${currentView==='grid'?'on':''}" id="vGrid">⊞</button>
   </div>
-  <span class="stk-cnt">${filtered.length} منتج</span>
+  <span class="stk-cnt">${filtered.length} ${t('منتج','Items')}</span>
 </div>
 
 <div id="stkProducts">${renderProducts(filtered)}</div>
 
 <div class="stk-bulk" id="stkBulk">
-  <span style="font-weight:700;font-size:.9rem;" id="stkBulkCnt">0 محدد</span>
+  <span style="font-weight:700;font-size:.9rem;" id="stkBulkCnt">0 ${t('محدد','Selected')}</span>
   <div style="display:flex;gap:7px;">
-    <button class="sbtn sbtn-pdf sbtn-sm" id="bkPdf">📄 PDF للمحدد</button>
-    <button class="sbtn sbtn-danger sbtn-sm" id="bkDel">🗑️ حذف</button>
+    <button class="sbtn sbtn-pdf sbtn-sm" id="bkPdf">📄 ${t('PDF للمحدد','PDF for Selected')}</button>
+    <button class="sbtn sbtn-danger sbtn-sm" id="bkDel">🗑️ ${t('حذف','Delete')}</button>
     <button class="sbtn sbtn-ghost sbtn-sm" id="bkClr">✕</button>
   </div>
 </div>
@@ -384,37 +386,37 @@ ${criticals.length ? `
 <!-- ADD/EDIT -->
 <div class="stk-ov" id="stkModal">
   <div class="stk-m">
-    <div class="stk-mh"><div class="stk-mt" id="stkMTitle">منتج جديد</div><button class="stk-mc" id="stkMClose">✕</button></div>
+    <div class="stk-mh"><div class="stk-mt" id="stkMTitle">${t('منتج جديد','New Item')}</div><button class="stk-mc" id="stkMClose">✕</button></div>
     <div class="stk-mb">
       <input type="file" id="stkImgFile" accept="image/*" style="display:none;">
       <div class="stk-full" style="margin-bottom:14px;">
-        <label style="font-size:.76rem;font-weight:700;color:var(--tx3);display:block;margin-bottom:5px;">صورة المنتج</label>
+        <label style="font-size:.76rem;font-weight:700;color:var(--tx3);display:block;margin-bottom:5px;">${t('صورة المنتج','Product Image')}</label>
         <div class="iup-area" id="stkImgArea">
-          <div class="iup-ph" id="stkImgPh"><div class="iup-icon">🖼️</div><div class="iup-txt">اضغط لرفع صورة</div></div>
+          <div class="iup-ph" id="stkImgPh"><div class="iup-icon">🖼️</div><div class="iup-txt">${t('اضغط لرفع صورة','Click to upload image')}</div></div>
           <img id="stkImgPrev" class="iup-prev" alt="">
-          <button class="iup-rm" id="stkImgRm" style="display:none;">✕ إزالة</button>
+          <button class="iup-rm" id="stkImgRm" style="display:none;">✕ ${t('إزالة','Remove')}</button>
         </div>
       </div>
       <div class="stk-fg2">
-        <div class="sfg"><label>اسم المنتج *</label><input type="text" id="mfName" placeholder="اسم المنتج"></div>
-        <div class="sfg"><label>الكود</label><input type="text" id="mfCode" placeholder="مثل: MO-33-B"></div>
-        <div class="sfg"><label>البراند</label><input type="text" id="mfBrand" placeholder="مثل: Logitech"></div>
-        <div class="sfg"><label>الفئة (Item Class)</label><select id="mfCat">${stockCats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+        <div class="sfg"><label>${t('اسم المنتج *','Item Name *')}</label><input type="text" id="mfName" placeholder="${t('اسم المنتج','Item Name')}"></div>
+        <div class="sfg"><label>${t('الكود','Code')}</label><input type="text" id="mfCode" placeholder="مثل: MO-33-B"></div>
+        <div class="sfg"><label>${t('البراند','Brand')}</label><input type="text" id="mfBrand" placeholder="مثل: Logitech"></div>
+        <div class="sfg"><label>${t('الفئة (Item Class)','Category (Item Class)')}</label><select id="mfCat">\${stockCats.map(c=>\`<option value="\${c}">\${c}</option>\`).join('')}</select></div>
       </div>
       <div class="stk-fg3" style="margin-top:12px;">
-        <div class="sfg"><label>سعر User</label><input type="number" id="mfPrice" placeholder="0" min="0" step="0.01"></div>
-        <div class="sfg"><label>سعر Dealer</label><input type="number" id="mfCost" placeholder="0" min="0" step="0.01"></div>
+        <div class="sfg"><label>${t('سعر User','User Price')}</label><input type="number" id="mfPrice" placeholder="0" min="0" step="0.01"></div>
+        <div class="sfg"><label>${t('سعر Dealer','Dealer Price')}</label><input type="number" id="mfCost" placeholder="0" min="0" step="0.01"></div>
         <div class="sfg"><label>Best Price</label><input type="number" id="mfBest" placeholder="0" min="0" step="0.01"></div>
       </div>
       <div class="stk-fg2" style="margin-top:12px;">
-        <div class="sfg"><label>الكمية الفعلية (On Hand)</label><input type="number" id="mfQtyOnHand" placeholder="-" min="0" step="1"></div>
-        <div class="sfg"><label>الكمية المتاحة (Available)</label><input type="number" id="mfQty" placeholder="-" min="0" step="1"></div>
-        <div class="sfg stk-full"><label>الوصف</label><textarea id="mfDesc" placeholder="وصف المنتج..."></textarea></div>
+        <div class="sfg"><label>${t('الكمية الفعلية (On Hand)','Qty On Hand')}</label><input type="number" id="mfQtyOnHand" placeholder="-" min="0" step="1"></div>
+        <div class="sfg"><label>${t('الكمية المتاحة (Available)','Available Qty')}</label><input type="number" id="mfQty" placeholder="-" min="0" step="1"></div>
+        <div class="sfg stk-full"><label>${t('الوصف','Description')}</label><textarea id="mfDesc" placeholder="${t('وصف المنتج...','Item description...')}"></textarea></div>
       </div>
     </div>
     <div class="stk-mf">
-      <button class="sbtn sbtn-ghost" id="stkMCancel">إلغاء</button>
-      <button class="sbtn sbtn-primary" id="stkMSave">💾 حفظ</button>
+      <button class="sbtn sbtn-ghost" id="stkMCancel">${t('إلغاء','Cancel')}</button>
+      <button class="sbtn sbtn-primary" id="stkMSave">💾 ${t('حفظ','Save')}</button>
     </div>
   </div>
 </div>
@@ -422,16 +424,16 @@ ${criticals.length ? `
 <!-- PDF -->
 <div class="stk-ov" id="pdfModal">
   <div class="stk-m" style="max-width:420px;">
-    <div class="stk-mh"><div class="stk-mt">📄 تصدير كتالوج PDF</div><button class="stk-mc" id="pdfMClose">✕</button></div>
+    <div class="stk-mh"><div class="stk-mt">📄 ${t('تصدير كتالوج PDF','Export PDF Catalog')}</div><button class="stk-mc" id="pdfMClose">✕</button></div>
     <div class="stk-mb">
-      <div class="pdf-opt on" data-opt="all"><div class="pdf-opt-icon">📦</div><div><div style="font-weight:800;font-size:.9rem;color:var(--tx1);">كل المنتجات</div><div style="font-size:.76rem;color:var(--tx3);">${fmtNum(stockData.length)} منتج</div></div></div>
-      <div class="pdf-opt" data-opt="filtered"><div class="pdf-opt-icon">🔍</div><div><div style="font-weight:800;font-size:.9rem;color:var(--tx1);">المفلتر الحالي</div><div style="font-size:.76rem;color:var(--tx3);">${fmtNum(filtered.length)} منتج</div></div></div>
-      <div class="pdf-opt ${selectedIds.size===0?'':'on'}" data-opt="selected" style="${selectedIds.size===0?'opacity:.4;pointer-events:none;':''}"><div class="pdf-opt-icon">✅</div><div><div style="font-weight:800;font-size:.9rem;color:var(--tx1);">المحدد فقط</div><div style="font-size:.76rem;color:var(--tx3);">${selectedIds.size} منتج</div></div></div>
-      <div class="sfg" style="margin-top:14px;"><label style="font-size:.76rem;font-weight:700;color:var(--tx3);display:block;margin-bottom:5px;">اسم الشركة في الكتالوج</label><input type="text" id="pdfCompany" value="${localStorage.getItem('sp_company_name')||'Sales Pro'}" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx1);font-family:inherit;box-sizing:border-box;"></div>
+      <div class="pdf-opt on" data-opt="all"><div class="pdf-opt-icon">📦</div><div><div style="font-weight:800;font-size:.9rem;color:var(--tx1);">${t('كل المنتجات','All Items')}</div><div style="font-size:.76rem;color:var(--tx3);">\${fmtNum(stockData.length)} ${t('منتج','Items')}</div></div></div>
+      <div class="pdf-opt" data-opt="filtered"><div class="pdf-opt-icon">🔍</div><div><div style="font-weight:800;font-size:.9rem;color:var(--tx1);">${t('المفلتر الحالي','Currently Filtered')}</div><div style="font-size:.76rem;color:var(--tx3);">\${fmtNum(filtered.length)} ${t('منتج','Items')}</div></div></div>
+      <div class="pdf-opt \${selectedIds.size===0?'':'on'}" data-opt="selected" style="\${selectedIds.size===0?'opacity:.4;pointer-events:none;':''}"><div class="pdf-opt-icon">✅</div><div><div style="font-weight:800;font-size:.9rem;color:var(--tx1);">${t('المحدد فقط','Selected Only')}</div><div style="font-size:.76rem;color:var(--tx3);">\${selectedIds.size} ${t('منتج','Items')}</div></div></div>
+      <div class="sfg" style="margin-top:14px;"><label style="font-size:.76rem;font-weight:700;color:var(--tx3);display:block;margin-bottom:5px;">${t('اسم الشركة في الكتالوج','Company Name in Catalog')}</label><input type="text" id="pdfCompany" value="\${localStorage.getItem('sp_company_name')||'Sales Pro'}" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx1);font-family:inherit;box-sizing:border-box;"></div>
     </div>
     <div class="stk-mf">
-      <button class="sbtn sbtn-ghost" id="pdfMCancel">إلغاء</button>
-      <button class="sbtn sbtn-pdf" id="pdfMGen">📄 توليد الكتالوج</button>
+      <button class="sbtn sbtn-ghost" id="pdfMCancel">${t('إلغاء','Cancel')}</button>
+      <button class="sbtn sbtn-pdf" id="pdfMGen">📄 ${t('توليد الكتالوج','Generate Catalog')}</button>
     </div>
   </div>
 </div>
@@ -439,27 +441,27 @@ ${criticals.length ? `
 <!-- EXCEL -->
 <div class="stk-ov" id="xlModal">
   <div class="stk-m" style="max-width:560px;">
-    <div class="stk-mh"><div class="stk-mt">📥 استيراد من Excel</div><button class="stk-mc" id="xlMClose">✕</button></div>
+    <div class="stk-mh"><div class="stk-mt">📥 ${t('استيراد من Excel','Import from Excel')}</div><button class="stk-mc" id="xlMClose">✕</button></div>
     <div class="stk-mb">
       <input type="file" id="xlFileInp" accept=".xlsx,.xls,.csv" style="display:none;">
       <div class="xl-drop" id="xlDrop">
         <div id="xlDC">
           <div style="font-size:2rem;margin-bottom:9px;pointer-events:none;">📊</div>
-          <div style="font-weight:800;font-size:.92rem;color:var(--tx1);margin-bottom:6px;pointer-events:none;">اسحب ملف Excel هنا</div>
+          <div style="font-weight:800;font-size:.92rem;color:var(--tx1);margin-bottom:6px;pointer-events:none;">${t('اسحب ملف Excel هنا','Drag Excel file here')}</div>
           <div style="font-size:.78rem;color:var(--tx3);margin-bottom:13px;pointer-events:none;">.xlsx / .xls / .csv</div>
-          <button class="sbtn sbtn-excel sbtn-sm" onclick="document.getElementById('xlFileInp').click();event.stopPropagation();">📂 اختار الملف</button>
+          <button class="sbtn sbtn-excel sbtn-sm" onclick="document.getElementById('xlFileInp').click();event.stopPropagation();">📂 ${t('اختار الملف','Choose File')}</button>
         </div>
         <div id="xlCC" style="display:none;pointer-events:none;">
           <div style="font-size:1.8rem;margin-bottom:7px;">✅</div>
           <div id="xlFN" style="font-weight:800;color:#16a34a;font-size:.88rem;"></div>
           <div id="xlRC" style="font-size:.78rem;color:var(--tx3);margin-top:3px;"></div>
-          <button class="sbtn sbtn-ghost sbtn-sm" style="margin-top:9px;pointer-events:all;" onclick="document.getElementById('xlFileInp').click();event.stopPropagation();">🔄 تغيير</button>
+          <button class="sbtn sbtn-ghost sbtn-sm" style="margin-top:9px;pointer-events:all;" onclick="document.getElementById('xlFileInp').click();event.stopPropagation();">🔄 ${t('تغيير','Change')}</button>
         </div>
       </div>
       <div class="xl-map">
-        <div style="font-weight:800;font-size:.8rem;color:var(--tx1);">🗂️ سيتم قراءة الأعمدة بالترتيب التالي:</div>
+        <div style="font-weight:800;font-size:.8rem;color:var(--tx1);">🗂️ ${t('سيتم قراءة الأعمدة بالترتيب التالي:','Columns will be read in this order:')}</div>
         <div class="xl-mg">
-          <div class="xl-mi">1️⃣ الكود</div><div class="xl-mi">2️⃣ الوصف</div>
+          <div class="xl-mi">1️⃣ ${t('الكود','Code')}</div><div class="xl-mi">2️⃣ ${t('الوصف','Description')}</div>
           <div class="xl-mi">3️⃣ Qty On Hand</div><div class="xl-mi">4️⃣ Available Qty</div>
           <div class="xl-mi">5️⃣ User Price</div><div class="xl-mi">6️⃣ Dealer Price</div>
           <div class="xl-mi">7️⃣ Best Price</div><div class="xl-mi">8️⃣ Brand</div>
@@ -467,21 +469,21 @@ ${criticals.length ? `
         </div>
       </div>
       <div class="xl-modes">
-        <label class="xl-mc on" id="xlMR"><input type="radio" name="xlMode" value="replace" checked style="accent-color:#4f46e5;"><div><div style="font-weight:800;font-size:.84rem;color:var(--tx1);">استبدال الكل</div><div style="font-size:.7rem;color:var(--tx3);">مسح وإعادة الاستيراد</div></div></label>
-        <label class="xl-mc" id="xlMM"><input type="radio" name="xlMode" value="merge" style="accent-color:#4f46e5;"><div><div style="font-weight:800;font-size:.84rem;color:var(--tx1);">دمج وتحديث</div><div style="font-size:.7rem;color:var(--tx3);">تحديث بنفس الكود</div></div></label>
+        <label class="xl-mc on" id="xlMR"><input type="radio" name="xlMode" value="replace" checked style="accent-color:#4f46e5;"><div><div style="font-weight:800;font-size:.84rem;color:var(--tx1);">${t('استبدال الكل','Replace All')}</div><div style="font-size:.7rem;color:var(--tx3);">${t('مسح وإعادة الاستيراد','Clear and re-import')}</div></div></label>
+        <label class="xl-mc" id="xlMM"><input type="radio" name="xlMode" value="merge" style="accent-color:#4f46e5;"><div><div style="font-weight:800;font-size:.84rem;color:var(--tx1);">${t('دمج وتحديث','Merge & Update')}</div><div style="font-size:.7rem;color:var(--tx3);">${t('تحديث بنفس الكود','Update by code')}</div></div></label>
       </div>
       <div id="xlPS" style="display:none;">
-        <div style="font-size:.78rem;font-weight:700;color:var(--tx2);margin-bottom:7px;">معاينة أول 5 منتجات:</div>
-        <div style="overflow-x:auto;border:1px solid var(--bd);border-radius:9px;"><table class="xl-pt"><thead><tr><th>الكود</th><th>الاسم</th><th>المتاح</th><th>يوزر</th><th>ديلر</th><th>Best</th></tr></thead><tbody id="xlPB"></tbody></table></div>
+        <div style="font-size:.78rem;font-weight:700;color:var(--tx2);margin-bottom:7px;">${t('معاينة أول 5 منتجات:','Preview first 5 items:')}</div>
+        <div style="overflow-x:auto;border:1px solid var(--bd);border-radius:9px;"><table class="xl-pt"><thead><tr><th>${t('الكود','Code')}</th><th>${t('الاسم','Name')}</th><th>${t('المتاح','Avail')}</th><th>${t('يوزر','User')}</th><th>${t('ديلر','Dealer')}</th><th>Best</th></tr></thead><tbody id="xlPB"></tbody></table></div>
       </div>
       <div id="xlPW" style="display:none;margin-top:13px;">
-        <div style="font-size:.78rem;color:var(--tx2);margin-bottom:5px;" id="xlPT">جاري الاستيراد...</div>
+        <div style="font-size:.78rem;color:var(--tx2);margin-bottom:5px;" id="xlPT">${t('جاري الاستيراد...','Importing...')}</div>
         <div class="xl-pb"><div class="xl-pf" id="xlPF" style="width:0%"></div></div>
       </div>
     </div>
     <div class="stk-mf">
-      <button class="sbtn sbtn-ghost" id="xlMCancel">إلغاء</button>
-      <button class="sbtn sbtn-excel" id="xlMOK" disabled style="opacity:.45;">📥 استيراد</button>
+      <button class="sbtn sbtn-ghost" id="xlMCancel">${t('إلغاء','Cancel')}</button>
+      <button class="sbtn sbtn-excel" id="xlMOK" disabled style="opacity:.45;">📥 ${t('استيراد','Import')}</button>
     </div>
   </div>
 </div>
@@ -489,8 +491,8 @@ ${criticals.length ? `
 <!-- CATS -->
 <div class="stk-ov" id="catsModal">
   <div class="stk-m" style="max-width:360px;">
-    <div class="stk-mh"><div class="stk-mt">🗂️ إدارة الفئات</div><button class="stk-mc" id="catsMC">✕</button></div>
-    <div class="stk-mb" id="catsMB">${renderCatsBody()}</div>
+    <div class="stk-mh"><div class="stk-mt">🗂️ ${t('إدارة الفئات','Manage Categories')}</div><button class="stk-mc" id="catsMC">✕</button></div>
+    <div class="stk-mb" id="catsMB">\${renderCatsBody()}</div>
   </div>
 </div>
 `;
@@ -502,21 +504,21 @@ ${criticals.length ? `
    RENDER PRODUCTS
 ══════════════════════════════════════════════════════════ */
 function renderProducts(items) {
-    if (!items.length) return `<div class="stk-empty"><div class="stk-empty-icon">📭</div><div style="font-weight:700;font-size:1.05rem;color:var(--tx2);">لا توجد منتجات</div></div>`;
+    if (!items.length) return `<div class="stk-empty"><div class="stk-empty-icon">📭</div><div style="font-weight:700;font-size:1.05rem;color:var(--tx2);">${t('لا توجد منتجات','No items found')}</div></div>`;
     return currentView === 'grid' ? renderGrid(items) : renderList(items);
 }
 
 function renderList(items) {
     const groups = {}; const groupOrder = [];
     items.forEach(p => {
-        const k = p.brand || p.category || 'أخرى';
+        const k = p.brand || p.category || t('أخرى','Other');
         if (!groups[k]) { groups[k] = []; groupOrder.push(k); }
         groups[k].push(p);
     });
     let html = '<div class="stk-list">';
     groupOrder.forEach(brand => {
         const prods = groups[brand];
-        html += `<div class="stk-sec-lbl"><span>🏷️ ${brand}</span><span class="stk-sec-cnt">${prods.length} منتج</span></div>`;
+        html += `<div class="stk-sec-lbl"><span>🏷️ ${brand}</span><span class="stk-sec-cnt">${prods.length} ${t('منتج','Items')}</span></div>`;
         prods.forEach(p => {
             const qs  = qtyState(p.qty);
             const rc  = qs==='out'?'row-out':qs==='low'?'row-low':'';
@@ -531,19 +533,19 @@ function renderList(items) {
     <div class="stk-ibrand">${p.brand||''}</div>
   </div>
   <div class="stk-prices-box">
-    <div class="sp-tier sp-tu"><span class="sp-tier-l">يوزر</span><span class="sp-tier-v">${fmtPrice(p.price)}</span></div>
-    <div class="sp-tier sp-td"><span class="sp-tier-l">ديلر</span><span class="sp-tier-v">${fmtPrice(p.cost)}</span></div>
+    <div class="sp-tier sp-tu"><span class="sp-tier-l">${t('يوزر','User')}</span><span class="sp-tier-v">${fmtPrice(p.price)}</span></div>
+    <div class="sp-tier sp-td"><span class="sp-tier-l">${t('ديلر','Dealer')}</span><span class="sp-tier-v">${fmtPrice(p.cost)}</span></div>
     <div class="sp-tier sp-tb"><span class="sp-tier-l">Best</span><span class="sp-tier-v">${fmtPrice(p.bestPrice)}</span></div>
   </div>
   <div>${qtyBadge(p.qty, p.qtyOnHand)}</div>
-  <div class="qty-editor" title="تعديل المتاح (Available)">
+  <div class="qty-editor" title="${t('تعديل المتاح (Available)','Edit Available')}">
     <button class="qbtn" data-qminus="${p.id}">−</button>
     <input class="qinp" type="number" value="${qv}" min="0" placeholder="—" data-qinput="${p.id}">
     <button class="qbtn" data-qplus="${p.id}">+</button>
   </div>
   <div class="stk-acts">
-    <button class="abt" data-edit="${p.id}" title="تعديل">✏️</button>
-    <button class="abt abt-del" data-del="${p.id}" title="حذف">🗑️</button>
+    <button class="abt" data-edit="${p.id}" title="${t('تعديل','Edit')}">✏️</button>
+    <button class="abt abt-del" data-del="${p.id}" title="${t('حذف','Delete')}">🗑️</button>
   </div>
 </div>`;
         });
@@ -569,11 +571,11 @@ function renderGrid(items) {
     <div class="gc-brand">${p.brand||p.category||''}</div>
     ${qtyBadge(p.qty, p.qtyOnHand)}
     <div class="gc-ptiers">
-      <div class="gc-ptier gc-tu"><span class="gc-pt-l">User Price</span><span class="gc-pt-v">${fmtPrice(p.price)}</span></div>
-      <div class="gc-ptier gc-td"><span class="gc-pt-l">Dealer Price</span><span class="gc-pt-v">${fmtPrice(p.cost)}</span></div>
+      <div class="gc-ptier gc-tu"><span class="gc-pt-l">${t('يوزر','User')}</span><span class="gc-pt-v">${fmtPrice(p.price)}</span></div>
+      <div class="gc-ptier gc-td"><span class="gc-pt-l">${t('ديلر','Dealer')}</span><span class="gc-pt-v">${fmtPrice(p.cost)}</span></div>
       <div class="gc-ptier gc-tb"><span class="gc-pt-l">Best Price</span><span class="gc-pt-v">${fmtPrice(p.bestPrice)}</span></div>
     </div>
-    <div class="gc-foot" title="تعديل المتاح">
+    <div class="gc-foot" title="${t('تعديل المتاح','Edit Available')}">
       <div class="gc-qw" style="width:100%;justify-content:center;">
         <button class="gc-qbtn" data-qminus="${p.id}">−</button>
         <span class="gc-qv">${p.qty!=null?p.qty:'?'}</span>
@@ -588,8 +590,8 @@ function renderGrid(items) {
 function renderCatsBody() {
     return `
 <div style="display:flex;gap:8px;margin-bottom:13px;">
-  <input type="text" id="newCatInp" placeholder="اسم الفئة الجديدة" style="flex:1;padding:8px 12px;border-radius:9px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx1);font-family:inherit;font-size:.86rem;">
-  <button class="sbtn sbtn-primary sbtn-sm" id="addCatBtn">+ إضافة</button>
+  <input type="text" id="newCatInp" placeholder="${t('اسم الفئة الجديدة','New Category Name')}" style="flex:1;padding:8px 12px;border-radius:9px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx1);font-family:inherit;font-size:.86rem;">
+  <button class="sbtn sbtn-primary sbtn-sm" id="addCatBtn">+ ${t('إضافة','Add')}</button>
 </div>
 ${stockCats.map((c,i)=>`
 <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--bd);border-radius:9px;padding:9px 13px;margin-bottom:6px;">
@@ -605,14 +607,14 @@ function reRender() {
     const c = document.getElementById('stkProducts');
     if (c) c.innerHTML = renderProducts(getFilteredStock());
     const ce = document.querySelector('.stk-cnt');
-    if (ce) ce.textContent = getFilteredStock().length + ' منتج';
+    if (ce) ce.textContent = getFilteredStock().length + ' ' + t('منتج','Items');
     updateBulk();
 }
 function updateBulk() {
     const b = document.getElementById('stkBulk');
     const e = document.getElementById('stkBulkCnt');
     if (!b) return;
-    if (selectedIds.size > 0) { b.classList.add('on'); if(e) e.textContent = selectedIds.size + ' محدد'; }
+    if (selectedIds.size > 0) { b.classList.add('on'); if(e) e.textContent = selectedIds.size + ' ' + t('محدد','Selected'); }
     else b.classList.remove('on');
 }
 
@@ -648,10 +650,21 @@ function attachEvents() {
     document.getElementById('vGrid')?.addEventListener('click', () => { currentView='grid'; settings.lastView='grid'; saveSettings(settings); document.getElementById('vGrid').classList.add('on'); document.getElementById('vList').classList.remove('on'); reRender(); });
 
     // threshold
+    document.getElementById('stkClearAllBtn')?.addEventListener('click', () => {
+        if(stockData.length === 0) return showToast(t('❌ المخزن فارغ بالفعل','❌ Stock is already empty'), 'error');
+        if(confirm(t('هل أنت متأكد من مسح جميع المنتجات في المخزن نهائياً؟', 'Are you sure you want to permanently clear all stock items?'))) {
+            stockData = [];
+            saveStock(stockData);
+            selectedIds.clear();
+            window.rStock();
+            showToast(t('✅ تم مسح المخزن بنجاح', '✅ Stock cleared successfully'), 'success');
+        }
+    });
+
     document.getElementById('stkThrSave')?.addEventListener('click', () => {
         const v = parseInt(document.getElementById('stkThrInp')?.value)||10;
         lowThreshold = Math.max(1,v); settings.lowThreshold=lowThreshold; saveSettings(settings);
-        showToast('✅ حد التنبيه: '+lowThreshold+' قطعة','success'); window.rStock();
+        showToast(t('✅ حد التنبيه: ','✅ Alert Threshold: ')+lowThreshold+t(' قطعة',' pcs'),'success'); window.rStock();
     });
     document.getElementById('stkShowLowBtn')?.addEventListener('click', () => {
         stockSort='low_first'; stockCatFilter='all'; stockFilter='';
@@ -682,7 +695,7 @@ function attachEvents() {
     });
 
     // bulk
-    document.getElementById('bkDel')?.addEventListener('click', ()=>{if(!selectedIds.size)return;if(confirm('حذف '+selectedIds.size+' منتج؟')){stockData=stockData.filter(p=>!selectedIds.has(p.id));saveStock(stockData);selectedIds.clear();window.rStock();showToast('✅ تم الحذف','success');}});
+    document.getElementById('bkDel')?.addEventListener('click', ()=>{if(!selectedIds.size)return;if(confirm(t('حذف ','Delete ')+selectedIds.size+t(' منتج؟',' items?'))){stockData=stockData.filter(p=>!selectedIds.has(p.id));saveStock(stockData);selectedIds.clear();window.rStock();showToast(t('✅ تم الحذف','✅ Deleted'),'success');}});
     document.getElementById('bkPdf')?.addEventListener('click', ()=>{const items=stockData.filter(p=>selectedIds.has(p.id));if(items.length)generatePDF(items,localStorage.getItem('sp_company_name')||'Sales Pro');});
     document.getElementById('bkClr')?.addEventListener('click', ()=>{selectedIds.clear();updateBulk();reRender();});
 
@@ -726,7 +739,7 @@ function attachEvents() {
     document.getElementById('xlFileInp')?.addEventListener('change',e=>{const f=e.target.files[0];if(f)handleXL(f);});
 
     function handleXL(file){
-        if(typeof XLSX==='undefined'){showToast('❌ مكتبة Excel غير محملة','error');return;}
+        if(typeof XLSX==='undefined'){showToast(t('❌ مكتبة Excel غير محملة','❌ Excel library not loaded'),'error');return;}
         const r=new FileReader();
         r.onload=ev=>{
             try{
@@ -760,13 +773,13 @@ function attachEvents() {
                 document.getElementById('xlDC').style.display='none';
                 document.getElementById('xlCC').style.display='block';
                 document.getElementById('xlFN').textContent='📄 '+file.name;
-                document.getElementById('xlRC').textContent=fmtNum(parsedRows.length)+' منتج جاهز للاستيراد';
+                document.getElementById('xlRC').textContent=fmtNum(parsedRows.length)+t(' منتج جاهز للاستيراد',' items ready');
                 document.getElementById('xlPB').innerHTML=parsedRows.slice(0,5).map(p=>`<tr><td>${p.code}</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</td><td>${p.qty!=null?p.qty:'-'}</td><td>${fmtPrice(p.price)}</td><td>${fmtPrice(p.cost)}</td><td>${fmtPrice(p.bestPrice)}</td></tr>`).join('');
                 document.getElementById('xlPS').style.display='block';
                 const cb=document.getElementById('xlMOK');if(cb){cb.disabled=false;cb.style.opacity='1';}
                 const brands=[...new Set(parsedRows.map(p=>p.brand).filter(Boolean))];
                 brands.forEach(b=>{if(!stockCats.includes(b))stockCats.push(b);});saveCats(stockCats);
-            }catch(err){showToast('❌ خطأ: '+err.message,'error');console.error(err);}
+            }catch(err){showToast(t('❌ خطأ: ','❌ Error: ')+err.message,'error');console.error(err);}
         };
         r.readAsArrayBuffer(file);
     }
@@ -778,11 +791,11 @@ function attachEvents() {
         if(pw)pw.style.display='block';if(cb){cb.disabled=true;cb.style.opacity='.45';}
         if(mode==='replace'){stockData=parsedRows;if(pf)pf.style.width='100%';}
         else{parsedRows.forEach((np,idx)=>{const ei=stockData.findIndex(p=>p.code&&p.code===np.code);if(ei!==-1){const ex=stockData[ei];stockData[ei]={...np,id:ex.id,image:ex.image,createdAt:ex.createdAt};}else stockData.push(np);if(pf)pf.style.width=Math.round(((idx+1)/parsedRows.length)*100)+'%';});}
-        if(pt)pt.textContent='تم! جاري الحفظ...';
+        if(pt)pt.textContent=t('تم! جاري الحفظ...','Done! Saving...');
         saveStock(stockData);
         await new Promise(res=>setTimeout(res,500));
         document.getElementById('xlModal').classList.remove('on');
-        showToast('✅ تم استيراد '+fmtNum(parsedRows.length)+' منتج!','success');
+        showToast(t('✅ تم استيراد ','✅ Imported ')+fmtNum(parsedRows.length)+t(' منتج!',' items!'),'success');
         parsedRows=[];window.rStock();
     });
 
@@ -801,15 +814,15 @@ function attachEvents() {
     imgArea?.addEventListener('click',e=>{if(!e.target.closest('button'))imgFile?.click();});
     imgFile?.addEventListener('change',async e=>{
         const f=e.target.files[0];if(!f)return;
-        if(f.size>5*1024*1024){showToast('❌ أكبر من 5MB','error');return;}
+        if(f.size>5*1024*1024){showToast(t('❌ أكبر من 5MB','❌ Larger than 5MB'),'error');return;}
         try{let b=await fileToB64(f);b=await resizeB64(b);curImg=b;imgPrev.src=b;imgPrev.style.display='block';imgPh.style.display='none';imgRm.style.display='block';imgArea.classList.add('has-img');}
-        catch{showToast('❌ خطأ في الصورة','error');}
+        catch{showToast(t('❌ خطأ في الصورة','❌ Image Error'),'error');}
     });
     imgRm?.addEventListener('click',e=>{e.stopPropagation();curImg=null;imgPrev.src='';imgPrev.style.display='none';imgPh.style.display='block';imgRm.style.display='none';imgArea.classList.remove('has-img');if(imgFile)imgFile.value='';});
 
     document.getElementById('stkMSave')?.addEventListener('click',()=>{
         const name=document.getElementById('mfName')?.value.trim();
-        if(!name){showToast('❌ أدخل اسم المنتج','error');return;}
+        if(!name){showToast(t('❌ أدخل اسم المنتج','❌ Enter item name'),'error');return;}
         const qv=document.getElementById('mfQty')?.value.trim();
         const qh=document.getElementById('mfQtyOnHand')?.value.trim();
         const product={
@@ -829,15 +842,15 @@ function attachEvents() {
             image:curImg,
             updatedAt:new Date().toISOString()
         };
-        if(editingId){const i=stockData.findIndex(p=>p.id===editingId);if(i!==-1)stockData[i]={...stockData[i],...product,image:curImg??stockData[i].image};showToast('✅ تم التحديث','success');}
-        else{product.createdAt=product.updatedAt;stockData.unshift(product);showToast('✅ تم الإضافة','success');}
+        if(editingId){const i=stockData.findIndex(p=>p.id===editingId);if(i!==-1)stockData[i]={...stockData[i],...product,image:curImg??stockData[i].image};showToast(t('✅ تم التحديث','✅ Updated'),'success');}
+        else{product.createdAt=product.updatedAt;stockData.unshift(product);showToast(t('✅ تم الإضافة','✅ Added'),'success');}
         saveStock(stockData);closeModal();window.rStock();
     });
 
     function openModal(id){
         editingId=id||null;curImg=null;
         document.getElementById('stkModal').classList.add('on');
-        document.getElementById('stkMTitle').textContent=id?'✏️ تعديل المنتج':'＋ منتج جديد';
+        document.getElementById('stkMTitle').textContent=id?t('✏️ تعديل المنتج','✏️ Edit Item'):t('＋ منتج جديد','＋ New Item');
         ['mfName','mfCode','mfBrand','mfPrice','mfCost','mfBest','mfQty','mfQtyOnHand','mfDesc'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
         if(imgPrev){imgPrev.src='';imgPrev.style.display='none';}
         if(imgPh)imgPh.style.display='block';
@@ -863,7 +876,7 @@ function attachEvents() {
 }
 
 function toggleSel(id){if(selectedIds.has(id))selectedIds.delete(id);else selectedIds.add(id);updateBulk();reRender();}
-function confDel(id){const p=stockData.find(x=>x.id===id);if(!p)return;if(confirm('حذف "'+p.name+'"؟')){stockData=stockData.filter(x=>x.id!==id);saveStock(stockData);selectedIds.delete(id);window.rStock();showToast('✅ تم الحذف','success');}}
+function confDel(id){const p=stockData.find(x=>x.id===id);if(!p)return;if(confirm(t('حذف "','Delete "')+p.name+t('"؟','"?'))){stockData=stockData.filter(x=>x.id!==id);saveStock(stockData);selectedIds.delete(id);window.rStock();showToast(t('✅ تم الحذف','✅ Deleted'),'success');}}
 
 function showToast(msg,type){if(typeof window.toast==='function'){window.toast(msg,type);return;}const t=document.getElementById('TT');if(!t)return;t.textContent=msg;t.className='toast show';setTimeout(()=>t.className='toast',3000);}
 
@@ -871,16 +884,16 @@ function showToast(msg,type){if(typeof window.toast==='function'){window.toast(m
    PDF CATALOG — ENTERPRISE (3 PRICES)
 ══════════════════════════════════════════════════════════ */
 async function generatePDF(items, company) {
-    if(!items?.length){showToast('❌ لا توجد منتجات','error');return;}
-    showToast('⏳ جاري إنشاء الكتالوج...','info');
-    const date=new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
+    if(!items?.length){showToast(t('❌ لا توجد منتجات','❌ No Items'),'error');return;}
+    showToast(t('⏳ جاري إنشاء الكتالوج...','⏳ Generating Catalog...'),'info');
+    const date=new Date().toLocaleDateString(t('ar-EG','en-US'),{year:'numeric',month:'long',day:'numeric'});
     const grouped={};const go=[];
-    items.forEach(p=>{const k=p.brand||p.category||'أخرى';if(!grouped[k]){grouped[k]=[];go.push(k);}grouped[k].push(p);});
+    items.forEach(p=>{const k=p.brand||p.category||t('أخرى','Other');if(!grouped[k]){grouped[k]=[];go.push(k);}grouped[k].push(p);});
 
     const sections=go.map(brand=>{
         const prods=grouped[brand];
         return `<div class="pdf-section">
-<div class="pdf-bh"><div class="pdf-bn">${brand}</div><div class="pdf-bc">${prods.length} منتج</div></div>
+<div class="pdf-bh"><div class="pdf-bn">${brand}</div><div class="pdf-bc">${prods.length} ${t('منتج','Items')}</div></div>
 <div class="pdf-grid">${prods.map(p=>`
 <div class="pdf-card">
   ${p.image?`<img src="${p.image}" alt="${p.name}" class="pdf-img">`:'<div class="pdf-img-ph">📦</div>'}
@@ -894,16 +907,16 @@ async function generatePDF(items, company) {
       <div class="pdf-pb"><span>Best</span>${fmtPrice(p.bestPrice)}</div>
     </div>
     <div style="display:flex;gap:5px;align-items:center;margin-top:6px;">
-        ${p.qty!=null?`<div class="pdf-qty ${p.qty<=0?'pqo':p.qty<=lowThreshold?'pql':'pqk'}">${p.qty<=0?'نفد المتاح':'متاح: '+p.qty}</div>`:''}
-        ${p.qtyOnHand!=null?`<div class="pdf-qty-oh">فعلي: ${p.qtyOnHand}</div>`:''}
+        ${p.qty!=null?`<div class="pdf-qty ${p.qty<=0?'pqo':p.qty<=lowThreshold?'pql':'pqk'}">${p.qty<=0?t('نفد المتاح','Out of Stock'):t('متاح: ','Avail: ')+p.qty}</div>`:''}
+        ${p.qtyOnHand!=null?`<div class="pdf-qty-oh">${t('فعلي: ','On Hand: ')}${p.qtyOnHand}</div>`:''}
     </div>
   </div>
 </div>`).join('')}</div></div>`;
     }).join('');
 
-    const html=`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>
+    const html=`<!DOCTYPE html><html dir="${t('rtl','ltr')}" lang="${t('ar','en')}"><head><meta charset="UTF-8"><style>
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Tajawal',sans-serif;background:#f8fafc;color:#0f172a;direction:rtl;}
+*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Tajawal',sans-serif;background:#f8fafc;color:#0f172a;direction:${t('rtl','ltr')};}
 .pdf-cover{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:60px 52px;}
 .pdf-co{font-size:1.5rem;font-weight:900;margin-bottom:6px;}.pdf-dt{font-size:.8rem;opacity:.6;margin-bottom:28px;}
 .pdf-h1{font-size:2.6rem;font-weight:900;line-height:1.15;margin-bottom:24px;}.pdf-h1 span{color:#818cf8;}
@@ -940,30 +953,33 @@ async function generatePDF(items, company) {
 </style></head><body>
 <div class="pdf-cover">
   <div class="pdf-co">${company}</div>
-  <div class="pdf-dt">كتالوج المنتجات الرسمي</div>
-  <div class="pdf-h1">قائمة الأسعار<br><span>والمنتجات المتاحة</span></div>
+  <div class="pdf-dt">${t('كتالوج المنتجات الرسمي','Official Product Catalog')}</div>
+  <div class="pdf-h1">${t('قائمة الأسعار','Price List')}<br><span>${t('والمنتجات المتاحة','And Available Items')}</span></div>
   <div class="pdf-sum">
-    <div class="pdf-si"><div class="pdf-sv">${fmtNum(items.length)}</div><div class="pdf-sl">منتج</div></div>
-    <div class="pdf-si"><div class="pdf-sv">${go.length}</div><div class="pdf-sl">براند</div></div>
-    <div class="pdf-si"><div class="pdf-sv">${date}</div><div class="pdf-sl">تاريخ الإصدار</div></div>
+    <div class="pdf-si"><div class="pdf-sv">${fmtNum(items.length)}</div><div class="pdf-sl">${t('منتج','Items')}</div></div>
+    <div class="pdf-si"><div class="pdf-sv">${go.length}</div><div class="pdf-sl">${t('براند','Brands')}</div></div>
+    <div class="pdf-si"><div class="pdf-sv">${date}</div><div class="pdf-sl">${t('تاريخ الإصدار','Release Date')}</div></div>
   </div>
 </div>
 <div class="pdf-content">
   <div class="pdf-toc">
-    <div class="pdf-toc-t">محتويات الكتالوج</div>
+    <div class="pdf-toc-t">${t('محتويات الكتالوج','Catalog Contents')}</div>
     <div class="pdf-toc-g">${go.map(b=>`<div class="pdf-toc-i"><div class="pdf-toc-d"></div><span>${b} (${grouped[b].length})</span></div>`).join('')}</div>
   </div>
   ${sections}
 </div>
-<div class="pdf-footer"><div class="pdf-fc">${company}</div><div class="pdf-fm">جميع الأسعار بالجنيه المصري · ${date}</div></div>
+<div class="pdf-footer"><div class="pdf-fc">${company}</div><div class="pdf-fm">${t('جميع الأسعار بالجنيه المصري','All prices in EGP')} · ${date}</div></div>
 </body></html>`;
 
     if(typeof html2pdf!=='undefined'){
-        const div=document.createElement('div');div.innerHTML=html;div.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1060px;direction:rtl;';document.body.appendChild(div);
-        try{await html2pdf().set({margin:[0,0,0,0],filename:company+'-catalog-'+Date.now()+'.pdf',image:{type:'jpeg',quality:.92},html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['avoid-all','css']}}).from(div.firstElementChild).save();showToast('✅ تم توليد الكتالوج!','success');}
-        catch(e){showToast('❌ خطأ في PDF','error');console.error(e);}
+        const div=document.createElement('div');
+        div.innerHTML=`<div id="pdf-wrapper">${html.replace(/<!DOCTYPE html>|<html[^>]*>|<\\/html>|<head>|<\\/head>|<body[^>]*>|<\\/body>/ig, '')}</div>`;
+        div.style.cssText=`position:fixed;top:-9999px;left:-9999px;width:1060px;direction:${t('rtl','ltr')};`;
+        document.body.appendChild(div);
+        try{await html2pdf().set({margin:[0,0,0,0],filename:company+'-catalog-'+Date.now()+'.pdf',image:{type:'jpeg',quality:.92},html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['avoid-all','css']}}).from(div.firstElementChild).save();showToast(t('✅ تم توليد الكتالوج!','✅ Catalog Generated!'),'success');}
+        catch(e){showToast(t('❌ خطأ في PDF','❌ PDF Error'),'error');console.error(e);}
         finally{document.body.removeChild(div);}
-    }else{const w=window.open('','_blank');w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),1000);showToast('✅ فتح نافذة الطباعة','success');}
+    }else{const w=window.open('','_blank');w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),1000);showToast(t('✅ فتح نافذة الطباعة','✅ Opened Print Dialog'),'success');}
 }
 
 })();
