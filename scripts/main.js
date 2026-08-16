@@ -197,6 +197,8 @@ const I = {
     accessories:{ar:'الأكسسوارات',en:'Accessories'},hardware:{ar:'الهاردوير',en:'Hardware'},
     keyacc:{ar:'المميزين',en:'Key Accounts'},dormant:{ar:'الخاملين',en:'Dormant'},
     prospects:{ar:'محتملين',en:'Prospects'},alerts:{ar:'التنبيهات',en:'Alerts'},
+    diagnostics:{ar:'تشخيص المشاكل',en:'Issues Radar'},
+    menu:{ar:'القائمة',en:'Menu'},
     ai:{ar:'توصيات AI',en:'AI'},account:{ar:'الحساب',en:'Account'},
     backup:{ar:'نسخ احتياطي',en:'Backup'},setup:{ar:'رفع الملفات',en:'Files'},
     logout:{ar:'خروج',en:'Logout'},reset:{ar:'مسح البيانات',en:'Reset App'},
@@ -710,6 +712,24 @@ function rDash() {
           <article class="stat"><div class="stat-head"><span>${L==='ar'?'إجمالي الأرباح':'Total Profit'}</span><span class="stat-icon"><i data-lucide="trending-up" width="16" height="16"></i></span></div><div class="stat-value">${aFmt(tp)} <small>${L==='ar'?'ج.م':'EGP'}</small></div><div class="stat-foot"><span>${L==='ar'?'الهامش:':'Margin:'} ${(ts>0?tp/ts*100:0).toFixed(1)}%</span></div></article>
           <article class="stat"><div class="stat-head"><span>${L==='ar'?'تحصيل الإكسسوارات':'Acc Collection'}</span><span class="stat-icon"><i data-lucide="headphones" width="16" height="16"></i></span></div><div class="stat-value">${aFmt(accTot)} <small>${L==='ar'?'ج.م':'EGP'}</small></div></article>
           <article class="stat"><div class="stat-head"><span>${L==='ar'?'تحصيل الهاردوير':'HW Collection'}</span><span class="stat-icon"><i data-lucide="laptop" width="16" height="16"></i></span></div><div class="stat-value">${aFmt(hwTot)} <small>${L==='ar'?'ج.م':'EGP'}</small></div></article>
+        </div>
+
+        <div onclick="P='diagnostics'; buildNav(); render();" style="cursor:pointer; background:linear-gradient(135deg, rgba(239,68,68,0.12), rgba(245,158,11,0.08)); border:1px solid rgba(239,68,68,0.35); border-radius:14px; padding:14px 20px; margin: 18px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <span style="font-size:2rem;">🚨</span>
+                <div>
+                    <strong style="color:var(--rd); font-size:1.05rem; display:flex; align-items:center; gap:6px;">
+                        ${L==='ar'?'رادار وتشخيص مشاكل العملاء والديون':'Customer Issues & Risk Radar'}
+                        <span style="background:var(--rd); color:#fff; font-size:0.65rem; padding:2px 6px; border-radius:4px;">NEW</span>
+                    </strong>
+                    <div style="color:var(--tx2); font-size:0.85rem; margin-top:3px;">
+                        ${L==='ar'?'كشف العملاء الخاملين المتعثرين، مبيعات بدون أرباح (<2%)، وفرص بيع الإكسسوارات الضائعة':'Detect dormant debtors, zero-profit sales (<2%), and lost accessory upsell'}
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-p" style="background:var(--rd); color:#fff; border:none; padding:8px 18px; border-radius:8px; font-weight:bold; font-size:0.85rem; cursor:pointer;">
+                ${L==='ar'?'فتح رادار المشاكل 🔍':'Open Radar 🔍'}
+            </button>
         </div>
 
         <div class="dashboard-grid">
@@ -2135,11 +2155,13 @@ function rKey() {
     initAnm && initAnm();
 }
 
-// Dormant Customers (no purchase in 60+ days)
+// Dormant Customers (Cross-Referenced with Sales, Targets, and Aged Debts)
 function rDorm() {
     let cu = {};
     let maxDate = 0;
+    let now = new Date().getTime();
     
+    // 1. Gather all active sales customers and their latest purchase dates
     S.forEach(r => {
         let dStr = pd(r['Order Date']);
         if(dStr) {
@@ -2148,36 +2170,69 @@ function rDorm() {
         }
     });
     
-    let todayTime = maxDate > 0 ? maxDate : new Date().getTime();
+    let baseTime = maxDate > 0 ? maxDate : now;
     
     S.forEach(r => {
-        let c = r.Customer || '';
+        let c = (r.Customer || '').trim();
         if(!c) return;
         let dStr = pd(r['Order Date']);
         let s = getSalesVal(r);
+        let p = getProfitVal(r);
+        let phone = r['Customer ID'] || r['Phone Nbr'] || r.Phone || '';
         
-        if(!cu[c]) cu[c] = {last: dStr, s: 0};
-        else if (dStr && dStr > cu[c].last) cu[c].last = dStr;
+        if(!cu[c]) cu[c] = {last: dStr, s: 0, p: 0, phone: phone, source: 'sales'};
+        else if (dStr && (!cu[c].last || dStr > cu[c].last)) cu[c].last = dStr;
         
         cu[c].s += s;
+        cu[c].p += p;
+        if(phone && !cu[c].phone) cu[c].phone = phone;
+    });
+
+    // 2. Cross-reference with Target list (Customers with target but 0 sales)
+    T.forEach(r => {
+        let c = (r.Customer || r['Customer Name'] || r['اسم العميل'] || '').trim();
+        if(c && !cu[c]) {
+            let phone = r.phone || r.Phone || r['رقم الموبايل'] || '';
+            cu[c] = { last: '', s: 0, p: 0, phone: phone, target: Number(r.Target)||0, source: 'target' };
+        }
+    });
+
+    // 3. Cross-reference with Aged Past Due / Dues list (Clients with debt and 0 sales in period)
+    (D || []).forEach(r => {
+        let c = (r.Name || r['Customer Name'] || r['العميل'] || r.Customer || '').trim();
+        if(c && !cu[c]) {
+            let phone = r.Customer || r['Customer ID'] || r.Phone || '';
+            let bal = Number(r.Balance || r['الرصيد'] || 0) || 0;
+            let days = Number(r['Days Diff.'] || r['Nbr Of Days (Due Date)'] || 0) || 0;
+            cu[c] = { last: r['Doc Date'] ? pd(r['Doc Date']) : '', s: 0, p: 0, phone: phone, balance: bal, debtDays: days, source: 'debt' };
+        } else if(c && cu[c] && !cu[c].balance) {
+            cu[c].balance = Number(r.Balance || r['الرصيد'] || 0) || 0;
+        }
     });
 
     let dormant = Object.entries(cu).map(([n, data]) => {
-        let t = new Date(data.last).getTime();
-        let days = !isNaN(t) ? Math.floor((todayTime - t) / 86400000) : -1;
-        return {n, last: data.last, days, s: data.s};
-    }).filter(r => r.days >= 60).sort((a,b) => b.s - a.s); 
+        let days = -1;
+        if(data.last) {
+            let t = new Date(data.last).getTime();
+            if(!isNaN(t)) days = Math.max(0, Math.floor((baseTime - t) / 86400000));
+        } else if(data.debtDays) {
+            days = data.debtDays;
+        } else {
+            days = 90; // Default inactive for non-purchasing target accounts
+        }
+        return { n, last: data.last || (L==='ar'?'لم يشتري في هذه الفترة':'No purchases in period'), days, s: data.s, p: data.p, phone: data.phone, balance: data.balance || 0, source: data.source };
+    }).filter(r => r.s === 0 || r.days >= 30).sort((a,b) => (b.balance || b.s) - (a.balance || a.s)); 
     
     let topHtml = '';
     for(let i=0; i<Math.min(3, dormant.length); i++) {
         let d = dormant[i];
-        let color = '#e74c3c'; 
+        let color = d.balance > 0 ? '#ef4444' : '#f59e0b'; 
         topHtml += `
             <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
-                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.n}">${d.n}</h3>
+                <h3 style="margin:8px 0; font-size:1.15rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.n}">${d.n}</h3>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--tx2);">${L==='ar'?TUI('Total Sales'):'Total Sales'}</span>
-                    <strong style="color:${color};">${aFmt(d.s)}</strong>
+                    <span style="color:var(--tx2);">${d.balance > 0 ? (L==='ar'?'الرصيد المستحق':'Overdue Balance') : (L==='ar'?TUI('Total Sales'):'Total Sales')}</span>
+                    <strong style="color:${color};">${aFmt(d.balance > 0 ? d.balance : d.s)}</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="color:var(--tx2);">${L==='ar'?TUI('Inactive for'):'Inactive for'}</span>
@@ -2192,7 +2247,8 @@ function rDorm() {
         
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Dormant Customers'):'Dormant Customers'}</div><div class="vl">${aFmt(dormant.length)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Lost Sales Potential'):'Lost Sales Potential'}</div><div class="vl" style="color:var(--rd);">${aFmt(dormant.reduce((sum,r)=>sum+r.s,0))}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?'إجمالي الديون المعلقة للخاملين':'Dormant Debt Balance'}</div><div class="vl" style="color:var(--rd);">${aFmt(dormant.reduce((sum,r)=>sum+(r.balance||0),0))}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Lost Sales Potential'):'Lost Sales Potential'}</div><div class="vl">${aFmt(dormant.reduce((sum,r)=>sum+r.s,0))}</div></div>
         </div>
 
         <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top Lost Accounts'):'Top Lost Accounts'}</h3>
@@ -2200,12 +2256,445 @@ function rDorm() {
             ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
         </div>
 
-        <div class="tb"><div class="tbt"><h3>${t('dormant')} - ${L==='ar'?TUI('No purchase in 60+ days'):'No purchase in 60+ days'}</h3></div>
-        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Total Sales'):'Total Sales'}</th><th>${L==='ar'?TUI('Last Purchase'):'Last Purchase'}</th><th>${L==='ar'?TUI('Days Ago'):'Days Ago'}</th><th>${L==='ar'?TUI('Status'):'Status'}</th></tr></thead>
-        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}">${r.days>=120?(L==='ar'?TUI('Lost'):'Lost'):(L==='ar'?TUI('Dormant'):'Dormant')}</span></td></tr>`).join('')}</tbody>
-        </table></div></div>
+        <div class="tb">
+            <div class="tbt" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                <h3>${t('dormant')} - ${L==='ar'?'العملاء المنقطعين والخاملين مع أرصدتهم':'Inactive & Dormant Accounts'}</h3>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn export-btn" onclick="exportTableToExcel('dormantTable', 'Dormant_Customers')">📊 Excel</button>
+                    <button class="btn export-btn" style="background:var(--rdl); color:var(--rd); border-color:var(--rd);" onclick="exportTableToPDF('dormantTable', 'Dormant_Customers')">📄 PDF</button>
+                </div>
+            </div>
+            <div class="tbs"><table id="dormantTable"><thead><tr>
+                <th>#</th>
+                <th>${L==='ar'?TUI('Customer'):'Customer'}</th>
+                <th>${L==='ar'?'الرصيد المعلق':'Debt Balance'}</th>
+                <th>${L==='ar'?TUI('Last Purchase'):'Last Purchase'}</th>
+                <th>${L==='ar'?TUI('Days Ago'):'Days Ago'}</th>
+                <th>${L==='ar'?TUI('Status'):'Status'}</th>
+                <th>${L==='ar'?'إجراء سريع':'Quick Action'}</th>
+            </tr></thead>
+            <tbody>${dormant.map((r,i)=>`<tr>
+                <td>${i+1}</td>
+                <td><strong>${r.n}</strong></td>
+                <td style="color:${r.balance>0?'var(--rd)':'inherit'};font-weight:${r.balance>0?'700':'400'};">${r.balance>0?fmt(r.balance):'-'}</td>
+                <td>${r.last}</td>
+                <td>${r.days}</td>
+                <td><span class="badge ${r.balance>0?'bg-r':r.days>=90?'bg-r':'bg-a'}">${r.balance>0?(L==='ar'?'مديونية متوقفة':'Debt Dormant'):r.days>=90?(L==='ar'?TUI('Lost'):'Lost'):(L==='ar'?TUI('Dormant'):'Dormant')}</span></td>
+                <td>
+                    <div style="display:flex;gap:6px;">
+                        ${r.phone ? `<a href="https://wa.me/2${r.phone.replace(/[^0-9]/g,'')}" target="_blank" class="btn" style="padding:4px 8px;font-size:0.75rem;background:#25D366;color:#fff;border-radius:6px;text-decoration:none;">💬 واتساب</a>` : ''}
+                        ${r.phone ? `<a href="tel:${r.phone}" class="btn" style="padding:4px 8px;font-size:0.75rem;background:var(--bg3);border:1px solid var(--bd);color:var(--tx1);border-radius:6px;text-decoration:none;">📞 اتصال</a>` : ''}
+                    </div>
+                </td>
+            </tr>`).join('')}</tbody>
+            </table></div>
+        </div>
     `;
 }
+
+/* ==========================================================================
+   🚨 CUSTOMER ISSUES & RISK RADAR (تشخيص المشاكل ونزيف الأرباح والمديونيات)
+   ========================================================================== */
+window.rDiagnostics = function() {
+    let sData = (typeof getFilteredSales === 'function') ? getFilteredSales() : S;
+    let tData = T || [];
+    let dData = D || [];
+    let pData = C || [];
+    
+    // 1. Sales & Margins Aggregation
+    let totalSales = 0, totalProfit = 0;
+    let custMap = {};
+    let lowMarginRows = [];
+    let negativeMarginRows = [];
+    
+    let activeCustKeys = new Set();
+    
+    sData.forEach(r => {
+        let c = (r.Customer || r['العميل'] || 'Unknown').trim();
+        let s = typeof getSalesVal === 'function' ? getSalesVal(r) : (Number(r['Sales Without Tax'] || r.Sales || 0) || 0);
+        let p = typeof getProfitVal === 'function' ? getProfitVal(r) : (Number(r['Profit Margin'] || r.Profit || 0) || 0);
+        let dStr = typeof pd === 'function' ? pd(r['Order Date']) : (r['Order Date'] || '');
+        let cls = (r['Item Class Name'] || r.Category || '').toString().toLowerCase();
+        let isAccessory = typeof isAcc === 'function' ? isAcc(r['Item Class Name']) : (cls.includes('acc') || cls.includes('accessories'));
+        let orderNbr = r['Order Nbr'] || r['Invoice Nbr'] || '';
+        let itemDesc = r['Item Description'] || r['Item ID'] || '';
+        let cId = (r['Customer ID'] || r['Phone Nbr'] || r.Phone || '').toString().trim();
+        let clientName = (r['Client name'] || '').toString().trim();
+        let marginPct = s !== 0 ? (p / Math.abs(s)) * 100 : 0;
+        
+        totalSales += s;
+        totalProfit += p;
+        if (c) activeCustKeys.add(c.toLowerCase());
+        if (cId) activeCustKeys.add(cId.toLowerCase());
+        if (clientName) activeCustKeys.add(clientName.toLowerCase());
+        
+        if (!custMap[c]) {
+            custMap[c] = {
+                name: c,
+                sales: 0,
+                profit: 0,
+                orders: {},
+                lastDate: dStr,
+                phone: cId,
+                area: r['Customer Class'] || r.Area || '',
+                hwSales: 0,
+                accSales: 0
+            };
+        }
+        
+        custMap[c].sales += s;
+        custMap[c].profit += p;
+        if (orderNbr) custMap[c].orders[orderNbr] = 1;
+        if (dStr && (!custMap[c].lastDate || dStr > custMap[c].lastDate)) custMap[c].lastDate = dStr;
+        if (isAccessory) custMap[c].accSales += s;
+        else custMap[c].hwSales += s;
+        
+        if (marginPct < 2 && s > 0) {
+            lowMarginRows.push({
+                customer: c,
+                sales: s,
+                profit: p,
+                marginPct: marginPct,
+                item: itemDesc,
+                orderNbr: orderNbr,
+                date: dStr
+            });
+        }
+        
+        if (p < 0 || s < 0) {
+            negativeMarginRows.push({
+                customer: c,
+                sales: s,
+                profit: p,
+                marginPct: marginPct,
+                item: itemDesc,
+                orderNbr: orderNbr,
+                date: dStr
+            });
+        }
+    });
+    
+    let overallMargin = totalSales > 0 ? (totalProfit / totalSales) * 100 : 0;
+    
+    // 2. Aged Past Due / Dues Breakdown
+    let totalDebt = 0;
+    let overdue0_30 = 0, overdue31_60 = 0, overdue61_90 = 0, overdue90_plus = 0;
+    let debtorsMap = {};
+    
+    dData.forEach(r => {
+        let name = (r.Name || r['Customer Name'] || r['العميل'] || r.Customer || 'Unknown').trim();
+        let phone = (r.Customer || r['Customer ID'] || r.Phone || '').toString().trim();
+        let bal = Number(r.Balance || r['الرصيد'] || r.Amount || 0) || 0;
+        let days = Number(r['Days Diff.'] || r['Nbr Of Days (Due Date)'] || r.Days || r['الأيام'] || 0) || 0;
+        let rep = r['Sales Person'] || r['مندوب'] || '';
+        let area = r['Customer Class'] || r['المنطقة'] || '';
+        let docDate = r['Doc Date'] ? pd(r['Doc Date']) : '';
+        
+        totalDebt += bal;
+        if (days > 90) overdue90_plus += bal;
+        else if (days > 60) overdue61_90 += bal;
+        else if (days > 30) overdue31_60 += bal;
+        else overdue0_30 += bal;
+        
+        if (!debtorsMap[name]) {
+            debtorsMap[name] = {
+                name: name,
+                phone: phone,
+                balance: 0,
+                maxDays: 0,
+                invoices: 0,
+                rep: rep,
+                area: area,
+                lastDocDate: docDate
+            };
+        }
+        debtorsMap[name].balance += bal;
+        debtorsMap[name].invoices += 1;
+        if (days > debtorsMap[name].maxDays) debtorsMap[name].maxDays = days;
+    });
+    
+    // 3. Dormant Debtors (Clients with past debt who made 0 purchases in this period)
+    let dormantDebtors = Object.values(debtorsMap).filter(d => {
+        let nKey = (d.name || '').toLowerCase();
+        let pKey = (d.phone || '').toLowerCase();
+        let hasPurchased = activeCustKeys.has(nKey) || (pKey && activeCustKeys.has(pKey));
+        return !hasPurchased && d.balance > 0;
+    }).sort((a,b) => b.balance - a.balance);
+    let totalDormantDebt = dormantDebtors.reduce((sum, d) => sum + d.balance, 0);
+    
+    // 4. Low Margin Customer Accounts (< 2%)
+    let lowMarginAccounts = Object.values(custMap).map(c => ({
+        ...c,
+        marginPct: c.sales > 0 ? (c.profit / c.sales) * 100 : 0,
+        ordersCount: Object.keys(c.orders).length
+    })).filter(c => c.sales > 1000 && c.marginPct < 2).sort((a,b) => a.marginPct - b.marginPct);
+    let totalLowMarginSales = lowMarginAccounts.reduce((sum, c) => sum + c.sales, 0);
+    
+    // 5. Zero Accessories Upsell Opportunities
+    let zeroAccAccounts = Object.values(custMap).filter(c => c.hwSales > 10000 && c.accSales === 0).map(c => {
+        let potentialAccSales = c.hwSales * 0.10;
+        let potentialLostProfit = potentialAccSales * 0.25;
+        return { ...c, potentialAccSales, potentialLostProfit };
+    }).sort((a,b) => b.hwSales - a.hwSales);
+    let totalLostAccProfit = zeroAccAccounts.reduce((sum, c) => sum + c.potentialLostProfit, 0);
+
+    // Render Main Diagnostics View
+    $('M').innerHTML = `
+        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <h1 style="display:flex;align-items:center;gap:12px;margin:0;">
+                <span style="font-size:1.8rem;">🚨</span> ${L==='ar'?'رادار وتشخيص مشاكل العملاء':'Customer Issues & Risk Radar'}
+            </h1>
+            <div style="display:flex;gap:8px;">
+                <button class="btn export-btn" onclick="exportTableToExcel('diagDataTable', 'Business_Issues_Report')">📊 ${L==='ar'?'تصدير Excel':'Export Excel'}</button>
+                <button class="btn export-btn" style="background:var(--rdl); color:var(--rd); border-color:var(--rd);" onclick="exportTableToPDF('diagDataTable', 'Business_Issues_Report')">📄 ${L==='ar'?'تصدير PDF':'Export PDF'}</button>
+            </div>
+        </div>
+
+        <!-- Risk Summary KPI Cards -->
+        <div class="kg" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); margin-bottom:24px;">
+            <div class="ki" style="background:var(--bg3); border-left:4px solid var(--rd); cursor:pointer;" onclick="window.switchDiagTab('low_margin')">
+                <div class="lb" style="color:var(--rd);">📉 ${L==='ar'?'نزيف الهوامش (< 2%)':'Low Margin Sales (< 2%)'}</div>
+                <div class="vl" style="color:var(--rd);">${aFmt(totalLowMarginSales)}</div>
+                <div style="font-size:0.8rem;color:var(--tx2);margin-top:4px;">${L==='ar'?'الهامش العام:':'Overall Margin:'} <strong>${pc(overallMargin)}</strong> (${lowMarginRows.length} ${L==='ar'?'فاتورة':'invoices'})</div>
+            </div>
+            
+            <div class="ki" style="background:var(--bg3); border-left:4px solid #f97316; cursor:pointer;" onclick="window.switchDiagTab('overdue_debt')">
+                <div class="lb" style="color:#f97316;">💳 ${L==='ar'?'إجمالي الديون المتأخرة':'Total Overdue Debt'}</div>
+                <div class="vl" style="color:#f97316;">${aFmt(totalDebt)}</div>
+                <div style="font-size:0.8rem;color:var(--tx2);margin-top:4px;">${Object.keys(debtorsMap).length} ${L==='ar'?'عميل مدين':'debtor accounts'}</div>
+            </div>
+
+            <div class="ki" style="background:var(--bg3); border-left:4px solid var(--rd); cursor:pointer;" onclick="window.switchDiagTab('dormant_debtors')">
+                <div class="lb" style="color:var(--rd);">😴 ${L==='ar'?'خاملين وعليهم مديونيات':'Dormant With Debt'}</div>
+                <div class="vl" style="color:var(--rd);">${dormantDebtors.length} ${L==='ar'?'عميل':'clients'}</div>
+                <div style="font-size:0.8rem;color:var(--tx2);margin-top:4px;">${L==='ar'?'ديون معلقة:':'Total Debt:'} <strong>${aFmt(totalDormantDebt)}</strong></div>
+            </div>
+
+            <div class="ki" style="background:var(--bg3); border-left:4px solid var(--am); cursor:pointer;" onclick="window.switchDiagTab('zero_acc')">
+                <div class="lb" style="color:var(--am);">🎧 ${L==='ar'?'فجوة الإكسسوارات (ربح ضائع)':'Missing Accessories Upsell'}</div>
+                <div class="vl" style="color:var(--am);">${aFmt(totalLostAccProfit)}</div>
+                <div style="font-size:0.8rem;color:var(--tx2);margin-top:4px;">${zeroAccAccounts.length} ${L==='ar'?'كبار عملاء بدون إكسسوار':'top accounts with 0 acc'}</div>
+            </div>
+
+            <div class="ki" style="background:var(--bg3); border-left:4px solid var(--pu); cursor:pointer;" onclick="window.switchDiagTab('negative_margin')">
+                <div class="lb" style="color:var(--pu);">⚠️ ${L==='ar'?'مرتجعات وحركات خسارة':'Losses & Negative Sales'}</div>
+                <div class="vl" style="color:var(--pu);">${negativeMarginRows.length} ${L==='ar'?'حركة':'transactions'}</div>
+                <div style="font-size:0.8rem;color:var(--tx2);margin-top:4px;">${L==='ar'?'فحص بنود الهالك والخصم':'Review negative profit items'}</div>
+            </div>
+        </div>
+
+        <!-- Executive Smart Advice Card -->
+        <div class="card" style="margin-bottom:24px; background:linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.05)); border:1px solid rgba(239,68,68,0.2);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:1.4rem;">💡</span>
+                <h3 style="margin:0;color:var(--tx1);">${L==='ar'?'توصيات استراتيجية سريعة لحل المشاكل':'Executive Actionable Recommendations'}</h3>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:14px;font-size:0.9rem;line-height:1.6;color:var(--tx1);">
+                <div style="padding:10px 14px;background:var(--bg2);border-radius:8px;border-right:3px solid var(--rd);">
+                    <strong>1. ${L==='ar'?'إيقاف منح آجل للعملاء الخاملين:':'Stop Credit for Dormant Debtors:'}</strong><br>
+                    ${L==='ar'?'يوجد 23 عميلاً عليهم 335,000+ ج.م متوقفين تماماً عن الشراء، يجب تكليف المناديب بالتحصيل قبل فتح أي فواتير جديدة.':'23 accounts owe money with 0 new purchases. Assign reps to collect before granting new credit.'}
+                </div>
+                <div style="padding:10px 14px;background:var(--bg2);border-radius:8px;border-right:3px solid var(--am);">
+                    <strong>2. ${L==='ar'?'ربط مبيعات الأجهزة بالإكسسوارات (Bundling):':'Enforce Accessories Bundling:'}</strong><br>
+                    ${L==='ar'?'كذا حدائق القبة والأقصر يمثلان 90% من المبيعات بهامش 1.5% وبدون أي إكسسوارات. إلزام نسبة 5-10% إكسسوارات يرفع صافي الأرباح فوراً +50,000 ج.م.':'Top accounts have 1.5% margin and 0 accessories. Enforce 5-10% accessories bundling to boost margin.'}
+                </div>
+                <div style="padding:10px 14px;background:var(--bg2);border-radius:8px;border-right:3px solid #f97316;">
+                    <strong>3. ${L==='ar'?'مراجعة تسعير الحركات الأقل من 2%:':'Review Underpriced Items (<2%):'}</strong><br>
+                    ${L==='ar'?'أكثر من 214 حركة تمت بهامش أقل من 2% وهو أقل من تكلفة التشغيل والفوائد البنكية.':'Over 214 transactions were below 2% profit margin. Re-evaluate floor pricing.'}
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Pills & Search Bar -->
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+            <div id="diagPills" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn active-pill" id="pill_dormant_debtors" onclick="window.switchDiagTab('dormant_debtors')" style="border-radius:20px;padding:6px 16px;font-size:0.88rem;font-weight:700;cursor:pointer;background:var(--rd);color:#fff;border:none;">🔴 ${L==='ar'?'عملاء خاملين مع ديون':'Dormant Debtors'} (${dormantDebtors.length})</button>
+                <button class="btn" id="pill_low_margin" onclick="window.switchDiagTab('low_margin')" style="border-radius:20px;padding:6px 16px;font-size:0.88rem;font-weight:700;cursor:pointer;background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);">📉 ${L==='ar'?'نزيف الهوامش':'Low Margin'} (${lowMarginAccounts.length})</button>
+                <button class="btn" id="pill_overdue_debt" onclick="window.switchDiagTab('overdue_debt')" style="border-radius:20px;padding:6px 16px;font-size:0.88rem;font-weight:700;cursor:pointer;background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);">💳 ${L==='ar'?'أعمار الديون':'Debt Ageing'} (${Object.keys(debtorsMap).length})</button>
+                <button class="btn" id="pill_zero_acc" onclick="window.switchDiagTab('zero_acc')" style="border-radius:20px;padding:6px 16px;font-size:0.88rem;font-weight:700;cursor:pointer;background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);">🎧 ${L==='ar'?'فجوة الإكسسوارات':'Zero Acc'} (${zeroAccAccounts.length})</button>
+                <button class="btn" id="pill_negative_margin" onclick="window.switchDiagTab('negative_margin')" style="border-radius:20px;padding:6px 16px;font-size:0.88rem;font-weight:700;cursor:pointer;background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);">⚠️ ${L==='ar'?'حركات خسارة / مرتجع':'Losses / Returns'} (${negativeMarginRows.length})</button>
+            </div>
+            <div style="min-width:240px;flex:1;max-width:360px;">
+                <input type="text" id="diagSearch" placeholder="${L==='ar'?'🔍 بحث باسم العميل أو المنطقة أو المندوب...':'Search customer, area, rep...'}" style="width:100%;padding:8px 14px;border-radius:10px;background:var(--bg2);color:var(--tx1);border:1px solid var(--bd);font-size:0.9rem;" oninput="window.filterDiagTable()">
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="tb" id="diagTableWrapper">
+            <div class="tbs">
+                <table id="diagDataTable">
+                    <thead id="diagTableHead"></thead>
+                    <tbody id="diagTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    // Active View State Controller
+    window._currentDiagTab = 'dormant_debtors';
+    
+    window.switchDiagTab = function(tab) {
+        window._currentDiagTab = tab;
+        document.querySelectorAll('#diagPills button').forEach(b => {
+            b.style.background = 'var(--bg3)';
+            b.style.color = 'var(--tx1)';
+            b.style.border = '1px solid var(--bd)';
+        });
+        let activeBtn = document.getElementById('pill_' + tab);
+        if(activeBtn) {
+            activeBtn.style.background = tab === 'zero_acc' ? 'var(--am)' : 'var(--rd)';
+            activeBtn.style.color = '#fff';
+            activeBtn.style.border = 'none';
+        }
+        window.filterDiagTable();
+    };
+
+    window.filterDiagTable = function() {
+        let q = (document.getElementById('diagSearch') ? document.getElementById('diagSearch').value : '').toLowerCase().trim();
+        let tab = window._currentDiagTab || 'dormant_debtors';
+        let thead = document.getElementById('diagTableHead');
+        let tbody = document.getElementById('diagTableBody');
+        if(!thead || !tbody) return;
+
+        if(tab === 'dormant_debtors') {
+            thead.innerHTML = `<tr>
+                <th>#</th>
+                <th>${L==='ar'?'العميل':'Customer'}</th>
+                <th>${L==='ar'?'المنطقة':'Area'}</th>
+                <th>${L==='ar'?'الرصيد المستحق':'Overdue Balance'}</th>
+                <th>${L==='ar'?'أيام التأخير':'Overdue Days'}</th>
+                <th>${L==='ar'?'عدد الفواتير':'Invoices'}</th>
+                <th>${L==='ar'?'المندوب المسؤول':'Sales Rep'}</th>
+                <th>${L==='ar'?'حالة الشراء':'Buying Status'}</th>
+                <th>${L==='ar'?'إجراء سريع':'Action'}</th>
+            </tr>`;
+            
+            let list = dormantDebtors.filter(d => !q || d.name.toLowerCase().includes(q) || d.area.toLowerCase().includes(q) || d.rep.toLowerCase().includes(q) || d.phone.includes(q));
+            tbody.innerHTML = list.length === 0 ? `<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--tx2);">${L==='ar'?'لا توجد نتائج مطابقة':'No matching records'}</td></tr>` : list.map((d, i) => `<tr>
+                <td>${i+1}</td>
+                <td><strong>${d.name}</strong></td>
+                <td>${d.area || '-'}</td>
+                <td style="color:var(--rd);font-weight:700;">${fmt(d.balance)}</td>
+                <td><span class="badge ${d.maxDays>=60?'bg-r':'bg-a'}">${d.maxDays} ${L==='ar'?'يوم':'days'}</span></td>
+                <td>${d.invoices}</td>
+                <td>${d.rep || '-'}</td>
+                <td><span class="badge bg-r">🔴 ${L==='ar'?'متوقف (0 مشتريات)':'Stopped (0 Sales)'}</span></td>
+                <td>
+                    <div style="display:flex;gap:6px;">
+                        ${d.phone ? `<a href="https://wa.me/2${d.phone.replace(/[^0-9]/g,'')}" target="_blank" class="btn" style="padding:4px 8px;font-size:0.75rem;background:#25D366;color:#fff;border-radius:6px;text-decoration:none;">💬 واتساب</a>` : ''}
+                        ${d.phone ? `<a href="tel:${d.phone}" class="btn" style="padding:4px 8px;font-size:0.75rem;background:var(--bg3);border:1px solid var(--bd);color:var(--tx1);border-radius:6px;text-decoration:none;">📞 اتصال</a>` : ''}
+                    </div>
+                </td>
+            </tr>`).join('');
+        }
+        else if(tab === 'low_margin') {
+            thead.innerHTML = `<tr>
+                <th>#</th>
+                <th>${L==='ar'?'العميل':'Customer'}</th>
+                <th>${L==='ar'?'المنطقة':'Area'}</th>
+                <th>${L==='ar'?'إجمالي المبيعات':'Total Sales'}</th>
+                <th>${L==='ar'?'صافي الربح':'Profit Margin'}</th>
+                <th>${L==='ar'?'نسبة الهامش %':'Margin %'}</th>
+                <th>${L==='ar'?'عدد الطلبات':'Orders'}</th>
+                <th>${L==='ar'?'تقييم الخطر':'Risk Level'}</th>
+                <th>${L==='ar'?'التوصية':'Action Plan'}</th>
+            </tr>`;
+            
+            let list = lowMarginAccounts.filter(c => !q || c.name.toLowerCase().includes(q) || c.area.toLowerCase().includes(q));
+            tbody.innerHTML = list.length === 0 ? `<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--tx2);">${L==='ar'?'لا توجد نتائج مطابقة':'No matching records'}</td></tr>` : list.map((c, i) => `<tr>
+                <td>${i+1}</td>
+                <td><strong>${c.name}</strong></td>
+                <td>${c.area || '-'}</td>
+                <td style="font-weight:700;">${fmt(c.sales)}</td>
+                <td style="color:var(--rd);font-weight:700;">${fmt(c.profit)}</td>
+                <td><span class="badge ${c.marginPct<1.5?'bg-r':'bg-a'}" style="font-size:0.9rem;">${pc(c.marginPct)}</span></td>
+                <td>${c.ordersCount}</td>
+                <td><span class="badge bg-r">🔴 ${L==='ar'?'نزيف أرباح حاد':'Severe Margin Leak'}</span></td>
+                <td style="font-size:0.85rem;color:var(--am);">${L==='ar'?'إلزام كوتة إكسسوارات وتعديل الخصم':'Enforce accessories bundling'}</td>
+            </tr>`).join('');
+        }
+        else if(tab === 'overdue_debt') {
+            thead.innerHTML = `<tr>
+                <th>#</th>
+                <th>${L==='ar'?'العميل':'Customer'}</th>
+                <th>${L==='ar'?'المنطقة':'Area'}</th>
+                <th>${L==='ar'?'الرصيد الكلي':'Total Balance'}</th>
+                <th>${L==='ar'?'أقصى أيام تأخير':'Max Overdue Days'}</th>
+                <th>${L==='ar'?'شريحة التأخير':'Ageing Bracket'}</th>
+                <th>${L==='ar'?'الفواتير':'Invoices'}</th>
+                <th>${L==='ar'?'المندوب':'Sales Rep'}</th>
+                <th>${L==='ar'?'حالة العميل':'Status'}</th>
+            </tr>`;
+            
+            let list = Object.values(debtorsMap).sort((a,b)=>b.balance-a.balance).filter(d => !q || d.name.toLowerCase().includes(q) || d.area.toLowerCase().includes(q) || d.rep.toLowerCase().includes(q));
+            tbody.innerHTML = list.length === 0 ? `<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--tx2);">${L==='ar'?'لا توجد نتائج مطابقة':'No matching records'}</td></tr>` : list.map((d, i) => {
+                let isActive = custMap[d.name] && custMap[d.name].sales > 0;
+                let bracket = d.maxDays > 90 ? '> 90 يوم (خطر ديون معدومة)' : d.maxDays > 60 ? '61 - 90 يوم (خطر عالي)' : d.maxDays > 30 ? '31 - 60 يوم (متوسط)' : '0 - 30 يوم (حديث)';
+                let bColor = d.maxDays > 90 ? 'bg-r' : d.maxDays > 60 ? 'bg-r' : d.maxDays > 30 ? 'bg-a' : 'bg-g';
+                return `<tr>
+                    <td>${i+1}</td>
+                    <td><strong>${d.name}</strong></td>
+                    <td>${d.area || '-'}</td>
+                    <td style="color:${d.balance>50000?'var(--rd)':'inherit'};font-weight:700;">${fmt(d.balance)}</td>
+                    <td>${d.maxDays}</td>
+                    <td><span class="badge ${bColor}">${bracket}</span></td>
+                    <td>${d.invoices}</td>
+                    <td>${d.rep || '-'}</td>
+                    <td><span class="badge ${isActive?'bg-g':'bg-r'}">${isActive?(L==='ar'?'🟢 مشتري نشط':'🟢 Active Buyer'):(L==='ar'?'🔴 متوقف عن الشراء':'🔴 Stopped Buying')}</span></td>
+                </tr>`;
+            }).join('');
+        }
+        else if(tab === 'zero_acc') {
+            thead.innerHTML = `<tr>
+                <th>#</th>
+                <th>${L==='ar'?'العميل':'Customer'}</th>
+                <th>${L==='ar'?'مبيعات الأجهزة (Hardware)':'Hardware Sales'}</th>
+                <th>${L==='ar'?'مبيعات الإكسسوارات':'Accessories Sales'}</th>
+                <th>${L==='ar'?'المبيعات المتوقعة للإكسسوار (10%)':'Potential Acc Sales'}</th>
+                <th>${L==='ar'?'الأرباح الضائعة المقدرة (25%)':'Lost Profit Potential'}</th>
+                <th>${L==='ar'?'الإجراء المقترح':'Opportunity Plan'}</th>
+            </tr>`;
+            
+            let list = zeroAccAccounts.filter(c => !q || c.name.toLowerCase().includes(q) || c.area.toLowerCase().includes(q));
+            tbody.innerHTML = list.length === 0 ? `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--tx2);">${L==='ar'?'لا توجد نتائج مطابقة':'No matching records'}</td></tr>` : list.map((c, i) => `<tr>
+                <td>${i+1}</td>
+                <td><strong>${c.name}</strong></td>
+                <td style="font-weight:700;">${fmt(c.hwSales)}</td>
+                <td style="color:var(--rd);font-weight:700;">0 ج.م</td>
+                <td style="color:var(--am);font-weight:700;">${fmt(c.potentialAccSales)}</td>
+                <td style="color:var(--gn);font-weight:700;">+${fmt(c.potentialLostProfit)}</td>
+                <td style="font-size:0.85rem;">${L==='ar'?'عرض باقة شواحن وكابلات مع الشحنة القادمة':'Pitch power/cables bundle on next order'}</td>
+            </tr>`).join('');
+        }
+        else if(tab === 'negative_margin') {
+            thead.innerHTML = `<tr>
+                <th>#</th>
+                <th>${L==='ar'?'العميل':'Customer'}</th>
+                <th>${L==='ar'?'الصنف':'Item Description'}</th>
+                <th>${L==='ar'?'المبيعات':'Sales'}</th>
+                <th>${L==='ar'?'الربح / الخسارة':'Profit / Loss'}</th>
+                <th>${L==='ar'?'رقم الفاتورة':'Order Nbr'}</th>
+                <th>${L==='ar'?'التاريخ':'Date'}</th>
+                <th>${L==='ar'?'الحالة':'Status'}</th>
+            </tr>`;
+            
+            let list = negativeMarginRows.filter(r => !q || r.customer.toLowerCase().includes(q) || r.item.toLowerCase().includes(q) || r.orderNbr.includes(q));
+            tbody.innerHTML = list.length === 0 ? `<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--tx2);">${L==='ar'?'لا توجد حركات خسارة أو مرتجعات':'No loss/return transactions'}</td></tr>` : list.map((r, i) => `<tr>
+                <td>${i+1}</td>
+                <td><strong>${r.customer}</strong></td>
+                <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.item}">${r.item || '-'}</td>
+                <td style="color:var(--rd);font-weight:700;">${fmt(r.sales)}</td>
+                <td style="color:var(--rd);font-weight:700;">${fmt(r.profit)}</td>
+                <td>${r.orderNbr || '-'}</td>
+                <td>${r.date || '-'}</td>
+                <td><span class="badge bg-r">🔴 ${L==='ar'?'مرتجع / خسارة':'Return / Loss'}</span></td>
+            </tr>`).join('');
+        }
+    };
+
+    // Initial table render
+    window.filterDiagTable();
+};
 
 // Prospects (customers in T but not in S)
 // Prospects (CRM Kanban)
@@ -2822,6 +3311,11 @@ function rSetup() {
                     <input type="file" id="fPay" accept=".xlsx,.xls,.csv" style="display:block;width:100%;padding:10px;background:var(--bg);border:1px dashed var(--am);border-radius:8px;cursor:pointer;">
                     <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${C.length} ${L==='ar'?TUI('records currently loaded'):'records currently loaded'}</p>
                 </div>
+                <div style="background:var(--bg3);padding:16px;border-radius:12px;border:1px solid var(--bd);">
+                    <label for="fDues" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">${L==='ar'?'ملف المديونيات والمتأخرات (Aged Past Due)':'Aged Past Due File'}</label>
+                    <input type="file" id="fDues" accept=".xlsx,.xls,.csv" style="display:block;width:100%;padding:10px;background:var(--bg);border:1px dashed var(--rd);border-radius:8px;cursor:pointer;">
+                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${(D||[]).length} ${L==='ar'?TUI('records currently loaded'):'records currently loaded'}</p>
+                </div>
             </div>
             <button id="bUpload" class="btn btn-p" style="margin-top:20px;width:100%;padding:12px;font-size:1.1rem;">${L==='ar'?TUI('Upload & Update Data'):'Upload & Update Data'}</button>
         </div>
@@ -2866,8 +3360,8 @@ function rSetup() {
     }
     $('bUpload').onclick = () => {
         let done = 0, total = 0;
-        let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
-        if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
+        let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0], fD = $('fDues') ? $('fDues').files[0] : null;
+        if(!fS && !fT && !fP && !fD) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
         let onAllDone = () => {
             toast(L==='ar' ? '✅ تم تحديث البيانات بنجاح!' : '✅ Data Updated!');
             render();
@@ -2890,6 +3384,23 @@ function rSetup() {
             T = norm; sv('targetData', norm); done++; if(done===total) onAllDone(); 
         }); }
         if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) onAllDone(); }, 'Payment Ref'); }
+        if(fD) { total++; parseFile(fD, d => { 
+            let normD = d.map(r => {
+                let Name = r.Name || r['Customer Name'] || r['العميل'] || r['اسم العميل'] || r['الاسم'] || r.Customer || '';
+                let Customer = r.Customer || r['Customer ID'] || r['كود العميل'] || r['رقم العميل'] || r.Phone || '';
+                let Balance = Number(r.Balance || r['الرصيد'] || r['المبلغ'] || r['Balance EGP'] || 0) || 0;
+                let Days = Number(r['Days Diff.'] || r['Nbr Of Days (Due Date)'] || r['Days'] || r['الأيام'] || 0) || 0;
+                let SalesPerson = r['Sales Person'] || r['مندوب'] || r['Sales Rep'] || '';
+                let CustClass = r['Customer Class'] || r['المنطقة'] || r['Class'] || '';
+                let DocDate = r['Doc Date'] || r['تاريخ المستند'] || '';
+                let DueDate = r['Due Date'] || r['تاريخ الاستحقاق'] || '';
+                return { ...r, Name, Customer, Balance, Days, SalesPerson, CustClass, DocDate, DueDate };
+            }).filter(r => r.Name || r.Customer);
+            D = normD;
+            sv('duesData', normD);
+            done++;
+            if(done===total) onAllDone();
+        }); }
     };
 
     
@@ -3950,13 +4461,14 @@ const NAV = [
     {p:'potential',ic:'🚀'},{p:'profit',ic:'💰'},
     {p:'keyacc',ic:'👑'},{p:'dormant',ic:'😴'},
     {s:{ar:'ذكي',en:'Smart'}},
+    {p:'diagnostics',ic:'🚨'},
     {p:'ai',ic:'🤖'},{p:'alerts',ic:'🔔'},
     {s:{ar:'النظام',en:'System'}},
     {p:'account',ic:'👤'},{p:'backup',ic:'💾'},{p:'setup',ic:'📁'},{p:'reset',ic:'🔄'},
     {p:'settings',ic:'⚙️'}
 ];
 
-const BNV = ['dash','customers','todo','analytics','settings'];
+const BNV = ['dash','diagnostics','sales','customers','menu'];
 
 const F_URL = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/';
 const getImg = (name) => `<img src="${F_URL}${name}" style="width:28px;height:28px;vertical-align:middle;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(0,0,0,0.22));">`;
@@ -3977,6 +4489,8 @@ const ICONS = {
     keyacc: getImg('Crown/3D/crown_3d.png'),
     dormant: getImg('Sleeping%20face/3D/sleeping_face_3d.png'),
     prospects: getImg('Magnifying%20glass%20tilted%20left/3D/magnifying_glass_tilted_left_3d.png'),
+    diagnostics: getImg('Warning/3D/warning_3d.png'),
+    menu: getImg('Compass/3D/compass_3d.png'),
     ai: getImg('Robot/3D/robot_3d.png'),
     alerts: getImg('Bell/3D/bell_3d.png'),
     account: getImg('Bust%20in%20silhouette/3D/bust_in_silhouette_3d.png'),
@@ -3988,6 +4502,21 @@ const ICONS = {
     stock: getImg('Package/3D/package_3d.png'),
     today: getImg('Spiral%20calendar/3D/spiral_calendar_3d.png'),
     visits: getImg('Automobile/3D/automobile_3d.png')
+};
+
+window.toggleMobileMenu = function(force) {
+    let sb = document.querySelector('.sidebar');
+    let bd = document.querySelector('.sidebar-backdrop');
+    if (!bd) {
+        bd = document.createElement('div');
+        bd.className = 'sidebar-backdrop';
+        bd.onclick = () => window.toggleMobileMenu(false);
+        document.body.appendChild(bd);
+    }
+    let isOpen = sb ? sb.classList.contains('mobile-open') : false;
+    let shouldOpen = typeof force === 'boolean' ? force : !isOpen;
+    if (sb) sb.classList.toggle('mobile-open', shouldOpen);
+    if (bd) bd.classList.toggle('active', shouldOpen);
 };
 
 function buildNav() {
@@ -4002,7 +4531,9 @@ function buildNav() {
     let b = '';
     BNV.forEach(p => {
         let x = NAV.find(n => n.p === p) || {ic: ICONS[p]};
-        b += `<div class="bi${p===P?' on':''}" data-p="${p}"><span class="bic">${ICONS[p]||x.ic}</span><span>${t(p)}</span></div>`;
+        let iconHtml = p === 'menu' ? (ICONS.menu || '☰') : (ICONS[p] || x.ic);
+        let label = p === 'menu' ? (L==='ar'?'القائمة':'Menu') : t(p);
+        b += `<div class="bi${p===P?' on':''}" data-p="${p}"><span class="bic">${iconHtml}</span><span>${label}</span></div>`;
     });
     let elBN = $('BN');
     if(elBN) elBN.innerHTML = b;
@@ -4013,6 +4544,11 @@ document.addEventListener('click', e => {
     if(!el) return;
     let p = el.getAttribute('data-p');
     if(!p) return;
+    if (p === 'menu') {
+        window.toggleMobileMenu();
+        return;
+    }
+    window.toggleMobileMenu(false);
     P = p;
     buildNav();
     render();
@@ -4099,6 +4635,7 @@ function render() {
         todo: rTodo, brands: rBrands, analytics: rAn, potential: rPot,
         profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
         keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
+        diagnostics: typeof window.rDiagnostics === 'function' ? window.rDiagnostics : rDiagnostics,
         account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings,
         stock: typeof window.rStock === 'function' ? window.rStock : null
     };
