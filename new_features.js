@@ -375,8 +375,8 @@ window.rTgt = function() {
             <div style="margin-left:auto; display:flex; gap:10px;">
                 <button onclick="window.editCustomerTarget('')" class="btn btn-p" style="font-weight:bold; font-family:inherit;">+ ${L==='ar'?'إضافة عميل':'Add Customer'}</button>
                 <input type="file" id="fImportTgt" accept=".xlsx,.xls,.csv" style="display:none;" onchange="window.handleTargetImport(event)">
-                <button onclick="document.getElementById('fImportTgt').click()" class="btn" style="background:var(--ac);color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">&#x1F4E4;</span> ${L==='ar'?'استيراد إكسيل':'Import'}</button>
-                <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">&#x1F4E5;</span> ${L==='ar'?'تصدير إكسيل':'Export'}</button>
+                <button onclick="document.getElementById('fImportTgt').click()" class="btn" style="background:var(--ac);color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">📤</span> ${L==='ar'?'استيراد إكسيل':'Import'}</button>
+                <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none; font-family:inherit;font-weight:bold;"><span style="font-size:1rem;">📥</span> ${L==='ar'?'تصدير إكسيل':'Export'}</button>
             </div>
         </div>
         <div class="kg" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
@@ -434,7 +434,7 @@ window.rTgt = function() {
             
             let contactHTML = '';
             if(r.phone || r.address) {
-                contactHTML = `<div style="font-size:0.8rem; color:var(--tx2); margin-top:4px;">&#x1F4DE; ${r.phone||'-'} <br/>&#x1F4CD; ${r.address||'-'}</div>`;
+                contactHTML = `<div style="font-size:0.8rem; color:var(--tx2); margin-top:4px;">📞 ${r.phone||'-'} <br/>📍 ${r.address||'-'}</div>`;
             }
             
             return `<tr>
@@ -447,10 +447,10 @@ window.rTgt = function() {
                 <td style="color:var(--tx2);font-size:0.9rem;">${typeof fmt==='function'?fmt(accT):accT}</td>
                 <td style="font-size:0.9rem;">${typeof fmt==='function'?fmt(accA):accA}</td>
                 <td>
-                    <button onclick="window.openCustomerProfile('${r.Customer.replace(/'/g, "\\'")}')" class="btn btn-p" style="padding:4px 8px; font-size:0.8rem; margin-right:5px; font-family:inherit;">
+                    <button onclick="window.openCustomerProfile('${(r.Customer||'').replace(/'/g, "\\'")}')" class="btn btn-p" style="padding:4px 8px; font-size:0.8rem; margin-right:5px; font-family:inherit;">
                         👤 ${L==='ar'?'بروفايل':'Profile'}
                     </button>
-                    <button onclick="window.editCustomerTarget('${r.Customer.replace(/'/g, "\\'")}')" class="btn" style="padding:4px 8px; font-size:0.8rem; background:var(--bg3); border:1px solid var(--bd); font-family:inherit;">
+                    <button onclick="window.editCustomerTarget('${(r.Customer||'').replace(/'/g, "\\'")}')" class="btn" style="padding:4px 8px; font-size:0.8rem; background:var(--bg3); border:1px solid var(--bd); font-family:inherit;">
                         ${L==='ar'?'تعديل':'Edit'}
                     </button>
                 </td>
@@ -471,7 +471,7 @@ window.rTgt = function() {
 // --- DORMANT 30 DAYS ---
 window.rDormant30 = function() {
     let L = localStorage.getItem('sp_lang') || 'ar';
-    let sData = getS();
+    let sData = (typeof getS === 'function') ? getS() : (S || []);
     let html = `
         <div class="ph">
             <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🛌</span> ${L==='ar'?'عملاء خاملين (30 يوم)':'30-Day Dormant'}</h1>
@@ -538,8 +538,8 @@ window.checkDailyAlerts = function() {
     let today = new Date().toISOString().split('T')[0];
     
     let delayCount = 0;
-    let T_data = getT();
-    let S_data = getS();
+    let T_data = (typeof getT === 'function') ? getT() : (T || []);
+    let S_data = (typeof getS === 'function') ? getS() : (S || []);
     
     if (T_data.length > 0 && S_data.length > 0) {
         let cuS = {};
@@ -550,45 +550,22 @@ window.checkDailyAlerts = function() {
         });
     }
     
-    // Check if auto-email was already triggered today
     let mailSentToday = localStorage.getItem('sp_auto_mail_sent') === today;
     
     if (delayCount > 0 && lastCheck !== today) {
         let emailBody = encodeURIComponent(`تنبيه يومي: يوجد ${delayCount} عملاء متأخرين عن تحقيق 50% من المستهدف. يرجى المتابعة العاجلة.`);
-        let emailAddress = localStorage.getItem('repEmailInput') || ''; // if they saved an email somewhere
-        
+        let emailAddress = localStorage.getItem('repEmailInput') || '';
         let mailLink = `mailto:${emailAddress}?subject=تنبيه تأخير تارجت العملاء&body=${emailBody}`;
         
-        // AUTO SEND EMAIL upon opening if not sent today
         if(!mailSentToday) {
             localStorage.setItem('sp_auto_mail_sent', today);
-            
-            // Try to trigger the system's checkAndSendDailyReport if it exists (EmailJS/Webhook)
             if(typeof window.checkAndSendDailyReport === 'function') {
                 window.checkAndSendDailyReport();
             } else {
-                // Otherwise open the default mail client automatically
                 window.open(mailLink, '_blank');
             }
         }
-        
-        let h = `
-            <div style="text-align:center;padding:10px;">
-                <div style="font-size:3.5rem;margin-bottom:10px;">⚠️</div>
-                <h2 style="color:var(--rd);margin:0 0 10px 0;">تنبيه المتأخرات اليومي</h2>
-                <p style="margin-bottom:20px;color:var(--tx2);line-height:1.5;">يوجد <strong>${delayCount}</strong> عملاء متأخرين عن تحقيق المستهدف (أقل من 50%). يرجى مراجعة صفحة التنبيهات.</p>
-                <div style="display:flex;gap:10px;flex-direction:column;">
-                    <button class="sp-btn-primary" onclick="this.closest('.sp-modal-overlay').remove(); if(typeof P!=='undefined'){ P='alerts'; if(typeof buildNav==='function') buildNav(); if(typeof render==='function') render(); }">مراجعة التنبيهات في التطبيق</button>
-                    <a href="${mailLink}" target="_blank" class="btn" style="background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);padding:12px;border-radius:8px;text-decoration:none;display:block;">📧 فتح تطبيق الإيميل يدوياً</a>
-                </div>
-            </div>
-        `;
-        let m = document.createElement('div');
-        m.className = 'sp-modal-overlay';
-        m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
-        document.body.appendChild(m);
     }
-    
     localStorage.setItem('sp_last_alert_check', today);
 };
 
@@ -603,7 +580,7 @@ window.init = function() {
 // --- BRANCH CARDS ---
 window.injectBranchCards = function() {
     if(typeof P !== 'undefined' && P === 'dash') {
-        let S_data = getS();
+        let S_data = (typeof getS === 'function') ? getS() : (S || []);
         if(S_data.length === 0) return;
         
         let luxorSales = 0, qobbahSales = 0;
@@ -636,49 +613,16 @@ window.injectBranchCards = function() {
     }
 };
 
-// --- DYNAMIC NAV ---
-(function injectNavItems() {
-    if (typeof NAV !== 'undefined') {
-        if (!NAV.find(n => n.p === 'visits')) {
-            let advIdx = NAV.findIndex(n => n.p === 'dormant');
-            if (advIdx > -1) {
-                NAV.splice(advIdx + 1, 0, {p:'dormant30', ic:'🛌'}, {p:'visits',ic:'🚗'}, {p:'leads',ic:'🤝'});
-            } else {
-                NAV.push({p:'dormant30', ic:'🛌'}, {p:'visits',ic:'🚗'}, {p:'leads',ic:'🤝'});
-            }
-        }
-    }
-})();
-
-let old_buildNav = window.buildNav;
-window.buildNav = function() {
-    if(old_buildNav) old_buildNav();
-    
-    setTimeout(() => {
-        let L = localStorage.getItem('sp_lang') || 'ar';
-        let elVisits = document.querySelector('.ni[data-p="visits"] span:nth-child(2)');
-        if(elVisits) elVisits.textContent = L==='ar' ? 'الزيارات' : 'Visits';
-        
-        let elLeads = document.querySelector('.ni[data-p="leads"] span:nth-child(2)');
-        if(elLeads) elLeads.textContent = L==='ar' ? 'محتملين' : 'Leads';
-        
-        let elCol = document.querySelector('.ni[data-p="collections"] span:nth-child(2)');
-        if(elCol) elCol.textContent = L==='ar' ? 'التحصيلات' : 'Collections';
-        
-        let elDorm = document.querySelector('.ni[data-p="dormant30"] span:nth-child(2)');
-        if(elDorm) elDorm.textContent = L==='ar' ? 'خاملين (30 يوم)' : '30-Day Dormant';
-    }, 50);
-};
-
 let old_render = window.render;
 window.render = function() {
     if (typeof P !== 'undefined') {
-        if (P === 'visits') { if (typeof buildNav === 'function') buildNav(); rVisits(); return; }
-        if (P === 'leads') { if (typeof buildNav === 'function') buildNav(); rLeads(); return; }
-        if (P === 'dormant30') { if (typeof buildNav === 'function') buildNav(); window.rDormant30(); return; }
+        if (P === 'visits') { if (typeof buildNav === 'function') buildNav(); if (typeof rVisits === 'function') rVisits(); return; }
+        if (P === 'leads') { if (typeof buildNav === 'function') buildNav(); if (typeof rLeads === 'function') rLeads(); return; }
+        if (P === 'dormant30') { if (typeof buildNav === 'function') buildNav(); if (typeof window.rDormant30 === 'function') window.rDormant30(); return; }
+        if (P === 'diagnostics') { if (typeof buildNav === 'function') buildNav(); if (typeof window.rDiagnostics === 'function') { window.rDiagnostics(); return; } }
     }
     if (old_render) old_render();
-    setTimeout(window.injectBranchCards, 100);
+    if (typeof window.injectBranchCards === 'function') setTimeout(window.injectBranchCards, 100);
 };
 
 // Global Font Size and Family Manager
@@ -741,7 +685,7 @@ if (typeof window.fSl === 'function' && !window.whatsappInjected) {
                 if(r && !tr.querySelector('.wa-btn')) {
                     let s = typeof getSalesVal === 'function' ? getSalesVal(r) : r['Sales After Discount'];
                     let msg = "مرحباً بك عميلنا المميز " + (r.Customer || '') + "، تم تسجيل فاتورة مبيعات لحسابكم بقيمة " + s + " بتاريخ " + ((r['Invoice Date'] || r['Order Date'] || r['Date'])||'') + ". شكراً لتعاملكم معنا!";
-                    tr.insertAdjacentHTML('beforeend', '<td><button class="wa-btn" onclick="window.open(\'https://wa.me/?text=' + encodeURIComponent(msg) + '\')" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform=\'scale(1.2)\'" onmouseout="this.style.transform=\'scale(1)\'">💬</button></td>');
+                    tr.insertAdjacentHTML("beforeend", '<td><button class="wa-btn" onclick="window.open(\'https://wa.me/?text=\' + encodeURIComponent(msg))" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;">💬</button></td>');
                 }
             });
         }, 50);
