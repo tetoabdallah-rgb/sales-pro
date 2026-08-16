@@ -1,4 +1,4 @@
-﻿/* ============================================
+/* ============================================
    Sales Pro â€” Premium Design System
    ============================================ */
 
@@ -1766,10 +1766,55 @@ html[dir="rtl"] .ph::before {
       background: rgba(255, 255, 255, 0.02) !important;
     }
     
-    /* Hide some mobile stuff if on desktop to avoid conflict */
+    /* Mobile Drawer & Responsive Layout */
     @media (max-width: 768px) {
       .sidebar {
-        display: none !important;
+        display: block !important;
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        right: -320px !important;
+        left: auto !important;
+        width: 290px !important;
+        z-index: 10000 !important;
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6) !important;
+        transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1), left 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        background: var(--bg2) !important;
+      }
+      body.en .sidebar {
+        right: auto !important;
+        left: -320px !important;
+        box-shadow: 10px 0 40px rgba(0, 0, 0, 0.6) !important;
+      }
+      .sidebar.mobile-open {
+        right: 0 !important;
+      }
+      body.en .sidebar.mobile-open {
+        left: 0 !important;
+      }
+      .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 9999;
+      }
+      .sidebar-backdrop.active {
+        display: block !important;
+      }
+      .mobile-header-bar {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 18px;
+        background: var(--bg2);
+        border-bottom: 1px solid var(--bd);
+        position: sticky;
+        top: 0;
+        z-index: 500;
+        margin: -16px -16px 16px -16px;
       }
       .mw {
         margin: 0 !important;
@@ -1778,6 +1823,11 @@ html[dir="rtl"] .ph::before {
       }
       body.en .mw {
         margin: 0 !important;
+      }
+    }
+    @media (min-width: 769px) {
+      .mobile-header-bar, .sidebar-backdrop {
+        display: none !important;
       }
     }
   
