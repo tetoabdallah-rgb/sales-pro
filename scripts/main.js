@@ -703,10 +703,24 @@ function rDash() {
     `;
     
     $('M').innerHTML = `
-        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px; margin-bottom: 24px;">
+        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px; margin-bottom: 16px;">
             <h1 style="display:flex;align-items:center;gap:12px; margin:0;"><i data-lucide="layout-dashboard" style="width:28px;height:28px;"></i> ${t('dash')}</h1>
             ${dateFilterUI}
         </div>
+
+        <!-- Sleek Quick Tabs Strip -->
+        <div style="display:flex; gap:10px; overflow-x:auto; padding:4px 2px 14px; margin-bottom:14px; scrollbar-width:none; -webkit-overflow-scrolling:touch;">
+            <button class="btn btn-p" style="background:var(--btn-g); color:#fff; border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; border:none; box-shadow:0 4px 12px var(--acl);">📊 ${L==='ar'?'نظرة عامة':'Overview'}</button>
+            <button class="btn" onclick="P='diagnostics'; buildNav(); render();" style="background:linear-gradient(135deg, rgba(239,68,68,0.16), rgba(245,158,11,0.1)); border:1.5px solid var(--rd); color:var(--rd); border-radius:12px; padding:8px 18px; font-weight:800; white-space:nowrap; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                🚨 ${L==='ar'?'تشخيص المشاكل والديون (Risk Radar)':'Customer Issues & Risk Radar'}
+                <span style="background:var(--rd); color:#fff; font-size:0.65rem; padding:2px 6px; border-radius:99px;">HOT</span>
+            </button>
+            <button class="btn" onclick="P='sales'; buildNav(); render();" style="background:var(--bg3); border:1px solid var(--bd); border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; cursor:pointer;">🧾 ${L==='ar'?'المبيعات':'Sales'}</button>
+            <button class="btn" onclick="P='targets'; buildNav(); render();" style="background:var(--bg3); border:1px solid var(--bd); border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; cursor:pointer;">🎯 ${L==='ar'?'المستهدفات':'Targets'}</button>
+            <button class="btn" onclick="P='collections'; buildNav(); render();" style="background:var(--bg3); border:1px solid var(--bd); border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; cursor:pointer;">💸 ${L==='ar'?'التحصيلات':'Collections'}</button>
+            <button class="btn" onclick="P='dormant'; buildNav(); render();" style="background:var(--bg3); border:1px solid var(--bd); border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; cursor:pointer;">😴 ${L==='ar'?'الخاملين':'Dormant'}</button>
+        </div>
+
         <div class="stats">
           <article class="stat"><div class="stat-head"><span>${L==='ar'?'إجمالي المبيعات':'Total Sales'}</span><span class="stat-icon"><i data-lucide="wallet-cards" width="16" height="16"></i></span></div><div class="stat-value">${aFmt(ts)} <small>${L==='ar'?'ج.م':'EGP'}</small></div><div class="stat-foot"><span>${Object.keys(cu).length} ${L==='ar'?'عميل':'Customers'}</span></div></article>
           <article class="stat"><div class="stat-head"><span>${L==='ar'?'إجمالي الأرباح':'Total Profit'}</span><span class="stat-icon"><i data-lucide="trending-up" width="16" height="16"></i></span></div><div class="stat-value">${aFmt(tp)} <small>${L==='ar'?'ج.م':'EGP'}</small></div><div class="stat-foot"><span>${L==='ar'?'الهامش:':'Margin:'} ${(ts>0?tp/ts*100:0).toFixed(1)}%</span></div></article>
@@ -2440,14 +2454,26 @@ window.rDiagnostics = function() {
 
     // Render Main Diagnostics View
     $('M').innerHTML = `
-        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
             <h1 style="display:flex;align-items:center;gap:12px;margin:0;">
-                <span style="font-size:1.8rem;">🚨</span> ${L==='ar'?'رادار وتشخيص مشاكل العملاء':'Customer Issues & Risk Radar'}
+                <span style="font-size:1.8rem;">🚨</span> ${L==='ar'?'رادار وتشخيص مشاكل العملاء والديون':'Customer Issues & Risk Radar'}
             </h1>
             <div style="display:flex;gap:8px;">
                 <button class="btn export-btn" onclick="exportTableToExcel('diagDataTable', 'Business_Issues_Report')">📊 ${L==='ar'?'تصدير Excel':'Export Excel'}</button>
                 <button class="btn export-btn" style="background:var(--rdl); color:var(--rd); border-color:var(--rd);" onclick="exportTableToPDF('diagDataTable', 'Business_Issues_Report')">📄 ${L==='ar'?'تصدير PDF':'Export PDF'}</button>
             </div>
+        </div>
+
+        <!-- Sleek Quick Tabs Strip -->
+        <div style="display:flex; gap:10px; overflow-x:auto; padding:4px 2px 14px; margin-bottom:14px; scrollbar-width:none; -webkit-overflow-scrolling:touch;">
+            <button class="btn" onclick="P='dash'; buildNav(); render();" style="background:var(--bg3); border:1px solid var(--bd); border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; cursor:pointer;">📊 ${L==='ar'?'لوحة التحكم':'Dashboard'}</button>
+            <button class="btn btn-p" style="background:linear-gradient(135deg, #ef4444, #dc2626); color:#fff; border-radius:12px; padding:8px 18px; font-weight:800; white-space:nowrap; border:none; box-shadow:0 4px 12px rgba(239,68,68,0.4); display:flex; align-items:center; gap:8px;">
+                🚨 ${L==='ar'?'تشخيص المشاكل والديون (Risk Radar)':'Customer Issues & Risk Radar'}
+            </button>
+            <button class="btn" onclick="P='sales'; buildNav(); render();" style="background:var(--bg3); border:1px solid var(--bd); border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; cursor:pointer;">🧾 ${L==='ar'?'المبيعات':'Sales'}</button>
+            <button class="btn" onclick="P='targets'; buildNav(); render();" style="background:var(--bg3); border:1px solid var(--bd); border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; cursor:pointer;">🎯 ${L==='ar'?'المستهدفات':'Targets'}</button>
+            <button class="btn" onclick="P='collections'; buildNav(); render();" style="background:var(--bg3); border:1px solid var(--bd); border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; cursor:pointer;">💸 ${L==='ar'?'التحصيلات':'Collections'}</button>
+            <button class="btn" onclick="P='dormant'; buildNav(); render();" style="background:var(--bg3); border:1px solid var(--bd); border-radius:12px; padding:8px 18px; font-weight:700; white-space:nowrap; cursor:pointer;">😴 ${L==='ar'?'الخاملين':'Dormant'}</button>
         </div>
 
         <!-- Risk Summary KPI Cards -->
@@ -4452,8 +4478,18 @@ window.addEventListener('load', () => {
 
 const NAV = [
     {s:{ar:'الأساسية',en:'Core'}},
-    {p:'dash',ic:'📊'},{p:'today',ic:'📅'},{p:'analytics',ic:'📈'},{p:'sales',ic:'🧾'},{p:'targets',ic:'🎯'},{p:'personal',ic:'🤝'},
-    {p:'customers',ic:'🏢'},{p:'visits',ic:'🚗'},{p:'todo',ic:'📋'},{p:'brands',ic:'📦'},{p:'prospects',ic:'🔍'},
+    {p:'dash',ic:'📊'},
+    {p:'diagnostics',ic:'🚨'},
+    {p:'today',ic:'📅'},
+    {p:'sales',ic:'🧾'},
+    {p:'targets',ic:'🎯'},
+    {p:'analytics',ic:'📈'},
+    {p:'personal',ic:'🤝'},
+    {p:'customers',ic:'🏢'},
+    {p:'visits',ic:'🚗'},
+    {p:'todo',ic:'📋'},
+    {p:'brands',ic:'📦'},
+    {p:'prospects',ic:'🔍'},
     {s:{ar:'الأقسام',en:'Depts'}},
     {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💸'},
     {p:'stock',ic:'📦'},
@@ -4461,7 +4497,6 @@ const NAV = [
     {p:'potential',ic:'🚀'},{p:'profit',ic:'💰'},
     {p:'keyacc',ic:'👑'},{p:'dormant',ic:'😴'},
     {s:{ar:'ذكي',en:'Smart'}},
-    {p:'diagnostics',ic:'🚨'},
     {p:'ai',ic:'🤖'},{p:'alerts',ic:'🔔'},
     {s:{ar:'النظام',en:'System'}},
     {p:'account',ic:'👤'},{p:'backup',ic:'💾'},{p:'setup',ic:'📁'},{p:'reset',ic:'🔄'},
