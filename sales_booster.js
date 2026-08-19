@@ -941,6 +941,146 @@
         });
     }
 
+    // ─── 6. GPS CHECK-IN & VOICE NOTES & OBJECTIONS INTEL ─────────────────────
+    window.captureGPSForVisit = function() {
+        if (!navigator.geolocation) {
+            showToast(t('❌ المتصفح لا يدعم تحديد الموقع GPS', '❌ Geolocation not supported'), 'error');
+            return;
+        }
+        showToast(t('📍 جاري تحديد الموقع الجغرافي للزيارة...', '📍 Capturing GPS coordinates...'), 'info');
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                const lat = pos.coords.latitude.toFixed(6);
+                const lng = pos.coords.longitude.toFixed(6);
+                const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                const noteInput = document.querySelector('input[placeholder*="ملاحظات"], textarea[placeholder*="ملاحظات"], #inVN, #inCN');
+                if (noteInput) {
+                    noteInput.value = (noteInput.value ? noteInput.value + ' ' : '') + `[📍 تم تسجيل الوصول: ${lat},${lng}]`;
+                }
+                showToast(t(`✅ تم تسجيل الموقع: (${lat}, ${lng})`, `✅ Location logged: (${lat}, ${lng})`), 'success');
+            },
+            err => {
+                showToast(t('⚠️ تعذر الوصول للموقع. يرجى تفعيل إذن الـ GPS', '⚠️ GPS permission denied'), 'error');
+            },
+            { enableHighAccuracy: true, timeout: 8000 }
+        );
+    };
+
+    window.openDirections = function(destName) {
+        if (!destName) return;
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destName)}`;
+        window.open(url, '_blank');
+    };
+
+    window.startVoiceDictation = function(targetElementId) {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) {
+            showToast(t('❌ الإملاء الصوتي غير مدعوم في هذا المتصفح', '❌ Speech recognition not supported in this browser'), 'error');
+            return;
+        }
+        const rec = new SpeechRec();
+        rec.lang = t('ar-EG', 'en-US');
+        rec.interimResults = false;
+        rec.maxAlternatives = 1;
+
+        showToast(t('🎙️ تحدث الآن... جاري الاستماع للملاحظة', '🎙️ Listening... speak now'), 'info');
+
+        rec.onresult = e => {
+            const transcript = e.results[0][0].transcript;
+            const target = document.getElementById(targetElementId) || document.querySelector('input[placeholder*="ملاحظات"], textarea[placeholder*="ملاحظات"]');
+            if (target) {
+                target.value = (target.value ? target.value + ' ' : '') + transcript;
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            showToast(t('✅ تم تسجيل الملاحظة الصوتية بنجاح', '✅ Voice note transcribed!'), 'success');
+        };
+
+        rec.onerror = () => {
+            showToast(t('❌ لم يتم التعرف على الصوت، يرجى المحاولة مرة أخرى', '❌ Voice recognition failed, please retry'), 'error');
+        };
+
+        rec.start();
+    };
+
+    window.openObjectionLogger = function(customerName = '') {
+        let modal = document.getElementById('spObjectionModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'spObjectionModal';
+            modal.className = 'stk-ov';
+            modal.innerHTML = `
+                <div class="stk-m" style="max-width:500px; padding:22px; border-radius:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h3 style="font-size:1.1rem; font-weight:800; color:#ef4444; display:flex; align-items:center; gap:8px;">
+                            <span>🛡️</span> ${t('تسجيل اعتراض العميل / أسعار المنافسين', 'Log Objection & Competitor Intel')}
+                        </h3>
+                        <button class="stk-mc" onclick="document.getElementById('spObjectionModal').classList.remove('on')">✕</button>
+                    </div>
+
+                    <div style="margin-bottom:14px;">
+                        <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('العميل', 'Customer')}</label>
+                        <input type="text" id="objCust" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);" value="${customerName}">
+                    </div>
+
+                    <div style="margin-bottom:14px;">
+                        <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('السبب الرئيسي لعدم إتمام البيع', 'Primary Reason for Lost Deal')}</label>
+                        <select id="objReason" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);">
+                            <option value="price_high">${t('السعر أعلى من المنافس في السوق', 'Price is higher than competitor')}</option>
+                            <option value="no_credit">${t('طلب تسهيلات دفع أو آجل غير متاح', 'Requested payment terms not available')}</option>
+                            <option value="out_of_stock">${t('عدم توفر كمية أو صنف معين', 'Requested item / qty out of stock')}</option>
+                            <option value="competitor_bonus">${t('المنافس يقدم بونص أو بضاعة مجانية', 'Competitor offers bonus/gifts')}</option>
+                            <option value="slow_stock">${t('المحل لديه ركود في بضاعة قديمة', 'Store has old slow stock')}</option>
+                            <option value="other">${t('سبب آخر', 'Other reason')}</option>
+                        </select>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+                        <div>
+                            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('اسم المنافس (إن وجد)', 'Competitor Name')}</label>
+                            <input type="text" id="objComp" placeholder="مثال: شركة X" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('سعر المنافس (ج.م)', 'Competitor Price')}</label>
+                            <input type="number" id="objPrice" placeholder="0" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:18px;">
+                        <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('ملاحظات وتفاصيل إضافية', 'Additional Notes')}</label>
+                        <textarea id="objNotes" rows="2" placeholder="${t('اكتب تفاصيل المحادثة أو سبب الرفض...', 'Details of objection...')}" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);"></textarea>
+                    </div>
+
+                    <button class="btn btn-p" id="btnSaveObj" style="width:100%; padding:10px; border-radius:10px; font-weight:800; background:#ef4444; border:none;">
+                        💾 ${t('حفظ في تقرير السوق والاعتراضات', 'Save Market Intel')}
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('btnSaveObj')?.addEventListener('click', () => {
+                const rec = {
+                    id: Date.now(),
+                    customer: document.getElementById('objCust')?.value.trim() || customerName,
+                    reason: document.getElementById('objReason')?.value,
+                    competitor: document.getElementById('objComp')?.value.trim(),
+                    compPrice: parseFloat(document.getElementById('objPrice')?.value || 0),
+                    notes: document.getElementById('objNotes')?.value.trim(),
+                    date: new Date().toISOString()
+                };
+
+                const existing = JSON.parse(localStorage.getItem('sp_objections') || '[]');
+                existing.unshift(rec);
+                localStorage.setItem('sp_objections', JSON.stringify(existing));
+
+                modal.classList.remove('on');
+                showToast(t('✅ تم حفظ سبب الاعتراض في تقرير استخبارات السوق', '✅ Objection saved to Market Intel report!'), 'success');
+            });
+        }
+
+        if (document.getElementById('objCust')) document.getElementById('objCust').value = customerName;
+        modal.classList.add('on');
+    };
+
     // ─── INITIALIZATION & HOOKS ────────────────────────────────────────────────
     function initBooster() {
         registerBoosterNav();
