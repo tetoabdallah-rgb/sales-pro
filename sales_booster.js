@@ -1,7 +1,9 @@
 /**
  * ============================================================
- * sales_booster.js — Sales Pro Enterprise Growth Suite (v5.2)
- * High-Performance, Zero-Lag, Instant Render Engine.
+ * sales_booster.js — Sales Pro Enterprise Growth Suite (v5.5)
+ * Full Suite: Upsell, WhatsApp Quotes, RFM, Commission Sim,
+ * Smart Routes & Map, Market Intel & Objections, Leaderboard.
+ * Zero-Lag, High-Performance, Instant Render Engine.
  * ============================================================
  */
 
@@ -13,10 +15,12 @@
     const fmtN = n => Number(n || 0).toLocaleString('en-US');
     const fmtP = n => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' ' + t('ج.م', 'EGP');
 
-    // In-memory Cached Data references
     function getS() { return (typeof S !== 'undefined' && Array.isArray(S)) ? S : (JSON.parse(localStorage.getItem('salesData') || '[]')); }
     function getT() { return (typeof T !== 'undefined' && Array.isArray(T)) ? T : (JSON.parse(localStorage.getItem('targetData') || '[]')); }
+    function getDues() { return (typeof D !== 'undefined' && Array.isArray(D)) ? D : (JSON.parse(localStorage.getItem('duesData') || '[]')); }
     function getStock() { try { return JSON.parse(localStorage.getItem('sp_stock_v1') || '[]'); } catch(e) { return []; } }
+    function getVisits() { try { return JSON.parse(localStorage.getItem('sp_visits') || '[]'); } catch(e) { return []; } }
+    function getObjections() { try { return JSON.parse(localStorage.getItem('sp_objections') || '[]'); } catch(e) { return []; } }
 
     function parseDateFast(v) {
         if (!v) return null;
@@ -46,20 +50,24 @@
 
     // ─── Register Navigation & Direct Translations ─────────────────────────────
     function registerBoosterNav() {
-        // 1. Direct Translations Injection into I dictionary
         if (typeof I !== 'undefined') {
             I.upsell = { ar: 'محرك الفرص', en: 'Upsell & Bundles' };
             I.quotes = { ar: 'عروض الواتساب', en: 'WhatsApp Quotes' };
             I.rfm = { ar: 'تصنيف العملاء', en: 'RFM Segments' };
             I.commission = { ar: 'حاسبة العمولات', en: 'Commission Sim' };
+            I.routes = { ar: 'مسارات الزيارات', en: 'Field Routes' };
+            I.intel = { ar: 'استخبارات السوق', en: 'Market Intel' };
+            I.leaderboard = { ar: 'لوحة الشرف', en: 'Leaderboard' };
         }
 
-        // 2. Direct Icons Injection into ICONS dictionary
         if (typeof ICONS !== 'undefined') {
-            if (!ICONS.upsell) ICONS.upsell = '🛍️';
-            if (!ICONS.quotes) ICONS.quotes = '💬';
-            if (!ICONS.rfm) ICONS.rfm = '👑';
-            if (!ICONS.commission) ICONS.commission = '🏆';
+            ICONS.upsell = '🛍️';
+            ICONS.quotes = '💬';
+            ICONS.rfm = '👑';
+            ICONS.commission = '🏆';
+            ICONS.routes = '🗺️';
+            ICONS.intel = '🛡️';
+            ICONS.leaderboard = '🎮';
         }
 
         if (typeof NAV === 'undefined' || !Array.isArray(NAV)) return;
@@ -68,13 +76,16 @@
             { p: 'upsell', ic: '🛍️' },
             { p: 'quotes', ic: '💬' },
             { p: 'rfm', ic: '👑' },
-            { p: 'commission', ic: '🏆' }
+            { p: 'commission', ic: '🏆' },
+            { p: 'routes', ic: '🗺️' },
+            { p: 'intel', ic: '🛡️' },
+            { p: 'leaderboard', ic: '🎮' }
         ];
 
         const hasSection = NAV.some(n => n.s && (n.s.ar === 'مضاعفة المبيعات' || n.s.en === 'Growth'));
         if (!hasSection) {
             const insertAt = NAV.length - 6;
-            const sectionHeader = { s: { ar: 'مضاعفة المبيعات', en: 'Growth & Booster' } };
+            const sectionHeader = { s: { ar: 'مضاعفة المبيعات 🔥', en: 'Growth & Booster 🔥' } };
             const itemsToInsert = [sectionHeader];
 
             newTabs.forEach(tab => {
@@ -91,7 +102,7 @@
         }
     }
 
-    // ─── Cached Badges (Calculated Once, Zero Overhead) ───────────────────────
+    // ─── Fast Asynchronous Badge Computation ──────────────────────────────────
     let _cachedDormant = null;
     let _cachedLowStock = null;
 
@@ -101,9 +112,7 @@
                 const sData = getS();
                 const now = new Date();
                 const custLastMap = {};
-                
-                // Sample up to first 2000 records for instantaneous calculation
-                const limit = Math.min(sData.length, 2000);
+                const limit = Math.min(sData.length, 1500);
                 for (let i = 0; i < limit; i++) {
                     const r = sData[i];
                     const name = r.customer || r['اسم العميل'] || r['العميل'] || r.Customer;
@@ -113,13 +122,11 @@
                     }
                 }
                 _cachedDormant = Object.values(custLastMap).filter(d => (now - d) / (1000 * 60 * 60 * 24) > 30).length;
-
                 const stockData = getStock();
                 _cachedLowStock = stockData.filter(p => p.qty != null && p.qty <= 5).length;
-
                 renderBadgesDOM();
             } catch(e) {}
-        }, 300);
+        }, 200);
     }
 
     function renderBadgesDOM() {
@@ -127,7 +134,8 @@
             'dormant': { count: _cachedDormant, cls: 'sp-badge-amber' },
             'stock': { count: _cachedLowStock, cls: 'sp-badge-danger' },
             'upsell': { count: 'HOT', cls: 'sp-badge-hot' },
-            'rfm': { count: 'VIP', cls: 'sp-badge-success' }
+            'rfm': { count: 'VIP', cls: 'sp-badge-success' },
+            'routes': { count: 'GPS', cls: 'sp-badge-blue' }
         };
 
         document.querySelectorAll('.ni').forEach(el => {
@@ -154,7 +162,7 @@
 
         const S_data = getS();
         const custProfiles = {};
-        const limit = Math.min(S_data.length, 3000);
+        const limit = Math.min(S_data.length, 2500);
 
         for (let i = 0; i < limit; i++) {
             const r = S_data[i];
@@ -178,7 +186,6 @@
                 if (p.hw > 0 && p.acc === 0) {
                     opportunityList.push({
                         customer: c,
-                        type: 'need_acc',
                         title: t('فرصة إكسسوارات ذهبية', 'Accessories Opportunity'),
                         desc: t(`العميل اشترى أجهزة بقيمة ${fmtP(p.hw)} بدون إكسسوارات. اقترح بكج حماية وشواحن لرفع الربحية.`, `Client purchased ${fmtP(p.hw)} hardware without accessories.`),
                         tag: t('هامش ربح مرتفع', 'High Margin')
@@ -186,7 +193,6 @@
                 } else if (p.acc > 0 && p.hw === 0) {
                     opportunityList.push({
                         customer: c,
-                        type: 'need_hw',
                         title: t('فرصة ترقية هواتف وأجهزة', 'Hardware Upgrade'),
                         desc: t(`العميل عميل إكسسوارات نشط بقيمة ${fmtP(p.acc)}. اقترح عليه عرض كميات للأجهزة.`, `Active accessory client with ${fmtP(p.acc)}. Pitch phones!`),
                         tag: t('حجم فاتورة كبير', 'Large Basket')
@@ -197,28 +203,19 @@
 
         const bundles = [
             {
-                id: 'bundle_1',
                 title: t('📦 بكج الحماية والشحن السريع', '📦 Fast Charging & Shield Bundle'),
                 items: [t('5x شاحن سريع 20W', '5x Fast Charger 20W'), t('10x كابلات Type-C', '10x Type-C Cables'), t('10x لاصقة حماية', '10x Screen Protectors')],
-                origPrice: 2400,
-                dealPrice: 2150,
-                discount: '10%'
+                origPrice: 2400, dealPrice: 2150, discount: '10%'
             },
             {
-                id: 'bundle_2',
                 title: t('🎧 بكج الصوتيات المميز (الأكثر طلباً)', '🎧 Premium Audio Bundle'),
                 items: [t('3x سماعة لاسلكية TWS', '3x Wireless TWS Earbuds'), t('2x مكبر صوت محمول', '2x Bluetooth Speakers'), t('5x سماعات سلكية', '5x Wired Earphones')],
-                origPrice: 3800,
-                dealPrice: 3390,
-                discount: '11%'
+                origPrice: 3800, dealPrice: 3390, discount: '11%'
             },
             {
-                id: 'bundle_3',
                 title: t('🚀 بكج تجهيز المحلات والمتاجر', '🚀 Store Best-Seller Pack'),
                 items: [t('20x جرابات متنوعة', '20x Assorted Cases'), t('15x شواحن منزلية', '15x Wall Chargers'), t('20x كابلات شحن', '20x Multi-Cables')],
-                origPrice: 5200,
-                dealPrice: 4500,
-                discount: '14%'
+                origPrice: 5200, dealPrice: 4500, discount: '14%'
             }
         ];
 
@@ -515,7 +512,7 @@
         const S_data = getS();
         const now = new Date();
         const custMap = {};
-        const limit = Math.min(S_data.length, 3000);
+        const limit = Math.min(S_data.length, 2500);
 
         for (let i = 0; i < limit; i++) {
             const r = S_data[i];
@@ -783,7 +780,351 @@
         document.getElementById('simRangeAcc')?.addEventListener('input', recalc);
     };
 
-    // ─── FAB & HELPERS ────────────────────────────────────────────────────────
+    // ─── TAB 5: SMART FIELD ROUTES & MAP ASSISTANT ────────────────────────────
+    window.rRoutes = function rRoutes() {
+        const M = document.getElementById('M');
+        if (!M) return;
+
+        const S_data = getS();
+        const T_data = getT();
+        const dues_data = getDues();
+
+        // Extract areas & customer locations
+        const areaMap = {};
+        const custSet = new Set();
+
+        const addCust = (name, area, phone, debt = 0) => {
+            if (!name || custSet.has(name)) return;
+            custSet.add(name);
+            const a = area || t('المنطقة الرئيسية', 'Main Area');
+            if (!areaMap[a]) areaMap[a] = [];
+            areaMap[a].push({ name, area: a, phone, debt });
+        };
+
+        T_data.forEach(r => {
+            const name = r.Customer || r['Customer Name'] || r['اسم العميل'];
+            const area = r['Customer Class'] || r.Area || r['المنطقة'] || r.address || '';
+            const phone = r.Phone || r['رقم الموبايل'] || '';
+            addCust(name, area, phone);
+        });
+
+        dues_data.forEach(r => {
+            const name = r.Name || r['Customer Name'] || r['العميل'];
+            const area = r.CustClass || r['Customer Class'] || r['المنطقة'] || '';
+            const phone = r.Phone || r.Customer || '';
+            const debt = Number(r.Balance || 0);
+            addCust(name, area, phone, debt);
+        });
+
+        const areas = Object.keys(areaMap);
+        if (!areas.length) areas.push(t('جميع العملاء', 'All Clients'));
+
+        M.innerHTML = `
+        <div class="booster-header">
+            <div class="booster-title-group">
+                <div class="booster-icon-box" style="background:#3b82f6;">🗺️</div>
+                <div>
+                    <div class="booster-title">${t('مسارات الزيارات الميدانية والـ GPS', 'Smart Field Routes & Geofencing')}</div>
+                    <div class="booster-desc">${t('تنظيم خطوط السير اليومية والاتجاهات وتسجيل الوصول بضغطة زر', 'Daily beat plans, navigation & instant GPS check-in')}</div>
+                </div>
+            </div>
+            <button class="btn btn-p" onclick="window.captureGPSForVisit()" style="padding:9px 16px; border-radius:10px; font-weight:800; background:#10b981; border:none;">
+                📍 ${t('تسجيل وصول GPS', 'GPS Check-In')}
+            </button>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto;" id="routeAreaTabs">
+            ${areas.map((a, i) => `<button class="booster-tab-btn ${i===0?'active':''}" data-area="${a}">📍 ${a} (${areaMap[a]?.length || 0})</button>`).join('')}
+        </div>
+
+        <div class="card" style="padding:16px; border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h3 style="font-size:1rem; font-weight:800;" id="routeTitle">${areas[0]}</h3>
+                <span style="font-size:0.75rem; color:var(--tx3);">${t('رتب زياراتك واضغط للتوجيه المباشر', 'Turn-by-turn navigation')}</span>
+            </div>
+            <div id="routeClientsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+        `;
+
+        function renderAreaList(areaName) {
+            const list = areaMap[areaName] || [];
+            const c = document.getElementById('routeClientsList');
+            if (!c) return;
+
+            c.innerHTML = list.map((cl, idx) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg3); border-radius:10px; border:1px solid var(--bd); flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="width:24px; height:24px; border-radius:50%; background:#3b82f6; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800;">${idx+1}</span>
+                    <div>
+                        <div style="font-weight:800; font-size:0.9rem; color:var(--tx1);">${cl.name}</div>
+                        <div style="font-size:0.72rem; color:var(--tx3);">${cl.debt > 0 ? `<span style="color:#ef4444; font-weight:700;">مديونية: ${fmtP(cl.debt)}</span>` : t('مديونية صفرية ✅', 'Zero Debt')}</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn btn-ghost" onclick="window.openDirections('${encodeURIComponent(cl.name)}')" style="padding:5px 10px; font-size:0.75rem; border-radius:6px;">
+                        🗺️ ${t('خريطة', 'Map')}
+                    </button>
+                    ${cl.phone ? `<a href="https://wa.me/2${cl.phone.replace(/\\D/g,'')}" target="_blank" class="btn" style="padding:5px 10px; font-size:0.75rem; background:#25d366; color:#fff; border-radius:6px; text-decoration:none;">💬</a>` : ''}
+                    <button class="btn btn-p" onclick="window.quickPitchQuote('${encodeURIComponent(cl.name)}')" style="padding:5px 10px; font-size:0.75rem; border-radius:6px;">
+                        🛒 ${t('عرض', 'Quote')}
+                    </button>
+                </div>
+            </div>`).join('');
+        }
+
+        if (areas[0]) renderAreaList(areas[0]);
+
+        document.getElementById('routeAreaTabs')?.addEventListener('click', e => {
+            const btn = e.target.closest('.booster-tab-btn');
+            if (!btn) return;
+            document.querySelectorAll('#routeAreaTabs .booster-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const a = btn.dataset.area;
+            document.getElementById('routeTitle').textContent = a;
+            renderAreaList(a);
+        });
+    };
+
+    // ─── TAB 6: MARKET INTEL & OBJECTIONS RADAR ───────────────────────────────
+    window.rIntel = function rIntel() {
+        const M = document.getElementById('M');
+        if (!M) return;
+
+        const objList = getObjections();
+        const total = objList.length;
+
+        const reasonsMap = {};
+        objList.forEach(o => {
+            const r = o.reason || 'price_high';
+            reasonsMap[r] = (reasonsMap[r] || 0) + 1;
+        });
+
+        const reasonLabels = {
+            price_high: t('السعر أعلى من المنافس', 'Price Higher Than Competitor'),
+            no_credit: t('عدم توفر تسهيلات سداد', 'No Credit/Terms'),
+            out_of_stock: t('نقص في الكمية/الصنف', 'Item Out of Stock'),
+            competitor_bonus: t('المنافس يقدم بونص مجاني', 'Competitor Bonus'),
+            slow_stock: t('ركود بضاعة سابقة لدى المحل', 'Slow Inventory'),
+            other: t('أسباب أخرى', 'Other')
+        };
+
+        M.innerHTML = `
+        <div class="booster-header">
+            <div class="booster-title-group">
+                <div class="booster-icon-box" style="background:#ef4444;">🛡️</div>
+                <div>
+                    <div class="booster-title">${t('استخبارات السوق وسجل الاعتراضات', 'Market Intel & Objections Radar')}</div>
+                    <div class="booster-desc">${t('تحليل أسباب ضياع الصفقات وأسعار المنافسين في السوق', 'Analyze lost deals & competitor pricing intelligence')}</div>
+                </div>
+            </div>
+            <button class="btn btn-p" onclick="window.openObjectionLogger('')" style="padding:9px 16px; border-radius:10px; font-weight:800; background:#ef4444; border:none;">
+                + ${t('تسجيل اعتراض / منافس', 'Log Objection')}
+            </button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:20px;">
+            <div class="card" style="padding:16px; border-radius:14px;">
+                <div style="font-size:0.75rem; color:var(--tx3); font-weight:700;">${t('إجمالي الحالات المسجلة', 'Logged Objections')}</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#ef4444; margin-top:2px;">${total} ${t('حالة', 'Records')}</div>
+            </div>
+            <div class="card" style="padding:16px; border-radius:14px;">
+                <div style="font-size:0.75rem; color:var(--tx3); font-weight:700;">${t('أكثر سبب متكرر', 'Top Reason')}</div>
+                <div style="font-size:1rem; font-weight:900; color:var(--tx1); margin-top:4px;">${total ? reasonLabels[Object.keys(reasonsMap).sort((a,b)=>reasonsMap[b]-reasonsMap[a])[0]] : '—'}</div>
+            </div>
+        </div>
+
+        <div class="card" style="padding:18px; border-radius:16px;">
+            <h3 style="font-size:1rem; font-weight:800; margin-bottom:14px;">📋 ${t('سجل تفاصيل الاعتراضات والمنافسين', 'Objections & Competitor Details')}</h3>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--bd); text-align:right;">
+                            <th style="padding:8px 10px; color:var(--tx3);">${t('العميل', 'Customer')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3);">${t('السبب الرئيسي', 'Reason')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3);">${t('المنافس', 'Competitor')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3);">${t('سعر المنافس', 'Price')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3);">${t('ملاحظات', 'Notes')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${objList.length ? objList.map(o => `
+                        <tr style="border-bottom:1px solid var(--bd);">
+                            <td style="padding:10px; font-weight:800; color:var(--tx1);">${o.customer || '—'}</td>
+                            <td style="padding:10px;"><span style="color:#ef4444; font-weight:700;">${reasonLabels[o.reason] || o.reason}</span></td>
+                            <td style="padding:10px; color:var(--tx2);">${o.competitor || '—'}</td>
+                            <td style="padding:10px; font-weight:800; color:#3b82f6;">${o.compPrice ? fmtP(o.compPrice) : '—'}</td>
+                            <td style="padding:10px; color:var(--tx3); font-size:0.78rem;">${o.notes || '—'}</td>
+                        </tr>`).join('') : `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--tx3);">${t('لا توجد اعتراضات مسجلة بعد', 'No objections logged yet')}</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        `;
+    };
+
+    // ─── TAB 7: LEADERBOARD & SALES REP CHALLENGES ────────────────────────────
+    window.rLeaderboard = function rLeaderboard() {
+        const M = document.getElementById('M');
+        if (!M) return;
+
+        const S_data = getS();
+        const T_data = getT();
+        const totalSales = S_data.reduce((s, r) => s + parseFloat(r.amount || r['Sales Without Tax'] || 0), 0) || 75000;
+        const totalTarget = T_data.reduce((s, r) => s + parseFloat(r.target || r.Target || 0), 0) || 100000;
+        const targetPct = Math.round((totalSales / totalTarget) * 100);
+
+        const badges = [
+            { icon: '👑', title: t('بطل التارجت', 'Target Champion'), desc: t('تحقيق أكثر من 100% من الهدف الشهري', 'Hit 100%+ monthly target'), unlocked: targetPct >= 100 },
+            { icon: '🎧', title: t('صائد الإكسسوارات', 'Accessory Master'), desc: t('مبيعات إكسسوارات تتجاوز 25,000 ج.م', 'Sold 25K+ EGP accessories'), unlocked: totalSales > 40000 },
+            { icon: '⚡', title: t('المحصل السريع', 'Fast Collector'), desc: t('تحصيل المديونيات في أقل من 30 يوم', 'Collected dues within 30 days'), unlocked: true },
+            { icon: '🎁', title: t('بطل استرداد الراكدين', 'Win-Back Hero'), desc: t('إعادة تنشيط 5 عملاء خاملين', 'Reactivated 5 dormant accounts'), unlocked: false }
+        ];
+
+        M.innerHTML = `
+        <div class="booster-header">
+            <div class="booster-title-group">
+                <div class="booster-icon-box" style="background:#8b5cf6;">🎮</div>
+                <div>
+                    <div class="booster-title">${t('لوحة الشرف وتحديات المبيعات', 'Sales Leaderboard & Badges')}</div>
+                    <div class="booster-desc">${t('الأوسمة التحفيزية وتحديات الأداء لتحقيق أعلى المكافآت', 'Gamified badges & target acceleration')}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="padding:20px; border-radius:16px; margin-bottom:20px; background:linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(59,130,246,0.08) 100%);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div style="font-size:0.8rem; color:var(--tx3); font-weight:700;">${t('المستوى الحالي للمندوب', 'Current Rep Level')}</div>
+                    <div style="font-size:1.6rem; font-weight:900; color:#8b5cf6;">⚡ Master Sales Rep (Level 4)</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:0.8rem; color:var(--tx3); font-weight:700;">${t('نسبة التارجت', 'Target Hit')}</div>
+                    <div style="font-size:1.6rem; font-weight:900; color:#10b981;">${targetPct}%</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="font-size:1.1rem; font-weight:800; color:var(--tx1); margin-bottom:12px;">🏆 ${t('أوسمة الإنجاز والبطولات', 'Achievement Badges')}</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+            ${badges.map(b => `
+            <div class="card" style="padding:16px; border-radius:14px; opacity:${b.unlocked ? '1' : '0.5'}; border:1px solid ${b.unlocked ? '#8b5cf6' : 'var(--bd)'};">
+                <div style="font-size:2rem; margin-bottom:6px;">${b.icon}</div>
+                <div style="font-weight:900; font-size:0.95rem; color:var(--tx1);">${b.title}</div>
+                <div style="font-size:0.78rem; color:var(--tx3); margin:4px 0 10px;">${b.desc}</div>
+                <span style="font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:6px; background:${b.unlocked ? '#10b981' : '#64748b'}; color:#fff;">
+                    ${b.unlocked ? t('مكتمل ✅', 'Unlocked') : t('قيد التحدي 🔒', 'Locked')}
+                </span>
+            </div>`).join('')}
+        </div>
+        `;
+    };
+
+    // ─── GPS, VOICE & MODALS ──────────────────────────────────────────────────
+    window.captureGPSForVisit = function() {
+        if (!navigator.geolocation) {
+            showToast(t('❌ المتصفح لا يدعم GPS', '❌ Geolocation not supported'), 'error');
+            return;
+        }
+        showToast(t('📍 جاري تحديد الموقع الجغرافي...', '📍 Capturing GPS...'), 'info');
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                const lat = pos.coords.latitude.toFixed(6);
+                const lng = pos.coords.longitude.toFixed(6);
+                const noteInput = document.querySelector('input[placeholder*="ملاحظات"], textarea[placeholder*="ملاحظات"], #inVN, #inCN');
+                if (noteInput) {
+                    noteInput.value = (noteInput.value ? noteInput.value + ' ' : '') + `[📍 وصول: ${lat},${lng}]`;
+                }
+                showToast(t(`✅ تم تسجيل الموقع: (${lat}, ${lng})`, `✅ GPS Logged: (${lat}, ${lng})`), 'success');
+            },
+            () => showToast(t('⚠️ تعذر الوصول للـ GPS', '⚠️ GPS Denied'), 'error'),
+            { enableHighAccuracy: true, timeout: 6000 }
+        );
+    };
+
+    window.openDirections = function(destName) {
+        if (!destName) return;
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destName)}`, '_blank');
+    };
+
+    window.openObjectionLogger = function(customerName = '') {
+        let modal = document.getElementById('spObjectionModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'spObjectionModal';
+            modal.className = 'stk-ov';
+            modal.innerHTML = `
+                <div class="stk-m" style="max-width:480px; padding:20px; border-radius:18px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                        <h3 style="font-size:1.05rem; font-weight:800; color:#ef4444;">🛡️ ${t('تسجيل اعتراض / أسعار المنافس', 'Log Market Intel')}</h3>
+                        <button class="stk-mc" onclick="document.getElementById('spObjectionModal').classList.remove('on')">✕</button>
+                    </div>
+
+                    <div style="margin-bottom:10px;">
+                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('العميل', 'Customer')}</label>
+                        <input type="text" id="objCust" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;" value="${customerName}">
+                    </div>
+
+                    <div style="margin-bottom:10px;">
+                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('السبب الرئيسي', 'Reason')}</label>
+                        <select id="objReason" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;">
+                            <option value="price_high">${t('السعر أعلى من المنافس في السوق', 'Price is higher than competitor')}</option>
+                            <option value="no_credit">${t('طلب تسهيلات دفع أو آجل', 'Payment terms requested')}</option>
+                            <option value="out_of_stock">${t('عدم توفر كمية أو صنف معين', 'Out of stock')}</option>
+                            <option value="competitor_bonus">${t('المنافس يقدم بونص أو بضاعة مجانية', 'Competitor bonus')}</option>
+                            <option value="slow_stock">${t('المحل لديه ركود في بضاعة قديمة', 'Slow stock')}</option>
+                            <option value="other">${t('سبب آخر', 'Other')}</option>
+                        </select>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+                        <div>
+                            <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('اسم المنافس', 'Competitor')}</label>
+                            <input type="text" id="objComp" placeholder="شركة X" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('سعر المنافس', 'Price')}</label>
+                            <input type="number" id="objPrice" placeholder="0" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:14px;">
+                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('ملاحظات', 'Notes')}</label>
+                        <textarea id="objNotes" rows="2" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;"></textarea>
+                    </div>
+
+                    <button class="btn btn-p" id="btnSaveObj" style="width:100%; padding:9px; border-radius:8px; font-weight:800; background:#ef4444; border:none;">
+                        💾 ${t('حفظ في تقرير السوق', 'Save Market Intel')}
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('btnSaveObj')?.addEventListener('click', () => {
+                const rec = {
+                    id: Date.now(),
+                    customer: document.getElementById('objCust')?.value.trim() || customerName,
+                    reason: document.getElementById('objReason')?.value,
+                    competitor: document.getElementById('objComp')?.value.trim(),
+                    compPrice: parseFloat(document.getElementById('objPrice')?.value || 0),
+                    notes: document.getElementById('objNotes')?.value.trim(),
+                    date: new Date().toISOString()
+                };
+
+                const existing = getObjections();
+                existing.unshift(rec);
+                localStorage.setItem('sp_objections', JSON.stringify(existing));
+
+                modal.classList.remove('on');
+                showToast(t('✅ تم حفظ الاعتراض بنجاح', '✅ Objection saved'), 'success');
+                if (typeof P !== 'undefined' && P === 'intel' && typeof window.rIntel === 'function') window.rIntel();
+            });
+        }
+
+        if (document.getElementById('objCust')) document.getElementById('objCust').value = customerName;
+        modal.classList.add('on');
+    };
+
+    // ─── FAB INJECTION ────────────────────────────────────────────────────────
     function injectFAB() {
         if (document.getElementById('spGlobalFAB')) return;
 
@@ -794,6 +1135,7 @@
             <button class="sp-fab-main" id="spFabBtn" title="${t('إجراءات سريعة', 'Quick Actions')}">＋</button>
             <div class="sp-fab-menu">
                 <div class="sp-fab-item" id="fabActionQuote"><span class="sp-fab-icon">💬</span><span>${t('عرض سعر واتساب', 'Quote')}</span></div>
+                <div class="sp-fab-item" id="fabActionRoutes"><span class="sp-fab-icon">🗺️</span><span>${t('مسار الزيارات', 'Routes')}</span></div>
                 <div class="sp-fab-item" id="fabActionSale"><span class="sp-fab-icon">🛒</span><span>${t('تسجيل بيعة', 'Sale')}</span></div>
                 <div class="sp-fab-item" id="fabActionVisit"><span class="sp-fab-icon">🚗</span><span>${t('تسجيل زيارة', 'Visit')}</span></div>
                 <div class="sp-fab-item" id="fabActionStock"><span class="sp-fab-icon">📦</span><span>${t('فحص المخزون', 'Stock')}</span></div>
@@ -810,33 +1152,18 @@
             if (!fab.contains(e.target)) fab.classList.remove('active');
         });
 
-        document.getElementById('fabActionQuote')?.addEventListener('click', () => {
+        const navTo = page => {
             fab.classList.remove('active');
-            P = 'quotes';
+            P = page;
             if (typeof render === 'function') render();
             if (typeof buildNav === 'function') buildNav();
-        });
+        };
 
-        document.getElementById('fabActionSale')?.addEventListener('click', () => {
-            fab.classList.remove('active');
-            P = 'sales';
-            if (typeof render === 'function') render();
-            if (typeof buildNav === 'function') buildNav();
-        });
-
-        document.getElementById('fabActionVisit')?.addEventListener('click', () => {
-            fab.classList.remove('active');
-            P = 'visits';
-            if (typeof render === 'function') render();
-            if (typeof buildNav === 'function') buildNav();
-        });
-
-        document.getElementById('fabActionStock')?.addEventListener('click', () => {
-            fab.classList.remove('active');
-            P = 'stock';
-            if (typeof render === 'function') render();
-            if (typeof buildNav === 'function') buildNav();
-        });
+        document.getElementById('fabActionQuote')?.addEventListener('click', () => navTo('quotes'));
+        document.getElementById('fabActionRoutes')?.addEventListener('click', () => navTo('routes'));
+        document.getElementById('fabActionSale')?.addEventListener('click', () => navTo('sales'));
+        document.getElementById('fabActionVisit')?.addEventListener('click', () => navTo('visits'));
+        document.getElementById('fabActionStock')?.addEventListener('click', () => navTo('stock'));
     }
 
     // ─── INITIALIZATION & HOOKS ────────────────────────────────────────────────
@@ -845,26 +1172,17 @@
         injectFAB();
         calcBadgesAsync();
 
-        // Safe hook to render new pages
+        // High-Speed Direct Render Hook
         const origRender = window.render;
         window.render = function () {
             if (typeof P !== 'undefined') {
-                if (P === 'upsell' && typeof window.rUpsell === 'function') {
-                    window.rUpsell();
-                    return;
-                }
-                if (P === 'quotes' && typeof window.rQuotes === 'function') {
-                    window.rQuotes();
-                    return;
-                }
-                if (P === 'rfm' && typeof window.rRFM === 'function') {
-                    window.rRFM();
-                    return;
-                }
-                if (P === 'commission' && typeof window.rCommission === 'function') {
-                    window.rCommission();
-                    return;
-                }
+                if (P === 'upsell' && typeof window.rUpsell === 'function') { window.rUpsell(); return; }
+                if (P === 'quotes' && typeof window.rQuotes === 'function') { window.rQuotes(); return; }
+                if (P === 'rfm' && typeof window.rRFM === 'function') { window.rRFM(); return; }
+                if (P === 'commission' && typeof window.rCommission === 'function') { window.rCommission(); return; }
+                if (P === 'routes' && typeof window.rRoutes === 'function') { window.rRoutes(); return; }
+                if (P === 'intel' && typeof window.rIntel === 'function') { window.rIntel(); return; }
+                if (P === 'leaderboard' && typeof window.rLeaderboard === 'function') { window.rLeaderboard(); return; }
             }
 
             if (typeof origRender === 'function') origRender();
