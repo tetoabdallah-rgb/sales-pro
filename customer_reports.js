@@ -437,7 +437,7 @@
 
     // ─── Quick access: add "Export PDF" in Customers table ───────────────────
     function injectCustomerTablePDF() {
-        let rows = document.querySelectorAll('#cTbody tr, #custTbody tr');
+        let rows = Array.from(document.querySelectorAll('#cTbody tr, #custTbody tr')).slice(0, 50);
         rows.forEach(tr => {
             if (tr.querySelector('.sp-pdf-cust')) return;
             let firstTd = tr.querySelector('td:first-child');
