@@ -1,0 +1,415 @@
+/* ============================================================
+   Sales Pro — Modern UI & Enterprise Glassmorphism (v5.0)
+   Adds luxury styling, animated badges, KPI card sparklines,
+   and floating action buttons (FAB) without breaking core layout.
+   ============================================================ */
+
+/* ---------- Modern Card Enhancements ---------- */
+.card, .kg, .cg > div, .stk-gc, .kpi-card {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    border: 1px solid var(--bd, rgba(255, 255, 255, 0.08)) !important;
+    backdrop-filter: blur(12px) saturate(160%) !important;
+}
+
+.card:hover, .kg:hover, .kpi-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Sparkline & Metric Badges */
+.sp-sparkline {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+body.en .sp-sparkline {
+    margin-right: 0;
+    margin-left: 6px;
+}
+.sp-spark-bar {
+    width: 3px;
+    border-radius: 2px;
+    background: #3b82f6;
+    transition: height 0.4s ease;
+}
+.sp-spark-bar.up { background: #10b981; }
+.sp-spark-bar.down { background: #ef4444; }
+
+.sp-trend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 999px;
+    margin-top: 4px;
+}
+.sp-trend-up {
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.sp-trend-down {
+    background: rgba(239, 68, 68, 0.14);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+.sp-trend-neutral {
+    background: rgba(148, 163, 184, 0.14);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* ---------- Sidebar Live Badges ---------- */
+.ni {
+    position: relative !important;
+}
+
+.sp-nav-badge {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 999px;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    pointer-events: none;
+    animation: pulseBadge 3s infinite;
+}
+body.en .sp-nav-badge {
+    left: auto;
+    right: 14px;
+}
+
+.sp-badge-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+}
+.sp-badge-amber {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+}
+.sp-badge-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+}
+.sp-badge-blue {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+}
+.sp-badge-hot {
+    background: linear-gradient(135deg, #f97316, #ef4444);
+    color: #fff;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+@keyframes pulseBadge {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.06); }
+}
+
+/* ---------- Floating Action Button (FAB) ---------- */
+.sp-fab-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 8500;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 12px;
+    font-family: inherit;
+}
+body.en .sp-fab-container {
+    right: auto;
+    left: 24px;
+    align-items: flex-start;
+}
+@media (max-width: 768px) {
+    .sp-fab-container {
+        bottom: 80px; /* Above mobile bottom bar */
+        right: 16px;
+    }
+    body.en .sp-fab-container {
+        left: 16px;
+    }
+}
+
+.sp-fab-main {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4), 0 0 0 2px rgba(255,255,255,0.2);
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sp-fab-main:hover {
+    transform: scale(1.08) rotate(15deg);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.55);
+}
+.sp-fab-container.active .sp-fab-main {
+    transform: rotate(45deg);
+    background: #ef4444;
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+}
+
+.sp-fab-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+body.en .sp-fab-menu {
+    align-items: flex-start;
+}
+.sp-fab-container.active .sp-fab-menu {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+
+.sp-fab-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg2, rgba(30, 41, 59, 0.95));
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--bd, rgba(255,255,255,0.12));
+    border-radius: 999px;
+    padding: 6px 14px 6px 8px;
+    color: var(--tx1, #f8fafc);
+    cursor: pointer;
+    font-size: 0.84rem;
+    font-weight: 700;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+body.en .sp-fab-item {
+    padding: 6px 8px 6px 14px;
+}
+.sp-fab-item:hover {
+    transform: translateY(-2px);
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+}
+.sp-fab-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+/* ---------- Modern Sales Booster Styling ---------- */
+.booster-header {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(99, 102, 241, 0.06) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.booster-title-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.booster-icon-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: #fff;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+}
+.booster-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--tx1);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+.booster-desc {
+    font-size: 0.85rem;
+    color: var(--tx3);
+    margin-top: 4px;
+}
+
+/* Tabs Switcher for Sub-features */
+.booster-tabs {
+    display: flex;
+    gap: 8px;
+    background: var(--bg3, rgba(15, 23, 42, 0.6));
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid var(--bd);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.booster-tab-btn {
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--tx2);
+    font-weight: 700;
+    font-size: 0.84rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.booster-tab-btn.active {
+    background: #3b82f6;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+}
+
+/* Quick Quotation Grid & WhatsApp Preview */
+.quote-builder-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 20px;
+}
+@media (max-width: 900px) {
+    .quote-builder-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wa-preview-card {
+    background: #0b141a;
+    border: 1px solid #202c33;
+    border-radius: 20px;
+    padding: 18px;
+    color: #e9edef;
+    position: relative;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+    background-image: radial-gradient(#1f2c34 1px, transparent 1px);
+    background-size: 16px 16px;
+}
+.wa-bubble {
+    background: #005c4b;
+    border-radius: 12px 0 12px 12px;
+    padding: 14px 16px;
+    color: #e9edef;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    white-space: pre-line;
+    word-break: break-word;
+}
+body.en .wa-bubble {
+    border-radius: 0 12px 12px 12px;
+}
+.wa-send-btn {
+    background: #25d366;
+    color: #111b21;
+    border: none;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 12px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 14px;
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);
+    transition: all 0.2s ease;
+}
+.wa-send-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(37, 211, 102, 0.45);
+    background: #22bf5b;
+}
+
+/* RFM Grid */
+.rfm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+.rfm-card {
+    background: var(--bg2);
+    border: 1px solid var(--bd);
+    border-radius: 16px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+}
+.rfm-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 4px;
+}
+.rfm-vip::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.rfm-risk::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+.rfm-grow::before { background: linear-gradient(90deg, #10b981, #34d399); }
+.rfm-lost::before { background: linear-gradient(90deg, #64748b, #94a3b8); }
+
+/* Simulator Range Sliders */
+.sim-slider-wrap {
+    background: var(--bg3);
+    border: 1px solid var(--bd);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+}
+.sim-slider-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.sim-range {
+    width: 100%;
+    height: 6px;
+    border-radius: 5px;
+    background: var(--bd);
+    outline: none;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
