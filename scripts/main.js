@@ -49,7 +49,7 @@ if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
 
 window.exportTableToPDF = function(tableId, title) {
     if(typeof pdfMake === 'undefined') {
-        if(typeof toast === 'function') toast(L==='ar'?'??????? ???????? ??? ??????':'PDF library not loaded', 'error');
+        if(typeof toast === 'function') toast(L==='ar'?'مكتبة الـ PDF غير محملة':'PDF library not loaded', 'error');
         return;
     }
     try {
@@ -88,11 +88,11 @@ window.exportTableToPDF = function(tableId, title) {
                 header: { fontSize: 18, bold: true }
             },
             defaultStyle: {
-                font: 'Roboto' // Note: pdfmake default font Roboto does not support Arabic well without custom VFS, but for English numbers/basic text it works. For full Arabic, a custom VFS is needed, but this is a solid start without breaking anything.
+                font: 'Roboto'
             }
         };
         pdfMake.createPdf(docDefinition).download(title + '.pdf');
-        if(typeof toast === 'function') toast(L==='ar'?'?? ?????? PDF ?????!':'PDF Exported!', 'success');
+        if(typeof toast === 'function') toast(L==='ar'?'تم تصدير ملف PDF بنجاح!':'PDF Exported!', 'success');
     } catch(e) {
         console.error(e);
         if(typeof toast === 'function') toast('Error: ' + e.message, 'error');
