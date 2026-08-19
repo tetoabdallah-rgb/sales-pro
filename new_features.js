@@ -645,13 +645,13 @@ window.render = function() {
     window.setAppFontSize = function(idx) {
         localStorage.setItem('sp_font_size', idx);
         window.applyAppFontSettings();
-        if (typeof toast === 'function') toast('?? ????? ??? ????');
+        if (typeof toast === 'function') toast('تم تغيير حجم الخط');
     };
     
     window.setAppFontFamily = function(fontName) {
         localStorage.setItem('sp_font_family', fontName);
         window.applyAppFontSettings();
-        if (typeof toast === 'function') toast('?? ????? ??? ????');
+        if (typeof toast === 'function') toast('تم تغيير نوع الخط');
     };
 })();
 
@@ -1563,7 +1563,8 @@ window.updateFollowUpBadge = function() {
             }
             b.textContent = dueCount;
         } else if (b) {
-            b.remove();
+            if (typeof b.remove === 'function') b.remove();
+            else if (b.parentNode) b.parentNode.removeChild(b);
         }
     }
 };
