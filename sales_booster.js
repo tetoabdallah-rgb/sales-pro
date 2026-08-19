@@ -924,9 +924,11 @@
                     <div class="booster-desc">${t('تحليل أسباب ضياع الصفقات وأسعار المنافسين في السوق', 'Analyze lost deals & competitor pricing intelligence')}</div>
                 </div>
             </div>
-            <button class="btn btn-p" onclick="window.openObjectionLogger('')" style="padding:9px 16px; border-radius:10px; font-weight:800; background:#ef4444; border:none;">
-                + ${t('تسجيل اعتراض / منافس', 'Log Objection')}
-            </button>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-p" onclick="window.openObjectionLogger('')" style="padding:9px 16px; border-radius:10px; font-weight:800; background:#2563eb; border:none; cursor:pointer;">
+                    + ${t('تسجيل اعتراض / منافس', 'Log Objection')}
+                </button>
+            </div>
         </div>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:20px;">
@@ -936,12 +938,15 @@
             </div>
             <div class="card" style="padding:16px; border-radius:14px;">
                 <div style="font-size:0.75rem; color:var(--tx3); font-weight:700;">${t('أكثر سبب متكرر', 'Top Reason')}</div>
-                <div style="font-size:1rem; font-weight:900; color:var(--tx1); margin-top:4px;">${total ? reasonLabels[Object.keys(reasonsMap).sort((a,b)=>reasonsMap[b]-reasonsMap[a])[0]] : '—'}</div>
+                <div style="font-size:1rem; font-weight:900; color:var(--tx1); margin-top:4px;">${total ? (reasonLabels[Object.keys(reasonsMap).sort((a,b)=>reasonsMap[b]-reasonsMap[a])[0]] || '—') : '—'}</div>
             </div>
         </div>
 
         <div class="card" style="padding:18px; border-radius:16px;">
-            <h3 style="font-size:1rem; font-weight:800; margin-bottom:14px;">📋 ${t('سجل تفاصيل الاعتراضات والمنافسين', 'Objections & Competitor Details')}</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                <h3 style="font-size:1rem; font-weight:800;">📋 ${t('سجل تفاصيل الاعتراضات والمنافسين', 'Objections & Competitor Details')}</h3>
+                ${total === 0 ? `<button class="btn btn-ghost" onclick="window.addSampleObjections()" style="font-size:0.75rem; padding:4px 10px; border-radius:6px;">⚡ ${t('إضافة نماذج تجريبية', 'Add Samples')}</button>` : ''}
+            </div>
             <div style="overflow-x:auto;">
                 <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
                     <thead>
@@ -951,22 +956,44 @@
                             <th style="padding:8px 10px; color:var(--tx3);">${t('المنافس', 'Competitor')}</th>
                             <th style="padding:8px 10px; color:var(--tx3);">${t('سعر المنافس', 'Price')}</th>
                             <th style="padding:8px 10px; color:var(--tx3);">${t('ملاحظات', 'Notes')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3); text-align:center;">${t('حذف', 'Action')}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${objList.length ? objList.slice(0, 30).map(o => `
+                        ${objList.length ? objList.map(o => `
                         <tr style="border-bottom:1px solid var(--bd);">
                             <td style="padding:10px; font-weight:800; color:var(--tx1);">${o.customer || '—'}</td>
                             <td style="padding:10px;"><span style="color:#ef4444; font-weight:700;">${reasonLabels[o.reason] || o.reason}</span></td>
                             <td style="padding:10px; color:var(--tx2);">${o.competitor || '—'}</td>
                             <td style="padding:10px; font-weight:800; color:#3b82f6;">${o.compPrice ? fmtP(o.compPrice) : '—'}</td>
                             <td style="padding:10px; color:var(--tx3); font-size:0.78rem;">${o.notes || '—'}</td>
-                        </tr>`).join('') : `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--tx3);">${t('لا توجد اعتراضات مسجلة بعد', 'No objections logged yet')}</td></tr>`}
+                            <td style="padding:10px; text-align:center;">
+                                <button onclick="window.deleteObjection(${o.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.85rem;" title="${t('حذف', 'Delete')}">🗑️</button>
+                            </td>
+                        </tr>`).join('') : `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--tx3); font-weight:700;">${t('لا توجد اعتراضات مسجلة بعد — اضغط "+ تسجيل اعتراض / منافس" لإضافة أول حالة.', 'No objections logged yet — click "+ Log Objection" to record one.')}</td></tr>`}
                     </tbody>
                 </table>
             </div>
         </div>
         `;
+    };
+
+    window.addSampleObjections = function() {
+        const samples = [
+            { id: Date.now() + 1, customer: 'محل الأمانة للموبايل', reason: 'price_high', competitor: 'شركة النور', compPrice: 165, notes: 'سعر الشاحن لديهم أقل بـ 15 جنيه', date: new Date().toISOString() },
+            { id: Date.now() + 2, customer: 'سنتر الأهرام', reason: 'competitor_bonus', competitor: 'الوكيل الدولي', compPrice: 320, notes: 'عرض 10+1 مجاناً على السماعات', date: new Date().toISOString() },
+            { id: Date.now() + 3, customer: 'مؤسسة البركة', reason: 'no_credit', competitor: 'الموزع المعتمد', compPrice: 0, notes: 'طلب سداد بعد 45 يوماً', date: new Date().toISOString() }
+        ];
+        localStorage.setItem('sp_objections', JSON.stringify(samples));
+        showToast(t('✅ تمت إضافة نماذج تجريبية', '✅ Samples added'), 'success');
+        if (typeof window.rIntel === 'function') window.rIntel();
+    };
+
+    window.deleteObjection = function(id) {
+        let list = getObjections().filter(x => x.id !== id);
+        localStorage.setItem('sp_objections', JSON.stringify(list));
+        showToast(t('🗑️ تم الحذف', '🗑️ Deleted'), 'warning');
+        if (typeof window.rIntel === 'function') window.rIntel();
     };
 
     // ─── TAB 7: LEADERBOARD & SALES REP CHALLENGES ────────────────────────────
@@ -1071,22 +1098,23 @@
         if (!modal) {
             modal = document.createElement('div');
             modal.id = 'spObjectionModal';
-            modal.className = 'stk-ov';
+            modal.className = 'sp-modal-overlay';
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;display:none;align-items:center;justify-content:center;padding:16px;';
             modal.innerHTML = `
-                <div class="stk-m" style="max-width:480px; padding:20px; border-radius:18px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                        <h3 style="font-size:1.05rem; font-weight:800; color:#ef4444;">🛡️ ${t('تسجيل اعتراض / أسعار المنافس', 'Log Market Intel')}</h3>
-                        <button class="stk-mc" onclick="document.getElementById('spObjectionModal').classList.remove('on')">✕</button>
+                <div class="sp-modal-content" style="background:var(--bg2,#1e293b);border:1px solid var(--bd,rgba(255,255,255,0.12));border-radius:18px;max-width:480px;width:100%;padding:22px;position:relative;color:var(--tx1,#fff);box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h3 style="font-size:1.1rem; font-weight:800; color:#ef4444; margin:0;">🛡️ ${t('تسجيل اعتراض / أسعار المنافس', 'Log Market Intel')}</h3>
+                        <button onclick="window.closeObjectionModal()" style="background:none;border:none;color:var(--tx2,#94a3b8);font-size:1.3rem;cursor:pointer;padding:4px 8px;">✕</button>
                     </div>
 
-                    <div style="margin-bottom:10px;">
+                    <div style="margin-bottom:12px;">
                         <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('العميل', 'Customer')}</label>
-                        <input type="text" id="objCust" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;" value="${customerName}">
+                        <input type="text" id="objCust" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.85rem;" value="${customerName}" placeholder="${t('اسم العميل...', 'Customer name...')}">
                     </div>
 
-                    <div style="margin-bottom:10px;">
-                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('السبب الرئيسي', 'Reason')}</label>
-                        <select id="objReason" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;">
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('السبب الرئيسي لعدم الشراء', 'Primary Reason')}</label>
+                        <select id="objReason" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.85rem;">
                             <option value="price_high">${t('السعر أعلى من المنافس في السوق', 'Price is higher than competitor')}</option>
                             <option value="no_credit">${t('طلب تسهيلات دفع أو آجل', 'Payment terms requested')}</option>
                             <option value="out_of_stock">${t('عدم توفر كمية أو صنف معين', 'Out of stock')}</option>
@@ -1096,37 +1124,41 @@
                         </select>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
                         <div>
                             <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('اسم المنافس', 'Competitor')}</label>
-                            <input type="text" id="objComp" placeholder="شركة X" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;">
+                            <input type="text" id="objComp" placeholder="${t('اسم الشركة أو التاجر', 'Company X')}" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.85rem;">
                         </div>
                         <div>
-                            <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('سعر المنافس', 'Price')}</label>
-                            <input type="number" id="objPrice" placeholder="0" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;">
+                            <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('سعر المنافس (ج.م)', 'Price')}</label>
+                            <input type="number" id="objPrice" placeholder="0" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.85rem;">
                         </div>
                     </div>
 
-                    <div style="margin-bottom:14px;">
-                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('ملاحظات', 'Notes')}</label>
-                        <textarea id="objNotes" rows="2" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.85rem;"></textarea>
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('ملاحظات المندوب الميدانية', 'Notes')}</label>
+                        <textarea id="objNotes" rows="2" placeholder="${t('تفاصيل العرض، كود الصنف، إلخ...', 'Details...')}" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.85rem; font-family:inherit;"></textarea>
                     </div>
 
-                    <button class="btn btn-p" id="btnSaveObj" style="width:100%; padding:9px; border-radius:8px; font-weight:800; background:#ef4444; border:none;">
+                    <button class="btn btn-p" id="btnSaveObj" style="width:100%; padding:11px; border-radius:10px; font-weight:800; font-size:0.95rem; background:#ef4444; color:#fff; border:none; cursor:pointer;">
                         💾 ${t('حفظ في تقرير السوق', 'Save Market Intel')}
                     </button>
                 </div>
             `;
             document.body.appendChild(modal);
 
+            modal.addEventListener('click', e => {
+                if (e.target === modal) window.closeObjectionModal();
+            });
+
             document.getElementById('btnSaveObj')?.addEventListener('click', () => {
                 const rec = {
                     id: Date.now(),
-                    customer: document.getElementById('objCust')?.value.trim() || customerName,
-                    reason: document.getElementById('objReason')?.value,
-                    competitor: document.getElementById('objComp')?.value.trim(),
+                    customer: document.getElementById('objCust')?.value.trim() || customerName || t('عميل عام', 'General Client'),
+                    reason: document.getElementById('objReason')?.value || 'price_high',
+                    competitor: document.getElementById('objComp')?.value.trim() || '—',
                     compPrice: parseFloat(document.getElementById('objPrice')?.value || 0),
-                    notes: document.getElementById('objNotes')?.value.trim(),
+                    notes: document.getElementById('objNotes')?.value.trim() || '—',
                     date: new Date().toISOString()
                 };
 
@@ -1134,14 +1166,23 @@
                 existing.unshift(rec);
                 localStorage.setItem('sp_objections', JSON.stringify(existing));
 
-                modal.classList.remove('on');
-                showToast(t('✅ تم حفظ الاعتراض بنجاح', '✅ Objection saved'), 'success');
+                window.closeObjectionModal();
+                showToast(t('✅ تم حفظ الاعتراض بنجاح في تقرير السوق', '✅ Objection saved to Market Intel'), 'success');
                 if (typeof P !== 'undefined' && P === 'intel' && typeof window.rIntel === 'function') window.rIntel();
             });
         }
 
         if (document.getElementById('objCust')) document.getElementById('objCust').value = customerName;
-        modal.classList.add('on');
+        modal.style.display = 'flex';
+        modal.classList.add('on', 'open');
+    };
+
+    window.closeObjectionModal = function() {
+        const m = document.getElementById('spObjectionModal');
+        if (m) {
+            m.style.display = 'none';
+            m.classList.remove('on', 'open');
+        }
     };
 
     // ─── FAB INJECTION ────────────────────────────────────────────────────────
