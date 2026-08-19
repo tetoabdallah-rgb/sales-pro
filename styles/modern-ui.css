@@ -1,5 +1,5 @@
 /* ============================================================
-   Sales Pro — Modern UI & High-Performance SaaS Design (v5.1)
+   Sales Pro — Modern UI & High-Performance SaaS Design (v5.2)
    Ultra-fast, zero-lag CSS with hardware-accelerated transitions.
    ============================================================ */
 
@@ -374,4 +374,52 @@ body.en .wa-bubble {
     outline: none;
     accent-color: #3b82f6;
     cursor: pointer;
+}
+
+/* ---------- Universal Standalone Modals (Guaranteed to open on all tabs) ---------- */
+.sp-modal-overlay, .stk-ov {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+    z-index: 99999 !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+}
+.sp-modal-overlay.on, .sp-modal-overlay.open, .stk-ov.on, .stk-ov.open {
+    display: flex !important;
+}
+
+.sp-modal-content, .stk-m {
+    background: var(--bg2, #1e293b) !important;
+    border: 1px solid var(--bd, rgba(255,255,255,0.12)) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5) !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    padding: 22px !important;
+    position: relative !important;
+    color: var(--tx1, #fff) !important;
+    animation: spModalSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes spModalSlideIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.stk-mc {
+    background: none !important;
+    border: none !important;
+    color: var(--tx2, #94a3b8) !important;
+    font-size: 1.3rem !important;
+    cursor: pointer !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+}
+.stk-mc:hover {
+    color: #ef4444 !important;
 }
