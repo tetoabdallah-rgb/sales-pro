@@ -1034,51 +1034,63 @@ function setupModalEvents() {
         closeModal();
         window.rStock();
     });
-
-    window.openModal = function(id = null) {
-        editingId = id;
-        document.getElementById('stkMTitle').textContent = id ? t('✏️ تعديل منتج','✏️ Edit Item') : t('＋ منتج جديد','＋ New Item');
-        document.getElementById('stkModal')?.classList.add('on');
-        curImg = null;
-        if (imgPrev) imgPrev.style.display = 'none';
-        if (imgPh) imgPh.style.display = 'block';
-        if (imgRm) imgRm.style.display = 'none';
-        if (imgArea) imgArea.classList.remove('has-img');
-
-        if (id) {
-            const p = stockData.find(x => x.id === id); if(!p) return;
-            document.getElementById('mfName').value = p.name || '';
-            document.getElementById('mfCode').value = p.code || '';
-            document.getElementById('mfBrand').value = p.brand || '';
-            document.getElementById('mfCat').value = p.category || '';
-            document.getElementById('mfPrice').value = p.price || '';
-            document.getElementById('mfCost').value = p.cost || '';
-            document.getElementById('mfBest').value = p.bestPrice || '';
-            document.getElementById('mfQtyOnHand').value = p.qtyOnHand != null ? p.qtyOnHand : '';
-            document.getElementById('mfQty').value = p.qty != null ? p.qty : '';
-            document.getElementById('mfDesc').value = p.desc || '';
-            if (p.image) {
-                curImg = p.image; imgPrev.src = p.image; imgPrev.style.display = 'block';
-                imgPh.style.display = 'none'; imgRm.style.display = 'block';
-                imgArea.classList.add('has-img');
-            }
-        } else {
-            document.getElementById('mfName').value = '';
-            document.getElementById('mfCode').value = '';
-            document.getElementById('mfBrand').value = '';
-            document.getElementById('mfPrice').value = '';
-            document.getElementById('mfCost').value = '';
-            document.getElementById('mfBest').value = '';
-            document.getElementById('mfQtyOnHand').value = '';
-            document.getElementById('mfQty').value = '';
-            document.getElementById('mfDesc').value = '';
-        }
-    };
-    window.closeModal = function() {
-        document.getElementById('stkModal')?.classList.remove('on');
-        editingId = null;
-    };
 }
+
+let curImg = null;
+function openModal(id = null) {
+    editingId = id;
+    const titleEl = document.getElementById('stkMTitle');
+    if (titleEl) titleEl.textContent = id ? t('✏️ تعديل منتج','✏️ Edit Item') : t('＋ منتج جديد','＋ New Item');
+    document.getElementById('stkModal')?.classList.add('on');
+    curImg = null;
+    const imgPrev = document.getElementById('stkImgPrev');
+    const imgPh   = document.getElementById('stkImgPh');
+    const imgRm   = document.getElementById('stkImgRm');
+    const imgArea = document.getElementById('stkImgArea');
+    if (imgPrev) imgPrev.style.display = 'none';
+    if (imgPh) imgPh.style.display = 'block';
+    if (imgRm) imgRm.style.display = 'none';
+    if (imgArea) imgArea.classList.remove('has-img');
+
+    if (id) {
+        const p = stockData.find(x => x.id === id); if(!p) return;
+        if (document.getElementById('mfName')) document.getElementById('mfName').value = p.name || '';
+        if (document.getElementById('mfCode')) document.getElementById('mfCode').value = p.code || '';
+        if (document.getElementById('mfBrand')) document.getElementById('mfBrand').value = p.brand || '';
+        if (document.getElementById('mfCat')) document.getElementById('mfCat').value = p.category || '';
+        if (document.getElementById('mfPrice')) document.getElementById('mfPrice').value = p.price || '';
+        if (document.getElementById('mfCost')) document.getElementById('mfCost').value = p.cost || '';
+        if (document.getElementById('mfBest')) document.getElementById('mfBest').value = p.bestPrice || '';
+        if (document.getElementById('mfQtyOnHand')) document.getElementById('mfQtyOnHand').value = p.qtyOnHand != null ? p.qtyOnHand : '';
+        if (document.getElementById('mfQty')) document.getElementById('mfQty').value = p.qty != null ? p.qty : '';
+        if (document.getElementById('mfDesc')) document.getElementById('mfDesc').value = p.desc || '';
+        if (p.image) {
+            curImg = p.image;
+            if (imgPrev) { imgPrev.src = p.image; imgPrev.style.display = 'block'; }
+            if (imgPh) imgPh.style.display = 'none';
+            if (imgRm) imgRm.style.display = 'block';
+            if (imgArea) imgArea.classList.add('has-img');
+        }
+    } else {
+        if (document.getElementById('mfName')) document.getElementById('mfName').value = '';
+        if (document.getElementById('mfCode')) document.getElementById('mfCode').value = '';
+        if (document.getElementById('mfBrand')) document.getElementById('mfBrand').value = '';
+        if (document.getElementById('mfPrice')) document.getElementById('mfPrice').value = '';
+        if (document.getElementById('mfCost')) document.getElementById('mfCost').value = '';
+        if (document.getElementById('mfBest')) document.getElementById('mfBest').value = '';
+        if (document.getElementById('mfQtyOnHand')) document.getElementById('mfQtyOnHand').value = '';
+        if (document.getElementById('mfQty')) document.getElementById('mfQty').value = '';
+        if (document.getElementById('mfDesc')) document.getElementById('mfDesc').value = '';
+    }
+}
+
+function closeModal() {
+    document.getElementById('stkModal')?.classList.remove('on');
+    editingId = null;
+}
+
+window.openModal = openModal;
+window.closeModal = closeModal;
 
 function toggleSel(id) {
     if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
