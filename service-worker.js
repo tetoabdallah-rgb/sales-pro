@@ -1,17 +1,26 @@
-const CACHE_NAME = 'salespro-v85';
+const CACHE_NAME = 'salespro-v86';
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './style.css',
-  './app.js',
+  './manifest.json',
+  './styles/main.css',
+  './styles/dashboard-v2.css',
+  './styles/landing.css',
+  './styles/modern-ui.css',
+  './scripts/main.js',
   './new_features.js',
-  './manifest.json'
+  './appearance_settings.js',
+  './premium_ux.js',
+  './quick_search.js',
+  './customer_reports.js',
+  './stock.js',
+  './sales_booster.js'
 ];
 
 const CDN_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
-  'https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js',
-  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
 ];
 
 // Install â€” cache static assets
