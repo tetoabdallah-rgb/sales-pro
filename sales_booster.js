@@ -1,9 +1,7 @@
 /**
  * ============================================================
- * sales_booster.js — Sales Pro Enterprise Growth Suite (v5.5)
- * Full Suite: Upsell, WhatsApp Quotes, RFM, Commission Sim,
- * Smart Routes & Map, Market Intel & Objections, Leaderboard.
- * Zero-Lag, High-Performance, Instant Render Engine.
+ * sales_booster.js — Sales Pro Enterprise Growth Suite (v5.6)
+ * Lightweight, Ultra-Responsive, Zero-Lag Architecture.
  * ============================================================
  */
 
@@ -19,7 +17,6 @@
     function getT() { return (typeof T !== 'undefined' && Array.isArray(T)) ? T : (JSON.parse(localStorage.getItem('targetData') || '[]')); }
     function getDues() { return (typeof D !== 'undefined' && Array.isArray(D)) ? D : (JSON.parse(localStorage.getItem('duesData') || '[]')); }
     function getStock() { try { return JSON.parse(localStorage.getItem('sp_stock_v1') || '[]'); } catch(e) { return []; } }
-    function getVisits() { try { return JSON.parse(localStorage.getItem('sp_visits') || '[]'); } catch(e) { return []; } }
     function getObjections() { try { return JSON.parse(localStorage.getItem('sp_objections') || '[]'); } catch(e) { return []; } }
 
     function parseDateFast(v) {
@@ -82,7 +79,7 @@
             { p: 'leaderboard', ic: '🎮' }
         ];
 
-        const hasSection = NAV.some(n => n.s && (n.s.ar === 'مضاعفة المبيعات' || n.s.en === 'Growth'));
+        const hasSection = NAV.some(n => n.s && (n.s.ar === 'مضاعفة المبيعات 🔥' || n.s.en === 'Growth & Booster 🔥'));
         if (!hasSection) {
             const insertAt = NAV.length - 6;
             const sectionHeader = { s: { ar: 'مضاعفة المبيعات 🔥', en: 'Growth & Booster 🔥' } };
@@ -96,13 +93,9 @@
 
             NAV.splice(Math.max(1, insertAt), 0, ...itemsToInsert);
         }
-
-        if (typeof buildNav === 'function') {
-            buildNav();
-        }
     }
 
-    // ─── Fast Asynchronous Badge Computation ──────────────────────────────────
+    // ─── Fast Asynchronous Badges ─────────────────────────────────────────────
     let _cachedDormant = null;
     let _cachedLowStock = null;
 
@@ -112,7 +105,7 @@
                 const sData = getS();
                 const now = new Date();
                 const custLastMap = {};
-                const limit = Math.min(sData.length, 1500);
+                const limit = Math.min(sData.length, 1000);
                 for (let i = 0; i < limit; i++) {
                     const r = sData[i];
                     const name = r.customer || r['اسم العميل'] || r['العميل'] || r.Customer;
@@ -126,7 +119,7 @@
                 _cachedLowStock = stockData.filter(p => p.qty != null && p.qty <= 5).length;
                 renderBadgesDOM();
             } catch(e) {}
-        }, 200);
+        }, 150);
     }
 
     function renderBadgesDOM() {
@@ -162,7 +155,7 @@
 
         const S_data = getS();
         const custProfiles = {};
-        const limit = Math.min(S_data.length, 2500);
+        const limit = Math.min(S_data.length, 1500);
 
         for (let i = 0; i < limit; i++) {
             const r = S_data[i];
@@ -228,7 +221,7 @@
                     <div class="booster-desc">${t('اقتراحات فورية لزيادة حجم الفاتورة وهامش ربح المندوب', 'Instant recommendations to maximize basket size')}</div>
                 </div>
             </div>
-            <button class="btn btn-p" onclick="P='quotes';window.render();if(typeof buildNav==='function')buildNav();" style="padding:9px 18px; border-radius:10px; font-weight:800;">
+            <button class="btn btn-p" onclick="P='quotes';if(typeof render==='function')render();if(typeof buildNav==='function')buildNav();" style="padding:9px 18px; border-radius:10px; font-weight:800;">
                 💬 ${t('عرض سعر واتساب', 'WhatsApp Quote')}
             </button>
         </div>
@@ -316,7 +309,7 @@
 
         const S_data = getS();
         const customerSet = new Set();
-        const limit = Math.min(S_data.length, 1000);
+        const limit = Math.min(S_data.length, 500);
         for (let i = 0; i < limit; i++) {
             const name = S_data[i].customer || S_data[i]['اسم العميل'] || S_data[i]['العميل'] || S_data[i].Customer;
             if (name) customerSet.add(name);
@@ -512,7 +505,7 @@
         const S_data = getS();
         const now = new Date();
         const custMap = {};
-        const limit = Math.min(S_data.length, 2500);
+        const limit = Math.min(S_data.length, 1500);
 
         for (let i = 0; i < limit; i++) {
             const r = S_data[i];
@@ -627,7 +620,7 @@
             const filtered = filter === 'all' ? list : list.filter(x => x.segment === filter);
             const badgeCls = { vip: '#f59e0b', risk: '#ef4444', grow: '#10b981', lost: '#94a3b8' };
 
-            tb.innerHTML = filtered.slice(0, 50).map(c => `
+            tb.innerHTML = filtered.slice(0, 30).map(c => `
             <tr style="border-bottom:1px solid var(--bd);">
                 <td style="padding:10px; font-weight:800; color:var(--tx1);">${c.name}</td>
                 <td style="padding:10px;"><span style="color:${badgeCls[c.segment]}; font-weight:800;">${c.segment.toUpperCase()}</span></td>
@@ -659,8 +652,20 @@
 
         const S_data = getS();
         const T_data = getT();
-        const currentSales = S_data.reduce((s, r) => s + parseFloat(r.amount || r['Sales Without Tax'] || 0), 0) || 75000;
-        const currentTarget = T_data.reduce((s, r) => s + parseFloat(r.target || r.Target || 0), 0) || 100000;
+        
+        let currentSales = 0;
+        const sLimit = Math.min(S_data.length, 1000);
+        for (let i = 0; i < sLimit; i++) {
+            currentSales += parseFloat(S_data[i].amount || S_data[i]['Sales Without Tax'] || 0) || 0;
+        }
+        if (!currentSales) currentSales = 75000;
+
+        let currentTarget = 0;
+        const tLimit = Math.min(T_data.length, 500);
+        for (let i = 0; i < tLimit; i++) {
+            currentTarget += parseFloat(T_data[i].target || T_data[i].Target || 0) || 0;
+        }
+        if (!currentTarget) currentTarget = 100000;
 
         M.innerHTML = `
         <div class="booster-header">
@@ -785,11 +790,9 @@
         const M = document.getElementById('M');
         if (!M) return;
 
-        const S_data = getS();
         const T_data = getT();
         const dues_data = getDues();
 
-        // Extract areas & customer locations
         const areaMap = {};
         const custSet = new Set();
 
@@ -801,20 +804,24 @@
             areaMap[a].push({ name, area: a, phone, debt });
         };
 
-        T_data.forEach(r => {
+        const tLimit = Math.min(T_data.length, 500);
+        for (let i = 0; i < tLimit; i++) {
+            const r = T_data[i];
             const name = r.Customer || r['Customer Name'] || r['اسم العميل'];
             const area = r['Customer Class'] || r.Area || r['المنطقة'] || r.address || '';
             const phone = r.Phone || r['رقم الموبايل'] || '';
             addCust(name, area, phone);
-        });
+        }
 
-        dues_data.forEach(r => {
+        const dLimit = Math.min(dues_data.length, 500);
+        for (let i = 0; i < dLimit; i++) {
+            const r = dues_data[i];
             const name = r.Name || r['Customer Name'] || r['العميل'];
             const area = r.CustClass || r['Customer Class'] || r['المنطقة'] || '';
             const phone = r.Phone || r.Customer || '';
             const debt = Number(r.Balance || 0);
             addCust(name, area, phone, debt);
-        });
+        }
 
         const areas = Object.keys(areaMap);
         if (!areas.length) areas.push(t('جميع العملاء', 'All Clients'));
@@ -851,7 +858,7 @@
             const c = document.getElementById('routeClientsList');
             if (!c) return;
 
-            c.innerHTML = list.map((cl, idx) => `
+            c.innerHTML = list.slice(0, 35).map((cl, idx) => `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg3); border-radius:10px; border:1px solid var(--bd); flex-wrap:wrap; gap:8px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="width:24px; height:24px; border-radius:50%; background:#3b82f6; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800;">${idx+1}</span>
@@ -947,7 +954,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${objList.length ? objList.map(o => `
+                        ${objList.length ? objList.slice(0, 30).map(o => `
                         <tr style="border-bottom:1px solid var(--bd);">
                             <td style="padding:10px; font-weight:800; color:var(--tx1);">${o.customer || '—'}</td>
                             <td style="padding:10px;"><span style="color:#ef4444; font-weight:700;">${reasonLabels[o.reason] || o.reason}</span></td>
@@ -969,8 +976,21 @@
 
         const S_data = getS();
         const T_data = getT();
-        const totalSales = S_data.reduce((s, r) => s + parseFloat(r.amount || r['Sales Without Tax'] || 0), 0) || 75000;
-        const totalTarget = T_data.reduce((s, r) => s + parseFloat(r.target || r.Target || 0), 0) || 100000;
+        
+        let totalSales = 0;
+        const sLimit = Math.min(S_data.length, 1000);
+        for (let i = 0; i < sLimit; i++) {
+            totalSales += parseFloat(S_data[i].amount || S_data[i]['Sales Without Tax'] || 0) || 0;
+        }
+        if (!totalSales) totalSales = 75000;
+
+        let totalTarget = 0;
+        const tLimit = Math.min(T_data.length, 500);
+        for (let i = 0; i < tLimit; i++) {
+            totalTarget += parseFloat(T_data[i].target || T_data[i].Target || 0) || 0;
+        }
+        if (!totalTarget) totalTarget = 100000;
+
         const targetPct = Math.round((totalSales / totalTarget) * 100);
 
         const badges = [
