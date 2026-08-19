@@ -1,36 +1,26 @@
 /**
  * ============================================================
- * sales_booster.js — Sales Pro Enterprise Growth & Sales Booster (v5.0)
- * Safe Modular Injection Pattern — 100% Non-Breaking.
- *
- * Modules included:
- *  1. Smart Cross-Sell & Upsell Engine (Tab: 'upsell')
- *  2. Instant WhatsApp Quotations & Templates (Tab: 'quotes')
- *  3. RFM Customer Segmentation Matrix (Tab: 'rfm')
- *  4. Commission & Incentive Simulator (Tab: 'commission')
- *  5. Global Floating Action Button (FAB) & Live Sidebar Badges
+ * sales_booster.js — Sales Pro Enterprise Growth Suite (v5.2)
+ * High-Performance, Zero-Lag, Instant Render Engine.
  * ============================================================
  */
 
 (function () {
     'use strict';
 
-    // ─── Helpers & Localization ───────────────────────────────────────────────
+    // ─── Fast Helpers ──────────────────────────────────────────────────────────
     const t = (ar, en) => (typeof L !== 'undefined' && L === 'en') ? en : ar;
     const fmtN = n => Number(n || 0).toLocaleString('en-US');
     const fmtP = n => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' ' + t('ج.م', 'EGP');
 
-    function getSales() { try { return JSON.parse(localStorage.getItem('salesData') || '[]'); } catch(e) { return []; } }
-    function getTargets() { try { return JSON.parse(localStorage.getItem('targetData') || '[]'); } catch(e) { return []; } }
-    function getCollections() { try { return JSON.parse(localStorage.getItem('payData') || '[]'); } catch(e) { return []; } }
+    // In-memory Cached Data references
+    function getS() { return (typeof S !== 'undefined' && Array.isArray(S)) ? S : (JSON.parse(localStorage.getItem('salesData') || '[]')); }
+    function getT() { return (typeof T !== 'undefined' && Array.isArray(T)) ? T : (JSON.parse(localStorage.getItem('targetData') || '[]')); }
     function getStock() { try { return JSON.parse(localStorage.getItem('sp_stock_v1') || '[]'); } catch(e) { return []; } }
-    function getVisits() { try { return JSON.parse(localStorage.getItem('sp_visits') || '[]'); } catch(e) { return []; } }
 
-    function parseDate(v) {
+    function parseDateFast(v) {
         if (!v) return null;
         if (typeof v === 'number') return new Date(Math.round((v - 25569) * 86400 * 1000));
-        let d = new Date(v);
-        if (!isNaN(d.getTime())) return d;
         if (typeof v === 'string') {
             let p = v.split(/[\/\-]/);
             if (p.length === 3) {
@@ -38,7 +28,8 @@
                 return new Date(`${y}-${('0'+p[1]).slice(-2)}-${('0'+p[0]).slice(-2)}`);
             }
         }
-        return null;
+        let d = new Date(v);
+        return isNaN(d.getTime()) ? null : d;
     }
 
     function showToast(msg, type = 'info') {
@@ -46,109 +37,111 @@
             window.toast(msg, type);
             return;
         }
-        let t = document.getElementById('TT');
-        if (!t) return;
-        t.textContent = msg;
-        t.className = 'toast show ' + type;
-        setTimeout(() => { t.className = 'toast'; }, 3000);
+        let tEl = document.getElementById('TT');
+        if (!tEl) return;
+        tEl.textContent = msg;
+        tEl.className = 'toast show ' + type;
+        setTimeout(() => { tEl.className = 'toast'; }, 3000);
     }
 
-    // ─── Register Navigation Items Safely ──────────────────────────────────────
+    // ─── Register Navigation & Direct Translations ─────────────────────────────
     function registerBoosterNav() {
+        // 1. Direct Translations Injection into I dictionary
+        if (typeof I !== 'undefined') {
+            I.upsell = { ar: 'محرك الفرص', en: 'Upsell & Bundles' };
+            I.quotes = { ar: 'عروض الواتساب', en: 'WhatsApp Quotes' };
+            I.rfm = { ar: 'تصنيف العملاء', en: 'RFM Segments' };
+            I.commission = { ar: 'حاسبة العمولات', en: 'Commission Sim' };
+        }
+
+        // 2. Direct Icons Injection into ICONS dictionary
+        if (typeof ICONS !== 'undefined') {
+            if (!ICONS.upsell) ICONS.upsell = '🛍️';
+            if (!ICONS.quotes) ICONS.quotes = '💬';
+            if (!ICONS.rfm) ICONS.rfm = '👑';
+            if (!ICONS.commission) ICONS.commission = '🏆';
+        }
+
         if (typeof NAV === 'undefined' || !Array.isArray(NAV)) return;
 
         const newTabs = [
-            { p: 'upsell', ic: '🛍️', ar: 'محرك الفرص', en: 'Upsell & Bundles', section: 'growth' },
-            { p: 'quotes', ic: '💬', ar: 'عروض الواتساب', en: 'WhatsApp Quotes', section: 'growth' },
-            { p: 'rfm', ic: '👑', ar: 'تصنيف العملاء', en: 'RFM Segments', section: 'growth' },
-            { p: 'commission', ic: '🏆', ar: 'حاسبة العمولات', en: 'Commission Sim', section: 'growth' }
+            { p: 'upsell', ic: '🛍️' },
+            { p: 'quotes', ic: '💬' },
+            { p: 'rfm', ic: '👑' },
+            { p: 'commission', ic: '🏆' }
         ];
 
-        // Add Section Header if not already present
         const hasSection = NAV.some(n => n.s && (n.s.ar === 'مضاعفة المبيعات' || n.s.en === 'Growth'));
         if (!hasSection) {
-            // Insert before 'Smart' or 'System'
-            const smartIdx = NAV.findIndex(n => n.s && (n.s.ar === 'ذكي' || n.s.en === 'Smart'));
-            const insertAt = smartIdx !== -1 ? smartIdx : NAV.length - 5;
-            
-            const sectionHeader = { s: { ar: 'مضاعفة المبيعات 🔥', en: 'Growth & Booster 🔥' } };
+            const insertAt = NAV.length - 6;
+            const sectionHeader = { s: { ar: 'مضاعفة المبيعات', en: 'Growth & Booster' } };
             const itemsToInsert = [sectionHeader];
-            
+
             newTabs.forEach(tab => {
                 if (!NAV.some(n => n.p === tab.p)) {
-                    itemsToInsert.push({ p: tab.p, ic: tab.ic });
+                    itemsToInsert.push(tab);
                 }
             });
 
-            NAV.splice(insertAt, 0, ...itemsToInsert);
-
-            // Register translation hooks
-            if (typeof window.TUI !== 'undefined') {
-                const origTUI = window.TUI;
-                window.TUI = function (str) {
-                    if (str === 'upsell') return t('محرك الفرص والـ Bundles', 'Upsell & Bundles');
-                    if (str === 'quotes') return t('عروض أسعار الواتساب', 'WhatsApp Quotes');
-                    if (str === 'rfm') return t('تصنيف العملاء RFM', 'RFM Segments');
-                    if (str === 'commission') return t('حاسبة العمولات والحوافز', 'Commission Sim');
-                    return origTUI(str);
-                };
-            }
+            NAV.splice(Math.max(1, insertAt), 0, ...itemsToInsert);
         }
 
-        // Rebuild nav if function exists
         if (typeof buildNav === 'function') {
             buildNav();
         }
     }
 
-    // ─── Update Live Badges on Sidebar ─────────────────────────────────────────
-    function updateLiveBadges() {
-        const S_data = getSales();
-        const stock_data = getStock();
-        const pay_data = getCollections();
+    // ─── Cached Badges (Calculated Once, Zero Overhead) ───────────────────────
+    let _cachedDormant = null;
+    let _cachedLowStock = null;
 
-        // 1. Calculate Dormant Count (Customers with no sales in > 30 days)
-        const now = new Date();
-        const custLastMap = {};
-        S_data.forEach(r => {
-            const name = r.customer || r['اسم العميل'] || r['العميل'] || r.client;
-            const dt = parseDate(r.date || r['التاريخ'] || r['تاريخ الفاتورة']);
-            if (name && dt) {
-                if (!custLastMap[name] || dt > custLastMap[name]) custLastMap[name] = dt;
-            }
-        });
-        const dormantCount = Object.values(custLastMap).filter(d => (now - d) / (1000 * 60 * 60 * 24) > 30).length;
+    function calcBadgesAsync() {
+        setTimeout(() => {
+            try {
+                const sData = getS();
+                const now = new Date();
+                const custLastMap = {};
+                
+                // Sample up to first 2000 records for instantaneous calculation
+                const limit = Math.min(sData.length, 2000);
+                for (let i = 0; i < limit; i++) {
+                    const r = sData[i];
+                    const name = r.customer || r['اسم العميل'] || r['العميل'] || r.Customer;
+                    const dt = parseDateFast(r.date || r['التاريخ'] || r['Order Date']);
+                    if (name && dt) {
+                        if (!custLastMap[name] || dt > custLastMap[name]) custLastMap[name] = dt;
+                    }
+                }
+                _cachedDormant = Object.values(custLastMap).filter(d => (now - d) / (1000 * 60 * 60 * 24) > 30).length;
 
-        // 2. Low Stock Count
-        const lowStockCount = stock_data.filter(p => p.qty != null && p.qty <= 5).length;
+                const stockData = getStock();
+                _cachedLowStock = stockData.filter(p => p.qty != null && p.qty <= 5).length;
 
-        // Apply badges to navigation DOM
+                renderBadgesDOM();
+            } catch(e) {}
+        }, 300);
+    }
+
+    function renderBadgesDOM() {
         const badgeMap = {
-            'dormant': { count: dormantCount, cls: 'sp-badge-amber' },
-            'stock': { count: lowStockCount, cls: 'sp-badge-danger' },
+            'dormant': { count: _cachedDormant, cls: 'sp-badge-amber' },
+            'stock': { count: _cachedLowStock, cls: 'sp-badge-danger' },
             'upsell': { count: 'HOT', cls: 'sp-badge-hot' },
-            'rfm': { count: 'VIP', cls: 'sp-badge-success' },
-            'quotes': { count: '⚡', cls: 'sp-badge-blue' }
+            'rfm': { count: 'VIP', cls: 'sp-badge-success' }
         };
 
         document.querySelectorAll('.ni').forEach(el => {
             const p = el.getAttribute('data-p');
             if (badgeMap[p]) {
                 let badge = el.querySelector('.sp-nav-badge');
-                if (!badge) {
-                    badge = document.createElement('span');
-                    badge.className = 'sp-nav-badge ' + badgeMap[p].cls;
-                    el.appendChild(badge);
-                }
                 const val = badgeMap[p].count;
-                if (typeof val === 'number' && val > 0) {
-                    badge.textContent = val > 99 ? '99+' : val;
-                    badge.style.display = 'inline-block';
-                } else if (typeof val === 'string') {
-                    badge.textContent = val;
-                    badge.style.display = 'inline-block';
-                } else {
-                    badge.style.display = 'none';
+                if (val && (typeof val === 'string' || val > 0)) {
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'sp-nav-badge ' + badgeMap[p].cls;
+                        el.appendChild(badge);
+                    }
+                    badge.textContent = typeof val === 'number' && val > 99 ? '99+' : val;
                 }
             }
         });
@@ -159,82 +152,73 @@
         const M = document.getElementById('M');
         if (!M) return;
 
-        const S_data = getSales();
-        const stock_data = getStock();
-
-        // 1. Analyze Category Gaps
+        const S_data = getS();
         const custProfiles = {};
-        S_data.forEach(r => {
-            const cust = r.customer || r['اسم العميل'] || r['العميل'] || r.client || t('عميل عام', 'General Client');
-            const cat = String(r.category || r['الفئة'] || r['القسم'] || r.itemClass || '').toLowerCase();
-            const val = parseFloat(r.amount || r['المبلغ'] || r['الإجمالي'] || r.val || 0);
+        const limit = Math.min(S_data.length, 3000);
 
-            if (!custProfiles[cust]) custProfiles[cust] = { total: 0, hardware: 0, accessories: 0, items: new Set() };
+        for (let i = 0; i < limit; i++) {
+            const r = S_data[i];
+            const cust = r.customer || r['اسم العميل'] || r['العميل'] || r.Customer || t('عميل عام', 'General Client');
+            const cat = String(r.category || r['الفئة'] || r['Item Class Name'] || '').toLowerCase();
+            const val = parseFloat(r.amount || r['المبلغ'] || r['Sales Without Tax'] || 0) || 0;
+
+            if (!custProfiles[cust]) custProfiles[cust] = { total: 0, hw: 0, acc: 0 };
             custProfiles[cust].total += val;
-
-            if (cat.includes('hard') || cat.includes('موبايل') || cat.includes('هاتف') || cat.includes('phone') || cat.includes('جهاز')) {
-                custProfiles[cust].hardware += val;
+            if (cat.includes('hard') || cat.includes('موبايل') || cat.includes('هاتف') || cat.includes('phone')) {
+                custProfiles[cust].hw += val;
             } else {
-                custProfiles[cust].accessories += val;
+                custProfiles[cust].acc += val;
             }
-            const item = r.item || r['الصنف'] || r['المنتج'];
-            if (item) custProfiles[cust].items.add(item);
-        });
+        }
 
         const opportunityList = [];
         Object.keys(custProfiles).forEach(c => {
             const p = custProfiles[c];
-            if (p.total > 5000) {
-                if (p.hardware > 0 && p.accessories === 0) {
+            if (p.total > 4000) {
+                if (p.hw > 0 && p.acc === 0) {
                     opportunityList.push({
                         customer: c,
                         type: 'need_acc',
-                        title: t('فرصة إكسسوارات ذهبية', 'Golden Accessories Opportunity'),
-                        desc: t(`العميل اشترى أجهزة بقيمة ${fmtP(p.hardware)} بدون إكسسوارات نهائياً! اعرض عليه بكج حماية وشواحن لرفع هامش الربح.`, `Client bought ${fmtP(p.hardware)} hardware without any accessories. Pitch a protective bundle!`),
-                        actionText: t('إنشاء عرض إكسسوارات', 'Create Acc Quote'),
+                        title: t('فرصة إكسسوارات ذهبية', 'Accessories Opportunity'),
+                        desc: t(`العميل اشترى أجهزة بقيمة ${fmtP(p.hw)} بدون إكسسوارات. اقترح بكج حماية وشواحن لرفع الربحية.`, `Client purchased ${fmtP(p.hw)} hardware without accessories.`),
                         tag: t('هامش ربح مرتفع', 'High Margin')
                     });
-                } else if (p.accessories > 0 && p.hardware === 0) {
+                } else if (p.acc > 0 && p.hw === 0) {
                     opportunityList.push({
                         customer: c,
                         type: 'need_hw',
-                        title: t('فرصة ترقية لأجهزة وهواتف', 'Hardware Upgrade Opportunity'),
-                        desc: t(`العميل عميل إكسسوارات نشط بقيمة ${fmtP(p.accessories)}. اقترح عليه عرض كميات للأجهزة الأكثر مبيعاً.`, `Active accessory client with ${fmtP(p.accessories)}. Pitch top-selling phones!`),
-                        actionText: t('عرض هواتف', 'Create Phone Quote'),
+                        title: t('فرصة ترقية هواتف وأجهزة', 'Hardware Upgrade'),
+                        desc: t(`العميل عميل إكسسوارات نشط بقيمة ${fmtP(p.acc)}. اقترح عليه عرض كميات للأجهزة.`, `Active accessory client with ${fmtP(p.acc)}. Pitch phones!`),
                         tag: t('حجم فاتورة كبير', 'Large Basket')
                     });
                 }
             }
         });
 
-        // 2. Pre-made Smart Bundles
         const bundles = [
             {
                 id: 'bundle_1',
                 title: t('📦 بكج الحماية والشحن السريع', '📦 Fast Charging & Shield Bundle'),
-                items: [t('5x شاحن سريع 20W', '5x Fast Charger 20W'), t('10x كابلات Type-C مدرعة', '10x Braided Type-C'), t('10x لاصقة حماية شاشة', '10x Screen Protectors')],
+                items: [t('5x شاحن سريع 20W', '5x Fast Charger 20W'), t('10x كابلات Type-C', '10x Type-C Cables'), t('10x لاصقة حماية', '10x Screen Protectors')],
                 origPrice: 2400,
                 dealPrice: 2150,
-                discount: '10%',
-                margin: '+35%'
+                discount: '10%'
             },
             {
                 id: 'bundle_2',
-                title: t('🎧 بكج الصوتيات المميز (الأكثر طلباً)', '🎧 Premium Audio Best Seller Bundle'),
-                items: [t('3x سماعة بلوتوث لاسلكية TWS', '3x Wireless TWS Earbuds'), t('2x مكبر صوت محمول', '2x Bluetooth Speakers'), t('5x سماعات سلكية عالية النقاوة', '5x Wired Hi-Res Earphones')],
+                title: t('🎧 بكج الصوتيات المميز (الأكثر طلباً)', '🎧 Premium Audio Bundle'),
+                items: [t('3x سماعة لاسلكية TWS', '3x Wireless TWS Earbuds'), t('2x مكبر صوت محمول', '2x Bluetooth Speakers'), t('5x سماعات سلكية', '5x Wired Earphones')],
                 origPrice: 3800,
                 dealPrice: 3390,
-                discount: '11%',
-                margin: '+42%'
+                discount: '11%'
             },
             {
                 id: 'bundle_3',
-                title: t('🚀 بكج افتتاح وتجهيز المحلات', '🚀 Store Grand Opening Pack'),
-                items: [t('20x جرابات متنوعة', '20x Assorted Cases'), t('15x شواحن منزلية وسيارات', '15x Wall & Car Chargers'), t('20x كابلات شحن متعددة', '20x Multi-Cables')],
+                title: t('🚀 بكج تجهيز المحلات والمتاجر', '🚀 Store Best-Seller Pack'),
+                items: [t('20x جرابات متنوعة', '20x Assorted Cases'), t('15x شواحن منزلية', '15x Wall Chargers'), t('20x كابلات شحن', '20x Multi-Cables')],
                 origPrice: 5200,
                 dealPrice: 4500,
-                discount: '14%',
-                margin: '+38%'
+                discount: '14%'
             }
         ];
 
@@ -244,97 +228,69 @@
                 <div class="booster-icon-box">🛍️</div>
                 <div>
                     <div class="booster-title">${t('محرك الفرص البيعية والـ Bundles', 'Smart Upsell & Bundles Engine')}</div>
-                    <div class="booster-desc">${t('اقتراحات ذكية فورية لزيادة حجم الفاتورة وهامش ربح المندوب مع كل عميل', 'Instant AI-driven opportunities to maximize ticket size & rep margins')}</div>
+                    <div class="booster-desc">${t('اقتراحات فورية لزيادة حجم الفاتورة وهامش ربح المندوب', 'Instant recommendations to maximize basket size')}</div>
                 </div>
             </div>
-            <button class="btn btn-p" onclick="window.rQuotes()" style="padding:10px 20px; border-radius:12px; font-weight:800; display:flex; align-items:center; gap:8px;">
-                <span>💬</span> ${t('إنشاء عرض سعر واتساب', 'Create WhatsApp Quote')}
+            <button class="btn btn-p" onclick="P='quotes';window.render();if(typeof buildNav==='function')buildNav();" style="padding:9px 18px; border-radius:10px; font-weight:800;">
+                💬 ${t('عرض سعر واتساب', 'WhatsApp Quote')}
             </button>
         </div>
 
-        <!-- Metric Overview -->
-        <div class="kg" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
-            <div class="card" style="padding:18px; border-radius:16px;">
-                <div style="font-size:0.75rem; color:var(--tx3); font-weight:700;">${t('الفرص المكتشفة تلقائياً', 'Detected Opportunities')}</div>
-                <div style="font-size:1.6rem; font-weight:900; color:#3b82f6; margin-top:4px;">${fmtN(opportunityList.length)} ${t('فرصة', 'Leads')}</div>
-                <div class="sp-trend-badge sp-trend-up">⚡ ${t('فرص جاهزة للإغلاق', 'Ready to close')}</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:20px;">
+            <div class="card" style="padding:16px; border-radius:14px;">
+                <div style="font-size:0.75rem; color:var(--tx3); font-weight:700;">${t('الفرص المكتشفة', 'Opportunities')}</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#3b82f6; margin-top:2px;">${fmtN(opportunityList.length)} ${t('فرصة', 'Leads')}</div>
             </div>
-            <div class="card" style="padding:18px; border-radius:16px;">
-                <div style="font-size:0.75rem; color:var(--tx3); font-weight:700;">${t('متوسط زيادة الفاتورة المقدرة', 'Est. Basket Lift')}</div>
-                <div style="font-size:1.6rem; font-weight:900; color:#10b981; margin-top:4px;">+28.5%</div>
-                <div class="sp-trend-badge sp-trend-up">📈 ${t('عند عرض البكجات', 'Via Bundle Offers')}</div>
+            <div class="card" style="padding:16px; border-radius:14px;">
+                <div style="font-size:0.75rem; color:var(--tx3); font-weight:700;">${t('زيادة الفاتورة المتوقعة', 'Expected Basket Lift')}</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#10b981; margin-top:2px;">+28.5%</div>
             </div>
-            <div class="card" style="padding:18px; border-radius:16px;">
-                <div style="font-size:0.75rem; color:var(--tx3); font-weight:700;">${t('البكجات الترويجية الجاهزة', 'Pre-made Bundles')}</div>
-                <div style="font-size:1.6rem; font-weight:900; color:#f59e0b; margin-top:4px;">${bundles.length} ${t('بكجات فعالة', 'Active Bundles')}</div>
-                <div class="sp-trend-badge sp-trend-neutral">📦 ${t('أعلى هامش ربحي', 'Highest Margins')}</div>
+            <div class="card" style="padding:16px; border-radius:14px;">
+                <div style="font-size:0.75rem; color:var(--tx3); font-weight:700;">${t('البكجات الجاهزة', 'Ready Bundles')}</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#f59e0b; margin-top:2px;">${bundles.length} ${t('بكجات', 'Bundles')}</div>
             </div>
         </div>
 
-        <!-- Section 1: Customer Category Gap Opportunities -->
-        <div style="margin-bottom:32px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                <h3 style="font-size:1.15rem; font-weight:800; color:var(--tx1); display:flex; align-items:center; gap:8px;">
-                    <span>🎯</span> ${t('عملاء مؤهلون لعروض الـ Cross-Sell الفورية', 'Customers Eligible for Instant Cross-Sell')}
-                </h3>
-                <span style="font-size:0.8rem; color:var(--tx3);">${t('تحليل تلقائي لسجل المشتريات', 'Auto-analyzed from purchase history')}</span>
-            </div>
-
-            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
-                ${opportunityList.length ? opportunityList.slice(0, 9).map((op, idx) => `
-                <div class="card" style="padding:18px; border-radius:16px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div style="margin-bottom:28px;">
+            <h3 style="font-size:1.1rem; font-weight:800; color:var(--tx1); margin-bottom:12px;">🎯 ${t('عملاء مؤهلون لعروض الـ Cross-Sell', 'Eligible Customers for Cross-Sell')}</h3>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:14px;">
+                ${opportunityList.length ? opportunityList.slice(0, 6).map(op => `
+                <div class="card" style="padding:16px; border-radius:14px; display:flex; flex-direction:column; justify-content:space-between;">
                     <div>
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                            <span style="font-weight:900; font-size:1.05rem; color:var(--tx1);">${op.customer}</span>
-                            <span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:999px; background:rgba(59,130,246,0.12); color:#3b82f6; border:1px solid rgba(59,130,246,0.25);">${op.tag}</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span style="font-weight:900; font-size:1rem; color:var(--tx1);">${op.customer}</span>
+                            <span style="font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:6px; background:rgba(59,130,246,0.12); color:#3b82f6;">${op.tag}</span>
                         </div>
-                        <div style="font-size:0.85rem; font-weight:700; color:#f59e0b; margin-bottom:6px;">✨ ${op.title}</div>
-                        <p style="font-size:0.82rem; color:var(--tx2); line-height:1.5; margin-bottom:14px;">${op.desc}</p>
+                        <div style="font-size:0.82rem; font-weight:700; color:#f59e0b; margin-bottom:4px;">✨ ${op.title}</div>
+                        <p style="font-size:0.8rem; color:var(--tx2); line-height:1.45; margin-bottom:12px;">${op.desc}</p>
                     </div>
-                    <button class="btn btn-p" onclick="window.quickPitchQuote('${encodeURIComponent(op.customer)}', '${op.type}')" style="width:100%; padding:10px; border-radius:10px; font-weight:700; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:6px;">
-                        <span>💬</span> ${op.actionText}
+                    <button class="btn btn-p" onclick="window.quickPitchQuote('${encodeURIComponent(op.customer)}')" style="width:100%; padding:8px; border-radius:8px; font-weight:700; font-size:0.82rem;">
+                        💬 ${t('إنشاء عرض واتساب', 'Create WA Quote')}
                     </button>
-                </div>`).join('') : `
-                <div class="card" style="grid-column:1/-1; padding:30px; text-align:center; color:var(--tx3);">
-                    <div style="font-size:2rem; margin-bottom:8px;">🎉</div>
-                    <div style="font-weight:800;">${t('توزيع المبيعات متوازن جداً لدى جميع العملاء!', 'Great job! Sales distribution is balanced across all clients!')}</div>
-                </div>`}
+                </div>`).join('') : `<div class="card" style="grid-column:1/-1; padding:20px; text-align:center; color:var(--tx3); font-weight:700;">✅ ${t('توزيع المبيعات متناسق تماماً', 'All accounts balanced')}</div>`}
             </div>
         </div>
 
-        <!-- Section 2: Ready-to-Send Promotional Bundles -->
         <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                <h3 style="font-size:1.15rem; font-weight:800; color:var(--tx1); display:flex; align-items:center; gap:8px;">
-                    <span>🎁</span> ${t('البكجات الترويجية الجاهزة للمشاركة (Smart Bundles)', 'Ready-to-Share Smart Bundles')}
-                </h3>
-            </div>
-
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:18px;">
+            <h3 style="font-size:1.1rem; font-weight:800; color:var(--tx1); margin-bottom:12px;">🎁 ${t('البكجات الترويجية الجاهزة للمشاركة', 'Smart Bundles')}</h3>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
                 ${bundles.map(b => `
-                <div class="card" style="padding:20px; border-radius:18px; border:1.5px solid rgba(59,130,246,0.2); background:linear-gradient(180deg, var(--bg2) 0%, var(--bg3) 100%);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <span style="font-weight:900; font-size:1.05rem; color:var(--tx1);">${b.title}</span>
-                        <span style="background:#10b981; color:#fff; font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:8px;">${t('خصم', 'Save')} ${b.discount}</span>
+                <div class="card" style="padding:18px; border-radius:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-weight:900; font-size:1rem; color:var(--tx1);">${b.title}</span>
+                        <span style="background:#10b981; color:#fff; font-size:0.72rem; font-weight:800; padding:2px 6px; border-radius:6px;">${b.discount}</span>
                     </div>
-                    
-                    <ul style="list-style:none; padding:0; margin:0 0 16px 0; font-size:0.84rem; color:var(--tx2); display:flex; flex-direction:column; gap:6px;">
-                        ${b.items.map(it => `<li style="display:flex; align-items:center; gap:6px;"><span>✅</span> <span>${it}</span></li>`).join('')}
+                    <ul style="list-style:none; padding:0; margin:0 0 14px 0; font-size:0.82rem; color:var(--tx2); display:flex; flex-direction:column; gap:4px;">
+                        ${b.items.map(it => `<li>✅ ${it}</li>`).join('')}
                     </ul>
-
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; padding-top:12px; border-top:1px solid var(--bd); margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; padding-top:10px; border-top:1px solid var(--bd); margin-bottom:12px;">
                         <div>
-                            <div style="font-size:0.75rem; color:var(--tx3); text-decoration:line-through;">${fmtP(b.origPrice)}</div>
-                            <div style="font-size:1.35rem; font-weight:900; color:#10b981;">${fmtP(b.dealPrice)}</div>
-                        </div>
-                        <div style="text-align:right;">
-                            <span style="font-size:0.72rem; color:var(--tx3);">${t('هامش المندوب', 'Rep Margin')}:</span>
-                            <div style="font-weight:800; color:#3b82f6; font-size:0.9rem;">${b.margin}</div>
+                            <div style="font-size:0.72rem; color:var(--tx3); text-decoration:line-through;">${fmtP(b.origPrice)}</div>
+                            <div style="font-size:1.25rem; font-weight:900; color:#10b981;">${fmtP(b.dealPrice)}</div>
                         </div>
                     </div>
-
-                    <button class="btn btn-p" onclick="window.sendBundleWhatsApp('${encodeURIComponent(b.title)}', ${b.dealPrice}, '${encodeURIComponent(b.items.join(' + '))}')" style="width:100%; padding:10px; border-radius:10px; font-weight:800; font-size:0.88rem; background:#25d366; color:#111b21; border:none; display:flex; align-items:center; justify-content:center; gap:8px;">
-                        <span>💬</span> ${t('مشاركة البكج على WhatsApp', 'Share Bundle on WhatsApp')}
+                    <button class="btn btn-p" onclick="window.sendBundleWhatsApp('${encodeURIComponent(b.title)}', ${b.dealPrice}, '${encodeURIComponent(b.items.join(' + '))}')" style="width:100%; padding:9px; border-radius:8px; font-weight:800; font-size:0.85rem; background:#25d366; color:#111b21; border:none;">
+                        💬 ${t('مشاركة عبر WhatsApp', 'Share on WhatsApp')}
                     </button>
                 </div>`).join('')}
             </div>
@@ -342,150 +298,135 @@
         `;
     };
 
-    window.quickPitchQuote = function(custNameEnc, type) {
+    window.quickPitchQuote = function(custNameEnc) {
         const custName = decodeURIComponent(custNameEnc);
-        window.rQuotes(custName, type);
+        if (typeof P !== 'undefined') P = 'quotes';
+        if (typeof window.rQuotes === 'function') window.rQuotes(custName);
+        if (typeof buildNav === 'function') buildNav();
     };
 
     window.sendBundleWhatsApp = function(titleEnc, price, itemsEnc) {
         const title = decodeURIComponent(titleEnc);
         const items = decodeURIComponent(itemsEnc);
-        const text = `🔥 *عرض خاص وحصري من Sales Pro* 🔥\n\n*${title}*\n\n📦 *المحتويات:*\n${items.split(' + ').map(i => '• ' + i).join('\n')}\n\n💰 *السعر المخفض لفترة محدودة:* ${price.toLocaleString('en-US')} ج.م فقط!\n\n_للطلب أو حجز الكمية يرجى تأكيد الرسالة._ ✨`;
-        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
+        const text = `🔥 *عرض خاص من Sales Pro* 🔥\n\n*${title}*\n\n📦 *المحتويات:*\n${items.split(' + ').map(i => '• ' + i).join('\n')}\n\n💰 *السعر المخفض:* ${price.toLocaleString('en-US')} ج.م فقط!\n\n_للطلب أو الحجز يرجى الرد على الرسالة._ ✨`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     };
 
-    // ─── TAB 2: INSTANT WHATSAPP QUOTES & TEMPLATES ───────────────────────────
-    window.rQuotes = function rQuotes(preCustomer = '', preType = '') {
+    // ─── TAB 2: INSTANT WHATSAPP QUOTES ───────────────────────────────────────
+    window.rQuotes = function rQuotes(preCustomer = '') {
         const M = document.getElementById('M');
         if (!M) return;
 
-        const S_data = getSales();
-        const stock_data = getStock();
-
-        // Extract unique customer names
+        const S_data = getS();
         const customerSet = new Set();
-        S_data.forEach(r => {
-            const name = r.customer || r['اسم العميل'] || r['العميل'] || r.client;
+        const limit = Math.min(S_data.length, 1000);
+        for (let i = 0; i < limit; i++) {
+            const name = S_data[i].customer || S_data[i]['اسم العميل'] || S_data[i]['العميل'] || S_data[i].Customer;
             if (name) customerSet.add(name);
-        });
+        }
         const customers = Array.from(customerSet).sort();
 
         M.innerHTML = `
         <div class="booster-header">
             <div class="booster-title-group">
-                <div class="booster-icon-box" style="background:linear-gradient(135deg, #25d366, #128c7e);">💬</div>
+                <div class="booster-icon-box" style="background:#25d366;">💬</div>
                 <div>
-                    <div class="booster-title">${t('عروض الأسعار ورسائل WhatsApp الفورية', 'Instant WhatsApp Quotations & Messaging')}</div>
-                    <div class="booster-desc">${t('أنشئ عرض سعر احترافي في 30 ثانية وشاركه مع العميل بضغطة زر واحدة', 'Generate polished quotes in 30 seconds and send via WhatsApp with 1 click')}</div>
+                    <div class="booster-title">${t('عروض الأسعار وفواتير WhatsApp', 'WhatsApp Quotations & Messaging')}</div>
+                    <div class="booster-desc">${t('أنشئ عرض سعر في 30 ثانية وشاركه مباشرة مع العميل', 'Generate and send quotes in 30 seconds')}</div>
                 </div>
             </div>
         </div>
 
         <div class="quote-builder-grid">
-            <!-- Left: Builder Controls -->
-            <div class="card" style="padding:22px; border-radius:20px;">
-                <h3 style="font-size:1.1rem; font-weight:800; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
-                    <span>📝</span> ${t('بيانات عرض السعر', 'Quotation Details')}
-                </h3>
-
-                <div style="margin-bottom:16px;">
-                    <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:6px;">${t('العميل المستهدف', 'Target Customer')}</label>
-                    <input type="text" id="quoteCustName" list="quoteCustList" placeholder="${t('اكتب أو اختر اسم العميل...', 'Select or type customer name...')}" value="${preCustomer}" style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-family:inherit; font-size:0.9rem;">
+            <div class="card" style="padding:18px; border-radius:16px;">
+                <h3 style="font-size:1rem; font-weight:800; margin-bottom:14px;">📝 ${t('بيانات عرض السعر', 'Quote Details')}</h3>
+                
+                <div style="margin-bottom:12px;">
+                    <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('العميل المستهدف', 'Customer')}</label>
+                    <input type="text" id="quoteCustName" list="quoteCustList" placeholder="${t('اسم العميل...', 'Customer name...')}" value="${preCustomer}" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.85rem;">
                     <datalist id="quoteCustList">
                         ${customers.map(c => `<option value="${c}">`).join('')}
                     </datalist>
                 </div>
 
-                <div style="margin-bottom:16px;">
-                    <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:6px;">${t('رقم الواتساب (اختياري للفتح المباشر)', 'WhatsApp Phone (Optional)')}</label>
-                    <input type="tel" id="quoteCustPhone" placeholder="مثال: 01012345678" style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-family:inherit; font-size:0.9rem;">
+                <div style="margin-bottom:12px;">
+                    <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('رقم الهاتف (اختياري للفتح المباشر)', 'Phone (Optional)')}</label>
+                    <input type="tel" id="quoteCustPhone" placeholder="010XXXXXXXX" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.85rem;">
                 </div>
 
-                <!-- Products Table in Quote -->
-                <div style="margin-bottom:16px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <label style="font-size:0.78rem; font-weight:700; color:var(--tx3);">${t('الأصناف والمنتجات', 'Items in Quote')}</label>
-                        <button type="button" class="btn btn-p" id="btnAddQuoteRow" style="padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:700;">+ ${t('إضافة صنف', 'Add Item')}</button>
+                <div style="margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label style="font-size:0.75rem; font-weight:700; color:var(--tx3);">${t('الأصناف', 'Items')}</label>
+                        <button type="button" class="btn btn-p" id="btnAddQuoteRow" style="padding:3px 8px; font-size:0.72rem; border-radius:6px;">+ ${t('إضافة صنف', 'Add')}</button>
                     </div>
-                    <div id="quoteRowsContainer" style="display:flex; flex-direction:column; gap:8px;">
-                        <!-- Injected Rows -->
-                    </div>
+                    <div id="quoteRowsContainer" style="display:flex; flex-direction:column; gap:6px;"></div>
                 </div>
 
-                <!-- Discount & Notes -->
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
                     <div>
-                        <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:6px;">${t('نسبة الخصم %', 'Discount %')}</label>
-                        <input type="number" id="quoteDiscount" min="0" max="100" value="0" style="width:100%; padding:9px 12px; border-radius:10px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.88rem;">
+                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('خصم %', 'Discount %')}</label>
+                        <input type="number" id="quoteDiscount" min="0" max="100" value="0" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.85rem;">
                     </div>
                     <div>
-                        <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:6px;">${t('صلاحية العرض', 'Validity')}</label>
-                        <select id="quoteValidity" style="width:100%; padding:9px 12px; border-radius:10px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.88rem;">
-                            <option value="3">${t('3 أيام', '3 Days')}</option>
-                            <option value="7" selected>${t('أسبوع (7 أيام)', '7 Days')}</option>
-                            <option value="15">${t('15 يوم', '15 Days')}</option>
+                        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('الصلاحية', 'Validity')}</label>
+                        <select id="quoteValidity" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--bd); background:var(--bg3); color:var(--tx1); font-size:0.85rem;">
+                            <option value="3">3 ${t('أيام', 'Days')}</option>
+                            <option value="7" selected>7 ${t('أيام', 'Days')}</option>
+                            <option value="15">15 ${t('يوم', 'Days')}</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Quick Pre-made Templates Dropdown -->
-                <div style="padding:14px; border-radius:12px; background:var(--bg3); border:1px dashed var(--bd); margin-top:12px;">
-                    <div style="font-size:0.78rem; font-weight:800; color:#f59e0b; margin-bottom:8px;">⚡ ${t('رسائل وقوالب واتساب سريعة جاهزة', 'Instant WhatsApp Message Templates')}</div>
-                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                        <button type="button" class="btn btn-ghost" onclick="window.applyWaTemplate('payment_reminder')" style="font-size:0.75rem; padding:6px 10px; border-radius:8px;">💳 ${t('تذكير سداد', 'Payment Reminder')}</button>
-                        <button type="button" class="btn btn-ghost" onclick="window.applyWaTemplate('new_stock')" style="font-size:0.75rem; padding:6px 10px; border-radius:8px;">📦 ${t('وصول بضاعة جديدة', 'New Stock Alert')}</button>
-                        <button type="button" class="btn btn-ghost" onclick="window.applyWaTemplate('win_back')" style="font-size:0.75rem; padding:6px 10px; border-radius:8px;">🎁 ${t('استعادة عميل راكد', 'Win-Back Offer')}</button>
-                        <button type="button" class="btn btn-ghost" onclick="window.applyWaTemplate('thank_you')" style="font-size:0.75rem; padding:6px 10px; border-radius:8px;">🤝 ${t('شكر وتقدير', 'Thank You')}</button>
+                <div style="padding:10px; border-radius:10px; background:var(--bg3); border:1px dashed var(--bd);">
+                    <div style="font-size:0.75rem; font-weight:800; color:#f59e0b; margin-bottom:6px;">⚡ ${t('قوالب رسائل جاهزة', 'Instant Templates')}</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:5px;">
+                        <button type="button" class="btn btn-ghost" onclick="window.applyWaTemplate('payment_reminder')" style="font-size:0.72rem; padding:4px 8px; border-radius:6px;">💳 ${t('تذكير سداد', 'Payment')}</button>
+                        <button type="button" class="btn btn-ghost" onclick="window.applyWaTemplate('new_stock')" style="font-size:0.72rem; padding:4px 8px; border-radius:6px;">📦 ${t('بضاعة جديدة', 'New Stock')}</button>
+                        <button type="button" class="btn btn-ghost" onclick="window.applyWaTemplate('win_back')" style="font-size:0.72rem; padding:4px 8px; border-radius:6px;">🎁 ${t('عرض راكدين', 'Win-Back')}</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Right: Real-Time WhatsApp Live Simulation -->
             <div>
                 <div class="wa-preview-card">
-                    <div style="display:flex; align-items:center; gap:10px; padding-bottom:14px; border-bottom:1px solid #202c33; margin-bottom:14px;">
-                        <div style="width:38px; height:38px; border-radius:50%; background:#25d366; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900;">SP</div>
+                    <div style="display:flex; align-items:center; gap:8px; padding-bottom:10px; border-bottom:1px solid #202c33; margin-bottom:10px;">
+                        <div style="width:32px; height:32px; border-radius:50%; background:#25d366; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; font-size:0.8rem;">SP</div>
                         <div>
-                            <div style="font-weight:800; font-size:0.95rem;" id="waSimName">${preCustomer || t('عميل مميز', 'Valued Client')}</div>
-                            <div style="font-size:0.72rem; color:#8696a0;">● ${t('متصل الآن (معاينة حية)', 'Online (Live Preview)')}</div>
+                            <div style="font-weight:800; font-size:0.88rem;" id="waSimName">${preCustomer || t('عميل مميز', 'Valued Client')}</div>
+                            <div style="font-size:0.68rem; color:#8696a0;">● ${t('متصل الآن (معاينة حية)', 'Online')}</div>
                         </div>
                     </div>
 
-                    <div class="wa-bubble" id="waLiveBubble">
-                        <!-- Real-time formatted text -->
-                    </div>
+                    <div class="wa-bubble" id="waLiveBubble"></div>
 
                     <button type="button" class="wa-send-btn" id="btnSendRealWA">
-                        <span style="font-size:1.2rem;">💬</span> ${t('إرسال العرض عبر WhatsApp الآن', 'Send via WhatsApp Now')}
+                        <span>💬</span> ${t('إرسال عبر WhatsApp', 'Send on WhatsApp')}
                     </button>
                 </div>
             </div>
         </div>
         `;
 
-        // Initialize Quote Rows
-        const stockItems = getStock();
         let rows = [
-            { name: stockItems[0]?.name || t('شاحن سريع 20W مع كابل', 'Fast Charger 20W'), qty: 5, price: stockItems[0]?.price || 180 },
-            { name: stockItems[1]?.name || t('سماعة لاسلكية بلوتوث TWS', 'Wireless Earbuds TWS'), qty: 3, price: stockItems[1]?.price || 350 }
+            { name: t('شاحن سريع 20W', 'Fast Charger 20W'), qty: 5, price: 180 },
+            { name: t('سماعة لاسلكية TWS', 'Wireless Earbuds'), qty: 3, price: 350 }
         ];
 
-        function renderQuoteRows() {
-            const container = document.getElementById('quoteRowsContainer');
-            if (!container) return;
-            container.innerHTML = rows.map((r, i) => `
-            <div style="display:grid; grid-template-columns:1.5fr 70px 100px 30px; gap:8px; align-items:center;">
-                <input type="text" class="q-name" data-idx="${i}" value="${r.name}" placeholder="${t('اسم الصنف', 'Item Name')}" style="padding:8px 10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.82rem;">
-                <input type="number" class="q-qty" data-idx="${i}" value="${r.qty}" min="1" placeholder="${t('العدد', 'Qty')}" style="padding:8px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.82rem; text-align:center;">
-                <input type="number" class="q-price" data-idx="${i}" value="${r.price}" min="0" placeholder="${t('السعر', 'Price')}" style="padding:8px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.82rem; text-align:center;">
-                <button type="button" data-del="${i}" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1rem;">✕</button>
+        function renderRows() {
+            const c = document.getElementById('quoteRowsContainer');
+            if (!c) return;
+            c.innerHTML = rows.map((r, i) => `
+            <div style="display:grid; grid-template-columns:1.5fr 60px 80px 24px; gap:6px; align-items:center;">
+                <input type="text" class="q-name" data-idx="${i}" value="${r.name}" style="padding:6px 8px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.8rem;">
+                <input type="number" class="q-qty" data-idx="${i}" value="${r.qty}" min="1" style="padding:6px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.8rem; text-align:center;">
+                <input type="number" class="q-price" data-idx="${i}" value="${r.price}" min="0" style="padding:6px; border-radius:6px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); font-size:0.8rem; text-align:center;">
+                <button type="button" data-del="${i}" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.9rem;">✕</button>
             </div>`).join('');
-            updateLivePreview();
+            updatePreview();
         }
 
-        function updateLivePreview() {
-            const cust = document.getElementById('quoteCustName')?.value.trim() || t('عميلنا العزيز', 'Valued Customer');
+        function updatePreview() {
+            const cust = document.getElementById('quoteCustName')?.value.trim() || t('عميلنا العزيز', 'Customer');
             const discount = parseFloat(document.getElementById('quoteDiscount')?.value || 0);
             const validity = document.getElementById('quoteValidity')?.value || 7;
 
@@ -500,25 +441,23 @@
             const discountVal = (subtotal * discount) / 100;
             const netTotal = subtotal - discountVal;
 
-            const bubbleText = `تحية طيبة يا أستاذ *${cust}* 🌹\nيسعدنا تقديم عرض الأسعار الخاص والمميز لحضرتك من *Sales Pro*:\n\n📋 *تفاصيل الطلبية:*\n${itemsText}\n━━━━━━━━━━━━━━━\n💵 *المجموع:* ${fmtN(subtotal)} ج.م\n${discount > 0 ? `🎁 *خصم خاص (${discount}%):* -${fmtN(discountVal)} ج.م\n` : ''}✨ *الصافي المطلوب:* *${fmtN(netTotal)} ج.م*\n━━━━━━━━━━━━━━━\n⏳ *العرض سارٍ لمدة ${validity} أيام من تاريخ اليوم.*\n\nللتأكيد واعتماد الطلب، يرجى الرد على هذه الرسالة. شكراً لتعاملكم معنا! 🤝`;
+            const text = `تحية طيبة يا أستاذ *${cust}* 🌹\nيسعدنا تقديم عرض الأسعار الخاص من *Sales Pro*:\n\n📋 *تفاصيل الطلبية:*\n${itemsText}\n━━━━━━━━━━━━━━━\n💵 *المجموع:* ${fmtN(subtotal)} ج.م\n${discount > 0 ? `🎁 *خصم خاص (${discount}%):* -${fmtN(discountVal)} ج.م\n` : ''}✨ *الصافي المطلوب:* *${fmtN(netTotal)} ج.م*\n━━━━━━━━━━━━━━━\n⏳ *العرض سارٍ لمدة ${validity} أيام.*\n\nللتأكيد، يرجى الرد على هذه الرسالة. شكراً لتعاملكم معنا! 🤝`;
 
-            const bubbleEl = document.getElementById('waLiveBubble');
-            if (bubbleEl) bubbleEl.textContent = bubbleText;
-
-            const simName = document.getElementById('waSimName');
-            if (simName) simName.textContent = cust;
+            const bEl = document.getElementById('waLiveBubble');
+            if (bEl) bEl.textContent = text;
+            const sName = document.getElementById('waSimName');
+            if (sName) sName.textContent = cust;
         }
 
-        renderQuoteRows();
+        renderRows();
 
-        // Listeners for live typing
-        document.getElementById('quoteCustName')?.addEventListener('input', updateLivePreview);
-        document.getElementById('quoteDiscount')?.addEventListener('input', updateLivePreview);
-        document.getElementById('quoteValidity')?.addEventListener('change', updateLivePreview);
+        document.getElementById('quoteCustName')?.addEventListener('input', updatePreview);
+        document.getElementById('quoteDiscount')?.addEventListener('input', updatePreview);
+        document.getElementById('quoteValidity')?.addEventListener('change', updatePreview);
 
         document.getElementById('btnAddQuoteRow')?.addEventListener('click', () => {
             rows.push({ name: '', qty: 1, price: 0 });
-            renderQuoteRows();
+            renderRows();
         });
 
         document.getElementById('quoteRowsContainer')?.addEventListener('input', e => {
@@ -527,14 +466,14 @@
             if (e.target.classList.contains('q-name')) rows[idx].name = e.target.value;
             if (e.target.classList.contains('q-qty')) rows[idx].qty = parseInt(e.target.value) || 1;
             if (e.target.classList.contains('q-price')) rows[idx].price = parseFloat(e.target.value) || 0;
-            updateLivePreview();
+            updatePreview();
         });
 
         document.getElementById('quoteRowsContainer')?.addEventListener('click', e => {
-            const delIdx = e.target.dataset.del;
-            if (delIdx != null) {
-                rows.splice(parseInt(delIdx), 1);
-                renderQuoteRows();
+            const del = e.target.dataset.del;
+            if (del != null) {
+                rows.splice(parseInt(del), 1);
+                renderRows();
             }
         });
 
@@ -547,63 +486,58 @@
                 if (formatted.startsWith('01')) formatted = '20' + formatted.slice(1);
                 phoneParam = `phone=${formatted}&`;
             }
-            const waUrl = `https://api.whatsapp.com/send?${phoneParam}text=${encodeURIComponent(text)}`;
-            window.open(waUrl, '_blank');
-            showToast(t('✅ تم فتح محادثة WhatsApp', '✅ WhatsApp Chat Opened'), 'success');
+            window.open(`https://api.whatsapp.com/send?${phoneParam}text=${encodeURIComponent(text)}`, '_blank');
+            showToast(t('✅ تم فتح محادثة WhatsApp', '✅ WhatsApp Opened'), 'success');
         });
     };
 
     window.applyWaTemplate = function(tplKey) {
-        const cust = document.getElementById('quoteCustName')?.value.trim() || t('عميلنا العزيز', 'Valued Customer');
+        const cust = document.getElementById('quoteCustName')?.value.trim() || t('عميلنا العزيز', 'Customer');
         let text = '';
         if (tplKey === 'payment_reminder') {
             text = `مساء الخير يا فندم أستاذ *${cust}* 🌸\nنود تذكير سيادتكم بموعد استحقاق الدفعة الحالية لتسوية الحساب.\nشاكرين دائماً حسن تعاونكم معنا في *Sales Pro*. 🙏`;
         } else if (tplKey === 'new_stock') {
-            text = `أهلاً بك يا أستاذ *${cust}* 🎉\nوصلتنا تشكيلة جديدة ومميزة من أفضل المنتجات والإكسسوارات بأسعار خاصة جداً للعملاء المميزين.\nيسعدنا إرسال قائمة الكتالوج لحضرتك فوراً! 📦✨`;
+            text = `أهلاً بك يا أستاذ *${cust}* 🎉\nوصلتنا تشكيلة جديدة ومميزة بأسعار خاصة جداً.\nيسعدنا إرسال قائمة الكتالوج لحضرتك فوراً! 📦✨`;
         } else if (tplKey === 'win_back') {
-            text = `أستاذ *${cust}* الغالي وحشتنا طلتك! 🌟\nتقديراً لتعاملنا السابق، محضرين لحضرتك خصم خاص 10% بونص على أول طلبية هذا الشهر.\nكلمنا أو اطلب الآن للاستفادة من العرض! 🎁`;
-        } else if (tplKey === 'thank_you') {
-            text = `شكراً جزيلاً يا أستاذ *${cust}* على ثقتك الغالية في *Sales Pro* 🤝\nتم تسجيل طلبيتك بنجاح، ونتمنى لك مبيعات وفيرة وموفقة دائماً! 🚀`;
+            text = `أستاذ *${cust}* الغالي وحشتنا طلتك! 🌟\nمحضرين لحضرتك خصم خاص 10% بونص على أول طلبية هذا الشهر.\nكلمنا الآن للاستفادة من العرض! 🎁`;
         }
 
-        const bubbleEl = document.getElementById('waLiveBubble');
-        if (bubbleEl) bubbleEl.textContent = text;
-        showToast(t('✅ تم تطبيق القالب بنجاح', '✅ Template applied'), 'info');
+        const bEl = document.getElementById('waLiveBubble');
+        if (bEl) bEl.textContent = text;
+        showToast(t('✅ تم تطبيق القالب', '✅ Template applied'), 'info');
     };
 
-    // ─── TAB 3: RFM CUSTOMER SEGMENTATION MATRIX ──────────────────────────────
+    // ─── TAB 3: RFM CUSTOMER SEGMENTATION ─────────────────────────────────────
     window.rRFM = function rRFM() {
         const M = document.getElementById('M');
         if (!M) return;
 
-        const S_data = getSales();
+        const S_data = getS();
         const now = new Date();
-
-        // Calculate RFM for every customer
         const custMap = {};
-        S_data.forEach(r => {
-            const name = r.customer || r['اسم العميل'] || r['العميل'] || r.client || t('عميل عام', 'General Client');
-            const dt = parseDate(r.date || r['التاريخ'] || r['تاريخ الفاتورة']);
-            const val = parseFloat(r.amount || r['المبلغ'] || r['الإجمالي'] || r.val || 0);
+        const limit = Math.min(S_data.length, 3000);
 
-            if (!custMap[name]) {
-                custMap[name] = { name, count: 0, totalSpend: 0, lastDate: null };
-            }
+        for (let i = 0; i < limit; i++) {
+            const r = S_data[i];
+            const name = r.customer || r['اسم العميل'] || r['العميل'] || r.Customer || t('عميل عام', 'General Client');
+            const dt = parseDateFast(r.date || r['التاريخ'] || r['Order Date']);
+            const val = parseFloat(r.amount || r['المبلغ'] || r['Sales Without Tax'] || 0) || 0;
+
+            if (!custMap[name]) custMap[name] = { name, count: 0, totalSpend: 0, lastDate: null };
             custMap[name].count += 1;
             custMap[name].totalSpend += val;
             if (dt && (!custMap[name].lastDate || dt > custMap[name].lastDate)) {
                 custMap[name].lastDate = dt;
             }
-        });
+        }
 
         const list = Object.values(custMap).map(c => {
             const recencyDays = c.lastDate ? Math.floor((now - c.lastDate) / (1000 * 60 * 60 * 24)) : 999;
-            let segment = 'grow'; // default
+            let segment = 'grow';
             if (recencyDays <= 20 && c.totalSpend > 20000) segment = 'vip';
             else if (recencyDays > 30 && c.totalSpend > 15000) segment = 'risk';
             else if (recencyDays <= 30 && c.totalSpend <= 15000) segment = 'grow';
             else segment = 'lost';
-
             return { ...c, recencyDays, segment };
         });
 
@@ -615,201 +549,178 @@
         M.innerHTML = `
         <div class="booster-header">
             <div class="booster-title-group">
-                <div class="booster-icon-box" style="background:linear-gradient(135deg, #f59e0b, #d97706);">👑</div>
+                <div class="booster-icon-box" style="background:#f59e0b;">👑</div>
                 <div>
-                    <div class="booster-title">${t('مصفوفة تصنيف وسلوك العملاء (RFM)', 'RFM Customer Segmentation Matrix')}</div>
-                    <div class="booster-desc">${t('تصنيف آلي وفق (حداثة الشراء · تكرار الطلب · القيمة المالية) لاستهداف بيعي فائق الدقة', 'Automatic segmentation by Recency, Frequency & Monetary Value to maximize retention')}</div>
+                    <div class="booster-title">${t('مصفوفة تصنيف العملاء (RFM)', 'RFM Customer Segmentation')}</div>
+                    <div class="booster-desc">${t('تصنيف آلي لحداثة الشراء وتكرار الطلب والقيمة المالية', 'Recency, Frequency & Monetary segmentation')}</div>
                 </div>
             </div>
         </div>
 
-        <!-- 4 Core Quadrant Cards -->
-        <div class="rfm-grid" style="margin-bottom:24px;">
+        <div class="rfm-grid" style="margin-bottom:20px;">
             <div class="rfm-card rfm-vip">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:1.4rem;">👑</span>
-                    <span style="font-weight:900; font-size:1.3rem; color:#f59e0b;">${vips.length}</span>
+                    <span style="font-size:1.3rem;">👑</span>
+                    <span style="font-weight:900; font-size:1.2rem; color:#f59e0b;">${vips.length}</span>
                 </div>
-                <div style="font-weight:800; font-size:1.05rem; margin:8px 0 4px; color:var(--tx1);">${t('عملاء VIP والأبطال (Champions)', 'VIP Champions')}</div>
-                <div style="font-size:0.8rem; color:var(--tx3);">${t('أعلى مشتريات وشراء مستمر. قدم لهم أسعاراً حصرية وخدمة ممتازة.', 'Highest spend & frequency. Treat with exclusive VIP deals.')}</div>
+                <div style="font-weight:800; font-size:0.95rem; margin:6px 0 2px; color:var(--tx1);">VIP Champions</div>
+                <div style="font-size:0.75rem; color:var(--tx3);">${t('أعلى مشتريات وشراء مستمر', 'Top spenders')}</div>
             </div>
 
             <div class="rfm-card rfm-risk">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:1.4rem;">⚠️</span>
-                    <span style="font-weight:900; font-size:1.3rem; color:#ef4444;">${risks.length}</span>
+                    <span style="font-size:1.3rem;">⚠️</span>
+                    <span style="font-weight:900; font-size:1.2rem; color:#ef4444;">${risks.length}</span>
                 </div>
-                <div style="font-weight:800; font-size:1.05rem; margin:8px 0 4px; color:var(--tx1);">${t('في خطر الفقدان (At Risk)', 'At Risk Clients')}</div>
-                <div style="font-size:0.8rem; color:var(--tx3);">${t('عملاء كبار توقفوا فجأة عن الشراء! أولوية قصوى للزيارة الفورية.', 'Big spenders whose orders stopped. Priority for visits!')}</div>
+                <div style="font-weight:800; font-size:0.95rem; margin:6px 0 2px; color:var(--tx1);">${t('في خطر الفقدان', 'At Risk')}</div>
+                <div style="font-size:0.75rem; color:var(--tx3);">${t('عملاء كبار توقفوا فجأة', 'High value inactive')}</div>
             </div>
 
             <div class="rfm-card rfm-grow">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:1.4rem;">🌟</span>
-                    <span style="font-weight:900; font-size:1.3rem; color:#10b981;">${grows.length}</span>
+                    <span style="font-size:1.3rem;">🌟</span>
+                    <span style="font-weight:900; font-size:1.2rem; color:#10b981;">${grows.length}</span>
                 </div>
-                <div style="font-weight:800; font-size:1.05rem; margin:8px 0 4px; color:var(--tx1);">${t('واعدون ونمو مستمر (Promising)', 'Promising Growth')}</div>
-                <div style="font-size:0.8rem; color:var(--tx3);">${t('يشترون بانتظام وبقيم متصاعدة. شجعهم بعروض الـ Bundles.', 'Regular buyers with rising tickets. Pitch bundle offers.')}</div>
+                <div style="font-weight:800; font-size:0.95rem; margin:6px 0 2px; color:var(--tx1);">${t('واعدون ونمو', 'Promising')}</div>
+                <div style="font-size:0.75rem; color:var(--tx3);">${t('طلبيات منتظمة ومتصاعدة', 'Regular buyers')}</div>
             </div>
 
             <div class="rfm-card rfm-lost">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:1.4rem;">💤</span>
-                    <span style="font-weight:900; font-size:1.3rem; color:#64748b;">${losts.length}</span>
+                    <span style="font-size:1.3rem;">💤</span>
+                    <span style="font-weight:900; font-size:1.2rem; color:#64748b;">${losts.length}</span>
                 </div>
-                <div style="font-weight:800; font-size:1.05rem; margin:8px 0 4px; color:var(--tx1);">${t('راكدون بحاجة لتنشيط (Win-Back)', 'Dormant Win-Back')}</div>
-                <div style="font-size:0.8rem; color:var(--tx3);">${t('انقطعوا لفترة طويلة. أرسل لهم عروض تصفية واسترداد مخصصة.', 'Inactive for long. Send re-engagement discounts.')}</div>
+                <div style="font-weight:800; font-size:0.95rem; margin:6px 0 2px; color:var(--tx1);">${t('راكدون', 'Dormant')}</div>
+                <div style="font-size:0.75rem; color:var(--tx3);">${t('يحتاجون عروض استرداد', 'Win-back candidates')}</div>
             </div>
         </div>
 
-        <!-- Interactive Customer List Table -->
-        <div class="card" style="padding:20px; border-radius:18px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
-                <h3 style="font-size:1.1rem; font-weight:800; color:var(--tx1);">${t('تفاصيل العملاء والإجراءات المقترحة', 'Client Matrix & Recommended Actions')}</h3>
+        <div class="card" style="padding:16px; border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                <h3 style="font-size:1rem; font-weight:800; color:var(--tx1);">${t('قائمة العملاء', 'Customer Segments')}</h3>
                 <div class="booster-tabs" id="rfmFilterTabs">
                     <button class="booster-tab-btn active" data-filter="all">${t('الكل', 'All')} (${list.length})</button>
                     <button class="booster-tab-btn" data-filter="vip">👑 VIP (${vips.length})</button>
                     <button class="booster-tab-btn" data-filter="risk">⚠️ ${t('في خطر', 'At Risk')} (${risks.length})</button>
-                    <button class="booster-tab-btn" data-filter="grow">🌟 ${t('واعدون', 'Promising')} (${grows.length})</button>
-                    <button class="booster-tab-btn" data-filter="lost">💤 ${t('راكدون', 'Dormant')} (${losts.length})</button>
+                    <button class="booster-tab-btn" data-filter="grow">🌟 ${t('واعد', 'Promising')} (${grows.length})</button>
+                    <button class="booster-tab-btn" data-filter="lost">💤 ${t('راكد', 'Dormant')} (${losts.length})</button>
                 </div>
             </div>
 
             <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
                     <thead>
                         <tr style="border-bottom:1px solid var(--bd); text-align:right;">
-                            <th style="padding:10px 12px; color:var(--tx3); font-weight:700;">${t('العميل', 'Customer')}</th>
-                            <th style="padding:10px 12px; color:var(--tx3); font-weight:700;">${t('الشريحة', 'Segment')}</th>
-                            <th style="padding:10px 12px; color:var(--tx3); font-weight:700;">${t('إجمالي المشتريات', 'Total Spend')}</th>
-                            <th style="padding:10px 12px; color:var(--tx3); font-weight:700;">${t('عدد الفواتير', 'Orders')}</th>
-                            <th style="padding:10px 12px; color:var(--tx3); font-weight:700;">${t('آخر طلب منذ', 'Last Order')}</th>
-                            <th style="padding:10px 12px; color:var(--tx3); font-weight:700; text-align:center;">${t('إجراء فوري', 'Quick Action')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3);">${t('العميل', 'Customer')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3);">${t('الشريحة', 'Segment')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3);">${t('المشتريات', 'Spend')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3);">${t('الطلبات', 'Orders')}</th>
+                            <th style="padding:8px 10px; color:var(--tx3); text-align:center;">${t('إجراء', 'Action')}</th>
                         </tr>
                     </thead>
-                    <tbody id="rfmTableBody">
-                        <!-- Injected -->
-                    </tbody>
+                    <tbody id="rfmTableBody"></tbody>
                 </table>
             </div>
         </div>
         `;
 
-        function renderRFMTable(filter = 'all') {
-            const tbody = document.getElementById('rfmTableBody');
-            if (!tbody) return;
+        function renderRFM(filter = 'all') {
+            const tb = document.getElementById('rfmTableBody');
+            if (!tb) return;
             const filtered = filter === 'all' ? list : list.filter(x => x.segment === filter);
+            const badgeCls = { vip: '#f59e0b', risk: '#ef4444', grow: '#10b981', lost: '#94a3b8' };
 
-            const badgeStyles = {
-                vip: 'background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);',
-                risk: 'background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);',
-                grow: 'background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);',
-                lost: 'background:rgba(100,116,139,0.15); color:#94a3b8; border:1px solid rgba(100,116,139,0.3);'
-            };
-            const labels = {
-                vip: '👑 VIP Champion',
-                risk: '⚠️ ' + t('في خطر', 'At Risk'),
-                grow: '🌟 ' + t('واعد', 'Promising'),
-                lost: '💤 ' + t('راكد', 'Dormant')
-            };
-
-            tbody.innerHTML = filtered.map(c => `
-            <tr style="border-bottom:1px solid var(--bd); transition:background 0.15s;">
-                <td style="padding:12px; font-weight:800; color:var(--tx1);">${c.name}</td>
-                <td style="padding:12px;"><span style="padding:3px 8px; border-radius:8px; font-size:0.75rem; font-weight:800; ${badgeStyles[c.segment]}">${labels[c.segment]}</span></td>
-                <td style="padding:12px; font-weight:800; color:#10b981;">${fmtP(c.totalSpend)}</td>
-                <td style="padding:12px; color:var(--tx2); font-weight:700;">${c.count} ${t('طلبيات', 'orders')}</td>
-                <td style="padding:12px; color:${c.recencyDays > 30 ? '#ef4444' : 'var(--tx2)'}; font-weight:700;">${c.recencyDays === 999 ? '—' : c.recencyDays + ' ' + t('يوم', 'days')}</td>
-                <td style="padding:12px; text-align:center;">
-                    <button class="btn btn-p" onclick="window.rQuotes('${encodeURIComponent(c.name)}')" style="padding:6px 12px; font-size:0.75rem; border-radius:8px; font-weight:700;">
-                        <span>💬</span> ${t('واتساب / عرض', 'Quote / WA')}
+            tb.innerHTML = filtered.slice(0, 50).map(c => `
+            <tr style="border-bottom:1px solid var(--bd);">
+                <td style="padding:10px; font-weight:800; color:var(--tx1);">${c.name}</td>
+                <td style="padding:10px;"><span style="color:${badgeCls[c.segment]}; font-weight:800;">${c.segment.toUpperCase()}</span></td>
+                <td style="padding:10px; font-weight:800; color:#10b981;">${fmtP(c.totalSpend)}</td>
+                <td style="padding:10px; color:var(--tx2);">${c.count}</td>
+                <td style="padding:10px; text-align:center;">
+                    <button class="btn btn-p" onclick="window.quickPitchQuote('${encodeURIComponent(c.name)}')" style="padding:4px 10px; font-size:0.72rem; border-radius:6px;">
+                        💬 ${t('عرض', 'Quote')}
                     </button>
                 </td>
             </tr>`).join('');
         }
 
-        renderRFMTable();
+        renderRFM();
 
         document.getElementById('rfmFilterTabs')?.addEventListener('click', e => {
             const btn = e.target.closest('.booster-tab-btn');
             if (!btn) return;
             document.querySelectorAll('#rfmFilterTabs .booster-tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            renderRFMTable(btn.dataset.filter);
+            renderRFM(btn.dataset.filter);
         });
     };
 
-    // ─── TAB 4: COMMISSION & INCENTIVE SIMULATOR ───────────────────────────────
+    // ─── TAB 4: COMMISSION SIMULATOR ──────────────────────────────────────────
     window.rCommission = function rCommission() {
         const M = document.getElementById('M');
         if (!M) return;
 
-        const S_data = getSales();
-        const T_data = getTargets();
-
-        const currentSales = S_data.reduce((s, r) => s + parseFloat(r.amount || r['المبلغ'] || r['الإجمالي'] || 0), 0) || 75000;
-        const currentTarget = T_data.reduce((s, r) => s + parseFloat(r.target || r['المستهدف'] || r['التارجت'] || 0), 0) || 100000;
+        const S_data = getS();
+        const T_data = getT();
+        const currentSales = S_data.reduce((s, r) => s + parseFloat(r.amount || r['Sales Without Tax'] || 0), 0) || 75000;
+        const currentTarget = T_data.reduce((s, r) => s + parseFloat(r.target || r.Target || 0), 0) || 100000;
 
         M.innerHTML = `
         <div class="booster-header">
             <div class="booster-title-group">
-                <div class="booster-icon-box" style="background:linear-gradient(135deg, #10b981, #059669);">🏆</div>
+                <div class="booster-icon-box" style="background:#10b981;">🏆</div>
                 <div>
-                    <div class="booster-title">${t('محاكي العمولات ومكافآت التارجت التفاعلي', 'Interactive Commission & Bonus Simulator')}</div>
-                    <div class="booster-desc">${t('شاهد أرباحك وعمولتك الشهرية المتوقعة لحظة بلحظة مع كل بيعة جديدة', 'Simulate your monthly commission earnings and bonus tier accelerator in real-time')}</div>
+                    <div class="booster-title">${t('محاكي العمولات ومكافآت التارجت', 'Commission & Bonus Simulator')}</div>
+                    <div class="booster-desc">${t('محاكاة فورية للأرباح والعمولات المتوقعة', 'Real-time projected earnings')}</div>
                 </div>
             </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:20px;">
-            <!-- Sliders Box -->
-            <div class="card" style="padding:22px; border-radius:20px;">
-                <h3 style="font-size:1.1rem; font-weight:800; margin-bottom:18px;">🎛️ ${t('حرك المؤشرات لمحاكاة مبيعاتك', 'Adjust Sliders to Simulate Sales')}</h3>
+        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:18px;">
+            <div class="card" style="padding:18px; border-radius:16px;">
+                <h3 style="font-size:1rem; font-weight:800; margin-bottom:14px;">🎛️ ${t('حرك المؤشرات لمحاكاة أرباحك', 'Adjust Sliders')}</h3>
 
                 <div class="sim-slider-wrap">
                     <div class="sim-slider-hdr">
-                        <span style="font-size:0.85rem; font-weight:700; color:var(--tx2);">${t('المبيعات المحققة المتوقعة (ج.م)', 'Projected Sales (EGP)')}</span>
-                        <span style="font-size:1.1rem; font-weight:900; color:#3b82f6;" id="simValSales">${fmtP(currentSales)}</span>
+                        <span style="font-size:0.8rem; font-weight:700; color:var(--tx2);">${t('المبيعات المتوقعة', 'Projected Sales')}</span>
+                        <span style="font-size:1rem; font-weight:900; color:#3b82f6;" id="simValSales">${fmtP(currentSales)}</span>
                     </div>
                     <input type="range" class="sim-range" id="simRangeSales" min="0" max="${Math.max(250000, currentTarget * 2)}" step="5000" value="${currentSales}">
                 </div>
 
                 <div class="sim-slider-wrap">
                     <div class="sim-slider-hdr">
-                        <span style="font-size:0.85rem; font-weight:700; color:var(--tx2);">${t('مستهدف المبيعات (التارجت)', 'Monthly Target (EGP)')}</span>
-                        <span style="font-size:1.1rem; font-weight:900; color:#f59e0b;" id="simValTarget">${fmtP(currentTarget)}</span>
+                        <span style="font-size:0.8rem; font-weight:700; color:var(--tx2);">${t('المستهدف (التارجت)', 'Target')}</span>
+                        <span style="font-size:1rem; font-weight:900; color:#f59e0b;" id="simValTarget">${fmtP(currentTarget)}</span>
                     </div>
                     <input type="range" class="sim-range" id="simRangeTarget" min="20000" max="300000" step="5000" value="${currentTarget}">
                 </div>
 
                 <div class="sim-slider-wrap">
                     <div class="sim-slider-hdr">
-                        <span style="font-size:0.85rem; font-weight:700; color:var(--tx2);">${t('مبيعات إكسسوارات إضافية (بونص إضافي)', 'Extra Accessories Lift')}</span>
-                        <span style="font-size:1.1rem; font-weight:900; color:#10b981;" id="simValAcc">15,000 ج.م</span>
+                        <span style="font-size:0.8rem; font-weight:700; color:var(--tx2);">${t('مبيعات إكسسوارات (بونص إضافي)', 'Accessories Bonus')}</span>
+                        <span style="font-size:1rem; font-weight:900; color:#10b981;" id="simValAcc">15,000 ج.م</span>
                     </div>
                     <input type="range" class="sim-range" id="simRangeAcc" min="0" max="50000" step="1000" value="15000">
                 </div>
             </div>
 
-            <!-- Projection Card -->
-            <div class="card" style="padding:22px; border-radius:20px; background:linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(16,185,129,0.08) 100%); border:1.5px solid rgba(59,130,246,0.3);">
-                <div style="font-size:0.8rem; color:var(--tx3); font-weight:800; text-transform:uppercase;">${t('إجمالي العمولة والمكافأة المتوقعة', 'Estimated Total Commission')}</div>
-                <div style="font-size:2.4rem; font-weight:900; color:#10b981; margin:8px 0;" id="simTotalCommission">—</div>
+            <div class="card" style="padding:18px; border-radius:16px; border:1px solid rgba(59,130,246,0.3);">
+                <div style="font-size:0.75rem; color:var(--tx3); font-weight:800;">${t('إجمالي العمولة المتوقعة', 'Estimated Commission')}</div>
+                <div style="font-size:2rem; font-weight:900; color:#10b981; margin:6px 0;" id="simTotalCommission">—</div>
+                <div id="simTierBadge" style="display:inline-block; padding:4px 10px; border-radius:8px; font-weight:900; font-size:0.82rem; margin-bottom:14px;">—</div>
 
-                <!-- Tier Badge -->
-                <div id="simTierBadge" style="display:inline-block; padding:6px 14px; border-radius:10px; font-weight:900; font-size:0.9rem; margin-bottom:18px;">—</div>
-
-                <div style="display:flex; flex-direction:column; gap:8px; padding-top:14px; border-top:1px solid var(--bd); font-size:0.84rem;">
+                <div style="display:flex; flex-direction:column; gap:6px; padding-top:10px; border-top:1px solid var(--bd); font-size:0.8rem;">
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--tx3);">${t('نسبة تحقيق الهدف:', 'Target Achievement:')}</span>
+                        <span style="color:var(--tx3);">${t('نسبة التحقيق:', 'Achieved:')}</span>
                         <span style="font-weight:900; color:var(--tx1);" id="simPct">—</span>
                     </div>
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--tx3);">${t('عمولة المبيعات الأساسية:', 'Base Commission:')}</span>
+                        <span style="color:var(--tx3);">${t('العمولة الأساسية:', 'Base:')}</span>
                         <span style="font-weight:800; color:#3b82f6;" id="simBaseComm">—</span>
                     </div>
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--tx3);">${t('بونص الإكسسوارات والتميز:', 'Bonus Accelerator:')}</span>
+                        <span style="color:var(--tx3);">${t('بونص الإكسسوارات:', 'Bonus:')}</span>
                         <span style="font-weight:800; color:#10b981;" id="simBonusAcc">—</span>
                     </div>
                 </div>
@@ -817,7 +728,7 @@
         </div>
         `;
 
-        function recalculate() {
+        function recalc() {
             const sales = parseFloat(document.getElementById('simRangeSales')?.value || 0);
             const target = parseFloat(document.getElementById('simRangeTarget')?.value || 1);
             const acc = parseFloat(document.getElementById('simRangeAcc')?.value || 0);
@@ -829,50 +740,50 @@
             const pct = Math.round((sales / target) * 100);
             document.getElementById('simPct').textContent = pct + '%';
 
-            let baseRate = 0.015; // 1.5%
+            let baseRate = 0.015;
             let tierText = '';
-            let tierStyle = '';
+            let tierBg = '';
 
             if (pct < 80) {
                 baseRate = 0.01;
-                tierText = '🥉 ' + t('الشريحة البرونزية (تحت التارجت)', 'Bronze Tier (<80%)');
-                tierStyle = 'background:rgba(148,163,184,0.2); color:#94a3b8;';
+                tierText = '🥉 Bronze (<80%)';
+                tierBg = 'background:#94a3b8; color:#fff;';
             } else if (pct < 100) {
                 baseRate = 0.015;
-                tierText = '🥈 ' + t('الشريحة الفضية (قريب من الهدف)', 'Silver Tier (80-99%)');
-                tierStyle = 'background:rgba(59,130,246,0.2); color:#3b82f6;';
+                tierText = '🥈 Silver (80-99%)';
+                tierBg = 'background:#3b82f6; color:#fff;';
             } else if (pct < 125) {
                 baseRate = 0.025;
-                tierText = '🥇 ' + t('الشريحة الذهبية (تم تحقيق التارجت 🎯)', 'Gold Tier (100-124%)');
-                tierStyle = 'background:rgba(245,158,11,0.2); color:#f59e0b;';
+                tierText = '🥇 Gold (100-124%)';
+                tierBg = 'background:#f59e0b; color:#fff;';
             } else {
                 baseRate = 0.035;
-                tierText = '💎 ' + t('الشريحة الماسية الفائقة (بطل المبيعات 🚀)', 'Diamond Elite (125%+)');
-                tierStyle = 'background:rgba(16,185,129,0.2); color:#10b981;';
+                tierText = '💎 Diamond Elite (125%+)';
+                tierBg = 'background:#10b981; color:#fff;';
             }
 
             const baseComm = sales * baseRate;
-            const accBonus = acc * 0.05; // 5% accelerator on accessories
+            const accBonus = acc * 0.05;
             const total = baseComm + accBonus;
 
             document.getElementById('simBaseComm').textContent = fmtP(baseComm);
             document.getElementById('simBonusAcc').textContent = fmtP(accBonus);
             document.getElementById('simTotalCommission').textContent = fmtP(total);
 
-            const badge = document.getElementById('simTierBadge');
-            if (badge) {
-                badge.textContent = tierText;
-                badge.style.cssText = tierStyle + ' display:inline-block; padding:6px 14px; border-radius:10px; font-weight:900; font-size:0.88rem; margin-bottom:18px;';
+            const b = document.getElementById('simTierBadge');
+            if (b) {
+                b.textContent = tierText;
+                b.style.cssText = tierBg + ' display:inline-block; padding:4px 10px; border-radius:8px; font-weight:900; font-size:0.82rem; margin-bottom:14px;';
             }
         }
 
-        recalculate();
-        document.getElementById('simRangeSales')?.addEventListener('input', recalculate);
-        document.getElementById('simRangeTarget')?.addEventListener('input', recalculate);
-        document.getElementById('simRangeAcc')?.addEventListener('input', recalculate);
+        recalc();
+        document.getElementById('simRangeSales')?.addEventListener('input', recalc);
+        document.getElementById('simRangeTarget')?.addEventListener('input', recalc);
+        document.getElementById('simRangeAcc')?.addEventListener('input', recalc);
     };
 
-    // ─── 5. GLOBAL FLOATING ACTION BUTTON (FAB) ───────────────────────────────
+    // ─── FAB & HELPERS ────────────────────────────────────────────────────────
     function injectFAB() {
         if (document.getElementById('spGlobalFAB')) return;
 
@@ -882,27 +793,14 @@
         fab.innerHTML = `
             <button class="sp-fab-main" id="spFabBtn" title="${t('إجراءات سريعة', 'Quick Actions')}">＋</button>
             <div class="sp-fab-menu">
-                <div class="sp-fab-item" id="fabActionQuote">
-                    <span class="sp-fab-icon">💬</span>
-                    <span>${t('عرض سعر واتساب', 'WhatsApp Quote')}</span>
-                </div>
-                <div class="sp-fab-item" id="fabActionSale">
-                    <span class="sp-fab-icon">🛒</span>
-                    <span>${t('تسجيل بيعة', 'Quick Sale')}</span>
-                </div>
-                <div class="sp-fab-item" id="fabActionVisit">
-                    <span class="sp-fab-icon">🚗</span>
-                    <span>${t('تسجيل زيارة', 'Log Visit')}</span>
-                </div>
-                <div class="sp-fab-item" id="fabActionStock">
-                    <span class="sp-fab-icon">📦</span>
-                    <span>${t('فحص المخزون', 'Check Stock')}</span>
-                </div>
+                <div class="sp-fab-item" id="fabActionQuote"><span class="sp-fab-icon">💬</span><span>${t('عرض سعر واتساب', 'Quote')}</span></div>
+                <div class="sp-fab-item" id="fabActionSale"><span class="sp-fab-icon">🛒</span><span>${t('تسجيل بيعة', 'Sale')}</span></div>
+                <div class="sp-fab-item" id="fabActionVisit"><span class="sp-fab-icon">🚗</span><span>${t('تسجيل زيارة', 'Visit')}</span></div>
+                <div class="sp-fab-item" id="fabActionStock"><span class="sp-fab-icon">📦</span><span>${t('فحص المخزون', 'Stock')}</span></div>
             </div>
         `;
         document.body.appendChild(fab);
 
-        // Events
         document.getElementById('spFabBtn')?.addEventListener('click', e => {
             e.stopPropagation();
             fab.classList.toggle('active');
@@ -914,207 +812,62 @@
 
         document.getElementById('fabActionQuote')?.addEventListener('click', () => {
             fab.classList.remove('active');
-            if (typeof P !== 'undefined') P = 'quotes';
-            if (typeof window.rQuotes === 'function') window.rQuotes();
+            P = 'quotes';
+            if (typeof render === 'function') render();
             if (typeof buildNav === 'function') buildNav();
         });
 
         document.getElementById('fabActionSale')?.addEventListener('click', () => {
             fab.classList.remove('active');
-            if (typeof P !== 'undefined') P = 'sales';
+            P = 'sales';
             if (typeof render === 'function') render();
             if (typeof buildNav === 'function') buildNav();
         });
 
         document.getElementById('fabActionVisit')?.addEventListener('click', () => {
             fab.classList.remove('active');
-            if (typeof P !== 'undefined') P = 'visits';
+            P = 'visits';
             if (typeof render === 'function') render();
             if (typeof buildNav === 'function') buildNav();
         });
 
         document.getElementById('fabActionStock')?.addEventListener('click', () => {
             fab.classList.remove('active');
-            if (typeof P !== 'undefined') P = 'stock';
-            if (typeof window.rStock === 'function') window.rStock();
+            P = 'stock';
+            if (typeof render === 'function') render();
             if (typeof buildNav === 'function') buildNav();
         });
     }
-
-    // ─── 6. GPS CHECK-IN & VOICE NOTES & OBJECTIONS INTEL ─────────────────────
-    window.captureGPSForVisit = function() {
-        if (!navigator.geolocation) {
-            showToast(t('❌ المتصفح لا يدعم تحديد الموقع GPS', '❌ Geolocation not supported'), 'error');
-            return;
-        }
-        showToast(t('📍 جاري تحديد الموقع الجغرافي للزيارة...', '📍 Capturing GPS coordinates...'), 'info');
-        navigator.geolocation.getCurrentPosition(
-            pos => {
-                const lat = pos.coords.latitude.toFixed(6);
-                const lng = pos.coords.longitude.toFixed(6);
-                const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-                const noteInput = document.querySelector('input[placeholder*="ملاحظات"], textarea[placeholder*="ملاحظات"], #inVN, #inCN');
-                if (noteInput) {
-                    noteInput.value = (noteInput.value ? noteInput.value + ' ' : '') + `[📍 تم تسجيل الوصول: ${lat},${lng}]`;
-                }
-                showToast(t(`✅ تم تسجيل الموقع: (${lat}, ${lng})`, `✅ Location logged: (${lat}, ${lng})`), 'success');
-            },
-            err => {
-                showToast(t('⚠️ تعذر الوصول للموقع. يرجى تفعيل إذن الـ GPS', '⚠️ GPS permission denied'), 'error');
-            },
-            { enableHighAccuracy: true, timeout: 8000 }
-        );
-    };
-
-    window.openDirections = function(destName) {
-        if (!destName) return;
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destName)}`;
-        window.open(url, '_blank');
-    };
-
-    window.startVoiceDictation = function(targetElementId) {
-        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRec) {
-            showToast(t('❌ الإملاء الصوتي غير مدعوم في هذا المتصفح', '❌ Speech recognition not supported in this browser'), 'error');
-            return;
-        }
-        const rec = new SpeechRec();
-        rec.lang = t('ar-EG', 'en-US');
-        rec.interimResults = false;
-        rec.maxAlternatives = 1;
-
-        showToast(t('🎙️ تحدث الآن... جاري الاستماع للملاحظة', '🎙️ Listening... speak now'), 'info');
-
-        rec.onresult = e => {
-            const transcript = e.results[0][0].transcript;
-            const target = document.getElementById(targetElementId) || document.querySelector('input[placeholder*="ملاحظات"], textarea[placeholder*="ملاحظات"]');
-            if (target) {
-                target.value = (target.value ? target.value + ' ' : '') + transcript;
-                target.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            showToast(t('✅ تم تسجيل الملاحظة الصوتية بنجاح', '✅ Voice note transcribed!'), 'success');
-        };
-
-        rec.onerror = () => {
-            showToast(t('❌ لم يتم التعرف على الصوت، يرجى المحاولة مرة أخرى', '❌ Voice recognition failed, please retry'), 'error');
-        };
-
-        rec.start();
-    };
-
-    window.openObjectionLogger = function(customerName = '') {
-        let modal = document.getElementById('spObjectionModal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'spObjectionModal';
-            modal.className = 'stk-ov';
-            modal.innerHTML = `
-                <div class="stk-m" style="max-width:500px; padding:22px; border-radius:20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h3 style="font-size:1.1rem; font-weight:800; color:#ef4444; display:flex; align-items:center; gap:8px;">
-                            <span>🛡️</span> ${t('تسجيل اعتراض العميل / أسعار المنافسين', 'Log Objection & Competitor Intel')}
-                        </h3>
-                        <button class="stk-mc" onclick="document.getElementById('spObjectionModal').classList.remove('on')">✕</button>
-                    </div>
-
-                    <div style="margin-bottom:14px;">
-                        <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('العميل', 'Customer')}</label>
-                        <input type="text" id="objCust" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);" value="${customerName}">
-                    </div>
-
-                    <div style="margin-bottom:14px;">
-                        <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('السبب الرئيسي لعدم إتمام البيع', 'Primary Reason for Lost Deal')}</label>
-                        <select id="objReason" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);">
-                            <option value="price_high">${t('السعر أعلى من المنافس في السوق', 'Price is higher than competitor')}</option>
-                            <option value="no_credit">${t('طلب تسهيلات دفع أو آجل غير متاح', 'Requested payment terms not available')}</option>
-                            <option value="out_of_stock">${t('عدم توفر كمية أو صنف معين', 'Requested item / qty out of stock')}</option>
-                            <option value="competitor_bonus">${t('المنافس يقدم بونص أو بضاعة مجانية', 'Competitor offers bonus/gifts')}</option>
-                            <option value="slow_stock">${t('المحل لديه ركود في بضاعة قديمة', 'Store has old slow stock')}</option>
-                            <option value="other">${t('سبب آخر', 'Other reason')}</option>
-                        </select>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
-                        <div>
-                            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('اسم المنافس (إن وجد)', 'Competitor Name')}</label>
-                            <input type="text" id="objComp" placeholder="مثال: شركة X" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);">
-                        </div>
-                        <div>
-                            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('سعر المنافس (ج.م)', 'Competitor Price')}</label>
-                            <input type="number" id="objPrice" placeholder="0" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);">
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom:18px;">
-                        <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--tx3); margin-bottom:4px;">${t('ملاحظات وتفاصيل إضافية', 'Additional Notes')}</label>
-                        <textarea id="objNotes" rows="2" placeholder="${t('اكتب تفاصيل المحادثة أو سبب الرفض...', 'Details of objection...')}" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1);"></textarea>
-                    </div>
-
-                    <button class="btn btn-p" id="btnSaveObj" style="width:100%; padding:10px; border-radius:10px; font-weight:800; background:#ef4444; border:none;">
-                        💾 ${t('حفظ في تقرير السوق والاعتراضات', 'Save Market Intel')}
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            document.getElementById('btnSaveObj')?.addEventListener('click', () => {
-                const rec = {
-                    id: Date.now(),
-                    customer: document.getElementById('objCust')?.value.trim() || customerName,
-                    reason: document.getElementById('objReason')?.value,
-                    competitor: document.getElementById('objComp')?.value.trim(),
-                    compPrice: parseFloat(document.getElementById('objPrice')?.value || 0),
-                    notes: document.getElementById('objNotes')?.value.trim(),
-                    date: new Date().toISOString()
-                };
-
-                const existing = JSON.parse(localStorage.getItem('sp_objections') || '[]');
-                existing.unshift(rec);
-                localStorage.setItem('sp_objections', JSON.stringify(existing));
-
-                modal.classList.remove('on');
-                showToast(t('✅ تم حفظ سبب الاعتراض في تقرير استخبارات السوق', '✅ Objection saved to Market Intel report!'), 'success');
-            });
-        }
-
-        if (document.getElementById('objCust')) document.getElementById('objCust').value = customerName;
-        modal.classList.add('on');
-    };
 
     // ─── INITIALIZATION & HOOKS ────────────────────────────────────────────────
     function initBooster() {
         registerBoosterNav();
         injectFAB();
-        updateLiveBadges();
+        calcBadgesAsync();
 
-        // Hook into window.render to maintain compatibility
+        // Safe hook to render new pages
         const origRender = window.render;
         window.render = function () {
             if (typeof P !== 'undefined') {
                 if (P === 'upsell' && typeof window.rUpsell === 'function') {
                     window.rUpsell();
-                    updateLiveBadges();
                     return;
                 }
                 if (P === 'quotes' && typeof window.rQuotes === 'function') {
                     window.rQuotes();
-                    updateLiveBadges();
                     return;
                 }
                 if (P === 'rfm' && typeof window.rRFM === 'function') {
                     window.rRFM();
-                    updateLiveBadges();
                     return;
                 }
                 if (P === 'commission' && typeof window.rCommission === 'function') {
                     window.rCommission();
-                    updateLiveBadges();
                     return;
                 }
             }
 
             if (typeof origRender === 'function') origRender();
-            setTimeout(updateLiveBadges, 100);
         };
     }
 
