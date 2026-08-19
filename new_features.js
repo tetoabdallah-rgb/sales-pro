@@ -33,12 +33,10 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
             /* filter: grayscale removed to keep the beautiful colors! */
         }
         
-        /* Make sure cards and modals have some glassmorphism so the watermark shows elegantly behind them */
+        /* High performance clean cards without GPU-blocking blur */
         .card, .sp-modal-content {
-            background: rgba(15, 23, 42, 0.75) !important;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05); /* Enhance glass effect */
+            background: var(--bg2, rgba(15, 23, 42, 0.95)) !important;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .loader-overlay::after {
