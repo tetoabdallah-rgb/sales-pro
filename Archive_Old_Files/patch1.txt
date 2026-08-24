@@ -1,0 +1,9 @@
+Chart.register(ChartDataLabels);
+Chart.defaults.plugins.datalabels = {
+    color: '#fff',
+    font: { weight: 'bold', size: 10 },
+    formatter: function(value) { return value > 0 ? (typeof aFmt !== 'undefined' ? aFmt(value) : value) : ''; },
+    display: function(context) { return context.dataset.data[context.dataIndex] > 0; }
+};
+
+function rDash() {

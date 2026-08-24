@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script>
+window.onerror = function(msg, url, line, col, error) {
+    try {
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var f = fso.CreateTextFile("e:\\AI\\apk\\SalesProWeb\\error.txt", true);
+        f.WriteLine("Error: " + msg + " at line " + line + ":" + col);
+        f.Close();
+    } catch(e) {}
+    window.close();
+};
+</script>
+<script src="test2.js"></script>
+<script>
+    var fso = new ActiveXObject("Scripting.FileSystemObject");
+    var f = fso.CreateTextFile("e:\\AI\\apk\\SalesProWeb\\error.txt", true);
+    f.WriteLine("Success");
+    f.Close();
+    window.close();
+</script>
+
+
+
+
+
+<style id="ultimate-layout-fix">
+  @media screen and (min-width: 901px) {
+    #APP {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+    }
+    .mw {
+      margin: 0 !important;
+      padding: 24px 32px !important;
+      padding-right: 312px !important; 
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+    }
+    /* Fix Grid and Flexbox blowout bugs caused by long product names */
+    .cg > *, .kg > *, .rg-grid > *, .card {
+      min-width: 0 !important;
+    }
+    div[style*="display:flex"] > span[style*="ellipsis"],
+    div[style*="display: flex"] > span[style*="ellipsis"],
+    span[style*="ellipsis"] {
+      min-width: 0 !important;
+    }
+    body.en .mw {
+      padding-right: 32px !important;
+      padding-left: 312px !important;
+    }
+    /* Fix Grid and Flexbox blowout bugs caused by long product names */
+    .cg > *, .kg > *, .rg-grid > *, .card {
+      min-width: 0 !important;
+    }
+    div[style*="display:flex"] > span[style*="ellipsis"],
+    div[style*="display: flex"] > span[style*="ellipsis"],
+    span[style*="ellipsis"] {
+      min-width: 0 !important;
+    }
+  }
+</style>
+</head>
+<body></body>
+</html>
+
+
+
+
+
+

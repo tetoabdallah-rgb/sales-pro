@@ -1,0 +1,110 @@
+const CACHE_NAME = 'salespro-v86';
+const STATIC_ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './styles/main.css',
+  './styles/dashboard-v2.css',
+  './styles/landing.css',
+  './styles/modern-ui.css',
+  './scripts/main.js',
+  './new_features.js',
+  './appearance_settings.js',
+  './premium_ux.js',
+  './quick_search.js',
+  './customer_reports.js',
+  './stock.js',
+  './sales_booster.js'
+];
+
+const CDN_ASSETS = [
+  'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
+];
+
+// Install â€” cache static assets
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('[SW] Caching static assets');
+      return cache.addAll(STATIC_ASSETS);
+    })
+  );
+  self.skipWaiting();
+});
+
+// Activate â€” clean old caches
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames
+          .filter(name => name !== CACHE_NAME)
+          .map(name => caches.delete(name))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+// Fetch â€” Network-first for app files, cache-first for CDN
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+
+  const url = event.request.url;
+
+  // Skip Firebase/Google API calls
+  if (url.includes('firestore.googleapis.com') ||
+      url.includes('firebase') ||
+      url.includes('googleapis.com/drive') ||
+      url.includes('accounts.google.com') ||
+      url.includes('apis.google.com')) {
+    return;
+  }
+
+  // CDN assets â€” cache-first (they're versioned)
+  if (url.includes('cdn.jsdelivr.net') || url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // App files â€” network-first with cache fallback
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request).then(cached => {
+          return cached || new Response('Offline', { status: 503 });
+        });
+      })
+  );
+});
+
+
+
+
+
+
+
+
+
+
+

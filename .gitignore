@@ -1,0 +1,5 @@
+﻿node-v20.11.1-win-x64/
+*.zip
+*.tar.gz
+.DS_Store
+Thumbs.db

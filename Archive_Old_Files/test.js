@@ -1,0 +1,2812 @@
+    window.addEventListener('load', function() {
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            if(splash) {
+                splash.classList.add('hidden');
+                setTimeout(() => splash.remove(), 800);
+            }
+        }, 2000);
+    });
+const firebaseConfig = {
+    apiKey: "AIzaSyAxXU5MePdVP1OcOyzitl0Jy5jMGrWtTSE",
+    authDomain: "salesproapp-ba56b.firebaseapp.com",
+    projectId: "salesproapp-ba56b",
+    storageBucket: "salesproapp-ba56b.firebasestorage.app",
+    messagingSenderId: "954558106678",
+    appId: "1:954558106678:web:666ce1e645b3c9bbe01c97",
+    measurementId: "G-FPFPWB7VV5"
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const db = firebase.firestore();
+
+// Force long-polling to bypass strict Antiviruses or Firewalls that block WebSockets
+db.settings({
+    experimentalForceLongPolling: true
+});
+
+const auth = firebase.auth();
+let currentUser = null;
+
+// js/data-store.js
+
+// Global State
+
+window.toast = function(msg) {
+    let el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2ecc71;color:#fff;padding:10px 20px;border-radius:20px;z-index:9999;box-shadow:0 4px 6px rgba(0,0,0,0.1);transition:opacity 0.3s;opacity:0;';
+    document.body.appendChild(el);
+    setTimeout(() => el.style.opacity = '1', 10);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+};
+function loadLS(k) { try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : []; } catch(e){ return []; } }
+let S = loadLS('salesData'); // Sales
+let T = loadLS('targetData'); // Targets
+let accCats = loadLS('accCats'); // Accessories Categories
+let hwCats = loadLS('hwCats'); // Hardware Categories
+let C = loadLS('payData'); // Collections/PayData
+let D = loadLS('duesData'); // Dues
+let V = loadLS('visitsData') || []; // Visits
+let LD = loadLS('leadsData') || []; // Leads
+let CH = {}; // Chart Instances
+let L = localStorage.getItem('sp_lang') || 'ar';
+L = L.replace(/"/g, ''); // Strip quotes if JSON stringified
+if (L !== 'ar' && L !== 'en') L = 'ar';
+let P = 'dash'; // Current Page
+let _cache = { salesData: S, targetData: T, accCats: accCats, hwCats: hwCats, payData: C, duesData: D };
+let _chkC = {};
+let _mtC = {};
+let globalDateRange = { start: null, end: null }; // Global Date Filter
+
+const DEF_ACC = ['Mobile Accessories','Mobile Power','Accessories Commission','Laptop Accessories','TWS Earbuds','Headphone','Keyboard','Wearables','Imported Bags','Factory Bags','Mouse','Gaming Accessories','A/V Accessories'];
+const DEF_HW = ['Mobile Devices','Gaming Devices','TVs','Laptops'];
+const CL = ['#5046e5','#0fa87e','#2b8dea','#e5930f','#e5484d','#8b5cf6','#06b6d4','#f59e0b'];
+
+function isAcc(c) { return accCats.length ? accCats.includes(c) : DEF_ACC.includes(c); }
+function isHW(c) { return hwCats.length ? hwCats.includes(c) : DEF_HW.includes(c); }
+
+const I = {
+    collections:{ar:'التحصيلات',en:'Collections'},dash:{ar:'لوحة التحكم',en:'Dashboard'},
+    sales:{ar:'المبيعات',en:'Sales'},targets:{ar:'تارجت العميل',en:'Targets'},
+    personal:{ar:'التارجت الشخصي',en:'Personal'},customers:{ar:'العملاء',en:'Customers'},
+    brands:{ar:'البراندات',en:'Brands'},analytics:{ar:'تحليلات',en:'Analytics'},
+    potential:{ar:'فرص التحقيق',en:'Opportunities'},profit:{ar:'هامش الربح',en:'Profit'},
+    accessories:{ar:'الأكسسوارات',en:'Accessories'},hardware:{ar:'الهاردوير',en:'Hardware'},
+    keyacc:{ar:'المميزين',en:'Key Accounts'},dormant:{ar:'الخاملين',en:'Dormant'},
+    prospects:{ar:'محتملين',en:'Prospects'},alerts:{ar:'التنبيهات',en:'Alerts'},
+    ai:{ar:'توصيات AI',en:'AI'},account:{ar:'الحساب',en:'Account'},
+    backup:{ar:'نسخ احتياطي',en:'Backup'},setup:{ar:'رفع الملفات',en:'Files'},
+    logout:{ar:'خروج',en:'Logout'},reset:{ar:'مسح البيانات',en:'Reset App'},
+    settings:{ar:'الإعدادات',en:'Settings'}
+    ,visits:{ar:'الزيارات',en:'Visits'},leads:{ar:'العملاء الجدد',en:'Leads'},ai:{ar:'المساعد الذكي',en:'AI Assistant'}
+};
+
+function t(k) { return I[k] ? I[k][L] : k; }
+function $(id) { return document.getElementById(id); }
+function fmt(n) { return (n == null || isNaN(n)) ? '0' : Number(n).toLocaleString('en-US', {maximumFractionDigits: 0}); }
+function pc(n) { return (n == null || isNaN(n)) ? '0%' : Number(n).toFixed(1) + '%'; }
+function aFmt(n, isPc) { return `<span class="anm" data-v="${n}"${isPc ? ' data-p="1"' : ''}>${isPc ? '0%' : '0'}</span>`; }
+function pd(v) {
+    if (!v) return '';
+    if (typeof v === 'number') {
+        let d = new Date(Math.round((v - 25569) * 86400 * 1000));
+        let yy = d.getFullYear(), mm = ('0' + (d.getMonth() + 1)).slice(-2), dd = ('0' + d.getDate()).slice(-2);
+        return `${yy}-${mm}-${dd}`;
+    }
+    let d = new Date(v);
+    if (!isNaN(d.getTime())) {
+        let yy = d.getFullYear(), mm = ('0' + (d.getMonth() + 1)).slice(-2), dd = ('0' + d.getDate()).slice(-2);
+        return `${yy}-${mm}-${dd}`;
+    }
+    // Handle DD/MM/YYYY
+    if (typeof v === 'string') {
+        let p = v.split(/[\/\-]/);
+        if (p.length === 3) {
+            let y = p[2].length === 2 ? '20' + p[2] : p[2];
+            return `${y}-${('0'+p[1]).slice(-2)}-${('0'+p[0]).slice(-2)}`;
+        }
+    }
+    return '';
+}
+
+function debounce(fn, ms) {
+    let timer;
+    return function() {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, arguments), ms || 250);
+    };
+}
+
+
+
+function ld(k) {
+    if (typeof _cache !== 'undefined' && _cache[k] !== undefined) return _cache[k];
+    try {
+        let v = localStorage.getItem(k);
+        if (v !== null) {
+            try {
+                v = JSON.parse(v);
+            } catch(e) {}
+            if (typeof _cache !== 'undefined') _cache[k] = v;
+            return v;
+        }
+    } catch(e) {}
+    return null;
+}
+
+function sv(k, v) {
+    if (typeof _cache !== 'undefined') _cache[k] = v;
+    try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){}
+}
+
+function ring(ti, pct, tot) {
+    let c = 251.2, off = c - (Math.min(pct, 100) / 100 * c);
+    let col = pct >= 100 ? 'var(--gn)' : pct >= 70 ? 'var(--am)' : 'var(--rd)';
+    return `<div class="rc2"><h4>${ti}</h4><div class="rw2"><svg viewBox="0 0 88 88"><circle class="trk" cx="44" cy="44" r="40"/><circle class="fl" cx="44" cy="44" r="40" stroke="${col}" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg><div class="rce"><div class="p">${pct.toFixed(0)}%</div><div class="s">${fmt(tot)}</div></div></div></div>`;
+}
+
+
+
+function exportToExcel(data, filename) {
+    try {
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), 'Data');
+        XLSX.writeFile(wb, filename + '.xlsx');
+        toast('✅ ' + (L === 'ar' ? 'تم التصدير' : 'Exported'));
+    } catch(err) {
+        console.error(err);
+        toast('❌ Error');
+    }
+}
+
+// Data filtering by date
+function getFilteredSales() {
+    if (!globalDateRange.start && !globalDateRange.end) return S;
+    return S.filter(r => {
+        let d = pd(r['Order Date']);
+        if (!d) return false;
+        let pass = true;
+        if (globalDateRange.start && d < globalDateRange.start) pass = false;
+        if (globalDateRange.end && d > globalDateRange.end) pass = false;
+        return pass;
+    });
+}
+
+
+function dc(k) { if(CH[k]) { CH[k].destroy(); delete CH[k]; } }
+// Robust row value getter - matches column by name (case insensitive, ignores spaces)
+function getRowVal(row, possibleNames) {
+    let keys = Object.keys(row);
+    let k = keys.find(k => possibleNames.some(p => k.toLowerCase().replace(/\s+/g, '') === p.toLowerCase().replace(/\s+/g, '')));
+    if (k) {
+        let v = row[k];
+        if (typeof v === 'string') return Number(v.replace(/,/g, '')) || 0;
+        return Number(v) || 0;
+    }
+    return 0;
+}
+
+// Get sales value - works with OLD format (Sales After Discount) AND NEW format (Sales Without Tax)
+function getSalesVal(row) {
+    return getRowVal(row, ['Sales After Discount', 'Sales Without Tax', 'Sales', 'Amount']);
+}
+
+// Get profit value
+function getProfitVal(row) {
+    return getRowVal(row, ['Profit Margin', 'Profit']);
+}
+
+// Get payment amount from Collections sheet
+function getPayVal(row) {
+    return getRowVal(row, ['Amount', 'Collection']);
+}
+
+// Get Payment Ref type from Collections sheet: returns 'acc', 'hw', or ''
+function getPayRef(row) {
+    let ref = (row['Payment Ref.'] || row['Payment Ref'] || row['PaymentRef'] || '').toString().trim().toLowerCase();
+    if (ref.startsWith('acc')) return 'acc';
+    if (ref.startsWith('hw'))  return 'hw';
+    return '';
+}
+
+// js/auth.js
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user;
+        $('AUTH').classList.add('hidden');
+        $('APP').classList.remove('hidden');
+        $('APP').style.display = 'flex';
+        
+        const ADMIN_EMAILS = ['tetoabdallah@gmail.com'];
+        window.isAppAdmin = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
+        
+        function loadOwnDoc() {
+            syncUI('syncing');
+            // Using onSnapshot for real-time updates!
+            db.collection('users').doc(user.uid).onSnapshot(doc => {
+                if (doc.exists) {
+                    let d = doc.data();
+                    _cache = Object.assign({}, _cache, d);
+                    _mtC = d;
+                    accCats = d['accCats'] || accCats;
+                    hwCats = d['hwCats'] || hwCats;
+                    for(let k in d){ try{ localStorage.setItem(k, JSON.stringify(d[k])); }catch(e){} }
+                    syncUI('done');
+                } else {
+                    let md = { accCats: ld('accCats')||[], hwCats: ld('hwCats')||[] };
+                    db.collection('users').doc(user.uid).set(md);
+                }
+            }, err => {
+                syncUI('error'); console.error('Sync Error: ' + err.message);
+            });
+            
+            
+        }
+        
+        if (window.isAppAdmin) {
+            let _admUsers = {};
+            let _admChkC = {};
+            let _unsubs = {};
+            
+            function asmAdmin() {
+                let comb = { salesData:[], targetData:[], accCats:[], hwCats:[], payData:[], duesData:[] };
+                for(let u in _admUsers) {
+                    let d = _admUsers[u];
+                    if(d.accCats && comb.accCats.length === 0) comb.accCats = d.accCats;
+                    if(d.hwCats && comb.hwCats.length === 0) comb.hwCats = d.hwCats;
+                    
+                    ['salesData','targetData','payData','duesData'].forEach(k => {
+                        let ct = d[k+'_meta'];
+                        if(ct !== undefined) {
+                            let uAsm = [];
+                            let cmp = true;
+                            for(let i=0; i<ct; i++) {
+                                let chkKey = u+'_'+k+'_'+i;
+                                if(_admChkC[chkKey]) uAsm = uAsm.concat(_admChkC[chkKey]);
+                                else { cmp = false; break; }
+                            }
+                            if(cmp && uAsm.length > 0) {
+                                uAsm.forEach(item => { if(typeof item === 'object') item._uid = u; });
+                                comb[k] = comb[k].concat(uAsm);
+                            }
+                        } else if(d[k] && Array.isArray(d[k])) {
+                            let arr = d[k];
+                            arr.forEach(item => { if(typeof item === 'object') item._uid = u; });
+                            comb[k] = comb[k].concat(arr);
+                        }
+                    });
+                }
+                _cache = Object.assign({}, _cache, comb);
+                S = _cache['salesData'] || [];
+                T = _cache['targetData'] || [];
+                accCats = _cache['accCats'] || [];
+                hwCats = _cache['hwCats'] || [];
+                C = _cache['payData'] || [];
+                D = _cache['duesData'] || [];
+                
+                for(let k in comb){ try{ localStorage.setItem(k, JSON.stringify(comb[k])); }catch(e){} }
+                if(typeof render === 'function') render();
+                syncUI('done');
+            }
+            
+            db.collection('users').onSnapshot(snap => {
+                syncUI('syncing');
+                snap.forEach(doc => {
+                    _admUsers[doc.id] = doc.data();
+                    if(!_unsubs[doc.id]) {
+                        _unsubs[doc.id] = db.collection('users').doc(doc.id).collection('chunks').onSnapshot(csnap => {
+                            csnap.docChanges().forEach(change => {
+                                let chkKey = doc.id + '_' + change.doc.id;
+                                if(change.type === "added" || change.type === "modified") _admChkC[chkKey] = change.doc.data().data;
+                                if(change.type === "removed") delete _admChkC[chkKey];
+                            });
+                            asmAdmin();
+                        });
+                    }
+                });
+                asmAdmin();
+            }, err => {
+                console.warn('Admin read failed', err);
+                loadOwnDoc();
+            });
+        } else {
+            loadOwnDoc();
+        }
+        
+        // Auto-restore from cloud if local data is completely empty
+        if ((!S || S.length === 0) && (!T || T.length === 0) && (!C || C.length === 0)) {
+            console.log('Local data is empty, attempting auto-restore from cloud...');
+            db.collection('users').doc(user.uid).get().then(async doc => {
+                if (doc.exists && doc.data().backup_chunks) {
+                    let d = doc.data();
+                    let fullStr = "";
+                    let numChunks = d.backup_chunks || 1;
+                    for(let i=0; i<numChunks; i++){
+                        let c = await db.collection('users').doc(user.uid).collection('chunks').doc('backup_chunk_'+i).get();
+                        if(c.exists) fullStr += c.data().data;
+                    }
+                    if (fullStr) {
+                        let p = JSON.parse(fullStr);
+                        let changed = false;
+                        if (p.salesData && p.salesData.length > 0)  { S = p.salesData;  sv('salesData',  S); changed = true; }
+                        if (p.targetData && p.targetData.length > 0){ T = p.targetData; sv('targetData', T); changed = true; }
+                        if (p.payData && p.payData.length > 0)      { C = p.payData;    sv('payData',    C); changed = true; }
+                        if (p.duesData)     { D = p.duesData;   sv('duesData',   D); }
+                        if (p.accCats)      { accCats = p.accCats; sv('accCats', accCats); }
+                        if (p.hwCats)       { hwCats = p.hwCats;   sv('hwCats', hwCats); }
+                        
+                        if (changed) {
+                            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم استرجاع بيانات السحابة تلقائياً' : '✅ Cloud data auto-restored', 'success');
+                            setTimeout(() => { window.location.reload(); }, 1500);
+                        }
+                    }
+                }
+            }).catch(err => console.error('Auto-restore failed:', err));
+        }
+        
+        if(typeof init === 'function') init();
+    } else {
+        currentUser = null;
+        $('AUTH').classList.remove('hidden');
+        $('APP').classList.add('hidden');
+        $('APP').style.display = 'none';
+    }
+});
+
+if ($('bLog')) {
+    $('bLog').onclick = () => {
+        let e = $('inE').value.trim(), p = $('inP').value.trim();
+        if(!e || !p) { $('aErr').textContent = 'يرجى إدخال البيانات'; return; }
+        
+        $('bLog').textContent = 'جاري التحميل...';
+                auth.signInWithEmailAndPassword(e, p).catch(err => {
+            let code = err.code || '';
+            let msg = err.message || '';
+            if(code === 'auth/user-not-found' || code === 'auth/invalid-credential' || code === 'auth/invalid-login-credentials' || code === 'auth/wrong-password' || msg.includes('INVALID_LOGIN_CREDENTIALS')){
+                auth.createUserWithEmailAndPassword(e, p).catch(err2 => {
+                    let code2 = err2.code || '';
+                    let msg2 = err2.message || '';
+                    if (code2 === 'auth/email-already-in-use' || msg2.includes('EMAIL_EXISTS')) {
+                        $('aErr').textContent = 'كلمة المرور غير صحيحة، أو الحساب موجود بالفعل.';
+                    } else if (code2 === 'auth/weak-password' || msg2.includes('WEAK_PASSWORD')) {
+                        $('aErr').textContent = 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.';
+                    } else {
+                        $('aErr').textContent = msg2.includes('{') ? 'حدث خطأ أثناء إنشاء الحساب، تأكد من صحة البيانات.' : msg2;
+                    }
+                    $('bLog').textContent = 'دخول / حساب جديد';
+                });
+            } else {
+                $('aErr').textContent = msg.includes('{') ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : msg;
+                $('bLog').textContent = 'دخول / حساب جديد';
+            }
+        });
+            } else {
+                $('aErr').textContent = err.message;
+                $('bLog').textContent = 'دخول / حساب جديد';
+            }
+        });
+    };
+}
+
+if ($('bLogG')) {
+    $('bLogG').onclick = () => {
+        let provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).catch(err => {
+            $('aErr').textContent = err.message;
+        });
+    };
+}
+
+// Global logout
+window.logout = function() {
+    auth.signOut();
+};
+
+// js/ui-components.js
+
+// Pagination State
+let pState = {
+    sales: { page: 1, limit: 50 },
+    customers: { page: 1, limit: 50 },
+    analytics: { page: 1, limit: 50 }
+};
+
+function renderPagination(total, stateKey, onPageChange) {
+    let state = pState[stateKey];
+    let totalPages = Math.ceil(total / state.limit);
+    if (totalPages <= 1) return '';
+    
+    let html = `<div style="display:flex;justify-content:center;gap:8px;padding:12px;border-top:1px solid var(--bd-s)">`;
+    
+    html += `<button class="btn" ${state.page === 1 ? 'disabled' : ''} onclick="pState['${stateKey}'].page--; ${onPageChange}()">&#x2B05;&#xFE0F;</button>`;
+    html += `<span style="font-size:0.75rem;font-weight:bold;align-self:center;">&#x1F4C4; ${state.page} ${totalPages}</span>`;
+    html += `<button class="btn" ${state.page === totalPages ? 'disabled' : ''} onclick="pState['${stateKey}'].page++; ${onPageChange}()">&#x27A1;&#xFE0F;</button>`;
+    
+    html += `</div>`;
+    return html;
+}
+
+// 1. Dashboard
+function rDash() {
+    let ds = getFilteredSales();
+    let ts = 0, tp = 0, tt = 0, tpt = 0;
+    
+    ds.forEach(r => { ts += getSalesVal(r); tp += getProfitVal(r); });
+    T.forEach(r => { tt += Number(r.Target)||0; tpt += Number(r['Profit Target'])||0; });
+    
+    let cu = {}, or = {};
+    ds.forEach(r => { cu[r.Customer] = 1; or[r['Order Nbr']] = 1; });
+    
+    let tc = 0;
+    C.forEach(r => {
+        let keys = Object.keys(r);
+        let getVal = (possibleNames) => {
+            let k = keys.find(k => possibleNames.some(pn => k.toLowerCase().replace(/\s+/g, '') === pn.toLowerCase().replace(/\s+/g, '')));
+            return k ? r[k] : undefined;
+        };
+        let rawVal = getVal(['Amount', 'Collection']) || 0;
+        tc += Number(rawVal.toString().replace(/,/g, '')) || 0;
+    });
+    
+    let ap = tt > 0 ? ts / tt * 100 : 0;
+    let pp = tpt > 0 ? tp / tpt * 100 : 0;
+    
+    let dateFilterUI = `
+        <div style="display:flex;gap:10px;align-items:center;background:var(--bg3);padding:8px 16px;border-radius:12px;border:1px solid var(--bd);">
+            <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('From'):'From'}:</label>
+            <input type="date" id="dfStart" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.start||''}">
+            <label style="font-size:0.7rem;font-weight:bold;">${L==='ar'?TUI('To'):'To'}:</label>
+            <input type="date" id="dfEnd" class="sbox" style="padding:6px;width:130px;" value="${globalDateRange.end||''}">
+            <button id="bDateClear" class="btn" style="padding:6px 10px;font-size:0.7rem;">?</button>
+        </div>
+    `;
+    
+    $('M').innerHTML = `
+        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dash}</span> ${t('dash')}</h1>
+            ${dateFilterUI}
+        </div>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
+            <div class="ki" style="border:1px solid var(--am);"><div class="lb" style="color:var(--am);">${L==='ar'?'التحصيلات':'Collections'}</div><div class="vl" style="color:var(--am);">${aFmt(tc)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Cust.'):'Cust.'}</div><div class="vl">${aFmt(Object.keys(cu).length)}</div></div>
+        </div>
+        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, tt)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tpt)}</div>
+        
+        <div class="cg">
+            <div class="cc"><h3>${L==='ar'?TUI('Daily'):'Daily'}</h3><div class="cw"><canvas id="cD"></canvas></div></div>
+            <div class="cc"><h3>${L==='ar'?TUI('Cats'):'Cats'}</h3><div class="cw"><canvas id="cC"></canvas></div></div>
+        </div>
+    `;
+    
+    // Attach date filter events
+    ['dfStart', 'dfEnd'].forEach(id => {
+        $(id).onchange = () => {
+            globalDateRange.start = $('dfStart').value;
+            globalDateRange.end = $('dfEnd').value;
+            rDash(); // Re-render with new data
+        };
+    });
+    $('bDateClear').onclick = () => {
+        globalDateRange = { start: null, end: null };
+        rDash();
+    };
+
+    // Charts
+    let dl = {};
+    ds.forEach(r => {
+        let d = pd(r['Invoice Date'] || r['Order Date']);
+        if(d) dl[d] = (dl[d]||0) + (getSalesVal(r));
+    });
+    let lb = Object.keys(dl).sort();
+    dc('d');
+    let ctx = $('cD');
+    if(ctx && lb.length) {
+        let g = ctx.getContext('2d').createLinearGradient(0,0,0,400);
+        g.addColorStop(0, 'rgba(80,70,229,.8)'); g.addColorStop(1, 'rgba(80,70,229,.1)');
+        CH.d = new Chart(ctx, {
+            type:'bar', data:{labels:lb.map(x=>x.slice(5)), datasets:[{data:lb.map(x=>dl[x]), backgroundColor:g, borderRadius:4}]},
+            options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: function(v) {
+                        if (v === 0) return '';
+                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                        return v;
+                    },
+                    display: function(ctx) {
+                        let val = ctx.dataset.data[ctx.dataIndex];
+                        if (val <= 0) return false;
+                        let type = ctx.chart.config.type;
+                        if (type === 'doughnut' || type === 'pie') {
+                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
+                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
+                        }
+                        return 'auto';
+                    },
+                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
+                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
+                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
+                    clamp: true
+                }}}
+        });
+    }
+
+    let ca = {};
+    ds.forEach(r => {
+        let c = r['Item Class Name'] || 'Other';
+        ca[c] = (ca[c]||0) + (getSalesVal(r));
+    });
+    let cs2 = Object.entries(ca).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    dc('c');
+    let ctx2 = $('cC');
+    if(ctx2 && cs2.length) {
+        CH.c = new Chart(ctx2, {
+            type:'doughnut', data:{labels:cs2.map(x=>x[0]), datasets:[{data:cs2.map(x=>x[1]), backgroundColor:CL, borderWidth:0}]},
+            options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: function(v) {
+                        if (v === 0) return '';
+                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                        return v;
+                    },
+                    display: function(ctx) {
+                        let val = ctx.dataset.data[ctx.dataIndex];
+                        if (val <= 0) return false;
+                        let type = ctx.chart.config.type;
+                        if (type === 'doughnut' || type === 'pie') {
+                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
+                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
+                        }
+                        return 'auto';
+                    },
+                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
+                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
+                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
+                    clamp: true
+                }}}
+        });
+    }
+}
+
+// 2. Sales
+function rSales() {
+    window.sSortCol = ''; window.sSortAsc = true;
+    let ds = getFilteredSales();
+    pState.sales.page = 1; // reset on load
+
+    // Calculate Top 5 Selling Items
+    let items = {};
+    ds.forEach(r => {
+        let iName = r['Item Description'] || 'Unknown';
+        if(!items[iName]) items[iName] = {s:0, p:0, qty:0};
+        items[iName].s += getSalesVal(r);
+        items[iName].p += getProfitVal(r);
+        items[iName].qty += Number(r.Quantity)||0;
+    });
+    
+    let topItemsArr = Object.entries(items).sort((a,b)=>b[1].s-a[1].s).slice(0, 5);
+    
+    let topItemsHtml = '';
+    topItemsArr.forEach((arrItem, i) => {
+        let n = arrItem[0], d = arrItem[1];
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : i===2 ? '#f39c12' : 'var(--tx2)';
+        topItemsHtml += `
+            <div class="card" style="flex:1; min-width:200px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales'):'Sales'}</span>
+                    <strong style="color:${color}; font-size:0.9rem;">${aFmt(d.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Qty'):'Qty'}</span>
+                    <strong style="font-size:0.9rem;">${fmt(d.qty)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Profit'):'Profit'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(d.p)}</strong>
+                </div>
+            </div>
+        `;
+    });
+    
+    $('M').innerHTML = `
+        <div class="ph" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.sales}</span> ${t('sales')}</h1>
+            <div style="margin-left:auto;display:flex;gap:10px;">
+                <button id="bExSales" class="btn bg-g" style="color:#fff;border:none;"><span style="font-size:1rem;">?</span> Excel</button>
+                <button onclick="window.print()" class="btn btn-p"><span style="width:20px;height:20px;display:inline-flex">${ICONS.sales}</span> Print</button>
+            </div>
+        </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 5 Best-Sellers'):'Top 5 Best-Sellers'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topItemsHtml}
+        </div>
+
+        <div class="tb">
+            <div class="tbt">
+                <h3>${L==='ar'?TUI('Sales Table'):'Sales Table'} (${fmt(ds.length)} ${L==='ar'?TUI('Records'):'Records'})</h3>
+                <input class="sbox" id="ss" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
+            </div>
+            <div class="tbs">
+                <table>
+                    <thead><tr>
+                        <th data-c="Date">Date ? </th><th data-c="Nbr"># ? </th><th data-c="Customer">Customer ? </th>
+                        <th data-c="Region">Region ? </th><th data-c="Class">Class ? </th><th data-c="Product">Product ? </th>
+                        <th data-c="Qty">Qty ? </th><th data-c="Sales">Sales ? </th><th data-c="Profit">Profit ? </th>
+                    </tr></thead>
+                    <tbody id="stb"></tbody>
+                </table>
+            </div>
+            <div id="spg"></div>
+        </div>
+    `;
+    
+    $('bExSales').onclick = () => exportToExcel(ds, 'Sales_Report');
+
+    window.fSl = function(data) {
+        let st = pState.sales;
+        let start = (st.page - 1) * st.limit;
+        let paged = data.slice(start, start + st.limit);
+        
+        $('stb').innerHTML = paged.map(r => {
+            let s = getSalesVal(r), pr = getProfitVal(r), pm = s>0 ? pr/s*100 : 0;
+            let b = pm>20 ? '<span class="badge bg-g">High</span>' : pm>10 ? '<span class="badge bg-a">Med</span>' : '<span class="badge bg-r">Low</span>';
+            return `<tr><td>${pd(r['Order Date'])}</td><td>${r['Order Nbr']||''}</td><td>${r.Customer||''}</td><td>${r['Customer Class']||''}</td><td>${r['Item Class Name']||''}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r['Item Description']||''}">${r['Item Description']||''}</td><td>${r.Quantity||0}</td><td>${fmt(s)}</td><td>${fmt(pr)} ${b}</td></tr>`;
+        }).join('');
+        
+        $('spg').innerHTML = renderPagination(data.length, 'sales', 'window.doSalesSearch');
+    };
+
+    window.doSalesSearch = function() {
+        let q = $('ss').value.toLowerCase();
+        let c = window.sSortCol;
+        let filtered = ds.filter(r => (r.Customer||'').toLowerCase().includes(q) || (r['Item Description']||'').toLowerCase().includes(q));
+        
+        if (c) {
+            filtered = filtered.sort((a,b) => {
+                let va=0, vb=0;
+                if(c==='Date'){va=pd(a['Order Date']);vb=pd(b['Order Date']);}
+                else if(c==='Nbr'){va=a['Order Nbr']||'';vb=b['Order Nbr']||'';}
+                else if(c==='Customer'){va=a.Customer||'';vb=b.Customer||'';}
+                else if(c==='Region'){va=a['Customer Class']||'';vb=b['Customer Class']||'';}
+                else if(c==='Class'){va=a['Item Class Name']||'';vb=b['Item Class Name']||'';}
+                else if(c==='Product'){va=a['Item Description']||'';vb=b['Item Description']||'';}
+                else if(c==='Qty'){va=Number(a.Quantity)||0;vb=Number(b.Quantity)||0;}
+                else if(c==='Sales'){va=Number(a['Sales After Discount'])||0;vb=Number(b['Sales After Discount'])||0;}
+                else if(c==='Profit'){va=Number(a['Profit Margin'])||0;vb=Number(b['Profit Margin'])||0;}
+                if(va<vb) return window.sSortAsc ? -1 : 1;
+                if(va>vb) return window.sSortAsc ? 1 : -1;
+                return 0;
+            });
+        }
+        fSl(filtered);
+    };
+
+    $('ss').oninput = debounce(() => { pState.sales.page = 1; window.doSalesSearch(); }, 200);
+
+    document.querySelectorAll('th[data-c]').forEach(th => {
+        th.style.cursor = 'pointer';
+        th.onclick = () => {
+            let c = th.getAttribute('data-c');
+            if(window.sSortCol === c) window.sSortAsc = !window.sSortAsc;
+            else { window.sSortCol = c; window.sSortAsc = true; }
+            pState.sales.page = 1;
+            window.doSalesSearch();
+        };
+    });
+    
+    fSl(ds);
+}
+
+// 3. Targets
+function rTgt() {
+    let sData = typeof getFilteredSales === 'function' ? getFilteredSales() : S;
+    let sMap = {}, accSMap = {}, hwSMap = {};
+    let pMap = {}, accPMap = {}, hwPMap = {};
+    sData.forEach(r => {
+        let c = r.Customer;
+        if(!c) return;
+        let s = Number(r['Sales After Discount']) || 0;
+        let p = Number(r['Profit Margin']) || 0;
+        let isA = isAcc(r['Item Class Name']);
+        let isH = isHW(r['Item Class Name']);
+        sMap[c] = (sMap[c] || 0) + s;
+        pMap[c] = (pMap[c] || 0) + p;
+        if (isA) { accSMap[c] = (accSMap[c] || 0) + s; accPMap[c] = (accPMap[c] || 0) + p; }
+        if (isH) { hwSMap[c] = (hwSMap[c] || 0) + s; hwPMap[c] = (hwPMap[c] || 0) + p; }
+    });
+    let cS = (c) => sMap[c] || 0;
+    let cSF = (c, f) => f === isAcc ? (accSMap[c] || 0) : (hwSMap[c] || 0);
+    let cPF = (c, f) => f === isAcc ? (accPMap[c] || 0) : (hwPMap[c] || 0);
+
+    let tt=0, ta=0;
+    T.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
+    $('M').innerHTML = `
+        <div class="ph" style="display:flex;align-items:center;gap:12px;">
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}"</h1>
+            <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
+        </div>
+        <div class="kg">
+            <div class="ki"><div class="lb">Target</div><div class="vl">${aFmt(tt)}</div></div>
+            <div class="ki"><div class="lb">Achieved</div><div class="vl">${aFmt(ta)}</div></div>
+            <div class="ki"><div class="lb">%</div><div class="vl">${aFmt(tt>0?ta/tt*100:0,true)}</div></div>
+        </div>
+        <div class="tb">
+            <div class="tbt"><h3>Targets</h3><input class="sbox" id="tsr" placeholder="..."></div>
+            <div class="tbs"><table><thead><tr><th>Customer</th><th>Target</th><th>Achieved</th><th>%</th><th>Acc</th><th>Acc P</th><th>HW</th><th>HW P</th><th>St</th></tr></thead><tbody id="ttb"></tbody></table></div>
+        </div>
+    `;
+    
+    $('bExTgt').onclick = () => exportToExcel(T.map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
+
+    function fTg(d){
+        $('ttb').innerHTML = d.map(r => {
+            let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
+            return `<tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>`;
+        }).join('');
+    }
+    fTg(T);
+    
+    $('tsr').oninput = debounce(e => {
+        let v = e.target.value.toLowerCase();
+        fTg(v ? T.filter(r => (r.Customer||'').toLowerCase().includes(v)) : T);
+    });
+    initAnm && initAnm();}
+function rPers() {
+    let myEmail = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.email : '';
+    let myS = S, ts = 0, tp = 0;
+    let accS = 0, accP = 0, hwS = 0, hwP = 0;
+    
+    let defaultTT = 0, defaultTPT = 0;
+    T.forEach(r => { defaultTT += Number(r.Target)||0; defaultTPT += Number(r['Profit Target'])||0; });
+    
+    // Total targets
+    let savedTarget = localStorage.getItem('personal_target');
+    let savedProfitTarget = localStorage.getItem('personal_profit_target');
+    let tt = savedTarget !== null ? Number(savedTarget) : defaultTT;
+    let tpt = savedProfitTarget !== null ? Number(savedProfitTarget) : defaultTPT;
+
+    // Accessories Targets
+    let savedAccTarget = localStorage.getItem('personal_acc_target');
+    let savedAccProfitTarget = localStorage.getItem('personal_acc_profit_target');
+    let att = savedAccTarget !== null ? Number(savedAccTarget) : 0;
+    let atpt = savedAccProfitTarget !== null ? Number(savedAccProfitTarget) : 0;
+
+    // Hardware Targets
+    let savedHwTarget = localStorage.getItem('personal_hw_target');
+    let savedHwProfitTarget = localStorage.getItem('personal_hw_profit_target');
+    let htt = savedHwTarget !== null ? Number(savedHwTarget) : 0;
+    let htpt = savedHwProfitTarget !== null ? Number(savedHwProfitTarget) : 0;
+    
+    myS.forEach(r => { 
+        let s = getSalesVal(r);
+        let p = getProfitVal(r);
+        ts += s; tp += p; 
+        if (isAcc(r['Item Class Name'])) {
+            accS += s; accP += p;
+        } else {
+            hwS += s; hwP += p;
+        }
+    });
+    
+    let ap = tt > 0 ? ts/tt*100 : 0, pp = tpt > 0 ? tp/tpt*100 : 0;
+    let remS = Math.max(0, tt - ts);
+    let remP = Math.max(0, tpt - tp);
+
+    let aap = att > 0 ? accS/att*100 : 0, app = atpt > 0 ? accP/atpt*100 : 0;
+    let aremS = Math.max(0, att - accS);
+    let aremP = Math.max(0, atpt - accP);
+
+    let hap = htt > 0 ? hwS/htt*100 : 0, hpp = htpt > 0 ? hwP/htpt*100 : 0;
+    let hremS = Math.max(0, htt - hwS);
+    let hremP = Math.max(0, htpt - hwP);
+
+    // Monthly breakdown
+    let monthly = {};
+    myS.forEach(r => {
+        let d = pd(r['Order Date']); if(!d) return;
+        let m = d.slice(0,7);
+        if(!monthly[m]) monthly[m] = {s:0,p:0};
+        monthly[m].s += getSalesVal(r);
+        monthly[m].p += getProfitVal(r);
+    });
+    let months = Object.keys(monthly).sort();
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.personal}</span> ${t('personal')}</h1></div>
+        
+        <div class="card" style="margin-bottom:24px; padding:20px; border-left:4px solid var(--p);">
+            <h3 style="margin-bottom:16px;">${L==='ar'?TUI('Personal Target Settings'):'Personal Target Settings'}</h3>
+            <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
+                <!-- Total -->
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Total Target'):'Total Target'}</label>
+                    <input type="number" id="inPTarget" value="${tt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Total Profit Target'):'Total Profit Target'}</label>
+                    <input type="number" id="inPProfit" value="${tpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <!-- Accessories -->
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Acc. Target'):'Acc. Target'}</label>
+                    <input type="number" id="inAccTarget" value="${att}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('Acc. Profit'):'Acc. Profit'}</label>
+                    <input type="number" id="inAccProfit" value="${atpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <!-- Hardware -->
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('HW Target'):'HW Target'}</label>
+                    <input type="number" id="inHwTarget" value="${htt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <div style="flex:1; min-width:150px;">
+                    <label style="font-size:0.85rem; font-weight:bold; color:var(--tx2); margin-bottom:6px; display:block;">${L==='ar'?TUI('HW Profit'):'HW Profit'}</label>
+                    <input type="number" id="inHwProfit" value="${htpt}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--tx); font-size:1rem;">
+                </div>
+                <div style="min-width:120px;">
+                    <button id="bSaveTarget" class="btn btn-p" style="width:100%; padding:10px; height:42px;">${L==='ar'?TUI('Save'):'Save'}</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOTALS -->
+        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Overall Summary'):'Overall Summary'}</h3>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Remaining'):'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(remS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tpt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Remaining'):'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(remP)}</div></div>
+        </div>
+
+        <!-- ACCESSORIES -->
+        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px; margin-top:24px;">${L==='ar'?TUI('Accessories'):'Accessories'}</h3>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Acc. Sales'):'Acc. Sales'}</div><div class="vl">${aFmt(accS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(att)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(aap,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Remaining'):'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(aremS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Acc. Profit'):'Acc. Profit'}</div><div class="vl">${aFmt(accP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(atpt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(accS>0?accP/accS*100:0,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Rem. Profit'):'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(aremP)}</div></div>
+        </div>
+
+        <!-- HARDWARE -->
+        <h3 style="margin-bottom:12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px; margin-top:24px;">${L==='ar'?TUI('Hardware'):'Hardware'}</h3>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('HW Sales'):'HW Sales'}</div><div class="vl">${aFmt(hwS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(htt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(hap,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Remaining'):'Remaining'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('HW Profit'):'HW Profit'}</div><div class="vl">${aFmt(hwP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(htpt)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(hwS>0?hwP/hwS*100:0,true)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Rem. Profit'):'Rem. Profit'}</div><div class="vl" style="color:var(--rd);">${aFmt(hremP)}</div></div>
+        </div>
+
+        <div class="rg">${ring(L==='ar'?TUI('Sales'):'Sales', ap, tt)}${ring(L==='ar'?TUI('Profit'):'Profit', pp, tpt)}</div>
+        <div class="tb"><div class="tbt"><h3>${L==='ar'?TUI('Monthly'):'Monthly'}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Month'):'Month'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th></tr></thead>
+        <tbody>${months.map(m => `<tr><td>${m}</td><td>${fmt(monthly[m].s)}</td><td>${fmt(monthly[m].p)}</td><td><span class="badge ${monthly[m].s>0&&monthly[m].p/monthly[m].s*100>=5?'bg-g':'bg-a'}">${pc(monthly[m].s>0?monthly[m].p/monthly[m].s*100:0)}</span></td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+    
+    $('bSaveTarget').onclick = () => {
+        localStorage.setItem('personal_target', $('inPTarget').value);
+        localStorage.setItem('personal_profit_target', $('inPProfit').value);
+        localStorage.setItem('personal_acc_target', $('inAccTarget').value);
+        localStorage.setItem('personal_acc_profit_target', $('inAccProfit').value);
+        localStorage.setItem('personal_hw_target', $('inHwTarget').value);
+        localStorage.setItem('personal_hw_profit_target', $('inHwProfit').value);
+        toast(L==='ar'?TUI('Saved!'):'Saved!');
+        rPers();
+    };
+    initAnm && initAnm();}
+
+function rCust() {
+    let cu = {};
+    let ds = getFilteredSales();
+    ds.forEach(r => {
+        let c = r.Customer || '';
+        if(!cu[c]) cu[c] = {rg:r['Customer Class']||'', o:{}, s:0, p:0, accS:0, hwS:0, l:''};
+        cu[c].o[r['Order Nbr']] = 1;
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
+        if(isAcc(r['Item Class Name'])) cu[c].accS += getSalesVal(r); else cu[c].hwS += getSalesVal(r);
+        let d = pd(r['Order Date']); if(d > cu[c].l) cu[c].l = d;
+    });
+    let arr = Object.keys(cu).map(n => {
+        let d = cu[n], tr = T.find(t => t.Customer === n), tg = tr ? Number(tr.Target)||0 : 0;
+        return {n:n, rg:d.rg, o:Object.keys(d.o).length, s:d.s, p:d.p, accS:d.accS, hwS:d.hwS, l:d.l, m:d.s>0?d.p/d.s*100:0, tg:tg, ach:tg>0?d.s/tg*100:0};
+    }).sort((a,b)=>b.s-a.s);
+    window._CU = arr;
+    let totS = arr.reduce((sum,r)=>sum+r.s,0), totP = arr.reduce((sum,r)=>sum+r.p,0);
+    pState.customers.page = 1;
+    
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, arr.length); i++) {
+        let n = arr[i].n;
+        let d = arr[i];
+        let contrib = totS > 0 ? (d.s/totS)*100 : 0;
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Sales'):'Sales'}</span>
+                    <strong style="color:${color};">${aFmt(d.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Profit'):'Profit'}</span>
+                    <strong>${aFmt(d.p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Contribution'):'Contribution'}</span>
+                    <span class="badge" style="background:${color}; color:white;">${pc(contrib)}</span>
+                </div>
+            </div>
+        `;
+    }
+    
+    $('M').innerHTML = `
+        <div class="ph" style="display:flex;align-items:center;gap:12px;">
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.customers}</span> ${t('customers')}</h1>
+            <button id="bExCust" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">?</span> Excel</button>
+        </div>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Customers'):'Customers'}</div><div class="vl">${aFmt(arr.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(totS)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(totP)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(totS>0?totP/totS*100:0,true)}</div></div>
+        </div>
+        
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 Buyers'):'Top 3 Buyers'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml}
+        </div>
+
+        <div class="tb">
+            <div class="tbt" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>${L==='ar'?TUI('Customers Details'):'Customers Details'}</h3>
+                <input class="sbox" id="cusr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
+            </div>
+            <div class="tbs"><table><thead><tr><th>Customer</th><th>Region</th><th>Orders</th><th>Sales</th><th>Acc</th><th>HW</th><th>Profit</th><th>Margin</th><th>Target</th><th>Ach.</th><th>Last</th></tr></thead><tbody id="cutb"></tbody></table></div>
+            <div id="cpg"></div>
+        </div>
+    `;
+    
+    $('bExCust').onclick = () => exportToExcel(arr, 'Customers_Report');
+
+    window.doCustSearch = function() {
+        let q = $('cusr').value.toLowerCase();
+        let filtered = window._CU.filter(r => r.n.toLowerCase().includes(q));
+        let st = pState.customers;
+        let start = (st.page - 1) * st.limit;
+        let paged = filtered.slice(start, start + st.limit);
+        
+        $('cutb').innerHTML = paged.map(r => `<tr><td><strong>${r.n}</strong></td><td>${r.rg}</td><td>${r.o}</td><td>${fmt(r.s)}</td><td>${fmt(r.accS)}</td><td>${fmt(r.hwS)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${fmt(r.tg)}</td><td>${r.tg>0?`<span class="badge ${r.ach>=100?'bg-g':r.ach>=60?'bg-a':'bg-r'}">${pc(r.ach)}</span>`:'-'}</td><td>${r.l}</td></tr>`).join('');
+        $('cpg').innerHTML = renderPagination(filtered.length, 'customers', 'window.doCustSearch');
+    };
+    
+    window.doCustSearch();
+    $('cusr').oninput = debounce(() => { pState.customers.page = 1; window.doCustSearch(); }, 200);
+}
+function rReset() {
+    $('M').innerHTML=`<div class="ph"><h1>${ICONS.reset} ${t('reset')}</h1></div><div class="card" style="text-align:center;"><p style="margin-bottom:16px;color:var(--tx2);">${L==='ar'?TUI('This will clear all locally stored data. Cloud data is not affected.'):'This will clear all locally stored data. Cloud data is not affected.'}</p><button id="fRst" class="btn btn-p" style="background:var(--rd)">${L==='ar'?TUI('Wipe All Local Data'):'Wipe All Local Data'}</button></div>`;
+    $('fRst').onclick = () => {
+        if(confirm(L==='ar'?TUI('Are you sure?'):'Are you sure?')) {
+            localStorage.clear(); S=[]; T=[]; C=[]; D=[];
+            toast(L==='ar'?TUI('Wiped'):'Wiped');
+            setTimeout(()=>location.reload(), 500);
+        }
+    };
+}
+
+// Brands
+function rBrands() {
+    let brands = {};
+    let tsTotal = 0;
+    S.forEach(r => {
+        let b = r['Brand'] || r['Item Class Name'] || 'Other';
+        if(!brands[b]) brands[b] = {s:0,p:0,qty:0};
+        brands[b].s += getSalesVal(r);
+        brands[b].p += getProfitVal(r);
+        brands[b].qty += Number(r.Quantity)||0;
+        tsTotal += getSalesVal(r);
+    });
+    let arr = Object.entries(brands).sort((a,b)=>b[1].s-a[1].s);
+    
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, arr.length); i++) {
+        let n = arr[i][0];
+        let d = arr[i][1];
+        let contrib = tsTotal > 0 ? (d.s/tsTotal)*100 : 0;
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.4rem;">${n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Sales'):'Sales'}</span>
+                    <strong style="color:${color};">${aFmt(d.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Profit'):'Profit'}</span>
+                    <strong>${aFmt(d.p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Contribution'):'Contribution'}</span>
+                    <span class="badge" style="background:${color}; color:white;">${pc(contrib)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.brands}</span> ${t('brands')}</h1></div>
+        
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Brands'):'Brands'}</div><div class="vl">${aFmt(arr.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(tsTotal)}</div></div>
+        </div>
+
+        <!-- TOP 3 CARDS -->
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 Brands'):'Top 3 Brands'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml}
+        </div>
+
+        <div class="tb">
+            <div class="tbt" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>${L==='ar'?TUI('Brands Details'):'Brands Details'}</h3>
+                <input class="sbox" id="bsr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
+            </div>
+            <div class="tbs">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>${L==='ar'?TUI('Brand'):'Brand'}</th>
+                            <th>${L==='ar'?TUI('Sales'):'Sales'}</th>
+                            <th>${L==='ar'?TUI('Profit'):'Profit'}</th>
+                            <th>${L==='ar'?TUI('Margin'):'Margin'}</th>
+                            <th>${L==='ar'?TUI('Qty'):'Qty'}</th>
+                            <th>${L==='ar'?TUI('Contr. %'):'Contr. %'}</th>
+                            <th>${L==='ar'?TUI('Avg Price'):'Avg Price'}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="brtb">
+                        ${arr.map(([n,d])=>`<tr>
+                            <td><strong>${n}</strong></td>
+                            <td>${fmt(d.s)}</td>
+                            <td>${fmt(d.p)}</td>
+                            <td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}">${pc(d.s>0?d.p/d.s*100:0)}</span></td>
+                            <td>${fmt(d.qty)}</td>
+                            <td>${pc(tsTotal>0?d.s/tsTotal*100:0)}</td>
+                            <td>${fmt(d.qty>0?d.s/d.qty:0)}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    $('bsr').oninput = debounce(function() {
+        let q = this.value.toLowerCase();
+        $('brtb').innerHTML = arr.filter(([n])=>n.toLowerCase().includes(q)).map(([n,d])=>`<tr>
+            <td><strong>${n}</strong></td>
+            <td>${fmt(d.s)}</td>
+            <td>${fmt(d.p)}</td>
+            <td><span class="badge ${d.s>0&&d.p/d.s*100>=5?'bg-g':'bg-a'}">${pc(d.s>0?d.p/d.s*100:0)}</span></td>
+            <td>${fmt(d.qty)}</td>
+            <td>${pc(tsTotal>0?d.s/tsTotal*100:0)}</td>
+            <td>${fmt(d.qty>0?d.s/d.qty:0)}</td>
+        </tr>`).join('');
+    }, 200);
+    initAnm && initAnm();}
+
+// Analytics
+function rAn() {
+    let ds = getFilteredSales();
+    let monthly = {}, cats = {}, regions = {};
+    ds.forEach(r => {
+        let d = pd(r['Order Date']); if(!d) return;
+        let m = d.slice(0,7);
+        if(!monthly[m]) monthly[m] = {s:0,p:0};
+        monthly[m].s += getSalesVal(r);
+        monthly[m].p += getProfitVal(r);
+        let c = r['Item Class Name']||'Other';
+        cats[c] = (cats[c]||0) + (getSalesVal(r));
+        let rg = r['Customer Class']||'Other';
+        regions[rg] = (regions[rg]||0) + (getSalesVal(r));
+    });
+    let months = Object.keys(monthly).sort();
+    let topCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    let topReg = Object.entries(regions).sort((a,b)=>b[1]-a[1]);
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.analytics}</span> ${t('analytics')}</h1></div>
+        <div class="cg">
+            <div class="cc"><h3>${L==='ar'?TUI('Monthly Sales'):'Monthly Sales'}</h3><div class="cw"><canvas id="anM"></canvas></div></div>
+            <div class="cc"><h3>${L==='ar'?TUI('Categories'):'Categories'}</h3><div class="cw"><canvas id="anC"></canvas></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;" class="rg-grid">
+            <div class="card">
+                <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Regions'):'Regions'}</h3>
+                ${topReg.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:0.8rem;"><span>${n}</span><strong>${fmt(v)}</strong></div>`).join('')}
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Top Categories'):'Top Categories'}</h3>
+                ${topCats.map(([n,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:0.8rem;"><span>${n}</span><strong>${fmt(v)}</strong></div>`).join('')}
+            </div>
+        </div>
+    `;
+    dc('anM'); dc('anC');
+    let ctxM = $('anM');
+    if(ctxM && months.length) {
+        CH.anM = new Chart(ctxM, {
+            type:'line', data:{labels:months.map(x=>x.slice(5)), datasets:[{label:'Sales',data:months.map(m=>monthly[m].s),borderColor:'#5046e5',backgroundColor:'rgba(80,70,229,.1)',fill:true,tension:0.4},{label:'Profit',data:months.map(m=>monthly[m].p),borderColor:'#0fa87e',backgroundColor:'rgba(15,168,126,.1)',fill:true,tension:0.4}]},
+            options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}, datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: function(v) {
+                        if (v === 0) return '';
+                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                        return v;
+                    },
+                    display: function(ctx) {
+                        let val = ctx.dataset.data[ctx.dataIndex];
+                        if (val <= 0) return false;
+                        let type = ctx.chart.config.type;
+                        if (type === 'doughnut' || type === 'pie') {
+                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
+                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
+                        }
+                        return 'auto';
+                    },
+                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
+                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
+                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
+                    clamp: true
+                }}}
+        });
+    }
+    let ctxC = $('anC');
+    if(ctxC && topCats.length) {
+        CH.anC = new Chart(ctxC, {
+            type:'doughnut', data:{labels:topCats.map(x=>x[0]), datasets:[{data:topCats.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},
+            options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: function(v) {
+                        if (v === 0) return '';
+                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                        return v;
+                    },
+                    display: function(ctx) {
+                        let val = ctx.dataset.data[ctx.dataIndex];
+                        if (val <= 0) return false;
+                        let type = ctx.chart.config.type;
+                        if (type === 'doughnut' || type === 'pie') {
+                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
+                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
+                        }
+                        return 'auto';
+                    },
+                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
+                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
+                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
+                    clamp: true
+                }}}
+        });
+    }
+    initAnm && initAnm();}
+
+// Profit Margin
+function rProfit() {
+    let ds = getFilteredSales();
+    let cu = {};
+    ds.forEach(r => {
+        let c = r.Customer||'';
+        if(!cu[c]) cu[c] = {s:0,p:0};
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
+    });
+    let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.m-a.m);
+    
+    let topHtml = '';
+    let topProfit = [...arr].sort((a,b)=>b.p-a.p).slice(0, 3);
+    for(let i=0; i<topProfit.length; i++) {
+        let ka = topProfit[i];
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}">${ka.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Profit'):'Profit'}</span>
+                    <strong style="font-size:0.9rem; color:${color}">${aFmt(ka.p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales'):'Sales'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(ka.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Margin'):'Margin'}</span>
+                    <span class="badge ${ka.m>=10?'bg-g':ka.m>=5?'bg-a':'bg-r'}">${pc(ka.m)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.profit}</span> ${t('profit')}</h1></div>
+        
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Profit'):'Total Profit'}</div><div class="vl">${aFmt(arr.reduce((s,x)=>s+x.p,0))}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Avg Margin'):'Avg Margin'}</div><div class="vl">${aFmt(arr.length>0?arr.reduce((s,x)=>s+x.m,0)/arr.length:0,true)}</div></div>
+        </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 Profitable'):'Top 3 Profitable'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
+        </div>
+
+        <div class="tb"><div class="tbt"><h3>${t('profit')}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th></tr></thead>
+        <tbody>${arr.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=10?'bg-g':r.m>=5?'bg-a':'bg-r'}">${pc(r.m)}</span></td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+    initAnm && initAnm();}
+
+// Accessories
+function rAcc() {
+    // Always use DEF_ACC as base; accCats overrides only if user saved custom ones
+    let _accList = (accCats && accCats.length) ? accCats : DEF_ACC;
+    let ds = getFilteredSales().filter(r => _accList.includes(r['Item Class Name']));
+    let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
+    let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
+    let cats = {};
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
+    let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.accessories}</span> ${t('accessories')}</h1></div>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(prof)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(tot>0?prof/tot*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(ds.length)}</div></div>
+        </div>
+        <div class="cg"><div class="cc"><h3>${L==='ar'?TUI('Categories'):'Categories'}</h3><div class="cw"><canvas id="accC"></canvas></div></div></div>
+        <div class="tb"><div class="tbt"><h3>${t('accessories')}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Category'):'Category'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>%</th></tr></thead>
+        <tbody>${catArr.map(([n,v])=>`<tr><td>${n}</td><td>${fmt(v)}</td><td>${pc(tot>0?v/tot*100:0)}</td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+    dc('accC');
+    let ctx = $('accC');
+    if(ctx && catArr.length) { CH.accC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: function(v) {
+                        if (v === 0) return '';
+                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                        return v;
+                    },
+                    display: function(ctx) {
+                        let val = ctx.dataset.data[ctx.dataIndex];
+                        if (val <= 0) return false;
+                        let type = ctx.chart.config.type;
+                        if (type === 'doughnut' || type === 'pie') {
+                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
+                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
+                        }
+                        return 'auto';
+                    },
+                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
+                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
+                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
+                    clamp: true
+                }}}}); }
+    initAnm && initAnm();}
+
+// Hardware
+function rHW() {
+    let ds = getFilteredSales().filter(r => isHW(r['Item Class Name']));
+    let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
+    let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
+    let cats = {};
+    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
+    let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.hardware}</span> ${t('hardware')}</h1></div>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(prof)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(tot>0?prof/tot*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(ds.length)}</div></div>
+        </div>
+        <div class="cg"><div class="cc"><h3>${L==='ar'?TUI('Categories'):'Categories'}</h3><div class="cw"><canvas id="hwC"></canvas></div></div></div>
+        <div class="tb"><div class="tbt"><h3>${t('hardware')}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Category'):'Category'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>%</th></tr></thead>
+        <tbody>${catArr.map(([n,v])=>`<tr><td>${n}</td><td>${fmt(v)}</td><td>${pc(tot>0?v/tot*100:0)}</td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+    dc('hwC');
+    let ctx = $('hwC');
+    if(ctx && catArr.length) { CH.hwC = new Chart(ctx, {type:'doughnut',data:{labels:catArr.map(x=>x[0]),datasets:[{data:catArr.map(x=>x[1]),backgroundColor:CL,borderWidth:0}]},options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:8}}}, datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: function(v) {
+                        if (v === 0) return '';
+                        if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                        if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+                        return v;
+                    },
+                    display: function(ctx) {
+                        let val = ctx.dataset.data[ctx.dataIndex];
+                        if (val <= 0) return false;
+                        let type = ctx.chart.config.type;
+                        if (type === 'doughnut' || type === 'pie') {
+                            let meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
+                            if (meta && meta.total > 0 && (val / meta.total) < 0.04) return false;
+                        }
+                        return 'auto';
+                    },
+                    anchor: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 'end' : 'center'; },
+                    align: function(ctx) { return ctx.chart.config.type === 'bar' ? 'end' : (ctx.chart.config.type === 'line' ? 'top' : 'center'); },
+                    offset: function(ctx) { return (ctx.chart.config.type === 'bar' || ctx.chart.config.type === 'line') ? 4 : 0; },
+                    clamp: true
+                }}}}); }
+    initAnm && initAnm();}
+
+// Collections
+function rCollections() {
+    let tot = 0, accTot = 0, hwTot = 0;
+    let cAccMap = {}, cHWMap = {};
+    if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
+        S.forEach(s => {
+            let c = s['Customer'];
+            if(c) {
+                let v = Number(s['Sales Without Tax'] || 0);
+                if(isAcc(s['Item Class Name'])) cAccMap[c] = (cAccMap[c]||0) + v;
+                if(isHW(s['Item Class Name'])) cHWMap[c] = (cHWMap[c]||0) + v;
+            }
+        });
+    }
+
+    C.forEach(r => {
+        let keys = Object.keys(r);
+        let getVal = (possibleNames) => {
+            let k = keys.find(k => possibleNames.some(pn => k.toLowerCase().replace(/\s+/g, '') === pn.toLowerCase().replace(/\s+/g, '')));
+            return k ? r[k] : undefined;
+        };
+        
+        let rawVal = getVal(['Amount', 'Collection']) || 0;
+        let val = Number(rawVal.toString().replace(/,/g, '')) || 0;
+        let cat = getVal(['Item Class Name', 'Item Group', 'Category']);
+        let ahRaw = getVal(['acc-hw', 'acchw', 'acc - hw']);
+        let ah = ahRaw ? ahRaw.toString().trim().toLowerCase() : '';
+        let cName = getVal(['Customer Name', 'Customer']) || '';
+        
+        tot += val;
+          // Payment Ref. column takes priority: acc=accessories, hw=hardware
+          let payRef = (r['Payment Ref.'] || r['Payment Ref'] || r['PaymentRef'] || '').toString().trim().toLowerCase();
+          if (payRef.startsWith('acc')) {
+              accTot += val;
+          } else if (payRef.startsWith('hw')) {
+              hwTot += val;
+          } else if (ah.includes('acc') || ah.includes('اكسسوار')) {
+            accTot += val;
+        } else if (ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
+            hwTot += val;
+        } else if (cat) {
+            if (isAcc(cat)) accTot += val;
+            else if (isHW(cat)) hwTot += val;
+        } else if (cat) {
+            if (isAcc(cat)) accTot += val;
+            else if (isHW(cat)) hwTot += val;
+        } else {
+            let a = cAccMap[cName]||0;
+            let h = cHWMap[cName]||0;
+            if (a > 0 || h > 0) {
+                if (a >= h) accTot += val;
+                else hwTot += val;
+            } else {
+                accTot += val; 
+            }
+        }
+    });
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}"</h1></div>
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?'هاردوير':'Hardware'}</div><div class="vl">${aFmt(hwTot)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Records'):'Records'}</div><div class="vl">${aFmt(C.length)}</div></div>
+        </div>
+        ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
+        <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
+        <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}"
+    `;
+    initAnm && initAnm();}
+// Key Accounts (top 20% customers)
+function rKey() {
+    let cu = {};
+    S.forEach(r => {
+        let c = r.Customer||'';
+        if(!cu[c]) cu[c] = {s:0,p:0,o:{}};
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
+        cu[c].o[r['Order Nbr']] = 1;
+    });
+    let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
+    let totS = arr.reduce((s,x)=>s+x.s,0);
+    let cumS = 0, keyAcc = [];
+    for(let r of arr) { cumS+=r.s; keyAcc.push(r); if(cumS/totS>=0.8) break; }
+
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, keyAcc.length); i++) {
+        let ka = keyAcc[i];
+        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('VIP'):'VIP'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ka.n}">${ka.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales'):'Sales'}</span>
+                    <strong style="font-size:0.9rem; color:${color}">${aFmt(ka.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Profit'):'Profit'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(ka.p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Orders'):'Orders'}</span>
+                    <span class="badge bg-g">${ka.o}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.keyacc}</span> ${t('keyacc')}</h1></div>
+        
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Key Accounts'):'Key Accounts'}</div><div class="vl">${aFmt(keyAcc.length)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Contribution'):'Contribution'}</div><div class="vl">${aFmt(totS>0?keyAcc.reduce((s,x)=>s+x.s,0)/totS*100:0,true)}</div></div>
+        </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 VIPs'):'Top 3 VIPs'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
+        </div>
+
+        <div class="tb"><div class="tbt"><h3>${t('keyacc')} ? ${L==='ar'?TUI('80% of Sales'):'80% of Sales'}</h3></div>
+        <div class="tbs"><table><thead><tr><th>#</th><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Sales'):'Sales'}</th><th>${L==='ar'?TUI('Profit'):'Profit'}</th><th>${L==='ar'?TUI('Margin'):'Margin'}</th><th>${L==='ar'?TUI('Orders'):'Orders'}</th></tr></thead>
+        <tbody>${keyAcc.map((r,i)=>`<tr><td><span class="badge bg-g">${i+1}</span></td><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${r.o}</td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+    initAnm && initAnm();}
+
+// Dormant Customers (no purchase in 60+ days)
+function rDorm() {
+    let cu = {};
+    let maxDate = 0;
+    
+    S.forEach(r => {
+        let dStr = pd(r['Order Date']);
+        if(dStr) {
+            let t = new Date(dStr).getTime();
+            if(!isNaN(t) && t > maxDate) maxDate = t;
+        }
+    });
+    
+    let todayTime = maxDate > 0 ? maxDate : new Date().getTime();
+    
+    S.forEach(r => {
+        let c = r.Customer || '';
+        if(!c) return;
+        let dStr = pd(r['Order Date']);
+        let s = getSalesVal(r);
+        
+        if(!cu[c]) cu[c] = {last: dStr, s: 0};
+        else if (dStr && dStr > cu[c].last) cu[c].last = dStr;
+        
+        cu[c].s += s;
+    });
+
+    let dormant = Object.entries(cu).map(([n, data]) => {
+        let t = new Date(data.last).getTime();
+        let days = !isNaN(t) ? Math.floor((todayTime - t) / 86400000) : -1;
+        return {n, last: data.last, days, s: data.s};
+    }).filter(r => r.days >= 60).sort((a,b) => b.s - a.s); 
+    
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, dormant.length); i++) {
+        let d = dormant[i];
+        let color = '#e74c3c'; 
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.n}">${d.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Total Sales'):'Total Sales'}</span>
+                    <strong style="color:${color};">${aFmt(d.s)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2);">${L==='ar'?TUI('Inactive for'):'Inactive for'}</span>
+                    <span class="badge" style="background:${color}; color:white;">${d.days} ${L==='ar'?TUI('days'):'days'}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dormant}</span> ${t('dormant')}</h1></div>
+        
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Dormant Customers'):'Dormant Customers'}</div><div class="vl">${aFmt(dormant.length)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Lost Sales Potential'):'Lost Sales Potential'}</div><div class="vl" style="color:var(--rd);">${aFmt(dormant.reduce((sum,r)=>sum+r.s,0))}</div></div>
+        </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top Lost Accounts'):'Top Lost Accounts'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
+        </div>
+
+        <div class="tb"><div class="tbt"><h3>${t('dormant')} - ${L==='ar'?TUI('No purchase in 60+ days'):'No purchase in 60+ days'}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Total Sales'):'Total Sales'}</th><th>${L==='ar'?TUI('Last Purchase'):'Last Purchase'}</th><th>${L==='ar'?TUI('Days Ago'):'Days Ago'}</th><th>${L==='ar'?TUI('Status'):'Status'}</th></tr></thead>
+        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}">${r.days>=120?(L==='ar'?TUI('Lost'):'Lost'):(L==='ar'?TUI('Dormant'):'Dormant')}</span></td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+}
+
+// Prospects (customers in T but not in S)
+function rPros() {
+    let activeCustomers = new Set(S.map(r=>r.Customer||''));
+    let prospects = T.filter(r=>!activeCustomers.has(r.Customer));
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.prospects}</span> ${t('prospects')}</h1></div>
+        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?TUI('Prospects'):'Prospects'}</div><div class="vl">${aFmt(prospects.length)}</div></div></div>
+        <div class="tb"><div class="tbt"><h3>${t('prospects')}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Target'):'Target'}</th></tr></thead>
+        <tbody>${prospects.map(r=>`<tr><td><strong>${r.Customer}</strong></td><td>${fmt(Number(r.Target)||0)}</td></tr>`).join('')}${prospects.length===0?`<tr><td colspan="2" style="text-align:center;color:var(--tx2)">${L==='ar'?TUI('None'):'None'}</td></tr>`:''}</tbody>
+        </table></div></div>
+    `;
+}
+
+// Opportunities (customers below 50% of target)
+function rPot() {
+    let cu = {};
+    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(getSalesVal(r)); });
+    let opps = T.map(r => {
+        let tg = Number(r.Target)||0, ach = cu[r.Customer]||0, pct = tg>0?ach/tg*100:0;
+        return {n:r.Customer, tg, ach, pct, gap: tg-ach};
+    }).filter(r=>r.pct<80 && r.tg>0).sort((a,b)=>b.gap-a.gap);
+    
+    let topHtml = '';
+    for(let i=0; i<Math.min(3, opps.length); i++) {
+        let o = opps[i];
+        let color = i===0 ? '#e74c3c' : i===1 ? '#e67e22' : '#f1c40f';
+        topHtml += `
+            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Opportunity'):'Opportunity'} #${i+1}</div>
+                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${o.n}">${o.n}</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Target'):'Target'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(o.tg)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Achieved'):'Achieved'}</span>
+                    <strong style="font-size:0.9rem;">${aFmt(o.ach)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?TUI('Sales Gap'):'Sales Gap'}</span>
+                    <strong style="color:${color}; font-size:1rem;">${aFmt(o.gap)}</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.potential}</span> ${t('potential')}</h1></div>
+        
+        <div class="kg">
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Total Opportunities'):'Total Opportunities'}</div><div class="vl">${aFmt(opps.length)}</div></div>
+            <div class="ki" style="background:var(--bg3); border:1px solid var(--p);"><div class="lb" style="color:var(--p);">${L==='ar'?TUI('Total Gap Potential'):'Total Gap Potential'}</div><div class="vl" style="color:var(--p);">${aFmt(opps.reduce((s,r)=>s+r.gap,0))}</div></div>
+        </div>
+
+        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 Opportunities'):'Top 3 Opportunities'}</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
+        </div>
+
+        <div class="tb"><div class="tbt"><h3>${t('potential')}</h3></div>
+        <div class="tbs"><table><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Target'):'Target'}</th><th>${L==='ar'?TUI('Achieved'):'Achieved'}</th><th>%</th><th>${L==='ar'?TUI('Gap'):'Gap'}</th></tr></thead>
+        <tbody>${opps.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.tg)}</td><td>${fmt(r.ach)}</td><td><span class="badge ${r.pct>=60?'bg-a':'bg-r'}">${pc(r.pct)}</span></td><td style="color:var(--rd);font-weight:bold;">${fmt(r.gap)}</td></tr>`).join('')}</tbody>
+        </table></div></div>
+    `;
+}
+
+// Alerts
+function rAl() {
+    let today = new Date();
+    let alerts = [];
+    // Dormant alerts
+    let cu = {};
+    S.forEach(r => { let c=r.Customer||''; let d=pd(r['Order Date']); if(!cu[c]||d>cu[c]) cu[c]=d; });
+    Object.entries(cu).forEach(([n,last]) => {
+        let days = Math.floor((today - new Date(last)) / 86400000);
+        if(days >= 60) alerts.push({type:'warn', icon:'&#x26A0;&#xFE0F;', msg:`${n} ? ${L==='ar'?TUI('No purchase since'):'No purchase since'} ${days} ${L==='ar'?TUI('days'):'days'}`});
+    });
+    // Low target alerts
+    let cuS = {};
+    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getSalesVal(r)); });
+    T.forEach(r => {
+        let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
+        if(pct<50 && tg>0) alerts.push({type:'danger', icon:'&#x26A0;&#xFE0F;', msg:`${r.Customer} ? ${L==='ar'?TUI('Achievement'):'Achievement'} ${pc(pct)}`});
+    });
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.alerts}</span> ${t('alerts')}</h1></div>
+        <div class="kg"><div class="ki"><div class="lb">${L==='ar'?TUI('Alerts'):'Alerts'}</div><div class="vl">${aFmt(alerts.length)}</div></div></div>
+        <div class="card">
+            ${alerts.length===0?`<p style="text-align:center;color:var(--tx2);">? ${L==='ar'?TUI('No alerts'):'No alerts'}</p>`:alerts.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:10px;margin-bottom:8px;background:var(--bg3);border-radius:8px;border-left:3px solid ${a.type==='danger'?'var(--rd)':'var(--am)'}"><span style="font-size:1.2rem;">${a.icon}</span><span style="font-size:0.85rem;">${a.msg}</span></div>`).join('')}
+        </div>
+    `;
+}
+
+// AI Recommendations
+function rAI() {
+    let ds = getFilteredSales();
+    let cu = {};
+    ds.forEach(r => {
+        let c=r.Customer||'';
+        if(!cu[c]) cu[c] = {s:0,p:0,o:{},last:'',accS:0,hwS:0};
+        cu[c].s += getSalesVal(r);
+        cu[c].p += getProfitVal(r);
+        cu[c].o[r['Order Nbr']]=1;
+        let d=pd(r['Order Date']); if(d>cu[c].last) cu[c].last=d;
+        if(isAcc(r['Item Class Name'])) cu[c].accS+=getSalesVal(r);
+        else if(isHW(r['Item Class Name'])) cu[c].hwS+=getSalesVal(r);
+    });
+    let insights = [];
+    let arr = Object.entries(cu).map(([n,d])=>({n,...d,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
+    let today = new Date();
+    arr.slice(0,5).forEach(r => insights.push({icon:'?',color:'var(--gn)',text:`${r.n}: ${L==='ar'?TUI('Top customer with'):'Top customer with'} ${fmt(r.s)}`}));
+    arr.filter(r=>r.m<5&&r.s>10000).slice(0,3).forEach(r => insights.push({icon:'&#x26A0;&#xFE0F;',color:'var(--am)',text:`${r.n}: ${L==='ar'?TUI('Low margin'):'Low margin'} (${pc(r.m)}) ? ${L==='ar'?TUI('Review pricing'):'Review pricing'}`}));
+    arr.filter(r=>{ let days=Math.floor((today-new Date(r.last))/86400000); return days>=45&&days<90; }).slice(0,3).forEach(r => insights.push({icon:'&#x26A0;&#xFE0F;',color:'var(--am)',text:`${r.n}: ${L==='ar'?TUI('Needs follow-up ? last purchase was'):'Needs follow-up ? last purchase was'} ${Math.floor((today-new Date(r.last))/86400000)} ${L==='ar'?TUI('days ago'):'days ago'}`}));
+    arr.filter(r=>r.accS===0&&r.hwS>0).slice(0,3).forEach(r => insights.push({icon:'&#x26A0;&#xFE0F;',color:'var(--am)',text:`${r.n}: ${L==='ar'?TUI('No accessories ? upsell opportunity'):'No accessories ? upsell opportunity'}`}));
+    
+    let key = ld('sp_gemini_key') || '';
+    window.aiChatHistory = window.aiChatHistory || [];
+
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.ai}</span> ${t('ai')}</h1></div>
+        
+        <div class="card" style="margin-bottom:20px;">
+            <h3 style="margin-bottom:16px;">${L==='ar'?TUI('Quick Smart Insights'):'Quick Smart Insights'}</h3>
+            ${insights.length===0?`<p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('Upload your data to get AI insights'):'Upload your data to get AI insights'}</p>`:insights.map(i=>`<div style="display:flex;gap:12px;padding:12px;margin-bottom:10px;background:var(--bg3);border-radius:10px;border-left:3px solid ${i.color};"><span style="font-size:1.3rem;">${i.icon}</span><span style="font-size:0.85rem;line-height:1.5;">${i.text}</span></div>`).join('')}
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; height:500px;">
+            <h3 style="margin-bottom:16px;">? ${L==='ar'?TUI('AI Co-pilot Chat'):'AI Co-pilot Chat'}</h3>
+            ${!key ? `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                    <span style="font-size:3rem; margin-bottom:16px;">&#x1F4C8;</span>
+                    <p style="color:var(--tx2); margin-bottom:16px;">${L==='ar'?TUI('You must enter a Gemini API Key in settings to enable smart chat.'):'You must enter a Gemini API Key in settings to enable smart chat.'}</p>
+                    <button class="btn btn-p" onclick="P='settings';buildNav();render();">${L==='ar'?TUI('Go to Settings'):'Go to Settings'}</button>
+                </div>
+            ` : `
+                <div id="aiChatBox" style="flex:1; overflow-y:auto; background:var(--bg2); border-radius:8px; padding:16px; margin-bottom:16px; display:flex; flex-direction:column; gap:12px;">
+                    ${window.aiChatHistory.length===0 ? `
+                        <div style="text-align:center; color:var(--tx2); margin:auto;">
+                            <span style="font-size:2rem;">&#x1F4B0;</span><br>
+                            ${L==='ar'?TUI('Hello! Ask me anything about your sales and customers.'):'Hello! Ask me anything about your sales and customers.'}
+                        </div>
+                    ` : window.aiChatHistory.map(msg => `
+                        <div style="align-self:${msg.role==='user'?'flex-end':'flex-start'}; background:${msg.role==='user'?'var(--p)':'var(--bg3)'}; color:${msg.role==='user'?'#fff':'var(--tx1)'}; padding:10px 14px; border-radius:12px; max-width:85%; word-wrap:break-word; font-size:0.9rem; line-height:1.5;">
+                            ${msg.text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <input id="aiInput" type="text" class="sbox" style="flex:1;" placeholder="${L==='ar'?TUI('Ask the AI assistant...'):'Ask the AI assistant...'}" onkeypress="if(event.key==='Enter') document.getElementById('aiSend').click()">
+                    <button id="aiSend" class="btn btn-p" style="padding:0 24px;">${L==='ar'?TUI('Send'):'Send'}</button>
+                </div>
+            `}
+        </div>
+    `;
+
+    if(key) {
+        let chatBox = $('aiChatBox');
+        if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+
+        let sendBtn = $('aiSend');
+        if(sendBtn) {
+            sendBtn.onclick = async () => {
+                let inp = $('aiInput');
+                let txt = inp.value.trim();
+                if(!txt) return;
+
+                window.aiChatHistory.push({role:'user', text:txt});
+                inp.value = '';
+                inp.disabled = true;
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '?';
+                rAI(); 
+
+                let totalSales = ds.reduce((s,r)=>s+(getSalesVal(r)), 0);
+                let totalProfit = ds.reduce((s,r)=>s+(getProfitVal(r)), 0);
+                let ctx = {
+                    totalSales,
+                    totalProfit,
+                    top5Customers: arr.slice(0,5).map(x=>({name:x.n, sales:x.s, profit:x.p})),
+                    totalCustomers: arr.length
+                };
+                
+                let systemPrompt = `You are a specialized Sales Analysis AI for "Sales Pro". Respond in ${L==='ar'?'Arabic':'English'}.
+Analyze the following:
+- Total Sales: ${ctx.totalSales}
+- Total Profit: ${ctx.totalProfit}
+- Total Customers: ${ctx.totalCustomers}
+- Top 5 Customers: ${JSON.stringify(ctx.top5Customers)}
+Provide business insights and actionable recommendations.`;
+
+                let msgs = window.aiChatHistory.map(m => ({role: m.role==='user'?'user':'model', parts: [{text: m.text}]}));
+                if(msgs.length > 0) {
+                    msgs[0].parts[0].text = `[SYSTEM CONTEXT: ${systemPrompt}]\n\nUser: ` + msgs[0].parts[0].text;
+                }
+                
+                try {
+                    let reqBody = {
+                        contents: msgs,
+                        generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
+                    };
+                    
+                                        // 2. Try default stable aliases directly to bypass model deprecation errors
+                    let fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro', 'gemini-flash'];
+                    let data = null;
+                    let success = false;
+                    for (let m of fallbackModels) {
+                        try {
+                            let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(reqBody)
+                            });
+                            data = await res.json();
+                            if (!data.error) {
+                                success = true;
+                                break;
+                            }
+                        } catch(e) { continue; }
+                    }
+                    if(data.error) {
+                        window.aiChatHistory.push({role:'model', text: 'Error: ' + data.error.message});
+                    } else if(data.candidates && data.candidates.length > 0) {
+                        let aiTxt = data.candidates[0].content.parts[0].text;
+                        window.aiChatHistory.push({role:'model', text: aiTxt});
+                    } else {
+                        window.aiChatHistory.push({role:'model', text: 'No response received.'});
+                    }
+                } catch(e) {
+                    window.aiChatHistory.push({role:'model', text: 'Network Error: ' + e.message});
+                }
+                rAI();
+            };
+        }
+    }
+    initAnm && initAnm();}
+
+// Account
+function rAcct() {
+    let user = (typeof currentUser !== 'undefined') ? currentUser : null;
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.account}</span> ${t('account')}</h1></div>
+        <div class="card" style="text-align:center;">
+            <div style="width:72px;height:72px;border-radius:50%;background:var(--am);color:#fff;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">&#x1F464;</div>
+            <h3>${user ? user.email : (L==='ar'?TUI('Not logged in'):'Not logged in')}</h3>
+            <p style="color:var(--tx2);font-size:0.8rem;margin:8px 0 20px;">${L==='ar'?TUI('Active User'):'Active User'}</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+                <div style="background:var(--bg3);padding:12px;border-radius:10px;"><div style="font-size:1.4rem;font-weight:bold;">${S.length}</div><div style="font-size:0.75rem;color:var(--tx2);">${L==='ar'?TUI('Sales'):'Sales'}</div></div>
+                <div style="background:var(--bg3);padding:12px;border-radius:10px;"><div style="font-size:1.4rem;font-weight:bold;">${T.length}</div><div style="font-size:0.75rem;color:var(--tx2);">${L==='ar'?TUI('Targets'):'Targets'}</div></div>
+                <div style="background:var(--bg3);padding:12px;border-radius:10px;"><div style="font-size:1.4rem;font-weight:bold;">${C.length}</div><div style="font-size:0.75rem;color:var(--tx2);">${L==='ar'?TUI('Collections'):'Collections'}</div></div>
+            </div>
+            <button class="btn btn-p" onclick="P='settings';buildNav();render();" style="width:100%;margin-bottom:10px;">${t('settings')}</button>
+            <button class="btn" onclick="logout();" style="width:100%;background:var(--rd);color:#fff;border:none;">${t('logout')}</button>
+        </div>
+    `;
+}
+
+// Backup
+function rBk() {
+    $('M').innerHTML = `;
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.backup}</span> ${t('backup')}</h1></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div class="card">
+                <h3 style="margin-bottom:12px;text-align:center;">${L==='ar'?'تصدير للإكسيل':'Export to Excel'}</h3>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button class="btn" id="bkSales" style="width:100%; justify-content:center;">${L==='ar'?'مبيعات':'Sales'} (${S.length})</button>
+                    <button class="btn" id="bkTgt" style="width:100%; justify-content:center;">${L==='ar'?'تارجت':'Targets'} (${T.length})</button>
+                    <button class="btn" id="bkPay" style="width:100%; justify-content:center;">${L==='ar'?'تحصيلات':'Collections'} (${C.length})</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom:12px;text-align:center;">النسخ الاحتياطي الشامل 💾</h3>
+                <p style="text-align:center;color:var(--tx2);font-size:0.85rem;margin-bottom:15px;">
+                    يقوم بتصدير كافة بيانات المبيعات والتارجت والتحصيلات في ملف واحد (JSON) لاسترجاعها لاحقاً.
+                </p>
+                <button class="btn btn-p" id="bDownJSON" style="width:100%; justify-content:center; margin-bottom:10px;">
+                    تنزيل ملف النسخة الاحتياطية (JSON)
+                </button>
+                <label for="fUpJSON" class="btn" style="width:100%; justify-content:center; display:flex; margin-bottom:10px; cursor:pointer;">
+                    استرجاع نسخة من ملف (JSON)
+                </label>
+                <input type="file" id="fUpJSON" accept=".json" style="display:none;">
+                
+                <button class="btn" id="bMailJSON" style="width:100%; justify-content:center; margin-bottom:10px; background:#ea4335; color:white; border:none;">
+                    إرسال نسخة بالإيميل ✉️ (Gmail)
+                </button>
+                <button class="btn" id="bDriveJSON" style="width:100%; justify-content:center; background:#0f9d58; color:white; border:none;">
+                    نسخ احتياطي إلى (Google Drive) ☁️
+                </button>
+            </div>
+        </div>
+    `;
+    $('bkSales').onclick = () => S.length ? exportToExcel(S, 'Sales_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+    $('bkTgt').onclick   = () => T.length ? exportToExcel(T, 'Targets_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+    $('bkPay').onclick   = () => C.length ? exportToExcel(C, 'Collections_Backup') : toast(L==='ar'?'لا توجد بيانات':'No data');
+    $('bDownJSON').onclick = () => {
+        let dump = { S, T, C, D, accCats, hwCats };
+        let blob = new Blob([JSON.stringify(dump)], {type: "application/json"});
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `SalesPro_Backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        toast(L==='ar'?'تم تنزيل النسخة!':'Backup Downloaded!');
+    };
+    if($('bDriveJSON')) {
+        $('bDriveJSON').onclick = () => {
+            if(typeof window.backupToGoogleDrive === 'function') {
+                window.backupToGoogleDrive();
+            } else {
+                toast(L==='ar'?'خدمة Google Drive غير متوفرة':'Google Drive service is not available', 'error');
+            }
+        };
+    }
+    if($('bMailJSON')) {
+        $('bMailJSON').onclick = () => {
+            $('bDownJSON').click();
+            toast(L==='ar'?'سيفتح الإيميل.. قم بإرفاق الملف الذي تم تنزيله!':'Opening Email.. Attach the downloaded file!');
+            setTimeout(() => {
+                window.location.href = `mailto:?subject=${encodeURIComponent('SalesPro Data Backup')}&body=${encodeURIComponent(L==='ar'?'يرجى إيجاد ملف النسخة الاحتياطية (JSON) مرفقاً.':'Please find the JSON backup file attached.')}`;
+            }, 2000);
+        };
+    }
+    $('fUpJSON').onchange = (e) => {
+        let f = e.target.files[0];
+        if(!f) return;
+        let reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                let d = JSON.parse(ev.target.result);
+                if(d.S) { S = d.S; sv('salesData', S); }
+                if(d.T) { T = d.T; sv('targetData', T); }
+                if(d.C) { C = d.C; sv('payData', C); }
+                if(d.D) { D = d.D; sv('duesData', D); }
+                if(d.accCats) { accCats = d.accCats; sv('accCats', accCats); }
+                if(d.hwCats) { hwCats = d.hwCats; sv('hwCats', hwCats); }
+                toast(L==='ar'?'تمت الاستعادة بنجاح!':'Restored Successfully!');
+                render();
+            } catch(ex) {
+                toast(L==='ar'?'ملف غير صالح!':'Invalid File!');
+            }
+        };
+        reader.readAsText(f);
+    };
+}
+
+
+
+function rSetup() {
+    $('M').innerHTML = `
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.setup}</span> ${t('setup')}</h1></div>
+        <div class="card">
+            <h3 style="margin-bottom:12px;">${L==='ar'?TUI('Upload Excel Files'):'Upload Excel Files'}</h3>
+            <p style="margin-bottom:16px;color:var(--tx2);font-size:0.85rem;">${L==='ar'?TUI('Upload your Sales, Target and Collections Excel files to update the data.'):'Upload your Sales, Target and Collections Excel files to update the data.'}</p>
+            <div style="background:var(--gn);color:#fff;padding:10px;border-radius:8px;margin-bottom:16px;font-size:0.9rem;display:flex;align-items:center;gap:8px;">
+                &#x2601;&#xFE0F; <strong>${L==='ar'?TUI('Cloud Sync Active'):'Cloud Sync Active'}</strong>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <div style="background:var(--bg3);padding:16px;border-radius:12px;border:1px solid var(--bd);">
+                    <label for="fSales" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">${L==='ar'?TUI('Sales File'):'Sales File'}</label>
+                    <input type="file" id="fSales" accept=".xlsx,.xls,.csv" style="display:block;width:100%;padding:10px;background:var(--bg);border:1px dashed var(--am);border-radius:8px;cursor:pointer;">
+                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${S.length} ${L==='ar'?TUI('records currently loaded'):'records currently loaded'}</p>
+                </div>
+                <div style="background:var(--bg3);padding:16px;border-radius:12px;border:1px solid var(--bd);">
+                    <label for="fTarget" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">${L==='ar'?TUI('Target File'):'Target File'}</label>
+                    <input type="file" id="fTarget" accept=".xlsx,.xls,.csv" style="display:block;width:100%;padding:10px;background:var(--bg);border:1px dashed var(--am);border-radius:8px;cursor:pointer;">
+                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${T.length} ${L==='ar'?TUI('records currently loaded'):'records currently loaded'}</p>
+                </div>
+                <div style="background:var(--bg3);padding:16px;border-radius:12px;border:1px solid var(--bd);">
+                    <label for="fPay" style="font-size:1rem;font-weight:bold;display:block;margin-bottom:10px;cursor:pointer;">${L==='ar'?TUI('Collections File'):'Collections File'}</label>
+                    <input type="file" id="fPay" accept=".xlsx,.xls,.csv" style="display:block;width:100%;padding:10px;background:var(--bg);border:1px dashed var(--am);border-radius:8px;cursor:pointer;">
+                    <p style="font-size:0.8rem;color:var(--tx2);margin-top:8px;">${C.length} ${L==='ar'?TUI('records currently loaded'):'records currently loaded'}</p>
+                </div>
+            </div>
+            <button id="bUpload" class="btn btn-p" style="margin-top:20px;width:100%;padding:12px;font-size:1.1rem;">${L==='ar'?TUI('Upload & Update Data'):'Upload & Update Data'}</button>
+        </div>
+        
+        <div class="card" style="margin-top:20px;">
+            <h3 style="margin-bottom:12px;">إدارة فئات الإكسسوارات (Accessories Categories)</h3>
+            <p style="margin-bottom:16px;color:var(--tx2);font-size:0.85rem;">يمكنك تعديل أو إضافة الفئات التي يتم اعتبارها إكسسوارات، افصل بين كل فئة وأخرى بفاصلة (,)</p>
+            <textarea id="inAccCats" rows="4" style="width:100%;padding:12px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;resize:vertical;font-family:inherit;font-size:0.95rem;">${(accCats && accCats.length) ? accCats.join(', ') : (typeof DEF_ACC !== 'undefined' ? DEF_ACC.join(', ') : '')}</textarea>
+            <button id="bSaveCats" class="btn btn-p" style="margin-top:16px;width:100%;padding:12px;font-size:1rem;">حفظ الفئات والتحديث / Save & Update</button>
+        </div>
+    `;
+    function parseFile(file, cb, sheetName) {
+        let reader = new FileReader();
+        reader.onload = e => {
+            try {
+                let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+                let ws;
+                if (sheetName) {
+                    let sName = wb.SheetNames.find(s => s.trim().toLowerCase() === sheetName.trim().toLowerCase());
+                    ws = sName ? wb.Sheets[sName] : wb.Sheets[wb.SheetNames[0]];
+                } else {
+                    ws = wb.Sheets[wb.SheetNames[0]];
+                }
+                cb(XLSX.utils.sheet_to_json(ws));
+            } catch(err) { toast(L==='ar'?TUI('? Error reading file'):'? Error reading file'); }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    $('bUpload').onclick = () => {
+        let done = 0, total = 0;
+        let fS = $('fSales').files[0], fT = $('fTarget').files[0], fP = $('fPay').files[0];
+        if(!fS && !fT && !fP) { toast(L==='ar'?TUI('Choose a file first!'):'Choose a file first!'); return; }
+        let onAllDone = () => {
+            toast(L==='ar' ? '✅ تم تحديث البيانات!' : '✅ Data Updated!');
+            render();
+            if (typeof window.cloudAutoSave === 'function') {
+                window.cloudAutoSave(L==='ar' ? 'رفع ملفات' : 'File Upload');
+            }
+        };
+        if(fS) { total++; parseFile(fS, d => { S = d; sv('salesData', d); done++; if(done===total) onAllDone(); }); }
+        if(fT) { total++; parseFile(fT, d => { T = d; sv('targetData', d); done++; if(done===total) onAllDone(); }); }
+        if(fP) { total++; parseFile(fP, d => { C = d; sv('payData', d); done++; if(done===total) onAllDone(); }, 'Payment Ref'); }
+    };
+
+    
+    $('bSaveCats').onclick = () => {
+        let vals = $('inAccCats').value.split(',').map(s => s.trim()).filter(s => s);
+        if(vals.length > 0) {
+            accCats = vals;
+            sv('accCats', accCats);
+            toast(L==='ar'?'تم حفظ فئات الإكسسوارات بنجاح!':'Categories Saved!');
+            render();
+        } else {
+            toast(L==='ar'?'لا يمكن ترك الفئات فارغة!':'Categories cannot be empty!');
+        }
+    };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// js/settings.js
+
+// --- CRM MODULES --- //
+function rVisits() {
+    $('M').innerHTML = `
+        <div class="ph">
+            <h1 style="display:flex;align-items:center;gap:12px;">${ICONS.visits} ${t('visits')}</h1>
+            <button class="btn btn-p" onclick="showAddVisit()">${L==='ar'?'إضافة زيارة':'Add Visit'}</button>
+        </div>
+        <div class="tb"><div class="tbt"><h3>${t('visits')}</h3></div>
+        <div class="tbs"><table id="vTable"><thead><tr>
+            <th>${L==='ar'?'التاريخ':'Date'}</th>
+            <th>${t('customers')}</th>
+            <th>${L==='ar'?'نوع الزيارة':'Type'}</th>
+            <th>${L==='ar'?'ملاحظات':'Notes'}</th>
+        </tr></thead><tbody>
+            ${V.map(v => `<tr><td>${v.date||''}</td><td>${v.customer||''}</td><td>${v.type||''}</td><td>${v.notes||''}</td></tr>`).join('')}
+        </tbody></table></div></div>
+    `;
+    initAnm && initAnm();
+}
+
+window.showAddVisit = function() {
+    let cuOpts = Object.keys(S.reduce((acc, r) => { if(r.Customer) acc[r.Customer]=1; return acc; }, {})).map(c => `<option value="${c}">${c}</option>`).join('');
+    
+    let m = document.createElement('div');
+    m.className = 'modal-bg';
+    m.innerHTML = `
+        <div class="modal-card">
+            <h3 style="margin-bottom:16px;">${L==='ar'?'إضافة زيارة جديدة':'Add New Visit'}</h3>
+            <input type="date" id="vDate" class="sbox" style="width:100%;margin-bottom:10px;" value="${new Date().toISOString().split('T')[0]}">
+            <select id="vCust" class="sbox" style="width:100%;margin-bottom:10px;">
+                <option value="">${L==='ar'?'اختر العميل':'Select Customer'}</option>
+                ${cuOpts}
+            </select>
+            <select id="vType" class="sbox" style="width:100%;margin-bottom:10px;">
+                <option value="Sales">${L==='ar'?'بيع':'Sales'}</option>
+                <option value="Collection">${L==='ar'?'تحصيل':'Collection'}</option>
+                <option value="PR">${L==='ar'?'علاقات عامة':'PR'}</option>
+            </select>
+            <textarea id="vNotes" class="sbox" placeholder="${L==='ar'?'ملاحظات':'Notes'}" style="width:100%;height:80px;margin-bottom:16px;"></textarea>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-p" style="flex:1;" onclick="saveVisit()">${L==='ar'?'حفظ':'Save'}</button>
+                <button class="btn" style="flex:1;" onclick="this.closest('.modal-bg').remove()">${L==='ar'?'إلغاء':'Cancel'}</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(m);
+};
+
+window.saveVisit = function() {
+    let v = {
+        date: $('vDate').value,
+        customer: $('vCust').value,
+        type: $('vType').value,
+        notes: $('vNotes').value,
+        timestamp: Date.now()
+    };
+    if(!v.customer) return toast('يرجى اختيار عميل');
+    V.push(v);
+    localStorage.setItem('visitsData', JSON.stringify(V));
+    document.querySelector('.modal-bg').remove();
+    toast(L==='ar'?'تم الحفظ':'Saved');
+    rVisits();
+    if(auth.currentUser) {
+        db.collection('users').doc(auth.currentUser.uid).collection('visits').add(v).catch(e=>console.error(e));
+    }
+};
+
+function rLeads() {
+    $('M').innerHTML = `
+        <div class="ph">
+            <h1 style="display:flex;align-items:center;gap:12px;">${ICONS.leads} ${t('leads')}</h1>
+            <button class="btn btn-p" onclick="showAddLead()">${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</button>
+        </div>
+        <div class="tb"><div class="tbt"><h3>${t('leads')}</h3></div>
+        <div class="tbs"><table id="ldTable"><thead><tr>
+            <th>${L==='ar'?'الاسم':'Name'}</th>
+            <th>${L==='ar'?'الفرع/المنطقة':'Branch/Region'}</th>
+            <th>${L==='ar'?'رقم الهاتف':'Phone'}</th>
+            <th>${L==='ar'?'الحالة':'Status'}</th>
+        </tr></thead><tbody>
+            ${LD.map(l => `<tr><td>${l.name||''}</td><td>${l.branch||''}</td><td>${l.phone||''}</td><td><span class="badge bg-${l.status==='Hot'?'g':l.status==='Warm'?'a':'r'}">${l.status||''}</span></td></tr>`).join('')}
+        </tbody></table></div></div>
+    `;
+    initAnm && initAnm();
+}
+
+window.showAddLead = function() {
+    let m = document.createElement('div');
+    m.className = 'modal-bg';
+    m.innerHTML = `
+        <div class="modal-card">
+            <h3 style="margin-bottom:16px;">${L==='ar'?'إضافة عميل محتمل':'Add Lead'}</h3>
+            <input type="text" id="lName" class="sbox" placeholder="${L==='ar'?'اسم العميل':'Customer Name'}" style="width:100%;margin-bottom:10px;">
+            <input type="text" id="lBranch" class="sbox" placeholder="${L==='ar'?'الفرع (حدائق القبة/الأقصر)':'Branch'}" style="width:100%;margin-bottom:10px;">
+            <input type="text" id="lPhone" class="sbox" placeholder="${L==='ar'?'رقم الهاتف':'Phone'}" style="width:100%;margin-bottom:10px;">
+            <select id="lStatus" class="sbox" style="width:100%;margin-bottom:16px;">
+                <option value="Hot">${L==='ar'?'مهتم جداً (Hot)':'Hot'}</option>
+                <option value="Warm">${L==='ar'?'متردد (Warm)':'Warm'}</option>
+                <option value="Cold">${L==='ar'?'غير مهتم (Cold)':'Cold'}</option>
+            </select>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-p" style="flex:1;" onclick="saveLead()">${L==='ar'?'حفظ':'Save'}</button>
+                <button class="btn" style="flex:1;" onclick="this.closest('.modal-bg').remove()">${L==='ar'?'إلغاء':'Cancel'}</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(m);
+};
+
+window.saveLead = function() {
+    let l = {
+        name: $('lName').value,
+        branch: $('lBranch').value,
+        phone: $('lPhone').value,
+        status: $('lStatus').value,
+        timestamp: Date.now()
+    };
+    if(!l.name) return toast('يرجى إدخال اسم العميل');
+    LD.push(l);
+    localStorage.setItem('leadsData', JSON.stringify(LD));
+    document.querySelector('.modal-bg').remove();
+    toast(L==='ar'?'تم الحفظ':'Saved');
+    rLeads();
+    if(auth.currentUser) {
+        db.collection('users').doc(auth.currentUser.uid).collection('leads').add(l).catch(e=>console.error(e));
+    }
+};
+
+function rAI() {
+    let apiKey = localStorage.getItem('gemini_api_key') || '';
+    
+    $('M').innerHTML = `
+        <div class="ph">
+            <h1 style="display:flex;align-items:center;gap:12px;">${ICONS.ai} ${t('ai')}</h1>
+        </div>
+        <div style="background:var(--bg2); border-radius:16px; padding:24px; border:1px solid var(--bd);">
+            <div style="margin-bottom:20px;">
+                <label style="display:block;margin-bottom:8px;color:var(--tx2);">${L==='ar'?'مفتاح Gemini API:':'Gemini API Key:'}</label>
+                <input type="password" id="aiKey" class="sbox" value="${apiKey}" style="width:100%;max-width:400px;" placeholder="AIzaSy...">
+                <button class="btn btn-p" style="margin-top:8px;" onclick="localStorage.setItem('gemini_api_key', $('aiKey').value); toast('تم حفظ المفتاح');">${L==='ar'?'حفظ المفتاح':'Save Key'}</button>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="margin-left:10px;color:var(--am);font-size:0.9rem;">${L==='ar'?'الحصول على مفتاح مجاني':'Get Free Key'}</a>
+            </div>
+            
+            <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                <button class="btn btn-p" onclick="aiAnalyze('sales')">${L==='ar'?'تحليل المبيعات (حدائق القبة والأقصر)':'Analyze Sales & Branches'}</button>
+                <button class="btn btn-p" onclick="aiAnalyze('collections')">${L==='ar'?'متابعة التحصيلات المتأخرة':'Analyze Collections'}</button>
+                <button class="btn btn-p" onclick="aiAnalyze('leads')">${L==='ar'?'خطة للعملاء الجدد':'Plan for Leads'}</button>
+            </div>
+            
+            <div id="aiResponse" style="min-height:200px;background:var(--bg);border-radius:12px;padding:16px;border:1px solid var(--bd);white-space:pre-wrap;color:var(--tx);line-height:1.6;">
+                ${L==='ar'?'اضغط على أحد الأزرار أعلاه ليقوم المساعد الذكي بتحليل بياناتك وإعطائك خطط زيادة المبيعات.':'Click a button above to get AI analysis.'}
+            </div>
+        </div>
+    `;
+    initAnm && initAnm();
+}
+
+window.aiAnalyze = async function(type) {
+    let key = localStorage.getItem('gemini_api_key');
+    if(!key) {
+        alert(L==='ar'?'يرجى إدخال مفتاح Gemini API أولاً.':'Please enter Gemini API key first.');
+        return;
+    }
+    
+    $('aiResponse').innerHTML = '<div class="splash-loader" style="width:100%;background:var(--bd);"><div class="splash-loader-bar"></div></div><br/>' + (L==='ar'?'جاري التحليل والاتصال بالذكاء الاصطناعي...':'Analyzing...');
+    
+    let prompt = '';
+    if(type === 'sales') {
+        prompt = "أنت مساعد مبيعات ذكي. قم بتحليل استراتيجيات البيع لفرعي 'حدائق القبة' و 'الأقصر' واقترح 3 خطط عملية لزيادة المبيعات وتحقيق التارجت في هذين الفرعين باللغة العربية بطريقة احترافية.";
+    } else if(type === 'collections') {
+        prompt = "بصفتك مستشار مالي ومبيعات، اكتب لي خطة من 3 خطوات لمعالجة العملاء المتأخرين في السداد بأسلوب يحافظ على العلاقات العامة (PR) ويضمن التحصيل السريع باللغة العربية.";
+    } else if(type === 'leads') {
+        prompt = "اكتب لي سكريبت مبيعات مكالمة هاتفية (Cold Call) لاستهداف العملاء المحتملين (Leads) الجدد في قطاع المبيعات وإقناعهم باللغة العربية.";
+    }
+    
+    try {
+        let models = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-pro', 'gemini-1.0-pro'];
+        let data = null;
+        for (let m of models) {
+            try {
+                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{parts: [{text: prompt}]}] })
+                });
+                let d = await res.json();
+                if(!d.error) { data = d; break; }
+                if(d.error && m === models[models.length-1]) throw new Error(d.error.message);
+            } catch(ex) {
+                if(m === models[models.length-1]) throw ex;
+            }
+        }
+        
+        let text = data.candidates[0].content.parts[0].text;
+        text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br/>');
+        $('aiResponse').innerHTML = text;
+    } catch (e) {
+        $('aiResponse').innerHTML = `<span style="color:var(--rd)">${L==='ar'?'حدث خطأ:':'Error:'} ${e.message}</span>`;
+    }
+};
+// --- END CRM MODULES --- //
+
+function rSettings() {
+    $('M').innerHTML = `
+        <div class="ph">
+            <h1 style="display:flex;align-items:center;gap:12px;">
+                <span style="width:32px;height:32px;display:flex;">⚙️</span> ${t('settings')}
+            </h1>
+            <p>${L==='ar'?'تخصيص ألوان التطبيق، والواجهة، وإعدادات المزامنة':'Customize app colors, interface, and sync settings'}</p>
+        </div>
+        
+        <div class="card" style="margin-bottom:20px;">
+            <h3>🎨 ${L==='ar'?'اللون الأساسي':'Primary Color'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'اختر اللون الذي يناسب ذوقك':'Choose the color that fits you'}</p>
+            
+            <div style="display:flex;gap:12px;flex-wrap:wrap;" id="colorPicker">
+                ${CL.map((color, i) => `
+                    <div class="color-btn" data-color="${color}" style="width:40px;height:40px;border-radius:50%;background-color:${color};cursor:pointer;border:2px solid ${ld('sp_primary')===color?'var(--tx1)':'transparent'};transition:all 0.2s;"></div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="card" style="margin-bottom:20px;">
+            <h3>☁️ ${L==='ar'?'النسخ الاحتياطي السحابي (Google Drive)':'Cloud Sync (Google Drive)'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'حفظ البيانات واسترجاعها مباشرة من حسابك في جوجل درايف.':'Backup and restore data directly from your Google Drive.'}</p>
+            
+            <div style="background:var(--bg3);padding:10px;border-radius:8px;margin-bottom:15px;">
+                <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:10px;">${L==='ar'?'تحتاج إلى إدخال مفاتيح Google API لكي تعمل المزامنة:':'You must enter Google API keys for sync to work:'}</p>
+                <input type="text" id="gdriveClientId" placeholder="Google Client ID" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_client_id') || ''}">
+                <input type="text" id="gdriveApiKey" placeholder="Google API Key" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gdrive_api_key') || ''}">
+                <button class="btn btn-p" onclick="saveDriveKeys()" style="width:100%;">${L==='ar'?'حفظ مفاتيح جوجل':'Save Google Keys'}</button>
+            </div>
+
+            <div id="driveStatus" style="font-size:0.85rem;color:var(--tx2);margin-bottom:16px;padding:10px;background:var(--bg3);border-radius:8px;">⏳ ${L==='ar'?'جاري التحقق...':'Checking...'}</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-p" onclick="backupToGoogleDrive()" style="flex:1;min-width:140px;background:var(--ok);">
+                    ☁️ ${L==='ar'?'حفظ في درايف':'Save to Drive'}
+                </button>
+                <button class="btn" onclick="restoreFromGoogleDrive()" style="flex:1;min-width:140px;background:var(--bg3);">
+                    📂 ${L==='ar'?'استرجاع من درايف':'Restore from Drive'}
+                </button>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px;">
+            <h3>🤖 ${L==='ar'?'إعدادات المساعد الذكي (Gemini AI)':'Gemini AI Settings'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل مفتاح Gemini API لتفعيل المساعد الذكي':'Enter Gemini API key to enable smart assistant'}</p>
+            <div class="fg">
+                <input type="text" id="geminiApiKey" placeholder="${L==='ar'?'Gemini API Key':'Gemini API Key'}" class="sbox" style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('gemini_api_key') || ''}">
+            </div>
+            <button class="btn btn-p" onclick="saveGeminiKey()">${L==='ar'?'حفظ المفتاح':'Save Key'}</button>
+        </div>
+        
+                <div class="card" style="margin-bottom:20px;">
+            <h3>📧 ${L==='ar'?'التقارير اليومية الآلية':'Automated Daily Reports'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${L==='ar'?'أدخل رابط (Web App URL) لربط الأبلكيشن بالإيميل':'Enter Web App URL to link with email'}</p>
+            <div class="fg">
+                <input type="text" id="inReportUrl" class="sbox" placeholder="https://script.google.com/macros/s/..." style="width:100%;margin-bottom:10px;" value="${localStorage.getItem('report_url') || ''}">
+            </div>
+            <button class="btn btn-p" onclick="saveReportUrl()">${L==='ar'?'حفظ الرابط':'Save URL'}</button>
+        </div>
+        <div class="card">
+            <h3>👤 ${L==='ar'?'الملف الشخصي':'Profile'}</h3>
+            <p style="font-size:0.8rem;color:var(--tx2);margin-bottom:12px;">${currentUser ? currentUser.email : 'Not logged in'}</p>
+            <button class="btn btn-p" onclick="logout()" style="background:var(--rd)">${t('logout')}</button>
+        </div>
+    `;
+
+    document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.onclick = () => {
+            let col = btn.getAttribute('data-color');
+            sv('sp_primary', col);
+            document.documentElement.style.setProperty('--am', col);
+            document.querySelectorAll('.color-btn').forEach(b => b.style.border = '2px solid transparent');
+            btn.style.border = '2px solid var(--tx1)';
+        };
+    });
+
+    // Load cloud backup info
+    if (typeof window.getCloudInfo === 'function') {
+        window.getCloudInfo().then(info => {
+            let ds = document.getElementById('driveStatus');
+            if (!ds) return;
+            if (!info) {
+                ds.innerHTML = L==='ar' ? '⚠️ لم تقم بعمل مزامنة في جوجل درايف مؤخراً.' : '⚠️ No recent Google Drive sync.';
+                return;
+            }
+            ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${info.lastUpdated}
+                &nbsp;|&nbsp; 📊 ${L==='ar'?'المبيعات:':'Sales:'} ${info.salesCount}
+                &nbsp;|&nbsp; 💰 ${L==='ar'?'التحصيلات:':'Collections:'} ${info.payCount}`;
+        });
+    }
+}
+
+window.saveDriveKeys = function() {
+    const cId = document.getElementById('gdriveClientId').value.trim();
+    const aKey = document.getElementById('gdriveApiKey').value.trim();
+    if (cId && aKey) {
+        localStorage.setItem('gdrive_client_id', cId);
+        localStorage.setItem('gdrive_api_key', aKey);
+        if(typeof toast === 'function') toast(L==='ar'?'✅ تم حفظ مفاتيح جوجل درايف بنجاح.':'Google Drive keys saved', 'success');
+        setTimeout(() => window.location.reload(), 1500);
+    } else {
+        if(typeof toast === 'function') toast(L==='ar'?'❌ يرجى إدخال المفتاحين (Client ID و API Key)':'Please enter both keys', 'error');
+    }
+};
+
+window.saveGeminiKey = function() {
+    const gKey = document.getElementById('geminiApiKey').value.trim();
+    if (gKey) {
+        localStorage.setItem('gemini_api_key', gKey);
+        if(typeof toast === 'function') toast(L==='ar'?'تم حفظ مفتاح Gemini بنجاح':'Gemini key saved', 'success');
+    } else {
+        if(typeof toast === 'function') toast(L==='ar'?'يرجى إدخال المفتاح أولاً':'Please enter the key', 'error');
+    }
+};
+
+// js/app.js
+
+const NAV = [
+    {s:{ar:'الأساسية',en:'Core'}},
+    {p:'dash',ic:'🏠'},{p:'sales',ic:'💰'},{p:'targets',ic:'🎯'},{p:'personal',ic:'👤'},
+    {p:'customers',ic:'🏪'},{p:'brands',ic:'📦'},{p:'visits',ic:'📍'},{p:'leads',ic:'➕'},
+    {s:{ar:'الأقسام',en:'Depts'}},
+    {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💰'},
+    {s:{ar:'متقدم',en:'Advanced'}},
+    {p:'analytics',ic:'🧠'},{p:'potential',ic:'🚀'},{p:'profit',ic:'💵'},
+    {p:'keyacc',ic:'⭐'},{p:'dormant',ic:'💤'},{p:'prospects',ic:'🔍'},
+    {s:{ar:'ذكي',en:'Smart'}},
+    {p:'ai',ic:'🤖'},{p:'alerts',ic:'🔔'},
+    {s:{ar:'النظام',en:'System'}},
+    {p:'account',ic:'👤'},{p:'backup',ic:'💾'},{p:'setup',ic:'📂'},{p:'reset',ic:'🗑️'},
+    {p:'settings',ic:'⚙️'}
+];
+
+const BNV = ['dash','customers','brands','analytics','visits','leads','ai','settings'];
+
+const bx = (cls) => `<i class='bx ${cls}' style='font-size:1.4em;vertical-align:middle;color:var(--am);'></i>`;
+
+const ICONS = {
+    dash: bx('bxs-dashboard'),
+    sales: bx('bx-line-chart'),
+    targets: bx('bx-target-lock'),
+    personal: bx('bx-user'),
+    customers: bx('bxs-user-detail'),
+    brands: bx('bxs-purchase-tag'),
+    accessories: bx('bx-headphone'),
+    hardware: bx('bx-laptop'),
+    analytics: bx('bx-pie-chart-alt-2'),
+    potential: bx('bxs-star'),
+    visits: bx('bx-map-pin'),
+    leads: bx('bx-user-plus'),
+    ai: bx('bx-bot'),
+    profit: bx('bx-money'),
+    keyacc: bx('bxs-crown'),
+    dormant: bx('bx-sleepy'),
+    prospects: bx('bx-search-alt'),
+    ai: bx('bx-bot'),
+    alerts: bx('bxs-bell'),
+    account: bx('bxs-user-circle'),
+    backup: bx('bx-save'),
+    setup: bx('bx-cog'),
+    reset: bx('bx-trash'),
+    settings: bx('bx-palette'),
+    collections: bx('bx-wallet')
+};
+
+function buildNav() {
+    let h = '';
+    NAV.forEach(x => {
+        if(x.s) h += `<div class="ns">${x.s[L]}</div>`;
+        else h += `<div class="ni${x.p===P?' on':''}" data-p="${x.p}"><span class="ic">${ICONS[x.p]||x.ic}</span><span>${t(x.p)}</span></div>`;
+    });
+    let elNV = $('NV');
+    if(elNV) elNV.innerHTML = h;
+
+    let b = '';
+    BNV.forEach(p => {
+        let x = NAV.find(n => n.p === p) || {ic: ICONS[p]};
+        b += `<div class="bi${p===P?' on':''}" data-p="${p}"><span class="bic">${ICONS[p]||x.ic}</span><span>${t(p)}</span></div>`;
+    });
+    let elBN = $('BN');
+    if(elBN) elBN.innerHTML = b;
+}
+
+document.addEventListener('click', e => {
+    let el = e.target.closest('.ni, .bi');
+    if(!el) return;
+    let p = el.getAttribute('data-p');
+    if(!p) return;
+    P = p;
+    buildNav();
+    render();
+});
+
+if ($('bTh')) {
+    $('bTh').onclick = () => {
+        let dk = document.documentElement.getAttribute('data-theme') === 'dark';
+        document.documentElement.setAttribute('data-theme', dk ? '' : 'dark');
+        $('bTh').textContent = dk ? '🌙' : '☀️';
+        sv('sp_theme', dk ? '' : 'dark');
+    };
+}
+
+if ($('bLn')) {
+    $('bLn').onclick = () => {
+        L = L === 'ar' ? 'en' : 'ar';
+        document.body.classList.toggle('en', L === 'en');
+        document.documentElement.dir = L === 'ar' ? 'rtl' : 'ltr';
+        document.documentElement.lang = L;
+        $('bLn').textContent = L === 'ar' ? 'EN' : 'عربي';
+        $('bOt').textContent = t('logout');
+        sv('sp_lang', L);
+        buildNav();
+        render();
+    };
+}
+
+function init() {
+    let th = ld('sp_theme');
+    if (th === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if($('bTh')) $('bTh').textContent = '☀️';
+    }
+    
+    let col = ld('sp_primary');
+    if (col) {
+        document.documentElement.style.setProperty('--am', col);
+    }
+    
+    let ln = ld('sp_lang');
+    if (ln === 'en' && L !== 'en') {
+        L = 'en';
+        document.body.classList.add('en');
+        document.documentElement.dir = 'ltr';
+        document.documentElement.lang = 'en';
+        if($('bLn')) $('bLn').textContent = 'عربي';
+        if($('bOt')) $('bOt').textContent = 'Logout';
+    }
+    
+    S = ld('salesData') || [];
+    T = ld('targetData') || [];
+    accCats = ld('accCats') || [];
+    hwCats = ld('hwCats') || [];
+    C = ld('payData') || [];
+    D = ld('duesData') || [];
+    
+    buildNav();
+    render();
+}
+
+function initAnm() {
+    document.querySelectorAll('.anm').forEach(el => {
+        let e = Number(el.getAttribute('data-v')), d = 1000, st = null;
+        let r = t => {
+            if(!st) st = t;
+            let p = Math.min((t - st) / d, 1);
+            el.textContent = el.getAttribute('data-p') ? pc(p * e) : fmt(Math.floor(p * e));
+            if(p < 1) requestAnimationFrame(r);
+            else el.textContent = el.getAttribute('data-p') ? pc(e) : fmt(e);
+        };
+        requestAnimationFrame(r);
+    });
+}
+
+function render() {
+    let fn = {
+        dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
+        customers: rCust, brands: rBrands, analytics: rAn, potential: rPot,
+        profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
+        keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
+        visits: rVisits, leads: rLeads,
+        account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
+    };
+    if (fn[P]) fn[P]();
+    initAnm();
+}
+
+window.TUI = function(enStr) {
+  const map = {
+    'Export Data': '\u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A',
+    'Export Sales': '\u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A',
+    'Export Targets': '\u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u0645\u0633\u062A\u0647\u062F\u0641\u0627\u062A',
+    'Export Collections': '\u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A',
+    'Prev': '\u0627\u0644\u0633\u0627\u0628\u0642',
+    'Next': '\u0627\u0644\u062A\u0627\u0644\u064A',
+    'No data': '\u0644\u0627 \u062A\u0648\u062C\u062F \u0628\u064A\u0627\u0646\u0627\u062A',
+    'Upload Excel Files': '\u0631\u0641\u0639 \u0645\u0644\u0641\u0627\u062A \u0625\u0643\u0633\u064A\u0644',
+    'Upload your Sales, Target and Collections Excel files to update the data.': '\u0642\u0645 \u0628\u0631\u0641\u0639 \u0645\u0644\u0641\u0627\u062A \u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A \u0648\u0627\u0644\u0645\u0633\u062A\u0647\u062F\u0641\u0627\u062A \u0648\u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A \u0644\u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A.',
+    'Cloud Sync Active': '\u0627\u0644\u0645\u0632\u0627\u0645\u0646\u0629 \u0627\u0644\u0633\u062D\u0627\u0628\u064A\u0629 \u0646\u0634\u0637\u0629',
+    'Sales File': '\u0645\u0644\u0641 \u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A',
+    'Target File': '\u0645\u0644\u0641 \u0627\u0644\u0645\u0633\u062A\u0647\u062F\u0641',
+    'Collections File': '\u0645\u0644\u0641 \u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A',
+    'records currently loaded': '\u0633\u062C\u0644 \u0645\u062D\u0645\u0644 \u062D\u0627\u0644\u064A\u0627\u064B',
+    'Upload & Update Data': '\u0631\u0641\u0639 \u0648\u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A',
+    'Choose a file first!': '\u0627\u062E\u062A\u0631 \u0645\u0644\u0641\u0627\u064B \u0623\u0648\u0644\u0627\u064B!',
+    'Error reading file': '\u062E\u0637\u0623 \u0641\u064A \u0642\u0631\u0627\u0621\u0629 \u0627\u0644\u0645\u0644\u0641',
+    'Done': '\u062A\u0645 \u0628\u0646\u062C\u0627\u062D',
+    'Active User': '\u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645 \u0627\u0644\u0646\u0634\u0637',
+    'Sales': '\u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A',
+    'Targets': '\u0627\u0644\u0645\u0633\u062A\u0647\u062F\u0641\u0627\u062A',
+    'Collections': '\u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A',
+    'Not logged in': '\u063A\u064A\u0631 \u0645\u0633\u062C\u0644 \u0627\u0644\u062F\u062E\u0648\u0644'
+  };
+  return map[enStr] || enStr;
+};
+window.toast = function(msg, type = 'info') {
+    let t = document.getElementById('TT');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3000);
+};
+
+// js/gdrive.js - Full Google Drive API Integration
+
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
+
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
+
+window.gapiLoaded = function() {
+    if (typeof gapi !== 'undefined' && !gapi.client) {
+        gapi.load('client', initializeGapiClient);
+    } else if (typeof gapi !== 'undefined' && gapi.client) {
+        initializeGapiClient();
+    }
+};
+
+async function initializeGapiClient() {
+    try {
+        const API_KEY = localStorage.getItem('gdrive_api_key');
+        if (!API_KEY) return;
+        
+        // Ensure gapi.client is loaded
+        if (typeof gapi !== 'undefined' && !gapi.client) {
+            await new Promise((resolve) => gapi.load('client', resolve));
+        }
+
+        await gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: [DISCOVERY_DOC],
+        });
+        gapiInited = true;
+    } catch (err) {
+        console.warn("Error initializing GAPI client: ", err);
+        throw err;
+    }
+}
+
+window.gisLoaded = function() {
+    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
+    if (!CLIENT_ID) return;
+    if (typeof google === 'undefined' || !google.accounts) return;
+    
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: '', 
+    });
+    gisInited = true;
+};
+
+// Auto-run if script tags loaded before this script
+if (typeof gapi !== 'undefined') window.gapiLoaded();
+if (typeof google !== 'undefined') window.gisLoaded();
+
+let isInitializing = false;
+
+async function requireAuth(callback) {
+    const CLIENT_ID = localStorage.getItem('gdrive_client_id');
+    const API_KEY = localStorage.getItem('gdrive_api_key');
+    
+    if (!CLIENT_ID || !API_KEY) {
+        if(typeof toast === 'function') toast(L==='ar'?'يجب إدخال Google Client ID و API Key في الإعدادات':'Please enter Google Client ID and API Key in Settings', 'error');
+        return;
+    }
+
+    if (isInitializing) {
+        setTimeout(() => requireAuth(callback), 500);
+        return;
+    }
+
+    isInitializing = true;
+    try {
+        if (!gapiInited) await initializeGapiClient();
+        if (!gisInited) window.gisLoaded();
+    } catch(e) {
+        console.error(e);
+    }
+    isInitializing = false;
+
+    if (!gapiInited || !gisInited) {
+        if(typeof toast === 'function') toast(L==='ar'?'فشل الاتصال بخوادم جوجل. تأكد من صحة المفاتيح.':'Failed to connect to Google. Check keys.', 'error');
+        return;
+    }
+
+    tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+            if(typeof toast === 'function') toast(L==='ar'?'خطأ في تسجيل الدخول لجوجل':'Google Login Error', 'error');
+            console.error(resp);
+            return;
+        }
+        callback();
+    };
+
+    if (gapi.client.getToken() === null) {
+        tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+        tokenClient.requestAccessToken({prompt: ''});
+    }
+}
+
+window.backupToGoogleDrive = function() {
+    requireAuth(async () => {
+        if(typeof toast === 'function') toast(L==='ar'?'جاري الحفظ في جوجل درايف...':'Saving to Google Drive...', 'info');
+        
+        let ds = document.getElementById('driveStatus');
+        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري الرفع...':'Uploading...'}</span>`;
+
+        let dump = {
+            salesData:  S        || [],
+            targetData: T        || [],
+            accCats:    accCats  || [],
+            hwCats:     hwCats   || [],
+            payData:    C        || [],
+            duesData:   D        || [],
+            lastUpdated: new Date().toISOString()
+        };
+        const fileContent = JSON.stringify(dump);
+        const file = new Blob([fileContent], { type: 'application/json' });
+        const metadata = {
+            'name': `SalesPro_Backup.json`,
+            'mimeType': 'application/json'
+        };
+
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', file);
+
+        try {
+            // First check if file already exists to overwrite it
+            let existingFileId = null;
+            const search = await gapi.client.drive.files.list({
+                q: "name='SalesPro_Backup.json' and trashed=false",
+                spaces: 'drive',
+                fields: 'files(id, name)'
+            });
+            if (search.result.files && search.result.files.length > 0) {
+                existingFileId = search.result.files[0].id;
+            }
+
+            let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+            let method = 'POST';
+            if (existingFileId) {
+                url = `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=multipart`;
+                method = 'PATCH';
+            }
+
+            const res = await fetch(url, {
+                method: method,
+                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }),
+                body: form
+            });
+            
+            const data = await res.json();
+            if (data.id) {
+                let tme = new Date().toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
+                localStorage.setItem('last_gdrive_sync', tme);
+                if(typeof toast === 'function') toast(L==='ar'?'✅ تم الحفظ في جوجل درايف!':'✅ Saved to Google Drive!', 'success');
+                if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'آخر مزامنة:':'Last sync:'}</strong> ${tme}`;
+            } else {
+                throw new Error("Invalid response from Google Drive");
+            }
+        } catch (err) {
+            console.error("Upload error", err);
+            if(ds) ds.innerHTML = `<span style="color:red">Upload Error</span>`;
+            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل الحفظ في السحابة':'❌ Cloud save failed', 'error');
+        }
+    });
+};
+
+window.restoreFromGoogleDrive = function() {
+    if (!confirm(L === 'ar' ? 'تحذير: سيتم استبدال البيانات الحالية بالنسخة الموجودة في جوجل درايف. متأكد؟' : 'Warning: Current data will be replaced with Google Drive backup. Sure?')) return;
+    
+    requireAuth(async () => {
+        if(typeof toast === 'function') toast(L==='ar'?'جاري البحث عن النسخة...':'Searching for backup...', 'info');
+        let ds = document.getElementById('driveStatus');
+        if(ds) ds.innerHTML = `<span style="color:blue">${L==='ar'?'جاري التنزيل...':'Downloading...'}</span>`;
+
+        try {
+            const search = await gapi.client.drive.files.list({
+                q: "name='SalesPro_Backup.json' and trashed=false",
+                spaces: 'drive',
+                fields: 'files(id, name, modifiedTime)',
+                orderBy: 'modifiedTime desc'
+            });
+
+            if (!search.result.files || search.result.files.length === 0) {
+                if(typeof toast === 'function') toast(L==='ar'?'❌ لا يوجد نسخة احتياطية في جوجل درايف!':'❌ No backup found in Google Drive!', 'error');
+                if(ds) ds.innerHTML = `<span style="color:red">No backup found!</span>`;
+                return;
+            }
+
+            const fileId = search.result.files[0].id;
+            
+            // Download file content
+            const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token })
+            });
+            
+            const content = await res.text();
+            let p = JSON.parse(content);
+            
+            if (p.salesData)  { S       = p.salesData;  sv('salesData',  S); }
+            if (p.targetData) { T       = p.targetData; sv('targetData', T); }
+            if (p.accCats)    { accCats = p.accCats;    sv('accCats',    accCats); }
+            if (p.hwCats)     { hwCats  = p.hwCats;     sv('hwCats',     hwCats); }
+            if (p.payData)    { C       = p.payData;    sv('payData',    C); }
+            if (p.duesData)   { D       = p.duesData;   sv('duesData',   D); }
+
+            let tme = new Date(search.result.files[0].modifiedTime).toLocaleString(L === 'ar' ? 'ar-EG' : 'en-US');
+            localStorage.setItem('last_gdrive_sync', tme);
+
+            if (typeof toast === 'function') toast(L === 'ar' ? '✅ تم الاسترجاع بنجاح!' : '✅ Restored successfully!', 'success');
+            if(ds) ds.innerHTML = `✅ <strong>${L==='ar'?'تم الاسترجاع!':'Restored!'}</strong>`;
+            
+            setTimeout(() => window.location.reload(), 1500);
+
+        } catch (err) {
+            console.error("Restore error", err);
+            if(ds) ds.innerHTML = `<span style="color:red">Restore Error</span>`;
+            if(typeof toast === 'function') toast(L==='ar'?'❌ فشل استرجاع البيانات':'❌ Restore failed', 'error');
+        }
+    });
+};
+
+window.cloudAutoSave = function() {
+    // Disable automatic background sync for Google Drive because it requires OAuth consent popup
+    // We only want manual sync for Google Drive.
+};
+
+window.getCloudInfo = async function() {
+    let lastS = localStorage.getItem('last_gdrive_sync');
+    if(!lastS) return null;
+    return {
+        lastUpdated: lastS,
+        salesCount: (S || []).length,
+        payCount: (C || []).length
+    };
+};
+
+  window.addEventListener('load', function() {
+    try {
+      if(typeof init === 'function') init();
+    } catch(e) {
+      alert('Error during init: ' + e.message + '\n' + e.stack);
+    }
+    setTimeout(function() {
+      var loader = document.getElementById('LOADER');
+      if (loader) {
+        loader.classList.add('fade-out');
+        setTimeout(function() { loader.style.display = 'none'; }, 500);
+      }
+    }, 800);
+  });
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(registration => console.log('SW registered'))
+        .catch(err => console.log('SW registration failed: ', err));
+    });
+  }
+
+window.saveReportUrl = function() { localStorage.setItem('report_url', document.getElementById('inReportUrl').value); toast(L==='ar'?'تم حفظ الرابط':'URL Saved'); };

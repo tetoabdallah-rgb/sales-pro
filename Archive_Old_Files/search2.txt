@@ -1,0 +1,2 @@
+    let cu = {}, or = {};
+    ds.forEach(r => { cu[r.Customer] = 1; or[r['Order Nbr']] = 1; });

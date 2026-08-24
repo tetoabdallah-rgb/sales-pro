@@ -1,0 +1,2 @@
+<div class="ki"><div class="lb">${L==='ar'?TUI('Collections'):'Collections'}</div><div class="vl">${typeof aFmt !== 'undefined' ? aFmt(tc) : tc}</div></div>
+            

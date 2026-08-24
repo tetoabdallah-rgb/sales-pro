@@ -1,0 +1,425 @@
+/* ============================================================
+   Sales Pro — Modern UI & High-Performance SaaS Design (v5.2)
+   Ultra-fast, zero-lag CSS with hardware-accelerated transitions.
+   ============================================================ */
+
+/* ---------- Fast & Clean Card Styling (No Laggy Backdrop Filters) ---------- */
+.card, .kg > div, .kpi-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    border: 1px solid var(--bd, rgba(255, 255, 255, 0.08));
+}
+
+.card:hover, .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Sparkline & Metric Badges */
+.sp-sparkline {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+body.en .sp-sparkline {
+    margin-right: 0;
+    margin-left: 6px;
+}
+.sp-spark-bar {
+    width: 3px;
+    border-radius: 2px;
+    background: #3b82f6;
+}
+.sp-spark-bar.up { background: #10b981; }
+.sp-spark-bar.down { background: #ef4444; }
+
+.sp-trend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-top: 4px;
+}
+.sp-trend-up {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.sp-trend-down {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+.sp-trend-neutral {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* ---------- Static High-Performance Sidebar Badges ---------- */
+.ni {
+    position: relative !important;
+}
+
+.sp-nav-badge {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 999px;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+}
+body.en .sp-nav-badge {
+    left: auto;
+    right: 12px;
+}
+
+.sp-badge-danger {
+    background: #ef4444;
+    color: #fff;
+}
+.sp-badge-amber {
+    background: #f59e0b;
+    color: #fff;
+}
+.sp-badge-success {
+    background: #10b981;
+    color: #fff;
+}
+.sp-badge-blue {
+    background: #3b82f6;
+    color: #fff;
+}
+.sp-badge-hot {
+    background: #f97316;
+    color: #fff;
+    font-weight: 900;
+}
+
+/* ---------- Floating Action Button (FAB) ---------- */
+.sp-fab-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 8500;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 10px;
+    font-family: inherit;
+}
+body.en .sp-fab-container {
+    right: auto;
+    left: 24px;
+    align-items: flex-start;
+}
+@media (max-width: 768px) {
+    .sp-fab-container {
+        bottom: 75px;
+        right: 16px;
+    }
+    body.en .sp-fab-container {
+        left: 16px;
+    }
+}
+
+.sp-fab-main {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 18px rgba(37, 99, 235, 0.4);
+    cursor: pointer;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.sp-fab-main:hover {
+    transform: scale(1.06);
+    background: #1d4ed8;
+}
+.sp-fab-container.active .sp-fab-main {
+    transform: rotate(45deg);
+    background: #ef4444;
+}
+
+.sp-fab-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+body.en .sp-fab-menu {
+    align-items: flex-start;
+}
+.sp-fab-container.active .sp-fab-menu {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.sp-fab-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg2, #1e293b);
+    border: 1px solid var(--bd, rgba(255,255,255,0.12));
+    border-radius: 999px;
+    padding: 5px 12px 5px 8px;
+    color: var(--tx1, #f8fafc);
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    transition: background 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+}
+body.en .sp-fab-item {
+    padding: 5px 8px 5px 12px;
+}
+.sp-fab-item:hover {
+    background: #3b82f6;
+    color: #fff;
+}
+.sp-fab-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+}
+
+/* ---------- Fast Sales Booster Layouts ---------- */
+.booster-header {
+    background: var(--bg2, #1e293b);
+    border: 1px solid var(--bd, rgba(255,255,255,0.1));
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.booster-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.booster-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.booster-title {
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--tx1);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+.booster-desc {
+    font-size: 0.82rem;
+    color: var(--tx3);
+    margin-top: 3px;
+}
+
+.booster-tabs {
+    display: flex;
+    gap: 6px;
+    background: var(--bg3, #0f172a);
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid var(--bd);
+    overflow-x: auto;
+}
+.booster-tab-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--tx2);
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+}
+.booster-tab-btn.active {
+    background: #3b82f6;
+    color: #fff;
+}
+
+/* Quote Layout */
+.quote-builder-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 18px;
+}
+@media (max-width: 900px) {
+    .quote-builder-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wa-preview-card {
+    background: #0b141a;
+    border: 1px solid #202c33;
+    border-radius: 16px;
+    padding: 16px;
+    color: #e9edef;
+    position: relative;
+}
+.wa-bubble {
+    background: #005c4b;
+    border-radius: 10px 0 10px 10px;
+    padding: 12px 14px;
+    color: #e9edef;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    white-space: pre-line;
+    word-break: break-word;
+}
+body.en .wa-bubble {
+    border-radius: 0 10px 10px 10px;
+}
+.wa-send-btn {
+    background: #25d366;
+    color: #111b21;
+    border: none;
+    font-weight: 800;
+    font-size: 0.92rem;
+    padding: 11px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
+    transition: background 0.15s ease;
+}
+.wa-send-btn:hover {
+    background: #20bd5a;
+}
+
+/* RFM Grid */
+.rfm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+}
+.rfm-card {
+    background: var(--bg2);
+    border: 1px solid var(--bd);
+    border-radius: 14px;
+    padding: 16px;
+    position: relative;
+    border-top: 3px solid #3b82f6;
+}
+.rfm-vip { border-top-color: #f59e0b; }
+.rfm-risk { border-top-color: #ef4444; }
+.rfm-grow { border-top-color: #10b981; }
+.rfm-lost { border-top-color: #64748b; }
+
+/* Simulator Sliders */
+.sim-slider-wrap {
+    background: var(--bg3);
+    border: 1px solid var(--bd);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+}
+.sim-slider-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.sim-range {
+    width: 100%;
+    height: 5px;
+    border-radius: 4px;
+    background: var(--bd);
+    outline: none;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+/* ---------- Universal Standalone Modals (Guaranteed to open on all tabs) ---------- */
+.sp-modal-overlay, .stk-ov {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+    z-index: 99999 !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+}
+.sp-modal-overlay.on, .sp-modal-overlay.open, .stk-ov.on, .stk-ov.open {
+    display: flex !important;
+}
+
+.sp-modal-content, .stk-m {
+    background: var(--bg2, #1e293b) !important;
+    border: 1px solid var(--bd, rgba(255,255,255,0.12)) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5) !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    padding: 22px !important;
+    position: relative !important;
+    color: var(--tx1, #fff) !important;
+    animation: spModalSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes spModalSlideIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.stk-mc {
+    background: none !important;
+    border: none !important;
+    color: var(--tx2, #94a3b8) !important;
+    font-size: 1.3rem !important;
+    cursor: pointer !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+}
+.stk-mc:hover {
+    color: #ef4444 !important;
+}

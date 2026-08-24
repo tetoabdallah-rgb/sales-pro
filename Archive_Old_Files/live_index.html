@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#161b22">
+  <title>Sales Pro Enterprise - Sales Pro</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1063/1063376.png">
+  <meta name="theme-color" content="#1e293b">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3214/3214746.png">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css?v=3">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- iOS 27 / VisionOS Premium Override -->
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+
+
+
+
+<style id="ultimate-layout-fix">
+  @media screen and (min-width: 901px) {
+    #APP {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+    }
+    .mw {
+      margin: 0 !important;
+      padding: 24px 32px !important;
+      padding-right: 312px !important; 
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+    }
+    /* Fix Grid and Flexbox blowout bugs caused by long product names */
+    .cg > *, .kg > *, .rg-grid > *, .card {
+      min-width: 0 !important;
+    }
+    div[style*="display:flex"] > span[style*="ellipsis"],
+    div[style*="display: flex"] > span[style*="ellipsis"],
+    span[style*="ellipsis"] {
+      min-width: 0 !important;
+    }
+    body.en .mw {
+      padding-right: 32px !important;
+      padding-left: 312px !important;
+    }
+    /* Fix Grid and Flexbox blowout bugs caused by long product names */
+    .cg > *, .kg > *, .rg-grid > *, .card {
+      min-width: 0 !important;
+    }
+    div[style*="display:flex"] > span[style*="ellipsis"],
+    div[style*="display: flex"] > span[style*="ellipsis"],
+    span[style*="ellipsis"] {
+      min-width: 0 !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="LOADER" class="loader-overlay">
+  <div class="loader-content">
+    <div class="loader-icon">&#x2699;&#xFE0F;</div>
+    <div class="loader-text">Sales Pro</div>
+    <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  </div>
+</div>
+
+<!-- Authentication Screen -->
+<div id="AUTH" class="auth-bg">
+  <div class="auth-card" style="border-radius:12px;">
+    <div class="auth-logo">
+      <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bar%20chart/3D/bar_chart_3d.png" alt="Sales Pro Logo" width="80" height="80" style="filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); animation: fadeUp 1s ease forwards;">
+    </div>
+    <h1 style="margin-bottom:4px; font-weight:800;">Sales Pro</h1>
+    <p class="ds" style="font-size:0.85rem; margin-bottom:24px;">Welcome back, please sign in</p>
+    
+    <div class="fg" style="margin-bottom:16px;">
+      <div class="input-wrap">
+        <input type="email" id="inE" placeholder="Email address" autocomplete="username" style="width:100%; padding:12px 16px; border-radius:8px; font-size:0.9rem;">
+      </div>
+    </div>
+    
+    <div class="fg" style="margin-bottom:16px;">
+      <div class="input-wrap">
+        <input type="password" id="inP" placeholder="Password" autocomplete="current-password" style="width:100%; padding:12px 16px; border-radius:8px; font-size:0.9rem;">
+      </div>
+    </div>
+    
+    <button id="bLog" class="btn btn-p btn-login" style="width:100%; padding:12px; border-radius:8px; font-weight:600; cursor:pointer; margin-top:8px;">Sign In</button>
+    <p id="aErr" class="aerr" style="font-size:0.8rem; min-height:20px; margin:8px 0; text-align:center;"></p>
+    
+    <button id="bLogG" class="btn btn-google" style="width:100%; padding:12px; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer;">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="G"> 
+        <span style="font-weight:600; font-size:0.85rem;">Sign in with Google</span>
+    </button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="APP" class="hidden" style="display:none;">
+  <nav class="sidebar">
+    <div class="sbt">
+      <span class="sbr">&#x2699;&#xFE0F; Sales Pro</span>
+      <div class="sbb">
+        <button id="bTh" title="Theme">&#x1F317;</button>
+        <button id="bLn" title="Language">EN</button>
+        <button id="bOt" title="Logout">&#x062E;&#x0631;&#x0648;&#x062C;</button>
+      </div>
+    </div>
+    <div id="NV"></div>
+  </nav>
+  
+  <main class="mw" id="M"></main>
+  <nav class="bnav">
+    <div class="bni" id="BN"></div>
+  </nav>
+</div>
+
+
+  <!-- Print Invoice Modal (Enterprise V8 Static Sibling) -->
+  <div class="print-modal" id="printInvoiceModal">
+    <div class="print-modal-content" id="printModalContent"></div>
+  </div>
+<!-- Toast -->
+<div class="toast" id="TT"></div>
+
+<!-- CDN Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script src="https://accounts.google.com/gsi/client?onload=gisLoaded" async defer></script>
+<script src="https://apis.google.com/js/api.js?onload=gapiLoaded" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<!-- ALL LOCAL JS INLINED BELOW -->
+
+
+
+
+
+
+
+
+
+<!-- PDF Export Enhancements -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+
+<script src="new_features.js"></script>
+
+
+
+
+
+
+
+
+
+
+<!-- PDF Export Enhancements -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+
+<script src="new_features.js"></script>
+
+
+  <script src="scripts/main.js?v=12"></script>
+</body>
+</html>
+
+
+
+
+

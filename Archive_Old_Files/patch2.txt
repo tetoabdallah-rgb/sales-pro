@@ -1,0 +1,15 @@
+    let cu = {}, or = {};
+    ds.forEach(r => { cu[r.Customer] = 1; or[r['Order Nbr']] = 1; });
+    
+    let tc = 0;
+    if (typeof C !== 'undefined' && C.length) {
+        C.forEach(r => {
+            let keys = Object.keys(r);
+            let getVal = (pn) => {
+                let k = keys.find(k => pn.some(p => k.toLowerCase().replace(/\s+/g, '') === p.toLowerCase().replace(/\s+/g, '')));
+                return k ? r[k] : undefined;
+            };
+            let rawVal = getVal(['Amount', 'Collection']) || 0;
+            tc += Number(rawVal.toString().replace(/,/g, '')) || 0;
+        });
+    }
