@@ -423,3 +423,92 @@ body.en .wa-bubble {
 .stk-mc:hover {
     color: #ef4444 !important;
 }
+
+/* ============================================================
+   ENTERPRISE FULL-WIDTH 100% RESPONSIVE SAAS LAYOUT (ALL TABS)
+   ============================================================ */
+#APP {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+#M, .mw {
+    width: calc(100% - var(--sidebar-w, 260px)) !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 992px) {
+    #M, .mw {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+}
+
+/* Tab Containers Fluid 100% Width */
+.stk-page, .booster-page, .visits-container, .customer-page, .report-page, .settings-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Fluid Auto Grids Across All Tabs */
+.grid-2 {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)) !important;
+    gap: 16px !important;
+    width: 100% !important;
+}
+
+.grid-3 {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 16px !important;
+    width: 100% !important;
+}
+
+.grid-4 {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    gap: 16px !important;
+    width: 100% !important;
+}
+
+@media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+}
+
+/* Fluid Table Wrappers & Smooth Scroll */
+.tb, .tbs, .table-responsive {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+/* Chart Canvas Sizing */
+canvas {
+    max-width: 100% !important;
+}
+
+/* Filter Strips & Top Action Bars */
+.filter-strip, .stk-topbar, .booster-header, .search-bar-wrap {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+}
+
