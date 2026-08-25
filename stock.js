@@ -135,7 +135,7 @@ window.rStock = function rStock() {
 .sbtn-excel { background: linear-gradient(135deg,#10b981,#059669); color: #fff; box-shadow: 0 4px 14px rgba(16,185,129,0.3); }
 .sbtn-sm { padding: 7px 12px; font-size: 0.76rem; border-radius: 8px; }
 
-.stk-kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.stk-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; width: 100%; box-sizing: border-box; }
 .kpi-card { background: var(--bg2,#1e293b); border: 1px solid var(--bd,rgba(255,255,255,0.08)); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; transition: all 0.2s; }
 .kpi-card::before { content: ''; position: absolute; top: 0; right: 0; width: 3px; height: 100%; }
 .kpi-blue::before { background: #3b82f6; } .kpi-blue .kpi-val { color: #3b82f6; }
