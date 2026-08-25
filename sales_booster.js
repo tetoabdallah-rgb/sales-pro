@@ -678,7 +678,7 @@
             </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:18px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:18px; width:100%;">
             <div class="card" style="padding:18px; border-radius:16px;">
                 <h3 style="font-size:1rem; font-weight:800; margin-bottom:14px;">🎛️ ${t('حرك المؤشرات لمحاكاة أرباحك', 'Adjust Sliders')}</h3>
 
