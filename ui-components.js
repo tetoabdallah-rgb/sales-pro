@@ -27,11 +27,24 @@ function rDash() {
     let ds = getFilteredSales();
     let ts = 0, tp = 0, tt = 0, tpt = 0;
     
-    ds.forEach(r => { ts += getSalesVal(r); tp += getProfitVal(r); });
-    T.forEach(r => { tt += Number(r.Target)||0; tpt += Number(r['Profit Target'])||0; });
+    ds.forEach(r => { 
+        ts += getSalesVal(r); 
+        tp += getProfitVal(r); 
+    });
+    
+    T.forEach(r => { 
+        tt += getRowVal(r, ['Target', 'target', 'المستهدف', 'التارجت']); 
+        tpt += getRowVal(r, ['Profit Target', 'ProfitTarget', 'مستهدف الربح', 'تارجت الربح']); 
+    });
+    if (tpt === 0 && tt > 0) tpt = tt * 0.15; // default 15% margin target if unspecified
     
     let cu = {}, or = {};
-    ds.forEach(r => { cu[r.Customer] = 1; or[r['Order Nbr']] = 1; });
+    ds.forEach(r => { 
+        let c = getCustName(r);
+        if(c) cu[c] = 1; 
+        let oN = r['Order Nbr'] || r['Order Number'] || r['Invoice Number'] || r['رقم الفاتورة'];
+        if(oN) or[oN] = 1; 
+    });
     
     let ap = tt > 0 ? ts / tt * 100 : 0;
     let pp = tpt > 0 ? tp / tpt * 100 : 0;
@@ -42,41 +55,32 @@ function rDash() {
         if (!(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
             if (typeof S !== 'undefined') {
                 S.forEach(s => {
-                    let c = s['Customer'];
+                    let c = getCustName(s);
                     if(c) {
-                        let v = Number(s['Sales Without Tax'] || 0);
-                        if(typeof isAcc==='function' && isAcc(s['Item Class Name'])) cAccMap[c] = (cAccMap[c]||0) + v;
-                        if(typeof isHW==='function' && isHW(s['Item Class Name'])) cHWMap[c] = (cHWMap[c]||0) + v;
+                        let v = getSalesVal(s);
+                        let cls = s['Item Class Name'] || s['Category'] || '';
+                        if(typeof isAcc==='function' && isAcc(cls)) cAccMap[c] = (cAccMap[c]||0) + v;
+                        if(typeof isHW==='function' && isHW(cls)) cHWMap[c] = (cHWMap[c]||0) + v;
                     }
                 });
             }
         }
         C.forEach(r => {
-            let keys = Object.keys(r);
-            let getVal = (possibleNames) => {
-                let k = keys.find(k => possibleNames.some(pn => k.toLowerCase().replace(/\s+/g, '') === pn.toLowerCase().replace(/\s+/g, '')));
-                return k ? r[k] : undefined;
-            };
+            let val = getPayVal(r);
+            let cat = getRowStr(r, ['Item Class Name', 'Item Group', 'Category', 'القسم', 'الفئة']);
+            let ahRaw = getRowStr(r, ['acc-hw', 'acchw', 'acc - hw']);
+            let ah = ahRaw.toLowerCase();
+            let cName = getCustName(r);
+            let payRef = getPayRef(r);
             
-            let rawVal = getVal(['Amount', 'Collection']) || 0;
-            let val = Number(rawVal.toString().replace(/,/g, '')) || 0;
-            let cat = getVal(['Item Class Name', 'Item Group', 'Category']);
-            let ahRaw = getVal(['acc-hw', 'acchw', 'acc - hw']);
-            let ah = ahRaw ? ahRaw.toString().trim().toLowerCase() : '';
-            let cName = getVal(['Customer Name', 'Customer']) || '';
-            
-            let payRef = (r['Payment Ref.'] || r['Payment Ref'] || r['PaymentRef'] || '').toString().trim().toLowerCase();
-            if (payRef.startsWith('acc')) {
+            if (payRef === 'acc' || ah.includes('acc') || ah.includes('اكسسوار')) {
                 accTot += val;
-            } else if (payRef.startsWith('hw')) {
-                hwTot += val;
-            } else if (ah.includes('acc') || ah.includes('اكسسوار')) {
-                accTot += val;
-            } else if (ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
+            } else if (payRef === 'hw' || ah.includes('hw') || ah.includes('هاردوير') || ah.includes('هارد')) {
                 hwTot += val;
             } else if (cat) {
                 if (typeof isAcc==='function' && isAcc(cat)) accTot += val;
                 else if (typeof isHW==='function' && isHW(cat)) hwTot += val;
+                else accTot += val;
             } else {
                 let a = cAccMap[cName]||0;
                 let h = cHWMap[cName]||0;
@@ -90,9 +94,9 @@ function rDash() {
         });
     }
     
-    // Calculate available reps and cats for the dropdowns
-    let allReps = [...new Set(S.map(r => getRowVal(r, ['Sales Person', 'Rep', 'Salesman'])).filter(Boolean))].sort();
-    let allCats = [...new Set(S.map(r => getRowVal(r, ['Item Class Name', 'Category', 'category'])).filter(Boolean))].sort();
+    // Reps and Categories for filter dropdowns
+    let allReps = [...new Set(S.map(r => getRowStr(r, ['Sales Person', 'Rep', 'Salesman', 'المندوب', 'مندوب المبيعات'])).filter(Boolean))].sort();
+    let allCats = [...new Set(S.map(r => getRowStr(r, ['Item Class Name', 'Category', 'category', 'الفئة', 'القسم'])).filter(Boolean))].sort();
     
     let repOptions = `<option value="">${L==='ar'?'كل المناديب':'All Reps'}</option>` + allReps.map(r => `<option value="${r}" ${globalRepFilter===r?'selected':''}>${r}</option>`).join('');
     let catOptions = `<option value="">${L==='ar'?'كل الفئات':'All Categories'}</option>` + allCats.map(c => `<option value="${c}" ${globalCatFilter===c?'selected':''}>${c}</option>`).join('');
@@ -114,19 +118,28 @@ function rDash() {
         </div>
     `;
     
-    
-    let maxD = 0; ds.forEach(r => { let d = new Date(pd((r['Invoice Date'] || r['Order Date'] || r['Date']))).getTime(); if(!isNaN(d) && d>maxD) maxD=d; });
-    let cuD = {}; ds.forEach(r => { let cust = r.Customer; if(!cust) return; let d = pd((r['Invoice Date'] || r['Order Date'] || r['Date'])); if(!cuD[cust] || d > cuD[cust]) cuD[cust]=d; });
-    let dormantCount = 0; let ttD = maxD>0?maxD:new Date().getTime();
-    Object.values(cuD).forEach(v => { let t = new Date(v).getTime(); if(!isNaN(t) && Math.floor((ttD-t)/86400000)>=60) dormantCount++; });
+    // Accurate Dormant calculation
+    let now = new Date();
+    let cuD = {};
+    S.forEach(r => {
+        let cust = getCustName(r);
+        if(!cust) return;
+        let d = getDateVal(r);
+        if(d && (!cuD[cust] || d > cuD[cust])) cuD[cust] = d;
+    });
+    let dormantCount = 0;
+    Object.values(cuD).forEach(dStr => {
+        let t = new Date(dStr).getTime();
+        if(!isNaN(t) && Math.floor((now.getTime() - t)/86400000) >= 60) dormantCount++;
+    });
 
     let dormantCard = `
-    <div class="card" style="margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; background:linear-gradient(to right, rgba(231,76,60,0.05), transparent); border-left:4px solid var(--rd); box-shadow:0 4px 12px rgba(0,0,0,0.05);" onclick="nav('dormant')">
+    <div class="card" style="margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; background:linear-gradient(to right, rgba(231,76,60,0.08), var(--bg2)); border-right:4px solid var(--rd); box-shadow:0 4px 12px rgba(0,0,0,0.05);" onclick="nav('dormant')">
         <div style="display:flex; align-items:center; gap:16px;">
-            <div style="font-size:2rem; width:50px; height:50px; background:var(--rd); color:white; border-radius:12px; display:flex; align-items:center; justify-content:center;">${ICONS.dormant}</div>
+            <div style="font-size:1.8rem; width:48px; height:48px; background:var(--rd); color:white; border-radius:12px; display:flex; align-items:center; justify-content:center;">${ICONS.dormant}</div>
             <div>
-                <h3 style="margin:0 0 4px; color:var(--tx1);">${L==='ar'?'العملاء الخاملين':'Dormant Customers'}</h3>
-                <div style="color:var(--tx2); font-size:0.9rem;">${L==='ar'?'إضغط هنا لمشاهدة قائمة العملاء المنقطعين منذ 60 يوم':'Click to view customers with no orders in 60+ days'}</div>
+                <h3 style="margin:0 0 4px; color:var(--tx1); font-size:1.05rem;">${L==='ar'?'العملاء الخاملين والمنقطعين':'Dormant & At-Risk Accounts'}</h3>
+                <div style="color:var(--tx2); font-size:0.82rem;">${L==='ar'?'انقر لمشاهدة قائمة العملاء المنقطعين وإعادة تنشيطهم عبر واتساب':'Click to view and re-engage dormant accounts'}</div>
             </div>
         </div>
         <div style="font-size:1.8rem; font-weight:900; color:var(--rd);">${dormantCount}</div>
@@ -141,9 +154,9 @@ function rDash() {
         ${dormantCard}
         
         <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(ts)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(tp)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl" style="color:var(--ac);">${aFmt(ts)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl" style="color:#10b981;">${aFmt(tp)}</div></div>
+            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl" style="color:#10b981;">${aFmt(ts>0?tp/ts*100:0,true)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Target'):'Target'}</div><div class="vl">${aFmt(tt)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Ach.'):'Ach.'}</div><div class="vl">${aFmt(ap,true)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?TUI('Cust.'):'Cust.'}</div><div class="vl">${aFmt(Object.keys(cu).length)}</div></div>
@@ -635,98 +648,170 @@ function rPers() {
 function rCust() {
     let cu = {};
     let ds = getFilteredSales();
+    let S_all = typeof S !== 'undefined' ? S : [];
+    let T_all = typeof T !== 'undefined' ? T : [];
+    
+    // Aggregate sales per customer
     ds.forEach(r => {
-        let c = r.Customer || '';
-        if(!cu[c]) cu[c] = {rg:r['Customer Class']||'', o:{}, s:0, p:0, accS:0, hwS:0, l:''};
-        cu[c].o[r['Order Nbr']] = 1;
-        cu[c].s += getSalesVal(r);
-        cu[c].p += getProfitVal(r);
-        if(isAcc(r['Item Class Name'])) cu[c].accS += getSalesVal(r); else cu[c].hwS += getSalesVal(r);
-        let d = pd((r['Invoice Date'] || r['Order Date'] || r['Date'])); if(d > cu[c].l) cu[c].l = d;
+        let c = getCustName(r);
+        if(!c) return;
+        if(!cu[c]) cu[c] = {rg: getRowStr(r, ['Customer Class', 'Region', 'Area', 'المنطقة', 'الفئة']), o:{}, s:0, p:0, accS:0, hwS:0, l:'', phone: getRowStr(r, ['Phone', 'Mobile', 'رقم الموبايل', 'الموبايل'])};
+        let oN = r['Order Nbr'] || r['Order Number'] || r['Invoice Number'] || r['رقم الفاتورة'] || r['Date'];
+        if(oN) cu[c].o[oN] = 1;
+        let sVal = getSalesVal(r);
+        let pVal = getProfitVal(r);
+        cu[c].s += sVal;
+        cu[c].p += pVal;
+        let cls = r['Item Class Name'] || r['Category'] || '';
+        if(typeof isAcc==='function' && isAcc(cls)) cu[c].accS += sVal; else cu[c].hwS += sVal;
+        let d = getDateVal(r);
+        if(d && (!cu[c].l || d > cu[c].l)) cu[c].l = d;
     });
+
+    // Also include any targets
+    T_all.forEach(t => {
+        let c = getCustName(t);
+        if(c && !cu[c]) {
+            cu[c] = {rg: getRowStr(t, ['Customer Class', 'Region', 'Area', 'المنطقة']), o:{}, s:0, p:0, accS:0, hwS:0, l:'-', phone: getRowStr(t, ['Phone', 'Mobile', 'رقم الموبايل'])};
+        }
+    });
+
     let arr = Object.keys(cu).map(n => {
-        let d = cu[n], tr = T.find(t => t.Customer === n), tg = tr ? Number(tr.Target)||0 : 0;
-        return {n:n, rg:d.rg, o:Object.keys(d.o).length, s:d.s, p:d.p, accS:d.accS, hwS:d.hwS, l:d.l, m:d.s>0?d.p/d.s*100:0, tg:tg, ach:tg>0?d.s/tg*100:0};
-    }).sort((a,b)=>b.s-a.s);
+        let d = cu[n];
+        let tr = T_all.find(t => getCustName(t) === n);
+        let tg = tr ? (getRowVal(tr, ['Target', 'target', 'المستهدف', 'التارجت']) || 0) : 0;
+        let pMargin = d.s > 0 ? (d.p / d.s) * 100 : 0;
+        let ach = tg > 0 ? (d.s / tg) * 100 : 0;
+        return {
+            n: n,
+            rg: d.rg || (L==='ar'?'غير محدد':'Unspecified'),
+            o: Object.keys(d.o).length,
+            s: d.s,
+            p: d.p,
+            accS: d.accS,
+            hwS: d.hwS,
+            l: d.l || '-',
+            m: pMargin,
+            tg: tg,
+            ach: ach,
+            phone: d.phone || (tr ? getRowStr(tr, ['Phone', 'Mobile', 'رقم الموبايل']) : '')
+        };
+    }).sort((a,b) => b.s - a.s);
+
+    let totS = arr.reduce((sum,r) => sum + r.s, 0);
+    let totP = arr.reduce((sum,r) => sum + r.p, 0);
     let len = arr.length;
+    
+    // Executive Pareto 3-Tier Classification (Class A: Top 20%, Class B: Next 30%, Class C: Rest 50%)
     let vipCount = Math.max(1, Math.floor(len * 0.20));
     let silverCount = Math.floor(len * 0.30);
+    let aSales = 0, bSales = 0, cSales = 0;
+    let aCount = 0, bCount = 0, cCount = 0;
+
     arr.forEach((item, idx) => {
         if (idx < vipCount) {
             item.tier = 'VIP';
-            item.tierBadge = `<span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75rem;font-weight:bold;margin-left:6px;display:inline-flex;align-items:center;gap:3px;" title="VIP / الفئة الذهبية">👑 VIP</span>`;
+            item.tierName = L==='ar'?'Class A (كبار العملاء)':'Class A (VIP)';
+            item.tierBadge = `<span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:3px 8px;border-radius:12px;font-size:0.72rem;font-weight:bold;display:inline-flex;align-items:center;gap:3px;" title="Class A (VIP)">👑 Class A</span>`;
+            aSales += item.s;
+            aCount++;
         } else if (idx < vipCount + silverCount) {
             item.tier = 'Silver';
-            item.tierBadge = `<span style="background:linear-gradient(135deg,#64748b,#475569);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75rem;font-weight:bold;margin-left:6px;display:inline-flex;align-items:center;gap:3px;" title="Silver / الفئة الفضية">⭐ Silver</span>`;
+            item.tierName = L==='ar'?'Class B (عملاء النمو)':'Class B (Growth)';
+            item.tierBadge = `<span style="background:linear-gradient(135deg,#64748b,#475569);color:#fff;padding:3px 8px;border-radius:12px;font-size:0.72rem;font-weight:bold;display:inline-flex;align-items:center;gap:3px;" title="Class B (Growth)">⭐ Class B</span>`;
+            bSales += item.s;
+            bCount++;
         } else {
             item.tier = 'Bronze';
-            item.tierBadge = `<span style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75rem;font-weight:bold;margin-left:6px;display:inline-flex;align-items:center;gap:3px;" title="Bronze / الفئة البرونزية">🔹 Bronze</span>`;
+            item.tierName = L==='ar'?'Class C (عملاء عاديين)':'Class C (Standard)';
+            item.tierBadge = `<span style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;padding:3px 8px;border-radius:12px;font-size:0.72rem;font-weight:bold;display:inline-flex;align-items:center;gap:3px;" title="Class C (Standard)">🔹 Class C</span>`;
+            cSales += item.s;
+            cCount++;
         }
     });
+
     window._CU = arr;
-    let totS = arr.reduce((sum,r)=>sum+r.s,0), totP = arr.reduce((sum,r)=>sum+r.p,0);
     pState.customers.page = 1;
-    
-    let topHtml = '';
-    for(let i=0; i<Math.min(3, arr.length); i++) {
-        let n = arr[i].n;
-        let d = arr[i];
-        let contrib = totS > 0 ? (d.s/totS)*100 : 0;
-        let color = i===0 ? 'var(--p)' : i===1 ? '#2ecc71' : '#f39c12';
-        topHtml += `
-            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
-                <div style="font-size:0.8rem; color:var(--tx2); font-weight:bold;">${L==='ar'?TUI('Rank'):'Rank'} #${i+1}</div>
-                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${n}</h3>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--tx2);">${L==='ar'?TUI('Sales'):'Sales'}</span>
-                    <strong style="color:${color};">${aFmt(d.s)}</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--tx2);">${L==='ar'?TUI('Profit'):'Profit'}</span>
-                    <strong>${aFmt(d.p)}</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--tx2);">${L==='ar'?TUI('Contribution'):'Contribution'}</span>
-                    <span class="badge" style="background:${color}; color:white;">${pc(contrib)}</span>
-                </div>
-            </div>
-        `;
-    }
-    
+
     $('M').innerHTML = `
-        <div class="ph" style="display:flex;align-items:center;gap:12px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.customers}</span> ${t('customers')}</h1>
-            <button id="bExCust" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">?</span> Excel</button>
-        </div>
-        <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Customers'):'Customers'}</div><div class="vl">${aFmt(arr.length)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Sales'):'Sales'}</div><div class="vl">${aFmt(totS)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Profit'):'Profit'}</div><div class="vl">${aFmt(totP)}</div></div>
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Margin'):'Margin'}</div><div class="vl">${aFmt(totS>0?totP/totS*100:0,true)}</div></div>
-        </div>
-        
-        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top 3 Buyers'):'Top 3 Buyers'}</h3>
-        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
-            ${topHtml}
+        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+            <h1 style="display:flex;align-items:center;gap:12px;margin:0;"><span style="width:36px;height:36px;display:flex;">🏪</span> ${L==='ar'?'إدارة وتصنيف العملاء الاحترافي':'Customer Segmentation & CRM'}</h1>
+            <div style="display:flex;gap:8px;">
+                <button id="bExCust" class="btn" style="background:#10b981;color:#fff;font-weight:bold;display:flex;align-items:center;gap:6px;">📊 ${L==='ar'?'تصدير إكسيل':'Export Excel'}</button>
+            </div>
         </div>
 
-        <div class="tb">
-            <div class="tbt" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <h3>${L==='ar'?TUI('Customers Details'):'Customers Details'}</h3>
-                <div style="display:flex; gap:6px; align-items:center;">
-                    <button class="btn tier-btn" id="tAll" onclick="setCustTierFilter('ALL')" style="padding:4px 10px; border-radius:14px; font-size:0.8rem; border:1px solid var(--bd); background:var(--p); color:#fff; cursor:pointer;">${L==='ar'?'الكل':'All'}</button>
-                    <button class="btn tier-btn" id="tVIP" onclick="setCustTierFilter('VIP')" style="padding:4px 10px; border-radius:14px; font-size:0.8rem; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); cursor:pointer;">👑 VIP</button>
-                    <button class="btn tier-btn" id="tSilver" onclick="setCustTierFilter('Silver')" style="padding:4px 10px; border-radius:14px; font-size:0.8rem; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); cursor:pointer;">⭐ Silver</button>
-                    <button class="btn tier-btn" id="tBronze" onclick="setCustTierFilter('Bronze')" style="padding:4px 10px; border-radius:14px; font-size:0.8rem; border:1px solid var(--bd); background:var(--bg2); color:var(--tx1); cursor:pointer;">🔹 Bronze</button>
+        <!-- 3-Tier Segmentation Summary Cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:20px;">
+            <div class="card" style="padding:16px;border-right:4px solid #f59e0b;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.8rem;color:var(--tx3);font-weight:bold;">👑 ${L==='ar'?'الفئة الذهبية (Class A)':'Class A (VIP)'}</span>
+                    <span style="font-size:0.75rem;background:rgba(245,158,11,0.15);color:#f59e0b;padding:2px 6px;border-radius:6px;font-weight:bold;">${aCount} ${L==='ar'?'عميل':'cust'}</span>
                 </div>
-                <input class="sbox" id="cusr" placeholder="${L==='ar'?TUI('Search...'):'Search...'}">
+                <div style="font-size:1.3rem;font-weight:800;color:#f59e0b;margin-top:6px;">${fmt(aSales)} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                <div style="font-size:0.75rem;color:var(--tx2);margin-top:2px;">${totS > 0 ? ((aSales/totS)*100).toFixed(1) : 0}% ${L==='ar'?'من إجمالي المبيعات':'of total sales'}</div>
             </div>
-            <div class="tbs"><table><thead><tr><th>Customer</th><th>Region</th><th>Orders</th><th>Sales</th><th>Acc</th><th>HW</th><th>Profit</th><th>Margin</th><th>Target</th><th>Ach.</th><th>Last</th><th>WA</th></tr></thead><tbody id="cutb"></tbody></table></div>
-            <div id="cpg"></div>
+            <div class="card" style="padding:16px;border-right:4px solid #64748b;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.8rem;color:var(--tx3);font-weight:bold;">⭐ ${L==='ar'?'الفئة الفضية (Class B)':'Class B (Growth)'}</span>
+                    <span style="font-size:0.75rem;background:rgba(100,116,139,0.15);color:#64748b;padding:2px 6px;border-radius:6px;font-weight:bold;">${bCount} ${L==='ar'?'عميل':'cust'}</span>
+                </div>
+                <div style="font-size:1.3rem;font-weight:800;color:var(--tx1);margin-top:6px;">${fmt(bSales)} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                <div style="font-size:0.75rem;color:var(--tx2);margin-top:2px;">${totS > 0 ? ((bSales/totS)*100).toFixed(1) : 0}% ${L==='ar'?'من إجمالي المبيعات':'of total sales'}</div>
+            </div>
+            <div class="card" style="padding:16px;border-right:4px solid #3b82f6;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.8rem;color:var(--tx3);font-weight:bold;">🔹 ${L==='ar'?'الفئة البرونزية (Class C)':'Class C (Standard)'}</span>
+                    <span style="font-size:0.75rem;background:rgba(59,130,246,0.15);color:#3b82f6;padding:2px 6px;border-radius:6px;font-weight:bold;">${cCount} ${L==='ar'?'عميل':'cust'}</span>
+                </div>
+                <div style="font-size:1.3rem;font-weight:800;color:var(--tx1);margin-top:6px;">${fmt(cSales)} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                <div style="font-size:0.75rem;color:var(--tx2);margin-top:2px;">${totS > 0 ? ((cSales/totS)*100).toFixed(1) : 0}% ${L==='ar'?'من إجمالي المبيعات':'of total sales'}</div>
+            </div>
+            <div class="card" style="padding:16px;border-right:4px solid #10b981;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.8rem;color:var(--tx3);font-weight:bold;">💰 ${L==='ar'?'إجمالي الأرباح':'Total Profit'}</span>
+                    <span style="font-size:0.75rem;background:rgba(16,185,129,0.15);color:#10b981;padding:2px 6px;border-radius:6px;font-weight:bold;">${totS > 0 ? ((totP/totS)*100).toFixed(1) : 0}% Margin</span>
+                </div>
+                <div style="font-size:1.3rem;font-weight:800;color:#10b981;margin-top:6px;">${fmt(totP)} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                <div style="font-size:0.75rem;color:var(--tx2);margin-top:2px;">${L==='ar'?'إجمالي أرباح جميع العملاء':'Overall gross profit'}</div>
+            </div>
+        </div>
+
+        <!-- Filter & Table Card -->
+        <div class="card" style="padding:18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                <!-- Filter Pills -->
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn tier-btn" id="tAll" onclick="setCustTierFilter('ALL')" style="padding:6px 14px;border-radius:10px;font-size:0.82rem;font-weight:700;border:1px solid var(--bd);background:var(--ac);color:#fff;cursor:pointer;">${L==='ar'?'الكل':'All'} (${arr.length})</button>
+                    <button class="btn tier-btn" id="tVIP" onclick="setCustTierFilter('VIP')" style="padding:6px 14px;border-radius:10px;font-size:0.82rem;font-weight:700;border:1px solid var(--bd);background:var(--bg3);color:var(--tx1);cursor:pointer;">👑 Class A (${aCount})</button>
+                    <button class="btn tier-btn" id="tSilver" onclick="setCustTierFilter('Silver')" style="padding:6px 14px;border-radius:10px;font-size:0.82rem;font-weight:700;border:1px solid var(--bd);background:var(--bg3);color:var(--tx1);cursor:pointer;">⭐ Class B (${bCount})</button>
+                    <button class="btn tier-btn" id="tBronze" onclick="setCustTierFilter('Bronze')" style="padding:6px 14px;border-radius:10px;font-size:0.82rem;font-weight:700;border:1px solid var(--bd);background:var(--bg3);color:var(--tx1);cursor:pointer;">🔹 Class C (${cCount})</button>
+                </div>
+                <input class="sbox" id="cusr" placeholder="${L==='ar'?'🔍 بحث باسم العميل أو المنطقة...':'🔍 Search customer or area...'}" style="min-width:240px;padding:9px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--tx1);font-family:inherit;">
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;white-space:nowrap;">
+                    <thead>
+                        <tr style="background:var(--bg3);border-bottom:2px solid var(--bd);">
+                            <th style="padding:12px 10px;text-align:right;">${L==='ar'?'العميل والتصنيف':'Customer & Tier'}</th>
+                            <th style="padding:12px 10px;text-align:center;">${L==='ar'?'المنطقة':'Area'}</th>
+                            <th style="padding:12px 10px;text-align:center;">${L==='ar'?'المبيعات':'Sales'}</th>
+                            <th style="padding:12px 10px;text-align:center;">${L==='ar'?'الربح والهامش':'Profit (Margin)'}</th>
+                            <th style="padding:12px 10px;text-align:center;">${L==='ar'?'التارجت والتحقيق':'Target & Ach.'}</th>
+                            <th style="padding:12px 10px;text-align:center;">${L==='ar'?'الطلبات':'Orders'}</th>
+                            <th style="padding:12px 10px;text-align:center;">${L==='ar'?'آخر طلب':'Last Purchase'}</th>
+                            <th style="padding:12px 10px;text-align:center;">${L==='ar'?'إجراءات سريعة':'Actions'}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cutb"></tbody>
+                </table>
+            </div>
+            <div id="cpg" style="margin-top:14px;"></div>
         </div>
     `;
     
-    $('bExCust').onclick = () => exportToExcel(arr, 'Customers_Report');
+    $('bExCust').onclick = () => exportToExcel(arr, 'Customers_Segmentation_Report');
 
     window._custTierFilter = window._custTierFilter || 'ALL';
     window.setCustTierFilter = function(t) {
@@ -735,10 +820,10 @@ function rCust() {
             let el = $(id);
             if (el) {
                 if ((id==='tAll' && t==='ALL') || (id==='tVIP' && t==='VIP') || (id==='tSilver' && t==='Silver') || (id==='tBronze' && t==='Bronze')) {
-                    el.style.background = 'var(--p)';
+                    el.style.background = 'var(--ac)';
                     el.style.color = '#fff';
                 } else {
-                    el.style.background = 'var(--bg2)';
+                    el.style.background = 'var(--bg3)';
                     el.style.color = 'var(--tx1)';
                 }
             }
@@ -748,9 +833,9 @@ function rCust() {
     };
 
     window.doCustSearch = function() {
-        let q = $('cusr').value.toLowerCase();
+        let q = ($('cusr') ? $('cusr').value : '').toLowerCase().trim();
         let filtered = window._CU.filter(r => {
-            let matchesName = r.n.toLowerCase().includes(q);
+            let matchesName = !q || r.n.toLowerCase().includes(q) || r.rg.toLowerCase().includes(q);
             let matchesTier = window._custTierFilter === 'ALL' || r.tier === window._custTierFilter;
             return matchesName && matchesTier;
         });
@@ -759,13 +844,40 @@ function rCust() {
         let paged = filtered.slice(start, start + st.limit);
         
         $('cutb').innerHTML = paged.map(r => {
-            let phone = window.T && window.T.find(t => t.Customer === r.n) ? window.T.find(t => t.Customer === r.n).Phone : '';
-            return `<tr><td><strong>${r.n}</strong> ${r.tierBadge||''}</td><td>${r.rg}</td><td>${r.o}</td><td>${fmt(r.s)}</td><td>${fmt(r.accS)}</td><td>${fmt(r.hwS)}</td><td>${fmt(r.p)}</td><td><span class="badge ${r.m>=5?'bg-g':r.m>=2?'bg-a':'bg-r'}">${pc(r.m)}</span></td><td>${fmt(r.tg)}</td><td>${r.tg>0?`<span class="badge ${r.ach>=100?'bg-g':r.ach>=60?'bg-a':'bg-r'}">${pc(r.ach)}</span>`:'-'}</td><td>${r.l}</td><td>
-                <div style="display:flex;gap:5px;">
-                    <button class="btn" style="background:#25D366; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.8rem;" onclick="let p=prompt('رقم هاتف ${r.n}:', '${phone||''}'); if(p) window.open('https://wa.me/2'+p.replace(/\\D/g,'')+'?text='+encodeURIComponent('أهلاً بك أستاذ ${r.n.replace(/'/g, "\\'")}') ,'_blank')">WA</button>
-                    <button class="btn" style="background:var(--p); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.8rem;" onclick="window.generateQuote('${r.n.replace(/'/g, "\\'")}')">PDF</button>
-                </div>
-            </td></tr>`;
+            let phone = (r.phone || '').replace(/[^0-9]/g, '');
+            let achBadge = r.tg > 0 
+                ? '<span style="background:' + (r.ach>=100?'rgba(16,185,129,0.15)':(r.ach>=60?'rgba(245,158,11,0.15)':'rgba(239,68,68,0.15)')) + ';color:' + (r.ach>=100?'#10b981':(r.ach>=60?'#f59e0b':'#ef4444')) + ';padding:2px 6px;border-radius:6px;font-size:0.75rem;font-weight:bold;">' + pc(r.ach) + '</span>'
+                : '<span style="color:var(--tx3);">-</span>';
+            let safeName = encodeURIComponent(r.n);
+            let waGreeting = encodeURIComponent(L==='ar' ? 'أهلاً بك عميلنا العزيز ' + r.n + ' 🌸 - يسعدنا دائماً خدمتكم!' : 'Hello ' + r.n + ', we are glad to serve you!');
+            
+            return `
+                <tr style="border-bottom:1px solid var(--bd-s);">
+                    <td style="padding:12px 10px;text-align:right;">
+                        <div style="font-weight:bold;color:var(--tx1);font-size:0.92rem;">${r.n}</div>
+                        <div style="margin-top:2px;">${r.tierBadge}</div>
+                    </td>
+                    <td style="padding:12px 10px;text-align:center;font-size:0.85rem;color:var(--tx2);">${r.rg}</td>
+                    <td style="padding:12px 10px;text-align:center;font-weight:800;color:var(--ac);font-size:0.95rem;">${fmt(r.s)} <small style="font-size:0.7rem;">${L==='ar'?'ج.م':'EGP'}</small></td>
+                    <td style="padding:12px 10px;text-align:center;font-size:0.85rem;">
+                        <div style="font-weight:700;color:#10b981;">${fmt(r.p)}</div>
+                        <div style="font-size:0.75rem;color:var(--tx3);">${pc(r.m)}</div>
+                    </td>
+                    <td style="padding:12px 10px;text-align:center;font-size:0.85rem;">
+                        <div style="color:var(--tx2);font-size:0.8rem;">${r.tg>0?fmt(r.tg):'-'}</div>
+                        <div style="margin-top:2px;">${achBadge}</div>
+                    </td>
+                    <td style="padding:12px 10px;text-align:center;font-weight:bold;">${r.o}</td>
+                    <td style="padding:12px 10px;text-align:center;font-size:0.82rem;color:var(--tx3);">${r.l}</td>
+                    <td style="padding:12px 10px;text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-wa" style="padding:5px 9px;font-size:0.75rem;" onclick="window.open('https://wa.me/${phone}?text=${waGreeting}', '_blank')">💬 WA</button>
+                            <button class="btn" style="background:#10b981;color:#fff;border:none;padding:5px 9px;border-radius:8px;font-size:0.75rem;cursor:pointer;" onclick="if(typeof openDigitalReceiptModal==='function')openDigitalReceiptModal(decodeURIComponent('${safeName}'))">🧾 سند</button>
+                            <button class="btn" style="background:var(--bg3);border:1px solid var(--bd);color:var(--tx1);padding:5px 9px;border-radius:8px;font-size:0.75rem;cursor:pointer;" onclick="if(typeof generateCustomerReport==='function')generateCustomerReport(decodeURIComponent('${safeName}'))">📄 PDF</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
         }).join('');
         $('cpg').innerHTML = renderPagination(filtered.length, 'customers', 'window.doCustSearch');
     };
@@ -1282,84 +1394,217 @@ function rKey() {
     initAnm && initAnm();
 }
 
-// Dormant Customers (no purchase in 60+ days)
+// Dormant & Inactive Customers Engine
 function rDorm() {
     let cu = {};
-    let maxDate = 0;
+    let S_all = typeof S !== 'undefined' ? S : [];
+    let T_all = typeof T !== 'undefined' ? T : [];
+    let now = new Date();
     
-    S.forEach(r => {
-        let dStr = pd((r['Invoice Date'] || r['Order Date'] || r['Date']));
-        if(dStr) {
-            let t = new Date(dStr).getTime();
-            if(!isNaN(t) && t > maxDate) maxDate = t;
-        }
-    });
-    
-    let todayTime = maxDate > 0 ? maxDate : new Date().getTime();
-    
-    S.forEach(r => {
-        let c = r.Customer || '';
+    // 1. Scan all sales records
+    S_all.forEach(r => {
+        let c = getCustName(r);
         if(!c) return;
-        let dStr = pd((r['Invoice Date'] || r['Order Date'] || r['Date']));
+        let dStr = getDateVal(r);
         let s = getSalesVal(r);
+        let ph = getRowStr(r, ['Phone', 'Mobile', 'رقم الموبايل', 'الموبايل', 'التليفون']);
+        let rg = getRowStr(r, ['Customer Class', 'Region', 'Area', 'المنطقة', 'الفئة']);
         
-        let ph = r['Phone']||r['Mobile']||r['رقم الموبايل']||r['التليفون']||'';
-        if(!cu[c]) cu[c] = {last: dStr, s: 0, phone: ph};
-        else if (dStr && dStr > cu[c].last) cu[c].last = dStr;
-        
+        if(!cu[c]) {
+            cu[c] = { last: dStr, s: 0, o: 0, phone: ph, rg: rg };
+        }
+        if (dStr && (!cu[c].last || dStr > cu[c].last)) {
+            cu[c].last = dStr;
+        }
         cu[c].s += s;
+        cu[c].o = (cu[c].o || 0) + 1;
+        if (ph && !cu[c].phone) cu[c].phone = ph;
+        if (rg && !cu[c].rg) cu[c].rg = rg;
     });
 
-    let dormant = Object.entries(cu).map(([n, data]) => {
-        let t = new Date(data.last).getTime();
-        let days = !isNaN(t) ? Math.floor((todayTime - t) / 86400000) : -1;
-        return {n, last: data.last, days, s: data.s, phone: data.phone};
-    }).filter(r => r.days >= 60).sort((a,b) => b.s - a.s); 
-    
-    let topHtml = '';
-    for(let i=0; i<Math.min(3, dormant.length); i++) {
-        let d = dormant[i];
-        let color = '#e74c3c'; 
-        topHtml += `
-            <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
-                <h3 style="margin:8px 0; font-size:1.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${d.n}">${d.n}</h3>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="color:var(--tx2);">${L==='ar'?TUI('Total Sales'):'Total Sales'}</span>
-                    <strong style="color:${color};">${aFmt(d.s)}</strong>
+    // 2. Scan Targets for customers who never bought or are tracked
+    T_all.forEach(t => {
+        let c = getCustName(t);
+        if(c) {
+            let ph = getRowStr(t, ['Phone', 'Mobile', 'رقم الموبايل', 'التليفون']);
+            let rg = getRowStr(t, ['Customer Class', 'Region', 'Area', 'المنطقة']);
+            if(!cu[c]) {
+                cu[c] = { last: '', s: 0, o: 0, phone: ph, rg: rg };
+            } else {
+                if(ph && !cu[c].phone) cu[c].phone = ph;
+                if(rg && !cu[c].rg) cu[c].rg = rg;
+            }
+        }
+    });
+
+    // 3. Scan Custom Customers from localStorage
+    try {
+        let customCust = JSON.parse(localStorage.getItem('sp_custom_customers') || '[]');
+        customCust.forEach(cc => {
+            let c = cc.name || cc.Customer || '';
+            if (c && !cu[c]) {
+                cu[c] = { last: '', s: 0, o: 0, phone: cc.phone || '', rg: cc.area || cc.region || '' };
+            }
+        });
+    } catch(e) {}
+
+    // Calculate days inactive for each customer
+    let allDormant = Object.entries(cu).map(([n, data]) => {
+        let days = -1;
+        if (data.last) {
+            let t = new Date(data.last).getTime();
+            days = !isNaN(t) ? Math.max(0, Math.floor((now.getTime() - t) / 86400000)) : 999;
+        } else {
+            days = 999; // Never purchased
+        }
+        return {
+            n: n,
+            last: data.last || (L==='ar'?'لم يسبق الشراء':'Never'),
+            days: days,
+            s: data.s,
+            o: data.o || 0,
+            phone: (data.phone || '').replace(/[^0-9]/g, ''),
+            rg: data.rg || (L==='ar'?'غير محدد':'Unspecified')
+        };
+    }).sort((a, b) => b.s - a.s || b.days - a.days);
+
+    window._allDormantData = allDormant;
+    window._dormThreshold = window._dormThreshold || 60;
+
+    let renderDormantView = () => {
+        let thresh = window._dormThreshold;
+        let filtered = window._allDormantData.filter(r => {
+            if (thresh === 'all') return r.days >= 30 || r.days === 999;
+            return r.days >= Number(thresh);
+        });
+
+        let lostPot = filtered.reduce((sum, r) => sum + r.s, 0);
+        let top3 = filtered.slice(0, 3);
+
+        let topHtml = top3.map((d, i) => {
+            let color = i === 0 ? '#ef4444' : i === 1 ? '#f97316' : '#f59e0b';
+            return `
+                <div class="card" style="flex:1; min-width:250px; border-top:4px solid ${color}; padding:16px;">
+                    <div style="font-size:0.75rem; color:var(--tx3); font-weight:bold;">⚠️ #${i+1} ${L==='ar'?'أكبر حساب مهدد':'Top At-Risk'}</div>
+                    <h3 style="margin:6px 0; font-size:1.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--tx1);" title="${d.n}">${d.n}</h3>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'إجمالي المبيعات السابقة':'Past Sales'}</span>
+                        <strong style="color:${color}; font-size:0.95rem;">${fmt(d.s)} ${L==='ar'?'ج.م':'EGP'}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="color:var(--tx2); font-size:0.85rem;">${L==='ar'?'مدة الانقطاع':'Inactive for'}</span>
+                        <span style="background:${color}; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:bold;">
+                            ${d.days === 999 ? (L==='ar'?'لم يسبق الشراء':'Never Purchased') : `${d.days} ${L==='ar'?'يوم':'days'}`}
+                        </span>
+                    </div>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--tx2);">${L==='ar'?TUI('Inactive for'):'Inactive for'}</span>
-                    <span class="badge" style="background:${color}; color:white;">${d.days} ${L==='ar'?TUI('days'):'days'}</span>
+            `;
+        }).join('');
+
+        $('M').innerHTML = `
+            <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+                <h1 style="display:flex;align-items:center;gap:12px;margin:0;"><span style="width:36px;height:36px;display:flex;">⚠️</span> ${L==='ar'?'رادار العملاء الخاملين والمنقطعين':'Dormant Customers Radar'}</h1>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn" style="background:#10b981;color:#fff;font-weight:bold;" onclick="exportTableToExcel('dormantTable', 'Dormant_Customers')">📥 ${L==='ar'?'تصدير Excel':'Export Excel'}</button>
+                    <button class="btn" style="background:#ef4444;color:#fff;font-weight:bold;" onclick="exportTableToPDF('dormantTable', 'Dormant_Customers')">📄 ${L==='ar'?'تصدير PDF':'Export PDF'}</button>
+                </div>
+            </div>
+            
+            <div class="kg" style="margin-bottom:20px;">
+                <div class="ki" style="border-right:4px solid #ef4444;">
+                    <div class="lb">${L==='ar'?'عدد العملاء المنقطعين':'Dormant Accounts'}</div>
+                    <div class="vl" style="color:#ef4444;">${aFmt(filtered.length)}</div>
+                </div>
+                <div class="ki" style="border-right:4px solid #f59e0b;">
+                    <div class="lb">${L==='ar'?'المبيعات المهددة بالضياع':'Lost Sales Potential'}</div>
+                    <div class="vl" style="color:#f59e0b;">${aFmt(lostPot)}</div>
+                </div>
+                <div class="ki" style="border-right:4px solid #3b82f6;">
+                    <div class="lb">${L==='ar'?'متوسط الانقطاع':'Avg Inactive Days'}</div>
+                    <div class="vl" style="color:var(--tx1);">${filtered.length > 0 ? Math.round(filtered.reduce((s,r)=>s+(r.days===999?60:r.days),0)/filtered.length) : 0} ${L==='ar'?'يوم':'days'}</div>
+                </div>
+            </div>
+
+            <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">🏆 ${L==='ar'?'أكبر 3 حسابات بحاجة لإعادة تنشيط فورية':'Top 3 Priority Accounts to Win Back'}</h3>
+            <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:24px;">
+                ${topHtml || `<div style="color:var(--tx2); font-style:italic; padding:12px;">${L==='ar'?'لا توجد حسابات خاملة في هذه الفترة!':'No dormant accounts found!'}</div>`}
+            </div>
+
+            <div class="card" style="padding:18px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+                    <!-- Inactivity Threshold Filter Buttons -->
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="btn" id="dBtn30" onclick="window.setDormFilter(30)" style="padding:6px 12px; border-radius:10px; font-size:0.8rem; font-weight:700; border:1px solid var(--bd); background:${thresh===30?'var(--ac)':'var(--bg3)'}; color:${thresh===30?'#fff':'var(--tx1)'}; cursor:pointer;">⚠️ 30+ ${L==='ar'?'يوم (في خطر)':'Days (At Risk)'}</button>
+                        <button class="btn" id="dBtn60" onclick="window.setDormFilter(60)" style="padding:6px 12px; border-radius:10px; font-size:0.8rem; font-weight:700; border:1px solid var(--bd); background:${thresh===60?'var(--ac)':'var(--bg3)'}; color:${thresh===60?'#fff':'var(--tx1)'}; cursor:pointer;">🛑 60+ ${L==='ar'?'يوم (خامل)':'Days (Dormant)'}</button>
+                        <button class="btn" id="dBtn90" onclick="window.setDormFilter(90)" style="padding:6px 12px; border-radius:10px; font-size:0.8rem; font-weight:700; border:1px solid var(--bd); background:${thresh===90?'var(--ac)':'var(--bg3)'}; color:${thresh===90?'#fff':'var(--tx1)'}; cursor:pointer;">🚨 90+ ${L==='ar'?'يوم (حرجة)':'Days (Critical)'}</button>
+                        <button class="btn" id="dBtnAll" onclick="window.setDormFilter('all')" style="padding:6px 12px; border-radius:10px; font-size:0.8rem; font-weight:700; border:1px solid var(--bd); background:${thresh==='all'?'var(--ac)':'var(--bg3)'}; color:${thresh==='all'?'#fff':'var(--tx1)'}; cursor:pointer;">📋 ${L==='ar'?'الكل':'All'}</button>
+                    </div>
+                    <input class="sbox" id="dormSearch" placeholder="${L==='ar'?'🔍 بحث باسم العميل أو الهاتف...':'🔍 Search by customer or phone...'}" style="min-width:220px; padding:8px 12px; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; color:var(--tx1);">
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table id="dormantTable" style="width:100%; border-collapse:collapse; white-space:nowrap;">
+                        <thead>
+                            <tr style="background:var(--bg3); border-bottom:2px solid var(--bd);">
+                                <th style="padding:12px 10px; text-align:right;">${L==='ar'?'اسم العميل':'Customer Name'}</th>
+                                <th style="padding:12px 10px; text-align:center;">${L==='ar'?'المنطقة':'Area'}</th>
+                                <th style="padding:12px 10px; text-align:center;">${L==='ar'?'إجمالي المبيعات السابقة':'Past Sales'}</th>
+                                <th style="padding:12px 10px; text-align:center;">${L==='ar'?'آخر طلب':'Last Purchase'}</th>
+                                <th style="padding:12px 10px; text-align:center;">${L==='ar'?'مدة الانقطاع':'Days Inactive'}</th>
+                                <th style="padding:12px 10px; text-align:center;">${L==='ar'?'درجة الخطورة':'Risk Level'}</th>
+                                <th style="padding:12px 10px; text-align:center;">${L==='ar'?'استعادة العميل عبر واتساب':'Win-Back Action'}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dormTableBody">
+                            ${filtered.map(r => {
+                                let badgeColor = r.days >= 120 || r.days === 999 ? 'background:rgba(239,68,68,0.15);color:#ef4444;' : (r.days >= 60 ? 'background:rgba(249,115,22,0.15);color:#f97316;' : 'background:rgba(245,158,11,0.15);color:#f59e0b;');
+                                let badgeText = r.days === 999 ? (L==='ar'?'لم يشترِ بعد':'Unconverted') : (r.days >= 120 ? (L==='ar'?'مفقود تماماً':'Lost Account') : (r.days >= 60 ? (L==='ar'?'خامل':'Dormant') : (L==='ar'?'في خطر':'At Risk')));
+                                let msg = L==='ar'
+                                    ? `أهلاً بك عميلنا العزيز ${r.n} 🌸%0Aنفتقد تعاملك معنا في الآونة الأخيرة!%0Aلدينا عروض وخصومات حصرية جديدة تسعدنا مشاركتها معك اليوم.`
+                                    : `Hello ${r.n}, we miss doing business with you! We have exclusive new offers and discounts ready for you today.`;
+                                
+                                return `
+                                    <tr style="border-bottom:1px solid var(--bd-s);">
+                                        <td style="padding:12px 10px; text-align:right; font-weight:bold; color:var(--tx1); font-size:0.92rem;">${r.n}</td>
+                                        <td style="padding:12px 10px; text-align:center; font-size:0.85rem; color:var(--tx2);">${r.rg}</td>
+                                        <td style="padding:12px 10px; text-align:center; font-weight:800; color:var(--ac); font-size:0.95rem;">${fmt(r.s)} <small style="font-size:0.7rem;">${L==='ar'?'ج.م':'EGP'}</small></td>
+                                        <td style="padding:12px 10px; text-align:center; font-size:0.82rem; color:var(--tx3);">${r.last}</td>
+                                        <td style="padding:12px 10px; text-align:center; font-weight:bold;">${r.days === 999 ? '—' : `${r.days} ${L==='ar'?'يوم':'d'}`}</td>
+                                        <td style="padding:12px 10px; text-align:center;">
+                                            <span style="${badgeColor} padding:3px 8px; border-radius:8px; font-size:0.75rem; font-weight:bold;">${badgeText}</span>
+                                        </td>
+                                        <td style="padding:12px 10px; text-align:center;">
+                                            <button class="btn-wa" style="padding:5px 12px; font-size:0.78rem; display:inline-flex; align-items:center; gap:5px;" onclick="window.open('https://wa.me/${r.phone}?text=${msg}', '_blank')">
+                                                💬 ${L==='ar'?'استعادة العميل':'Win Back'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         `;
-    }
 
-    $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.dormant}</span> ${t('dormant')}</h1></div>
-        
-        <div class="kg">
-            <div class="ki"><div class="lb">${L==='ar'?TUI('Dormant Customers'):'Dormant Customers'}</div><div class="vl">${aFmt(dormant.length)}</div></div>
-            <div class="ki" style="background:var(--bg3); border:1px solid var(--rd);"><div class="lb" style="color:var(--rd);">${L==='ar'?TUI('Lost Sales Potential'):'Lost Sales Potential'}</div><div class="vl" style="color:var(--rd);">${aFmt(dormant.reduce((sum,r)=>sum+r.s,0))}</div></div>
-        </div>
+        if ($('dormSearch')) {
+            $('dormSearch').oninput = function() {
+                let q = this.value.toLowerCase().trim();
+                let rows = document.querySelectorAll('#dormTableBody tr');
+                rows.forEach(tr => {
+                    let txt = tr.textContent.toLowerCase();
+                    tr.style.display = (!q || txt.includes(q)) ? '' : 'none';
+                });
+            };
+        }
+    };
 
-        <h3 style="margin:20px 0 12px; color:var(--tx2); border-bottom:1px solid var(--bd); padding-bottom:8px;">${L==='ar'?TUI('Top Lost Accounts'):'Top Lost Accounts'}</h3>
-        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
-            ${topHtml || `<div style="color:var(--tx2); font-style:italic;">${L==='ar'?TUI('None'):'None'}</div>`}
-        </div>
+    window.setDormFilter = function(val) {
+        window._dormThreshold = val;
+        renderDormantView();
+    };
 
-        <div class="tb">
-            <div class="tbt" style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>${t('dormant')} - ${L==='ar'?TUI('No purchase in 60+ days'):'No purchase in 60+ days'}</h3>
-                <div style="display:flex; gap:8px;">
-                    <button class="btn export-btn" onclick="exportTableToExcel('dormantTable', 'Dormant_Customers')">📥 Excel</button>
-                    <button class="btn export-btn" style="background:var(--rdl); color:var(--rd); border-color:var(--rd);" onclick="exportTableToPDF('dormantTable', 'Dormant_Customers')">📄 Export PDF</button>
-                </div>
-            </div>
-        <div class="tbs"><table id="dormantTable"><thead><tr><th>${L==='ar'?TUI('Customer'):'Customer'}</th><th>${L==='ar'?TUI('Total Sales'):'Total Sales'}</th><th>${L==='ar'?TUI('Phone'):'Phone'}</th><th>${L==='ar'?TUI('Last Purchase'):'Last Purchase'}</th><th>${L==='ar'?TUI('Days Ago'):'Days Ago'}</th><th>${L==='ar'?TUI('Status'):'Status'}</th></tr></thead>
-        <tbody>${dormant.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${fmt(r.s)}</td><td>${r.phone}</td><td>${r.last}</td><td>${r.days}</td><td><span class="badge ${r.days>=120?'bg-r':'bg-a'}">${r.days>=120?(L==='ar'?TUI('Lost'):'Lost'):(L==='ar'?TUI('Dormant'):'Dormant')}</span></td></tr>`).join('')}</tbody>
-        </table></div></div>
-    `;
+    renderDormantView();
 }
 
 // Prospects (CRM Kanban)
