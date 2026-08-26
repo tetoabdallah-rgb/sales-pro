@@ -5,10 +5,10 @@ const NAV = [
     {p:'dash',ic:'🏠'},{p:'sales',ic:'💰'},{p:'targets',ic:'🎯'},{p:'personal',ic:'👤'},
     {p:'customers',ic:'🏪'},{p:'todo',ic:'📋'},{p:'visits',ic:'🚗'},{p:'brands',ic:'📦'},
     {s:{ar:'الأقسام',en:'Depts'}},
-    {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💰'},
+    {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💰'},{p:'stock',ic:'📦'},
     {s:{ar:'متقدم',en:'Advanced'}},
     {p:'analytics',ic:'🧠'},{p:'leads',ic:'🤝'},{p:'potential',ic:'🚀'},{p:'profit',ic:'💵'},
-    {p:'keyacc',ic:'⭐'},{p:'dormant',ic:'💤'},{p:'prospects',ic:'🔍'},
+    {p:'keyacc',ic:'⭐'},{p:'dormant',ic:'💤'},{p:'prospects',ic:'🔍'},{p:'aging',ic:'🛡️'},
     {s:{ar:'ذكي',en:'Smart'}},
     {p:'ai',ic:'🤖'},{p:'alerts',ic:'🔔'},
     {s:{ar:'النظام',en:'System'}},
@@ -29,6 +29,7 @@ const ICONS = {
     customers: getImg('Department%20store/3D/department_store_3d.png'),
     todo: getImg('Clipboard/3D/clipboard_3d.png'),
     brands: getImg('Package/3D/package_3d.png'),
+    stock: getImg('Package/3D/package_3d.png'),
     accessories: getImg('Headphone/3D/headphone_3d.png'),
     hardware: getImg('Mobile%20phone/3D/mobile_phone_3d.png'),
     analytics: getImg('Chart%20increasing/3D/chart_increasing_3d.png'),
@@ -37,6 +38,7 @@ const ICONS = {
     keyacc: getImg('Crown/3D/crown_3d.png'),
     dormant: getImg('Sleeping%20face/3D/sleeping_face_3d.png'),
     prospects: getImg('Magnifying%20glass%20tilted%20left/3D/magnifying_glass_tilted_left_3d.png'),
+    aging: getImg('Shield/3D/shield_3d.png'),
     ai: getImg('Robot/3D/robot_3d.png'),
     alerts: getImg('Bell/3D/bell_3d.png'),
     account: getImg('Bust%20in%20silhouette/3D/bust_in_silhouette_3d.png'),
@@ -155,7 +157,9 @@ function render() {
         dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
         customers: rCust, todo: rTodo, visits: rVisits, brands: rBrands, analytics: rAn, potential: rPot,
         leads: rLeads, profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
+        stock: typeof window.rStock === 'function' ? window.rStock : (typeof rStock === 'function' ? rStock : null),
         keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
+        aging: typeof window.rAgingDebt === 'function' ? window.rAgingDebt : (typeof rAgingDebt === 'function' ? rAgingDebt : null),
         account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
     };
     if (fn[P]) fn[P]();
