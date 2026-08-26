@@ -21,7 +21,7 @@ const BNV = ['dash','customers','todo','analytics','settings'];
 const F_URL = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/';
 const getImg = (name) => `<img src="${F_URL}${name}" style="width:28px;height:28px;vertical-align:middle;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(0,0,0,0.22));">`;
 
-const ICONS = {
+var ICONS = window.ICONS = {
     dash: getImg('Bar%20chart/3D/bar_chart_3d.png'),
     sales: getImg('Receipt/3D/receipt_3d.png'),
     targets: getImg('Bullseye/3D/bullseye_3d.png'),
