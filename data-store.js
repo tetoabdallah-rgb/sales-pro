@@ -22,13 +22,18 @@ let CH = {}; // Chart Instances
 let L = localStorage.getItem('sp_lang') || 'ar';
 L = L.replace(/"/g, ''); // Strip quotes if JSON stringified
 if (L !== 'ar' && L !== 'en') L = 'ar';
-let P = 'dash'; // Current Page
-let _cache = { salesData: S, targetData: T, accCats: accCats, hwCats: hwCats, payData: C, duesData: D };
-let _chkC = {};
-let _mtC = {};
-let globalDateRange = { start: null, end: null }; // Global Date Filter
-let globalRepFilter = ''; // Global Sales Rep Filter
-let globalCatFilter = ''; // Global Category Filter
+window.L = L;
+var P = 'dash'; // Current Page
+window.P = P;
+var _cache = { salesData: S, targetData: T, accCats: accCats, hwCats: hwCats, payData: C, duesData: D };
+var _chkC = {};
+var _mtC = {};
+var globalDateRange = { start: null, end: null }; // Global Date Filter
+var globalRepFilter = ''; // Global Sales Rep Filter
+var globalCatFilter = ''; // Global Category Filter
+window.globalDateRange = globalDateRange;
+window.globalRepFilter = globalRepFilter;
+window.globalCatFilter = globalCatFilter;
 
 const DEF_ACC = ['Mobile Accessories','Mobile Power','Accessories Commission','Laptop Accessories','TWS Earbuds','Headphone','Keyboard','Wearables','Imported Bags','Factory Bags','Mouse','Gaming Accessories','A/V Accessories'];
 const DEF_HW = ['Mobile Devices','Gaming Devices','TVs','Laptops'];
@@ -138,7 +143,94 @@ function exportToExcel(data, filename) {
     }
 }
 
-// Data filtering by date
+// Robust row value getter - matches column by name (case insensitive, ignores spaces)
+function getRowVal(row, possibleNames) {
+    if (!row || typeof row !== 'object') return 0;
+    let keys = Object.keys(row);
+    let k = keys.find(k => possibleNames.some(p => k.toLowerCase().replace(/\s+/g, '') === p.toLowerCase().replace(/\s+/g, '')));
+    if (k != null) {
+        let v = row[k];
+        if (typeof v === 'string') return Number(v.replace(/,/g, '').trim()) || 0;
+        return Number(v) || 0;
+    }
+    return 0;
+}
+
+// Robust row string getter
+function getRowStr(row, possibleNames) {
+    if (!row || typeof row !== 'object') return '';
+    let keys = Object.keys(row);
+    let k = keys.find(k => possibleNames.some(p => k.toLowerCase().replace(/\s+/g, '') === p.toLowerCase().replace(/\s+/g, '')));
+    if (k != null && row[k] != null) {
+        return row[k].toString().trim();
+    }
+    return '';
+}
+
+// Get customer name from any row format
+function getCustName(row) {
+    return getRowStr(row, ['Customer Name', 'Customer', 'Cust', 'العميل', 'اسم العميل', 'Customer_Name']);
+}
+
+// Get date string (YYYY-MM-DD) from any row format
+function getDateVal(row) {
+    let raw = getRowStr(row, ['Invoice Date', 'Order Date', 'Date', 'تاريخ الفاتورة', 'تاريخ الطلب', 'التاريخ', 'Inv Date']);
+    if (!raw && row) {
+        raw = row['Invoice Date'] || row['Order Date'] || row['Date'] || row['تاريخ الفاتورة'] || row['التاريخ'];
+    }
+    return pd(raw);
+}
+
+// Get sales value - works with all English and Arabic variants
+function getSalesVal(row) {
+    return getRowVal(row, [
+        'Sales Without Tax', 'Sales After Discount', 'Sales', 'Amount', 'Total Sales', 
+        'Net Sales', 'المبيعات', 'صافي المبيعات', 'المبلغ', 'القيمة', 'إجمالي المبيعات'
+    ]);
+}
+
+// Get profit value - with smart fallback: Direct Profit -> Margin % -> Sales - Cost
+function getProfitVal(row) {
+    if (!row) return 0;
+    // 1. Direct profit columns
+    let p = getRowVal(row, [
+        'Profit Margin', 'Profit', 'Gross Profit', 'Net Profit', 'Total Profit', 
+        'Profit Value', 'Profit Amount', 'الربح', 'صافي الربح', 'هامش الربح', 'مبلغ الربح', 'قيمة الربح'
+    ]);
+    if (p !== 0) return p;
+
+    let sales = getSalesVal(row);
+
+    // 2. Margin % fallback
+    let marginPct = getRowVal(row, ['Margin %', 'Profit %', 'نسبة الربح', 'نسبة الهامش', 'هامش الربح %']);
+    if (marginPct !== 0 && sales > 0) {
+        if (marginPct > 1) marginPct = marginPct / 100;
+        return sales * marginPct;
+    }
+
+    // 3. Cost fallback: Profit = Sales - Cost
+    let cost = getRowVal(row, ['Cost', 'Total Cost', 'Cost Price', 'التكلفة', 'إجمالي التكلفة', 'سعر التكلفة']);
+    if (cost > 0 && sales > 0) {
+        return sales - cost;
+    }
+
+    return 0;
+}
+
+// Get payment amount from Collections sheet
+function getPayVal(row) {
+    return getRowVal(row, ['Amount', 'Collection', 'التحصيل', 'المبلغ المحصل', 'المبلغ']);
+}
+
+// Get Payment Ref type from Collections sheet: returns 'acc', 'hw', or ''
+function getPayRef(row) {
+    let ref = (row['Payment Ref.'] || row['Payment Ref'] || row['PaymentRef'] || row['القسم'] || '').toString().trim().toLowerCase();
+    if (ref.startsWith('acc') || ref.includes('إكسسوار') || ref.includes('اكسسوار')) return 'acc';
+    if (ref.startsWith('hw') || ref.includes('هاردوير') || ref.includes('اجهزة'))  return 'hw';
+    return '';
+}
+
+// Data filtering by date, rep, category
 function getFilteredSales() {
     if (!globalDateRange.start && !globalDateRange.end && !globalRepFilter && !globalCatFilter) return S;
     return S.filter(r => {
@@ -146,7 +238,7 @@ function getFilteredSales() {
         
         // Date filter
         if (globalDateRange.start || globalDateRange.end) {
-            let d = pd(r['Invoice Date'] || r['Order Date'] || r['Date']);
+            let d = getDateVal(r);
             if (!d) pass = false;
             else {
                 if (globalDateRange.start && d < globalDateRange.start) pass = false;
@@ -156,13 +248,13 @@ function getFilteredSales() {
         
         // Rep filter
         if (pass && globalRepFilter) {
-            let rep = getRowVal(r, ['Sales Person', 'Rep', 'Salesman']);
+            let rep = getRowStr(r, ['Sales Person', 'Rep', 'Salesman', 'المندوب', 'مندوب المبيعات']);
             if (rep !== globalRepFilter) pass = false;
         }
         
         // Category filter
         if (pass && globalCatFilter) {
-            let cat = getRowVal(r, ['Item Class Name', 'Category', 'category']);
+            let cat = getRowStr(r, ['Item Class Name', 'Category', 'category', 'الفئة', 'القسم']);
             if (cat !== globalCatFilter) pass = false;
         }
         
@@ -172,37 +264,3 @@ function getFilteredSales() {
 
 
 function dc(k) { if(CH[k]) { CH[k].destroy(); delete CH[k]; } }
-// Robust row value getter - matches column by name (case insensitive, ignores spaces)
-function getRowVal(row, possibleNames) {
-    let keys = Object.keys(row);
-    let k = keys.find(k => possibleNames.some(p => k.toLowerCase().replace(/\s+/g, '') === p.toLowerCase().replace(/\s+/g, '')));
-    if (k) {
-        let v = row[k];
-        if (typeof v === 'string') return Number(v.replace(/,/g, '')) || 0;
-        return Number(v) || 0;
-    }
-    return 0;
-}
-
-// Get sales value - works with OLD format (Sales After Discount) AND NEW format (Sales Without Tax)
-function getSalesVal(row) {
-    return getRowVal(row, ['Sales After Discount', 'Sales Without Tax', 'Sales', 'Amount']);
-}
-
-// Get profit value
-function getProfitVal(row) {
-    return getRowVal(row, ['Profit Margin', 'Profit']);
-}
-
-// Get payment amount from Collections sheet
-function getPayVal(row) {
-    return getRowVal(row, ['Amount', 'Collection']);
-}
-
-// Get Payment Ref type from Collections sheet: returns 'acc', 'hw', or ''
-function getPayRef(row) {
-    let ref = (row['Payment Ref.'] || row['Payment Ref'] || row['PaymentRef'] || '').toString().trim().toLowerCase();
-    if (ref.startsWith('acc')) return 'acc';
-    if (ref.startsWith('hw'))  return 'hw';
-    return '';
-}
