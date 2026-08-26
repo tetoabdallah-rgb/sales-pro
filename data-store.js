@@ -12,28 +12,25 @@ window.syncUI = window.syncUI || function(status) {
 };
 
 function loadLS(k) { try { let d = localStorage.getItem(k); return d ? JSON.parse(d) : []; } catch(e){ return []; } }
-let S = loadLS('salesData'); // Sales
-let T = loadLS('targetData'); // Targets
-let accCats = loadLS('accCats'); // Accessories Categories
-let hwCats = loadLS('hwCats'); // Hardware Categories
-let C = loadLS('payData'); // Collections/PayData
-let D = loadLS('duesData'); // Dues
-let CH = {}; // Chart Instances
-let L = localStorage.getItem('sp_lang') || 'ar';
-L = L.replace(/"/g, ''); // Strip quotes if JSON stringified
-if (L !== 'ar' && L !== 'en') L = 'ar';
-window.L = L;
-var P = 'dash'; // Current Page
-window.P = P;
-var _cache = { salesData: S, targetData: T, accCats: accCats, hwCats: hwCats, payData: C, duesData: D };
-var _chkC = {};
-var _mtC = {};
-var globalDateRange = { start: null, end: null }; // Global Date Filter
-var globalRepFilter = ''; // Global Sales Rep Filter
-var globalCatFilter = ''; // Global Category Filter
-window.globalDateRange = globalDateRange;
-window.globalRepFilter = globalRepFilter;
-window.globalCatFilter = globalCatFilter;
+var S = window.S = loadLS('salesData'); // Sales
+var T = window.T = loadLS('targetData'); // Targets
+var accCats = window.accCats = loadLS('accCats'); // Accessories Categories
+var hwCats = window.hwCats = loadLS('hwCats'); // Hardware Categories
+var C = window.C = loadLS('payData'); // Collections/PayData
+var D = window.D = loadLS('duesData'); // Dues
+var CH = window.CH = {}; // Chart Instances
+var L = window.L = (function() {
+    let l = localStorage.getItem('sp_lang') || 'ar';
+    l = l.replace(/"/g, '');
+    return (l === 'en') ? 'en' : 'ar';
+})();
+var P = window.P = 'dash'; // Current Page
+var _cache = window._cache = { salesData: S, targetData: T, accCats: accCats, hwCats: hwCats, payData: C, duesData: D };
+var _chkC = window._chkC = {};
+var _mtC = window._mtC = {};
+var globalDateRange = window.globalDateRange = { start: null, end: null }; // Global Date Filter
+var globalRepFilter = window.globalRepFilter = ''; // Global Sales Rep Filter
+var globalCatFilter = window.globalCatFilter = ''; // Global Category Filter
 
 const DEF_ACC = ['Mobile Accessories','Mobile Power','Accessories Commission','Laptop Accessories','TWS Earbuds','Headphone','Keyboard','Wearables','Imported Bags','Factory Bags','Mouse','Gaming Accessories','A/V Accessories'];
 const DEF_HW = ['Mobile Devices','Gaming Devices','TVs','Laptops'];
