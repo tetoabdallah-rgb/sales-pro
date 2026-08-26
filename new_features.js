@@ -1201,11 +1201,19 @@ window.render = function() {
         
         if (currentSize >= window.sp_fonts.sizes.length) currentSize = 0;
         
-        document.documentElement.style.fontSize = window.sp_fonts.sizes[currentSize];
-        document.body.style.fontFamily = "'" + currentFamily + "', system-ui, -apple-system, sans-serif";
+        if (document.documentElement) {
+            document.documentElement.style.fontSize = window.sp_fonts.sizes[currentSize];
+        }
+        if (document.body) {
+            document.body.style.fontFamily = "'" + currentFamily + "', system-ui, -apple-system, sans-serif";
+        }
     };
     
-    window.applyAppFontSettings();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', window.applyAppFontSettings);
+    } else {
+        window.applyAppFontSettings();
+    }
     
     window.setAppFontSize = function(idx) {
         let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
@@ -1222,78 +1230,6 @@ window.render = function() {
     };
 })();
 
-// 5. GPS Check-in for Visits
-const originalRVisits = window.rVisits;
-if (originalRVisits && !window.gpsInjected) {
-    window.gpsInjected = true;
-    window.rVisits = function() {
-        originalRVisits();
-        setTimeout(() => {
-            let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
-            let addBtn = document.querySelector('#M .card .btn-p');
-            if (addBtn && (addBtn.innerText.includes('تسجيل') || addBtn.innerText.includes('Save') || addBtn.innerText.includes('حفظ'))) {
-                addBtn.removeAttribute('onclick');
-                addBtn.onclick = () => {
-                    let c = document.getElementById('nvCust') ? document.getElementById('nvCust').value : (document.getElementById('vCust') ? document.getElementById('vCust').value : '');
-                    let n = document.getElementById('nvOutcome') ? document.getElementById('nvOutcome').value : (document.getElementById('vNotes') ? document.getElementById('vNotes').value : '');
-                    if(!c) return typeof toast === 'function' ? toast(L==='ar'?'اختر العميل أولاً':'Select a customer first', 'error') : alert(L==='ar'?'اختر العميل':'Select customer');
-                    
-                    addBtn.innerText = L==='ar'?'جاري تحديد الموقع...':'Locating...';
-                    addBtn.style.opacity = '0.5';
-                    addBtn.disabled = true;
-
-                    let saveWithLoc = (lat, lng) => {
-                        let visits = JSON.parse(localStorage.getItem('sp_visits')||'[]');
-                        visits.unshift({ customer: c, outcome: n, date: new Date().toISOString().split('T')[0], d: new Date().toISOString(), lat: lat, lng: lng });
-                        localStorage.setItem('sp_visits', JSON.stringify(visits));
-                        if(typeof toast === 'function') toast(L==='ar'?'تم تسجيل الزيارة بنجاح':'Visit logged successfully', 'success');
-                        window.rVisits();
-                    };
-
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            pos => saveWithLoc(pos.coords.latitude, pos.coords.longitude),
-                            err => {
-                                console.log(err);
-                                if(typeof toast === 'function') toast(L==='ar'?'فشل تحديد الموقع، تم الحفظ بدون موقع':'Location failed, saved without coordinates', 'error');
-                                saveWithLoc(null, null);
-                            },
-                            { timeout: 5000 }
-                        );
-                    } else {
-                        saveWithLoc(null, null);
-                    }
-                };
-            }
-            let tbody = document.querySelector('#visitsList table tbody, .tb table tbody');
-            if(tbody) {
-                let visits = JSON.parse(localStorage.getItem('sp_visits')||'[]');
-                let h = '';
-                visits.forEach((v, i) => {
-                    let d = v.date || (v.d ? new Date(v.d).toLocaleDateString(L==='ar'?'ar-EG':'en-GB') : '-');
-                    let mapLink = (v.lat && v.lng) ? `<a href="https://maps.google.com/?q=${v.lat},${v.lng}" target="_blank" class="badge bg-g" style="text-decoration:none; display:inline-block; padding:4px 8px;">🗺️ ${L==='ar'?'الموقع':'Location'}</a>` : `<span style="color:var(--tx2);font-size:0.8rem;">${L==='ar'?'لا يوجد موقع':'No location'}</span>`;
-                    h += `<tr><td>${d}</td><td style="font-weight:bold;color:var(--ac);">${v.customer || v.c || '-'}</td><td>${v.outcome || v.n || '-'}</td><td>${mapLink}</td><td><button class="btn bg-r" style="padding:4px 8px;font-size:0.8rem;color:#fff;border:none;" onclick="deleteVisit(${i})">${L==='ar'?'حذف':'Delete'}</button></td></tr>`;
-                });
-                if (visits.length > 0) tbody.innerHTML = h;
-                
-                let trh = document.querySelector('#visitsList table thead tr, .tb table thead tr');
-                if (trh && !trh.innerHTML.includes('🗺️')) {
-                    trh.insertAdjacentHTML('beforeend', `<th>${L==='ar'?'الموقع 🗺️':'Location 🗺️'}</th><th>${L==='ar'?'إجراء':'Action'}</th>`);
-                }
-            }
-        }, 100);
-    };
-    
-    window.deleteVisit = function(i) {
-        let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
-        if(confirm(L==='ar'?'هل أنت متأكد من الحذف؟':'Are you sure you want to delete?')) {
-            let visits = JSON.parse(localStorage.getItem('sp_visits')||'[]');
-            visits.splice(i, 1);
-            localStorage.setItem('sp_visits', JSON.stringify(visits));
-            window.rVisits();
-        }
-    };
-}
 
 // --- PHASE 2: SALES INTELLIGENCE & RFM ---
 if (typeof I !== 'undefined') I['intel'] = {ar: 'ذكاء البيع', en: 'Sales Intel'};
