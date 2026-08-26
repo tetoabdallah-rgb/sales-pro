@@ -10,1677 +10,217 @@
   <style>/* ============================================
    Sales Pro — Premium Design System
    ============================================ */
-
-/* ---------- CSS Variables (Light Theme) ---------- */
-:root {
-  --bg: #f0f2f5;
-  --bg2: rgba(255, 255, 255, 0.6);
-  --glass: blur(16px);
-  --bg-g: linear-gradient(-45deg, #e0e7ff, #f3e8ff, #f0fdfa, #fdf4ff);
-  --bg3: #f8f9fa;
-  --bg4: #e9ecef;
-  --tx1: #1a1d21;
-  --tx2: #495057;
-  --tx3: #6c757d;
-  --ac: #4f46e5;
-  --ac2: #6366f1;
-  --acl: rgba(79, 70, 229, 0.1);
-  --gn: #10b981;
-  --gnl: rgba(16, 185, 129, 0.1);
-  --rd: #ef4444;
-  --rdl: rgba(239, 68, 68, 0.1);
-  --am: #f59e0b;
-  --aml: rgba(245, 158, 11, 0.1);
-  --bl: #06b6d4;
-  --bll: rgba(6, 182, 212, 0.1);
-  --bd: #e5e7eb;
-  --bd-s: rgba(0, 0, 0, 0.04);
-  --r: 12px;
-  --sh: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --sh-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --sh-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-  --glass: none;
-  --btn-g: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-  --sidebar-w: 260px;
-}
-
-/* ---------- Dark Theme ---------- */
-html[data-theme="dark"] {
-  --bg: #0f172a;
-  --bg2: rgba(15, 23, 42, 0.6);
-  --glass: blur(16px);
-  --bg-g: linear-gradient(-45deg, #1e1b4b, #312e81, #064e3b, #4c1d95);
-  --bg3: #334155;
-  --bg4: #475569;
-  --tx1: #f1f5f9;
-  --tx2: #cbd5e1;
-  --tx3: #94a3b8;
-  --ac: #818cf8;
-  --ac2: #a5b4fc;
-  --acl: rgba(129, 140, 248, 0.15);
-  --gn: #34d399;
-  --gnl: rgba(52, 211, 153, 0.15);
-  --rd: #f87171;
-  --rdl: rgba(248, 113, 113, 0.15);
-  --am: #fbbf24;
-  --aml: rgba(251, 191, 36, 0.15);
-  --bl: #22d3ee;
-  --bll: rgba(34, 211, 238, 0.15);
-  --bd: #334155;
-  --bd-s: rgba(255, 255, 255, 0.06);
-  --sh: 0 1px 3px rgba(0, 0, 0, 0.2);
-  --sh-md: 0 4px 6px -1px rgba(0, 0, 0, 0.25);
-  --sh-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
-  --glass: none;
-  --btn-g: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
-}
-
-/* ---------- Reset & Base ---------- */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
-  background: var(--bg-g);
-  color: var(--tx1);
-  min-height: 100vh;
-  font-size: 15px;
-  line-height: 1.6;
-  transition: background 0.4s ease, color 0.4s ease;
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
-}
-
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-body.en {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  direction: ltr;
-}
-
-body.en .sidebar {
-  border-right: 1px solid var(--bd);
-  border-left: none;
-  right: auto;
-  left: 0;
-}
-
-body.en .mw {
-  margin-right: 0;
-  margin-left: var(--sidebar-w);
-}
-
-body.en table th,
-body.en table td {
-  text-align: left;
-}
-
-.hidden {
-  display: none !important;
-}
-
-/* ---------- Loading Overlay ---------- */
-.loader-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  transition: opacity 0.5s ease;
-}
-
-.loader-overlay.fade-out {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.loader-content {
-  text-align: center;
-}
-
-.loader-icon {
-  font-size: 3rem;
-  animation: loaderPulse 1.5s ease-in-out infinite;
-}
-
-.loader-text {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--ac);
-  margin-top: 12px;
-  letter-spacing: -0.02em;
-}
-
-.loader-bar {
-  width: 120px;
-  height: 4px;
-  background: var(--bd);
-  border-radius: 99px;
-  margin: 16px auto 0;
-  overflow: hidden;
-}
-
-.loader-bar-fill {
-  width: 30%;
-  height: 100%;
-  background: var(--btn-g);
-  border-radius: 99px;
-  animation: loaderSlide 1.2s ease-in-out infinite;
-}
-
-@keyframes loaderPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-}
-
-@keyframes loaderSlide {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(400%); }
-}
-
-/* ---------- Auth Screen ---------- */
-.auth-bg {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  z-index: 4000;
-}
-
-.auth-card {
-  width: min(380px, 92%);
-  background: var(--bg2);
-  border-radius: 24px;
-  padding: 40px 32px;
-  box-shadow: var(--sh-lg);
-  border: 1px solid var(--bd);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.auth-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--btn-g);
-}
-
-.auth-logo {
-  position: relative;
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 16px;
-  display: grid;
-  place-items: center;
-}
-
-.auth-logo-icon {
-  font-size: 2.2rem;
-  position: relative;
-  z-index: 2;
-  animation: loaderPulse 2s ease-in-out infinite;
-}
-
-.auth-logo-glow {
-  position: absolute;
-  inset: -8px;
-  background: var(--btn-g);
-  border-radius: 50%;
-  opacity: 0.12;
-  filter: blur(12px);
-  animation: glowPulse 2s ease-in-out infinite;
-}
-
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.12; transform: scale(1); }
-  50% { opacity: 0.2; transform: scale(1.1); }
-}
-
-.auth-card h1 {
-  font-size: 1.8rem;
-  color: var(--tx1);
-  margin: 4px 0;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.auth-card .ds {
-  font-size: 0.8rem;
-  color: var(--tx3);
-  margin-bottom: 28px;
-}
-/* RTL Support for wide text in password toggle */
-html[dir="rtl"] .input-wrap input#inP {
-  padding-right: 65px; /* Extra padding for "إظهار" word */
-}
-html[dir="ltr"] .input-wrap input#inP {
-  padding-right: 65px; /* Extra padding for "Show" word */
-}
-.fg {
-  margin-bottom: 16px;
-  text-align: start;
-}
-
-.fg label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--tx3);
-  display: block;
-  margin-bottom: 6px;
-}
-
-.input-wrap {
-  position: relative;
-}
-
-.input-wrap input {
-  width: 100%;
-  background: var(--bg3);
-  border: 1.5px solid var(--bd);
-  border-radius: 12px;
-  padding: 13px 40px 13px 16px;
-  font-size: 0.85rem;
-  font-family: inherit;
-  color: var(--tx1);
-  transition: all 0.25s ease;
-}
-
-.input-wrap input:focus {
-  outline: none;
-  border-color: var(--ac);
-  box-shadow: 0 0 0 4px var(--acl);
-  background: var(--bg2);
-}
-
-.input-icon {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.9rem;
-  opacity: 0.5;
-  cursor: default;
-}
-
-.toggle-pw {
-  cursor: pointer !important;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-
-.toggle-pw:hover {
-  opacity: 1;
-}
-
-/* Legacy input support (for inputs not wrapped) */
-.fg input:not(.input-wrap input) {
-  width: 100%;
-  background: var(--bg3);
-  border: 1.5px solid var(--bd);
-  border-radius: 12px;
-  padding: 13px 16px;
-  font-size: 0.85rem;
-  font-family: inherit;
-  color: var(--tx1);
-  transition: all 0.25s ease;
-}
-
-.fg input:not(.input-wrap input):focus {
-  outline: none;
-  border-color: var(--ac);
-  box-shadow: 0 0 0 4px var(--acl);
-}
-
-.aerr {
-  font-size: 0.7rem;
-  color: var(--rd);
-  font-weight: 700;
-  min-height: 18px;
-  margin: 8px 0;
-}
-
-.abtns {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-/* ---------- Buttons ---------- */
-.btn {
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 11px 20px;
-  border-radius: 12px;
-  border: 1.5px solid var(--bd);
-  background: var(--bg3);
-  color: var(--tx1);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn:hover {
-  background: var(--bg4);
-  transform: translateY(-1px);
-  box-shadow: var(--sh-md);
-}
-
-.btn:active {
-  transform: translateY(1px);
-}
-
-.btn-p {
-  background: var(--btn-g);
-  color: #fff;
-  border: none;
-  box-shadow: 0 4px 14px var(--acl);
-}
-
-.btn-p:hover {
-  opacity: 0.92;
-  box-shadow: 0 6px 20px var(--acl);
-  transform: translateY(-2px);
-}
-
-.btn-login {
-  width: 100%;
-  padding: 14px;
-  font-size: 0.85rem;
-  border-radius: 14px;
-}
-
-.btn-google {
-  width: 100%;
-  background: var(--bg2);
-  color: var(--tx1);
-  border: 1.5px solid var(--bd);
-  padding: 12px;
-  font-size: 0.8rem;
-  gap: 10px;
-}
-
-.btn-google:hover {
-  background: var(--bg3);
-  border-color: var(--bd);
-}
-
-.btn-google img {
-  vertical-align: middle;
-}
-
-/* ---------- Sidebar ---------- */
-.sidebar {
-  width: var(--sidebar-w);
-  background: var(--bg2);
-  border-left: 1px solid var(--bd);
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 100;
-  overflow-y: auto;
-  padding: 20px 14px;
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  transition: background 0.4s;
-}
-
-.sidebar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: var(--bd);
-  border-radius: 99px;
-}
-
-.sbt {
-  padding: 0 8px 18px;
-  border-bottom: 1px solid var(--bd-s);
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sbr {
-  font-size: 1rem;
-  font-weight: 800;
-  background: var(--btn-g);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.sbb {
-  display: flex;
-  gap: 4px;
-}
-
-.sbb button {
-  font-size: 0.6rem;
-  font-weight: 700;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--bd-s);
-  background: var(--bg3);
-  color: var(--tx2);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.sbb button:hover {
-  background: var(--bg4);
-  color: var(--tx1);
-  transform: translateY(-1px);
-}
-
-/* Nav Sections */
-.ns {
-  padding: 14px 12px 6px;
-  font-size: 0.5rem;
-  font-weight: 800;
-  color: var(--tx3);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-}
-
-/* Nav Items */
-.ni {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  margin: 4px 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--tx2);
-  cursor: pointer;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.ni:hover {
-  background: var(--bg3);
-  color: var(--tx1);
-  transform: translateX(-4px);
-}
-
-.ni.on {
-  background: var(--btn-g);
-  color: #fff;
-  box-shadow: 0 4px 14px var(--acl);
-}
-
-.ni.on .ic {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-.ni .ic {
-  font-size: 1.35rem;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  opacity: 1;
-  transition: all 0.2s;
-}
-
-/* SVG icon sizing in nav */
-.svg-ic svg {
-  width: 18px;
-  height: 18px;
-  display: block;
-}
-
-body.en .ni:hover {
-  transform: translateX(4px);
-}
-
-/* ---------- Bottom Nav (Mobile) ---------- */
-.bnav {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg2);
-  border-top: 1px solid var(--bd);
-  z-index: 200;
-  padding: 6px 0 env(safe-area-inset-bottom, 8px);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.bni {
-  display: flex;
-  justify-content: space-around;
-}
-
-.bi {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 6px 8px;
-  font-size: 0.48rem;
-  font-weight: 700;
-  color: var(--tx3);
-  cursor: pointer;
-  transition: all 0.2s;
-  border-radius: 8px;
-  position: relative;
-}
-
-.bi .bic {
-  font-size: 1.6rem;
-  opacity: 1;
-  transition: transform 0.2s;
-}
-
-.bi.on {
-  color: var(--ac);
-}
-
-.bi.on .bic {
-  transform: translateY(-3px);
-}
-
-.bi.on::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  width: 16px;
-  height: 3px;
-  background: var(--btn-g);
-  border-radius: 99px;
-}
-
-/* ---------- Main Content (100% Full-Width Fluid SaaS Layout) ---------- */
-.mw {
-  margin-right: var(--sidebar-w);
-  padding: 22px 28px 80px;
-  min-height: 100vh;
-  width: calc(100% - var(--sidebar-w));
-  max-width: 100%;
-  box-sizing: border-box;
-  margin-left: 0;
-  transition: all 0.25s ease;
-}
-
-body.en .mw {
-  margin-right: 0;
-  margin-left: var(--sidebar-w);
-  width: calc(100% - var(--sidebar-w));
-}
-
-/* ---------- Page Header ---------- */
-.ph {
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 24px;
-  animation: fadeUp 0.4s ease forwards;
-}
-
-.ph h1 {
-  font-size: 1.55rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  letter-spacing: -0.02em;
-}
-
-.ph p {
-  font-size: 0.85rem;
-  color: var(--tx2);
-  margin-top: 6px;
-}
-
-/* ---------- KPI Cards Grid (Fluid 100% Responsive) ---------- */
-.kg {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
-  gap: 16px;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 24px;
-  animation: fadeUp 0.5s ease forwards;
-}
-
-.ki {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  padding: 20px 18px;
-  box-shadow: var(--sh);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.ki:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--sh-lg);
-  border-color: var(--ac);
-}
-
-.ki::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: var(--btn-g);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.ki:hover::before {
-  opacity: 1;
-}
-
-.ki .lb {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--tx3);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.ki .vl {
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin-top: 8px;
-  font-variant-numeric: tabular-nums;
-  color: var(--tx1);
-  letter-spacing: -0.03em;
-}
-
-/* ---------- Ring Charts (Fluid Auto Grid) ---------- */
-.rg {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 24px;
-  animation: fadeUp 0.6s ease forwards;
-}
-
-.rc2 {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  padding: 22px;
-  text-align: center;
-  box-shadow: var(--sh);
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  transition: all 0.3s;
-}
-
-.rc2:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--sh-md);
-}
-
-.rc2 h4 {
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: var(--tx2);
-  margin-bottom: 14px;
-}
-
-.rw2 {
-  position: relative;
-  width: 110px;
-  height: 110px;
-  margin: 0 auto;
-}
-
-.rw2 svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08));
-}
-
-.rw2 .trk {
-  fill: none;
-  stroke: var(--bd-s);
-  stroke-width: 6;
-}
-
-.rw2 .fl {
-  fill: none;
-  stroke-width: 6;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.rce {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-}
-
-.rce .p {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--tx1);
-}
-
-.rce .s {
-  font-size: 0.65rem;
-  color: var(--tx3);
-  font-weight: 600;
-}
-
-/* ---------- Chart Cards Grid (100% Width Auto Scaling) ---------- */
-.cg {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
-  gap: 20px;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 24px;
-  animation: fadeUp 0.7s ease forwards;
-}
-
-.cc {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  padding: 22px;
-  box-shadow: var(--sh);
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  transition: all 0.3s;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.cc:hover {
-  box-shadow: var(--sh-md);
-}
-
-.cc h3 {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--tx2);
-  margin-bottom: 16px;
-}
-
-.cw {
-  position: relative;
-  height: 270px;
-  width: 100%;
-}
-
-/* ---------- Professional SaaS Data Tables (Full-Width Responsive) ---------- */
-.tb {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  overflow: hidden;
-  margin-bottom: 24px;
-  width: 100%;
-  box-sizing: border-box;
-  box-shadow: var(--sh);
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  animation: fadeUp 0.8s ease forwards;
-}
-
-.tbt {
-  padding: 16px 22px;
-  border-bottom: 1px solid var(--bd-s);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.tbt h3 {
-  font-size: 0.95rem;
-  font-weight: 800;
-}
-
-.tbs {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  max-height: 650px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-  font-variant-numeric: tabular-nums;
-  min-width: 600px;
-}
-
-thead th {
-  text-align: right;
-  padding: 13px 18px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--tx3);
-  text-transform: uppercase;
-  background: var(--bg3);
-  border-bottom: 2px solid var(--bd-s);
-  white-space: nowrap;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  letter-spacing: 0.03em;
-}
-
-tbody td {
-  padding: 13px 18px;
-  border-bottom: 1px solid var(--bd-s);
-  color: var(--tx2);
-  font-size: 0.85rem;
-}
-
-tbody tr {
-  transition: background 0.2s;
-}
-
-tbody tr:hover {
-  background: var(--bg3);
-}
-
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
-/* ---------- Search Box ---------- */
-.sbox {
-  font-family: inherit;
-  font-size: 0.7rem;
-  padding: 9px 14px;
-  border: 1.5px solid var(--bd);
-  border-radius: 10px;
-  width: 180px;
-  background: var(--bg3);
-  color: var(--tx1);
-  transition: all 0.25s;
-}
-
-.sbox:focus {
-  outline: none;
-  border-color: var(--ac);
-  box-shadow: 0 0 0 3px var(--acl);
-  background: var(--bg2);
-}
-
-/* ---------- Badges ---------- */
-.badge {
-  font-size: 0.55rem;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 8px;
-  letter-spacing: 0.02em;
-  display: inline-block;
-}
-
-.bg-g { background: var(--gnl); color: var(--gn); }
-.bg-r { background: var(--rdl); color: var(--rd); }
-.bg-a { background: var(--aml); color: var(--am); }
-.bg-b { background: var(--bll); color: var(--bl); }
-
-/* ---------- General Card ---------- */
-.card {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  padding: 24px;
-  margin-bottom: 16px;
-  box-shadow: var(--sh);
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  animation: fadeUp 0.4s ease forwards;
-}
-
-/* ---------- Upload Zone ---------- */
-.upload-z {
-  border: 2px dashed var(--bd);
-  border-radius: 16px;
-  padding: 32px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.25s;
-  margin-bottom: 12px;
-  background: var(--bg3);
-}
-
-.upload-z:hover {
-  border-color: var(--ac);
-  background: var(--acl);
-  transform: scale(1.01);
-}
-
-.upload-z.ok {
-  border-color: var(--gn);
-  background: var(--gnl);
-}
-
-.upload-z p {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--tx2);
-}
-
-/* ---------- Analytics Cards ---------- */
-.ang {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-  animation: fadeUp 0.5s ease forwards;
-}
-
-.anc {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  padding: 20px;
-  box-shadow: var(--sh);
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  transition: all 0.25s;
-}
-
-.anc:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--sh-md);
-}
-
-.anc h4 {
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--tx1);
-  margin-bottom: 14px;
-}
-
-.anr {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.anr .nm {
-  font-size: 0.6rem;
-  width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 600;
-}
-
-.anr .br {
-  flex: 1;
-  height: 7px;
-  background: var(--bd-s);
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.anr .bf {
-  height: 100%;
-  border-radius: 99px;
-  background: var(--btn-g);
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.anr .vv {
-  font-size: 0.55rem;
-  font-weight: 800;
-  min-width: 50px;
-  text-align: left;
-  color: var(--tx2);
-}
-
-/* ---------- Potential/Opportunity Cards ---------- */
-.pot-c {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  padding: 20px;
-  margin-bottom: 12px;
-  box-shadow: var(--sh);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.25s;
-  animation: fadeUp 0.4s ease forwards;
-}
-
-.pot-c:hover {
-  transform: scale(1.01);
-  box-shadow: var(--sh-md);
-}
-
-.pot-c h4 {
-  font-size: 0.8rem;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-
-.pot-c p {
-  font-size: 0.65rem;
-  color: var(--tx2);
-  line-height: 1.7;
-}
-
-.pot-m {
-  text-align: center;
-}
-
-.pot-m .big {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: var(--am);
-}
-
-.pot-m .sm {
-  font-size: 0.5rem;
-  color: var(--tx3);
-  font-weight: 600;
-}
-
-/* ---------- Alert Items ---------- */
-.alert-i {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  padding: 14px 18px;
-  margin-bottom: 10px;
-  box-shadow: var(--sh);
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 600;
-  animation: fadeUp 0.4s ease forwards;
-}
-
-/* ---------- Backup Cards ---------- */
-.bk-c {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  padding: 16px 20px;
-  margin-bottom: 12px;
-  box-shadow: var(--sh);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  cursor: pointer;
-  transition: all 0.25s;
-  animation: fadeUp 0.4s ease forwards;
-}
-
-.bk-c:hover {
-  border-color: var(--ac);
-  transform: translateY(-3px);
-  box-shadow: var(--sh-lg);
-}
-
-.bk-c .bki {
-  font-size: 1.6rem;
-}
-
-.bk-c h4 {
-  font-size: 0.8rem;
-  font-weight: 800;
-  margin-bottom: 2px;
-}
-
-.bk-c p {
-  font-size: 0.65rem;
-  color: var(--tx3);
-}
-
-/* ---------- Account Avatar ---------- */
-.acc-av {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: var(--btn-g);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-size: 2rem;
-  margin: 0 auto 16px;
-  box-shadow: 0 8px 24px var(--acl);
-}
-
-/* ---------- Info Box ---------- */
-.info-box {
-  background: var(--bll);
-  border: 1px solid var(--bl);
-  border-radius: 12px;
-  padding: 14px 18px;
-  margin-bottom: 16px;
-  font-size: 0.7rem;
-  color: var(--tx1);
-  line-height: 1.7;
-}
-
-.info-box strong {
-  color: var(--bl);
-  font-weight: 800;
-}
-
-/* ---------- Progress Bar ---------- */
-.pb {
-  height: 7px;
-  background: var(--bd-s);
-  border-radius: 99px;
-  overflow: hidden;
-  width: 60px;
-  display: inline-block;
-}
-
-.pf {
-  height: 100%;
-  border-radius: 99px;
-  background: var(--btn-g);
-}
-
-/* ---------- Toast ---------- */
-.toast {
-  position: fixed;
-  bottom: 90px;
-  left: 50%;
-  transform: translateX(-50%) translateY(30px);
-  background: var(--tx1);
-  color: var(--bg);
-  border-radius: 14px;
-  padding: 12px 28px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  z-index: 9000;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-
-/* ---------- File Input Hidden ---------- */
-input[type=file] {
-  display: none;
-}
-
-/* ---------- Animations ---------- */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ---------- Custom Scrollbar ---------- */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--bd);
-  border-radius: 99px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--tx3);
-}
-
-/* ---------- Responsive (Tablet & Mobile) ---------- */
-@media (max-width: 992px) {
-  .sidebar {
-    display: none;
-  }
-
-  .bnav {
-    display: block;
-  }
-
-  .mw {
-    margin: 0 !important;
-    width: 100% !important;
-    padding: 16px 14px 90px !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  .cg,
-  .ang {
-    grid-template-columns: 1fr;
-  }
-
-  .kg {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-  }
-
-  .cw {
-    height: 240px;
-  }
-
-  .auth-card {
-    padding: 28px 20px;
-    width: 95%;
-  }
-
-  .ph {
-    padding: 16px 18px !important;
-    border-radius: 14px !important;
-    gap: 10px !important;
-  }
-
-  .ph h1 {
-    font-size: 1.25rem !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .kg {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .ki {
-    padding: 14px 12px;
-  }
-  .ki .vl {
-    font-size: 1.3rem;
-  }
-  .tb {
-    border-radius: 10px;
-  }
-  table {
-    font-size: 0.76rem;
-  }
-  thead th, tbody td {
-    padding: 10px 12px;
-  }
-}
-
-/* ---------- Print ---------- */
-@media print {
-  .sidebar,
-  .bnav,
-  .ph button,
-  .loader-overlay {
-    display: none !important;
-  }
-
-  body {
-    background: #fff;
-    color: #000;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-
-  .mw {
-    margin: 0;
-    padding: 0;
-    max-width: 100%;
-  }
-
-  .card,
-  .ki,
-  .tb,
-  .cc {
-    box-shadow: none !important;
-    border: 1px solid #ddd;
-    break-inside: avoid;
-  }
-
-  * {
-    transition: none !important;
-    animation: none !important;
-    backdrop-filter: none !important;
-  }
-
-  ::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-/* Print & PDF Export Styles */
-@media print {
-    body { background: white !important; color: black !important; }
-    .sidebar, .bnav, .ph button, #ss, .sbox, #spg, #cpg { display: none !important; }
-    .mw { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: none !important; }
-    .card, .kg, .cg, .tb { box-shadow: none !important; border: 1px solid #ccc !important; page-break-inside: avoid; }
-    table { width: 100% !important; border-collapse: collapse !important; }
-    th, td { border: 1px solid #ddd !important; padding: 8px !important; color: black !important; background: white !important; }
-    .badge { border: 1px solid #000; background: transparent !important; color: #000 !important; }
-    canvas { max-width: 100% !important; }
-}
-
-
-/* ==========================================================================
-   ENTERPRISE V8 LUXURY POLISH (MAJOR ENTERPRISE CRM / ERP DESIGN SYSTEM)
-   ========================================================================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
-
-body {
-    font-family: 'Cairo', 'Outfit', system-ui, -apple-system, sans-serif !important;
-}
-
-body.en {
-    font-family: 'Outfit', 'Cairo', system-ui, sans-serif !important;
-}
-
-.hdr, #H {
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    background: rgba(255, 255, 255, 0.75) !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
-    transition: all 0.3s ease !important;
-}
-
-html[data-theme='dark'] .hdr, html[data-theme='dark'] #H {
-    background: rgba(15, 23, 42, 0.8) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3) !important;
-}
-
-.sidebar {
-    backdrop-filter: blur(16px);
-    border-left: 1px solid rgba(0,0,0,0.05);
-}
-html[data-theme='dark'] .sidebar {
-    border-left: 1px solid rgba(255,255,255,0.06);
-}
-
-.ni, .bi {
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    border-radius: 12px !important;
-    margin: 3px 8px !important;
-    padding: 10px 14px !important;
-}
-
-.ni:hover, .bi:hover {
-    transform: translateX(-4px);
-    background: var(--acl) !important;
-}
-
-body.en .ni:hover {
-    transform: translateX(4px);
-}
-
-.ni.on, .bi.on {
-    background: linear-gradient(135deg, var(--ac) 0%, var(--ac2) 100%) !important;
+/* ============================================================
+   ADVANCED ENTERPRISE SUITE CSS (v6.0)
+   ============================================================ */
+
+/* ---------- WhatsApp Action Button ---------- */
+.btn-wa {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%) !important;
     color: #ffffff !important;
-    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35) !important;
     font-weight: 700 !important;
-}
-
-.ic img, .bic img, .ph img, h1 img, h2 img, h3 img {
-    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.22)) !important;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-.ni:hover .ic img, .card:hover img {
-    transform: scale(1.15) rotate(4deg) !important;
-}
-
-.card, .ki {
-    border-radius: 16px !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.02) !important;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s !important;
-}
-
-html[data-theme='dark'] .card, html[data-theme='dark'] .ki {
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.25) !important;
-}
-
-.card:hover, .ki:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.12), 0 8px 20px -6px rgba(0, 0, 0, 0.06) !important;
-    border-color: var(--ac2) !important;
-}
-
-.btn {
+    padding: 9px 16px !important;
     border-radius: 10px !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    font-weight: 600 !important;
-}
-
-.btn:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
-}
-
-.btn:active {
-    transform: scale(0.97) !important;
-}
-
-.btn-p {
-    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #4338ca 100%) !important;
-    color: #fff !important;
-    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35) !important;
     border: none !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35) !important;
+    transition: all 0.25s ease !important;
+    text-decoration: none !important;
+    font-size: 0.88rem !important;
+}
+.btn-wa:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 6px 18px rgba(37, 211, 102, 0.45) !important;
+    color: #ffffff !important;
 }
 
-.btn-p:hover {
-    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5) !important;
-}
-
-table {
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    border: 1px solid var(--bd) !important;
-}
-
-th {
-    background: var(--bg3) !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.3px !important;
-    padding: 12px 14px !important;
-    border-bottom: 2px solid var(--bd) !important;
-}
-
-tr {
-    transition: background 0.2s ease !important;
-}
-
-tr:hover {
-    background: var(--acl) !important;
-}
-
-
-.todo-item {
-    display: flex;
+/* ---------- GPS Location Badges ---------- */
+.gps-pill {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    background: var(--bg3);
-    border-radius: 10px;
-    margin-bottom: 10px;
-    border-left: 4px solid #6c5ce7;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-    transition: transform 0.2s;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(6, 182, 212, 0.12);
+    color: #06b6d4;
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    text-decoration: none;
+    transition: all 0.2s;
 }
-.todo-item:hover { transform: translateX(-3px); }
-.todo-item.done span { text-decoration: line-through; opacity: 0.5; }
+.gps-pill:hover {
+    background: rgba(6, 182, 212, 0.25);
+    transform: scale(1.04);
+}
+.gps-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #06b6d4;
+    box-shadow: 0 0 8px #06b6d4;
+    animation: gpsPulse 1.8s infinite;
+}
+@keyframes gpsPulse {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
 
-.print-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    z-index: 999999;
-    display: none;
-    align-items: center;
-    justify-content: center;
+/* ---------- Visit Score Badges ---------- */
+.score-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-align: center;
+}
+.score-pill-green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.score-pill-yellow {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.score-pill-red {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* ---------- Aging Debt Radar ---------- */
+.aging-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.aging-card {
     padding: 20px;
-    backdrop-filter: blur(6px);
-}
-.print-modal-content {
-    background: #fff;
-    color: #000;
-    width: 100%;
-    max-width: 680px;
-    padding: 35px;
     border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    background: var(--bg2);
+    border: 1px solid var(--bd);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease;
+}
+.aging-card:hover {
+    transform: translateY(-3px);
+}
+.aging-card-30 { border-right: 5px solid #10b981; }
+.aging-card-60 { border-right: 5px solid #f59e0b; }
+.aging-card-90 { border-right: 5px solid #f97316; }
+.aging-card-crit { border-right: 5px solid #ef4444; }
+
+html[dir="ltr"] .aging-card-30 { border-right: none; border-left: 5px solid #10b981; }
+html[dir="ltr"] .aging-card-60 { border-right: none; border-left: 5px solid #f59e0b; }
+html[dir="ltr"] .aging-card-90 { border-right: none; border-left: 5px solid #f97316; }
+html[dir="ltr"] .aging-card-crit { border-right: none; border-left: 5px solid #ef4444; }
+
+/* ---------- Quick POS & Invoicing Modal ---------- */
+.pos-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+.pos-modal-box {
+    background: var(--bg);
+    color: var(--tx1);
+    width: 100%;
+    max-width: 780px;
     max-height: 90vh;
+    border-radius: 20px;
+    border: 1px solid var(--bd);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: spSlideUp 0.3s forwards;
+}
+.pos-modal-header {
+    padding: 18px 24px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--bd);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.pos-modal-body {
+    padding: 20px 24px;
     overflow-y: auto;
-    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+    flex: 1;
 }
-@media print {
-    body * { visibility: hidden; }
-    #printModalContent, #printModalContent * { visibility: visible; }
-    #printModalContent { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; padding: 0; }
-    .no-print { display: none !important; }
+.pos-cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 14px;
 }
-
-
-
-/* ==========================================================================
-   ENTERPRISE V8 LUXURY PAGE HEADERS (.ph) & ICON STYLING
-   ========================================================================== */
-.ph {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 16px !important;
-    flex-wrap: wrap !important;
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.85)) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    padding: 20px 28px !important;
-    border-radius: 20px !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-    margin-bottom: 28px !important;
-    position: relative !important;
-    overflow: hidden !important;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+.pos-cart-table th {
+    padding: 10px;
+    text-align: right;
+    background: var(--bg3);
+    color: var(--tx2);
+    font-size: 0.85rem;
 }
-
-html[data-theme="light"] .ph {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(241, 245, 249, 0.98)) !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+html[dir="ltr"] .pos-cart-table th {
+    text-align: left;
+}
+.pos-cart-table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--bd-s);
+}
+.pos-qty-btn {
+    background: var(--bg3);
+    border: 1px solid var(--bd);
+    color: var(--tx1);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
-.ph::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 6px !important;
-    height: 100% !important;
-    background: linear-gradient(180deg, var(--p), #10b981) !important;
-    border-radius: 6px 0 0 6px !important;
+/* ---------- Digital Receipt Card ---------- */
+.receipt-box {
+    background: #ffffff;
+    color: #1e293b;
+    border: 2px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    font-family: inherit;
 }
 
-html[dir="rtl"] .ph::before {
-    left: auto !important;
-    right: 0 !important;
-    border-radius: 0 6px 6px 0 !important;
+/* ---------- Commission Simulator ---------- */
+.sim-container {
+    background: var(--bg2);
+    border: 1px solid var(--bd);
+    border-radius: 18px;
+    padding: 24px;
+    margin-top: 20px;
 }
-
-.ph h1 {
-    font-size: 1.6rem !important;
-    font-weight: 800 !important;
-    color: var(--tx1) !important;
-    margin: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 16px !important;
-    letter-spacing: -0.5px !important;
+.sim-slider {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: var(--bg3);
+    outline: none;
+    accent-color: var(--ac);
+    cursor: pointer;
 }
-
-.ph h1 span:first-child, .ph h1 img, .ph h1 span img {
-    width: 48px !important;
-    height: 48px !important;
-    filter: drop-shadow(0 6px 14px rgba(59, 130, 246, 0.4)) !important;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-.ph:hover h1 span:first-child, .ph:hover h1 img, .ph:hover h1 span img {
-    transform: scale(1.18) rotate(6deg) !important;
-}
-
-/* Page Icon Polish across tables and cards */
-.sc .i {
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15)) !important;
-    transition: transform 0.3s ease !important;
-}
-.sc:hover .i {
-    transform: scale(1.15) !important;
-}
- 
- / *   - - -   F I X   F O R   L I G H T   M O D E   U I   - - -   * /  
- h t m l : n o t ( [ d a t a - t h e m e = ' d a r k ' ] )   . c a r d ,   h t m l : n o t ( [ d a t a - t h e m e = ' d a r k ' ] )   . k i ,   h t m l : n o t ( [ d a t a - t h e m e = ' d a r k ' ] )   . p h   {   b a c k g r o u n d :   # f f f f f f   ! i m p o r t a n t ;   c o l o r :   # 1 a 1 d 2 1   ! i m p o r t a n t ;   b o r d e r :   1 p x   s o l i d   # e 5 e 7 e b   ! i m p o r t a n t ;   }  
- h t m l : n o t ( [ d a t a - t h e m e = ' d a r k ' ] )   t a b l e   t h   {   c o l o r :   # 4 9 5 0 5 7   ! i m p o r t a n t ;   b a c k g r o u n d :   # f 8 f 9 f a   ! i m p o r t a n t ;   b o r d e r - b o t t o m :   1 p x   s o l i d   # e 5 e 7 e b   ! i m p o r t a n t ;   }  
- h t m l : n o t ( [ d a t a - t h e m e = ' d a r k ' ] )   t a b l e   t d   {   c o l o r :   # 1 a 1 d 2 1   ! i m p o r t a n t ;   b o r d e r - b o t t o m :   1 p x   s o l i d   # f 3 f 4 f 6   ! i m p o r t a n t ;   }  
- 
   </style>
 </head>
 <body>
@@ -1840,7 +380,7 @@ const I = {
     accessories:{ar:'الأكسسوارات',en:'Accessories'},hardware:{ar:'الهاردوير',en:'Hardware'},
     stock:{ar:'المخزون',en:'Stock'},
     keyacc:{ar:'المميزين',en:'Key Accounts'},dormant:{ar:'الخاملين',en:'Dormant'},
-    prospects:{ar:'محتملين',en:'Prospects'},alerts:{ar:'التنبيهات',en:'Alerts'},
+    prospects:{ar:'محتملين',en:'Prospects'},aging:{ar:'أعمار الديون',en:'Aging Debt'},alerts:{ar:'التنبيهات',en:'Alerts'},
     ai:{ar:'توصيات AI',en:'AI'},account:{ar:'الحساب',en:'Account'},
     backup:{ar:'نسخ احتياطي',en:'Backup'},setup:{ar:'رفع الملفات',en:'Files'},
     logout:{ar:'خروج',en:'Logout'},reset:{ar:'مسح البيانات',en:'Reset App'},
@@ -5135,7 +3675,7 @@ const NAV = [
     {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💰'},{p:'stock',ic:'📦'},
     {s:{ar:'متقدم',en:'Advanced'}},
     {p:'analytics',ic:'🧠'},{p:'leads',ic:'🤝'},{p:'potential',ic:'🚀'},{p:'profit',ic:'💵'},
-    {p:'keyacc',ic:'⭐'},{p:'dormant',ic:'💤'},{p:'prospects',ic:'🔍'},
+    {p:'keyacc',ic:'⭐'},{p:'dormant',ic:'💤'},{p:'prospects',ic:'🔍'},{p:'aging',ic:'🛡️'},
     {s:{ar:'ذكي',en:'Smart'}},
     {p:'ai',ic:'🤖'},{p:'alerts',ic:'🔔'},
     {s:{ar:'النظام',en:'System'}},
@@ -5165,6 +3705,7 @@ const ICONS = {
     keyacc: getImg('Crown/3D/crown_3d.png'),
     dormant: getImg('Sleeping%20face/3D/sleeping_face_3d.png'),
     prospects: getImg('Magnifying%20glass%20tilted%20left/3D/magnifying_glass_tilted_left_3d.png'),
+    aging: getImg('Shield/3D/shield_3d.png'),
     ai: getImg('Robot/3D/robot_3d.png'),
     alerts: getImg('Bell/3D/bell_3d.png'),
     account: getImg('Bust%20in%20silhouette/3D/bust_in_silhouette_3d.png'),
@@ -5285,6 +3826,7 @@ function render() {
         leads: rLeads, profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
         stock: typeof window.rStock === 'function' ? window.rStock : (typeof rStock === 'function' ? rStock : null),
         keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
+        aging: typeof window.rAgingDebt === 'function' ? window.rAgingDebt : (typeof rAgingDebt === 'function' ? rAgingDebt : null),
         account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
     };
     if (fn[P]) fn[P]();
@@ -5718,23 +4260,54 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
     document.head.appendChild(style);
 })();
 
-// --- VISITS ---
+// --- ADVANCED FIELD VISITS SUITE (GPS, SCORING, WHATSAPP & POS) ---
 window.rVisits = function() {
     let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
     let html = `
-        <div class="ph">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🚗</span> ${L==='ar'?'الزيارات ومتابعة العملاء':'Visits & Follow-up'}</h1>
-            <button class="btn" onclick="addVisitModal()" style="background:var(--ac);color:#fff;font-weight:bold;">➕ ${L==='ar'?'زيارة جديدة':'New Visit'}</button>
+        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">
+            <h1 style="display:flex;align-items:center;gap:12px;margin:0;"><span style="width:36px;height:36px;display:flex;">🚗</span> ${L==='ar'?'الزيارات الميدانية والمتابعة الذكية':'Field Visits & Smart CRM'}</h1>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn" onclick="exportVisitsToExcel()" style="background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;">📊 ${L==='ar'?'تصدير إكسيل':'Export Excel'}</button>
+                <button class="btn" onclick="openQuickOrderModal()" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:bold;display:flex;align-items:center;gap:6px;">🧾 ${L==='ar'?'فاتورة سريعة (POS)':'Quick POS Invoice'}</button>
+                <button class="btn" onclick="addVisitModal()" style="background:var(--ac);color:#fff;font-weight:bold;display:flex;align-items:center;gap:6px;">➕ ${L==='ar'?'تسجيل زيارة (GPS)':'Log Visit (GPS)'}</button>
+            </div>
         </div>
-        <div class="card" id="visitsList" style="margin-top:20px;">
+
+        <!-- Visits Summary KPI Cards -->
+        <div id="visitsKpiGrid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;margin:20px 0;"></div>
+
+        <!-- Filter & Search Bar -->
+        <div class="card" style="padding:16px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="vSearchInput" oninput="loadVisits()" placeholder="${L==='ar'?'🔍 بحث بالعميل، المندوب، أو المنطقة...':'🔍 Search by customer, rep or area...'}" style="flex:1;min-width:220px;padding:10px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--tx1);font-family:inherit;">
+            <select id="vFilterPurpose" onchange="loadVisits()" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--tx1);font-family:inherit;">
+                <option value="">${L==='ar'?'جميع أنواع الزيارات':'All Visit Types'}</option>
+                <option value="Sales Visit">${L==='ar'?'زيارة بيعية':'Sales Visit'}</option>
+                <option value="Collection Only">${L==='ar'?'تحصيل فقط':'Collection Only'}</option>
+                <option value="Maintenance">${L==='ar'?'صيانة ومتابعة':'Maintenance'}</option>
+                <option value="New Customer">${L==='ar'?'فتح عميل جديد':'New Customer'}</option>
+            </select>
+            <select id="vFilterScore" onchange="loadVisits()" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--tx1);font-family:inherit;">
+                <option value="">${L==='ar'?'جميع التقييمات':'All Scores'}</option>
+                <option value="high">🟢 ${L==='ar'?'ممتاز (80% فأعلى)':'High (80%+)'}</option>
+                <option value="mid">🟡 ${L==='ar'?'متوسط (50-79%)':'Medium (50-79%)'}</option>
+                <option value="low">🔴 ${L==='ar'?'ضعيف (أقل من 50%)':'Low (<50%)'}</option>
+            </select>
+        </div>
+
+        <!-- Visits Data List -->
+        <div class="card" id="visitsList">
             <div style="overflow-x:auto;">
                 <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
                     <thead>
-                        <tr style="border-bottom:2px solid var(--bd);">
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'التاريخ':'Date'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'العميل':'Customer'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'النتيجة':'Outcome'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الزيارة القادمة':'Next Visit'}</th>
+                        <tr style="border-bottom:2px solid var(--bd);background:var(--bg3);">
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'التاريخ والوقت':'Date & Time'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'العميل والمنطقة':'Customer & Area'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'النوع والهدف':'Type / Purpose'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'السكور %':'Score %'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'الموقع (GPS)':'GPS Check-In'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'المبيعات / التحصيل':'Sales / Collection'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'الزيارة القادمة':'Next Visit'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'إجراءات':'Actions'}</th>
                         </tr>
                     </thead>
                     <tbody id="vTbody"></tbody>
@@ -5746,28 +4319,124 @@ window.rVisits = function() {
     if(M) { M.innerHTML = html; loadVisits(); }
 };
 
-function loadVisits() {
+window.loadVisits = function() {
     let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
     let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
     let tb = document.getElementById('vTbody');
+    let kpiGrid = document.getElementById('visitsKpiGrid');
     if (!tb) return;
+
+    // Filters
+    let query = (document.getElementById('vSearchInput') ? document.getElementById('vSearchInput').value : '').toLowerCase().trim();
+    let filterPurp = document.getElementById('vFilterPurpose') ? document.getElementById('vFilterPurpose').value : '';
+    let filterSc = document.getElementById('vFilterScore') ? document.getElementById('vFilterScore').value : '';
+
+    let filtered = visitsData.filter(v => {
+        let matchQ = !query || (v.customer && v.customer.toLowerCase().includes(query)) ||
+                     (v.area && v.area.toLowerCase().includes(query)) ||
+                     (v.rep && v.rep.toLowerCase().includes(query)) ||
+                     (v.outcome && v.outcome.toLowerCase().includes(query));
+        let matchP = !filterPurp || (v.purpose === filterPurp || v.type === filterPurp);
+        let score = Number(v.score || 0);
+        let matchS = true;
+        if (filterSc === 'high') matchS = score >= 80;
+        else if (filterSc === 'mid') matchS = score >= 50 && score < 80;
+        else if (filterSc === 'low') matchS = score < 50;
+        return matchQ && matchP && matchS;
+    });
+
+    // Render KPI Cards
+    if (kpiGrid) {
+        let totalV = visitsData.length;
+        let totalSales = visitsData.reduce((sum, v) => sum + (Number(v.salesAmount) || 0), 0);
+        let totalColl = visitsData.reduce((sum, v) => sum + (Number(v.collAmount) || 0), 0);
+        let avgScore = totalV > 0 ? Math.round(visitsData.reduce((sum, v) => sum + (Number(v.score) || 0), 0) / totalV) : 0;
+        let gpsCount = visitsData.filter(v => v.gpsLat && v.gpsLng).length;
+
+        kpiGrid.innerHTML = `
+            <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;border-right:4px solid var(--ac);">
+                <span style="font-size:2rem;">🚗</span>
+                <div>
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'إجمالي الزيارات':'Total Visits'}</div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--tx1);">${totalV}</div>
+                </div>
+            </div>
+            <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;border-right:4px solid #10b981;">
+                <span style="font-size:2rem;">💰</span>
+                <div>
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'مبيعات الزيارات':'Visit Sales'}</div>
+                    <div style="font-size:1.3rem;font-weight:800;color:#10b981;">${totalSales.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+            </div>
+            <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;border-right:4px solid #06b6d4;">
+                <span style="font-size:2rem;">🎯</span>
+                <div>
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'متوسط السكور':'Avg Visit Score'}</div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--tx1);">${avgScore}%</div>
+                </div>
+            </div>
+            <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;border-right:4px solid #f59e0b;">
+                <span style="font-size:2rem;">📍</span>
+                <div>
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'زيارات موثقة بـ GPS':'GPS Verified'}</div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--tx1);">${gpsCount} <small style="font-size:0.75rem;">/ ${totalV}</small></div>
+                </div>
+            </div>
+        `;
+    }
+
     tb.innerHTML = '';
-    if (visitsData.length === 0) {
-        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'لا توجد زيارات مسجلة. ابدأ بإضافة زيارة جديدة!':'No visits logged'}</td></tr>`;
+    if (filtered.length === 0) {
+        tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--tx3);font-size:0.95rem;">${L==='ar'?'لا توجد زيارات مطابقة للبحث. انقر على "تسجيل زيارة (GPS)" للبدء!':'No matching visits found.'}</td></tr>`;
         return;
     }
-    visitsData.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(v => {
+
+    filtered.sort((a,b) => new Date(b.date || b.timestamp || 0) - new Date(a.date || a.timestamp || 0)).forEach(v => {
+        let score = Number(v.score || 0);
+        let scoreClass = score >= 80 ? 'score-pill-green' : (score >= 50 ? 'score-pill-yellow' : 'score-pill-red');
+        
+        let gpsHtml = '-';
+        if (v.gpsLat && v.gpsLng) {
+            gpsHtml = `<a href="https://maps.google.com/?q=${v.gpsLat},${v.gpsLng}" target="_blank" class="gps-pill" title="View on Google Maps"><span class="gps-dot"></span> GPS Pin</a>`;
+        }
+
+        let finHtml = [];
+        if (Number(v.salesAmount) > 0) finHtml.push(`<span style="color:#10b981;font-weight:bold;">+${Number(v.salesAmount).toLocaleString()} ${L==='ar'?'بيع':'Sale'}</span>`);
+        if (Number(v.collAmount) > 0) finHtml.push(`<span style="color:#06b6d4;font-weight:bold;">+${Number(v.collAmount).toLocaleString()} ${L==='ar'?'تحصيل':'Coll'}</span>`);
+        if (finHtml.length === 0) finHtml.push(`<span style="color:var(--tx3);">-</span>`);
+
         let tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid var(--bd-s)';
         tr.innerHTML = `
-            <td style="padding:15px 10px;">${v.date}</td>
-            <td style="padding:15px 10px;font-weight:bold;color:var(--ac);">${v.customer}</td>
-            <td style="padding:15px 10px;white-space:normal;">${v.outcome}</td>
-            <td style="padding:15px 10px;"><span style="background:var(--bg3);padding:4px 8px;border-radius:4px;">${v.nextDate || '-'}</span></td>
+            <td style="padding:14px 12px;font-size:0.88rem;">
+                <div style="font-weight:bold;color:var(--tx1);">${v.date || '-'}</div>
+                <div style="font-size:0.75rem;color:var(--tx3);">${v.time || ''}</div>
+            </td>
+            <td style="padding:14px 12px;">
+                <div style="font-weight:bold;color:var(--ac);font-size:0.95rem;">${v.customer}</div>
+                <div style="font-size:0.78rem;color:var(--tx3);">${v.area || (L==='ar'?'غير محدد':'Unspecified')} ${v.tier ? '• '+v.tier : ''}</div>
+            </td>
+            <td style="padding:14px 12px;font-size:0.88rem;">
+                <span style="background:var(--bg3);padding:3px 8px;border-radius:6px;border:1px solid var(--bd-s);">${v.purpose || v.type || (L==='ar'?'زيارة عامة':'General')}</span>
+            </td>
+            <td style="padding:14px 12px;text-align:center;">
+                <span class="score-pill ${scoreClass}">${score}%</span>
+            </td>
+            <td style="padding:14px 12px;">${gpsHtml}</td>
+            <td style="padding:14px 12px;font-size:0.85rem;">${finHtml.join('<br>')}</td>
+            <td style="padding:14px 12px;font-size:0.85rem;">
+                <span style="background:var(--bg3);padding:4px 8px;border-radius:4px;">${v.nextDate || '-'}</span>
+            </td>
+            <td style="padding:14px 12px;text-align:center;">
+                <div style="display:flex;gap:6px;justify-content:center;">
+                    <button class="btn-wa" onclick="sendVisitWhatsApp('${encodeURIComponent(JSON.stringify(v))}')" title="${L==='ar'?'إرسال تذكير ومتابعة عبر واتساب':'Send WhatsApp follow-up'}" style="padding:6px 10px;font-size:0.78rem;">💬 WA</button>
+                    <button onclick="deleteVisit(${v.id})" style="background:rgba(239,68,68,0.1);color:#ef4444;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;" title="${L==='ar'?'حذف الزيارة':'Delete'}">🗑️</button>
+                </div>
+            </td>
         `;
         tb.appendChild(tr);
     });
-}
+};
 
 window.addVisitModal = function() {
     let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
@@ -5783,42 +4452,475 @@ window.addVisitModal = function() {
 
     let cList = [...new Set([...set1, ...set2, ...set3])].sort((a,b) => a.localeCompare(b, 'ar'));
     let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
-    if(!opts) opts = `<option value="">${L==='ar'?'لا يوجد عملاء (يرجى رفع ملف المبيعات)':'No customers found'}</option>`;
-    
+    if(!opts) opts = `<option value="">${L==='ar'?'لا يوجد عملاء':'No customers found'}</option>`;
+
     let h = `
-        <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">🚗 ${L==='ar'?'تسجيل زيارة جديدة':'Log New Visit'}</h3>
-        <label class="sp-form-label">${L==='ar'?'العميل':'Customer'}</label>
-        <select id="nvCust" class="sp-form-input">${opts}</select>
-        <label class="sp-form-label">${L==='ar'?'تاريخ الزيارة':'Visit Date'}</label>
-        <input type="date" id="nvDate" class="sp-form-input" value="${new Date().toISOString().split('T')[0]}">
-        <label class="sp-form-label">${L==='ar'?'نتائج الزيارة / ملاحظات':'Outcome / Notes'}</label>
-        <textarea id="nvOutcome" class="sp-form-input" style="height:80px;resize:vertical;" placeholder="${L==='ar'?'ماذا حدث في الزيارة؟':'What happened?'}"></textarea>
-        <label class="sp-form-label">${L==='ar'?'موعد الزيارة القادمة':'Next Visit Date'}</label>
-        <input type="date" id="nvNext" class="sp-form-input">
-        <button class="sp-btn-primary" onclick="saveVisit()">${L==='ar'?'حفظ الزيارة':'Save Visit'}</button>
+        <h3 style="margin-bottom:16px;font-size:1.25rem;display:flex;align-items:center;gap:10px;color:var(--tx1);">🚗 ${L==='ar'?'تسجيل زيارة ميدانية وتقييم ذكي':'Log Field Visit & Smart Check-in'}</h3>
+        
+        <!-- GPS Capture Bar -->
+        <div style="background:var(--bg3);padding:12px;border-radius:10px;border:1px solid var(--bd);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div id="gpsStatusText" style="font-size:0.85rem;color:var(--tx2);">📍 ${L==='ar'?'لم يتم التقاط الموقع بعد':'GPS not captured yet'}</div>
+            <button type="button" onclick="captureGPSCoords()" style="background:var(--bl);color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.82rem;">📍 ${L==='ar'?'التقاط موقعي الآن':'Capture GPS'}</button>
+        </div>
+        <input type="hidden" id="nvGpsLat">
+        <input type="hidden" id="nvGpsLng">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <label class="sp-form-label">${L==='ar'?'العميل':'Customer'}</label>
+                <select id="nvCust" class="sp-form-input" onchange="autoFillCustDetails(this.value)">${opts}</select>
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'المنطقة / خط السير':'Area / Territory'}</label>
+                <input type="text" id="nvArea" class="sp-form-input" placeholder="${L==='ar'?'مثال: مدينة نصر، المعادي':'e.g. Nasr City'}">
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div>
+                <label class="sp-form-label">${L==='ar'?'تاريخ الزيارة':'Visit Date'}</label>
+                <input type="date" id="nvDate" class="sp-form-input" value="${new Date().toISOString().split('T')[0]}">
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'نوع وهدف الزيارة':'Purpose'}</label>
+                <select id="nvPurpose" class="sp-form-input">
+                    <option value="Sales Visit">${L==='ar'?'زيارة بيعية':'Sales Visit'}</option>
+                    <option value="Collection Only">${L==='ar'?'تحصيل فقط':'Collection Only'}</option>
+                    <option value="Maintenance">${L==='ar'?'متابعة وصيانة':'Maintenance'}</option>
+                    <option value="New Customer">${L==='ar'?'فتح عميل جديد':'New Customer'}</option>
+                    <option value="Complaint">${L==='ar'?'حل مشكلة / شكوى':'Complaint'}</option>
+                </select>
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'تصنيف العميل':'Tier'}</label>
+                <select id="nvTier" class="sp-form-input">
+                    <option value="Class A (VIP)">Class A (VIP)</option>
+                    <option value="Class B (Medium)">Class B (Medium)</option>
+                    <option value="Class C (Standard)">Class C (Standard)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Smart Checklist Scoring -->
+        <div style="background:var(--bg2);padding:14px;border-radius:12px;border:1px solid var(--bd);margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:700;font-size:0.9rem;color:var(--tx1);">📝 ${L==='ar'?'معايير تقييم الزيارة (السكور)':'Visit KPI Checklist'}</span>
+                <span id="liveScoreBadge" class="score-pill score-pill-yellow" style="font-size:0.85rem;">0%</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.85rem;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkMaint" onchange="calcLiveScore()"> 🔧 ${L==='ar'?'فحص الصيانة (10)':'Maintenance (10)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkStar" onchange="calcLiveScore()"> ⭐ ${L==='ar'?'عرض الاستار (5)':'Star Display (5)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkTgt" onchange="calcLiveScore()"> 🎯 ${L==='ar'?'مراجعة التارجت (5)':'Target Review (5)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkStock" onchange="calcLiveScore()"> 📦 ${L==='ar'?'مراجعة المخزون (10)':'Stock Audit (10)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkColl" onchange="calcLiveScore()"> 💵 ${L==='ar'?'تحصيل فعلي (20)':'Collection (20)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkSale" onchange="calcLiveScore()"> 🛒 ${L==='ar'?'طلب بيع مؤكد (50)':'Sales Order (50)'}</label>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <label class="sp-form-label">${L==='ar'?'قيمة البيع (ج.م)':'Sales Value (EGP)'}</label>
+                <input type="number" id="nvSaleVal" class="sp-form-input" placeholder="0.00" oninput="if(Number(this.value)>0){document.getElementById('chkSale').checked=true;calcLiveScore();}">
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'قيمة التحصيل (ج.م)':'Collection Value (EGP)'}</label>
+                <input type="number" id="nvCollVal" class="sp-form-input" placeholder="0.00" oninput="if(Number(this.value)>0){document.getElementById('chkColl').checked=true;calcLiveScore();}">
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <label class="sp-form-label">${L==='ar'?'الشخص المسؤول والموبايل':'Contact & Mobile'}</label>
+                <input type="text" id="nvContact" class="sp-form-input" placeholder="${L==='ar'?'الاسم ورقم الهاتف':'Name & Mobile'}">
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'موعد الزيارة القادمة':'Next Visit Date'}</label>
+                <input type="date" id="nvNext" class="sp-form-input">
+            </div>
+        </div>
+
+        <label class="sp-form-label">${L==='ar'?'ملاحظات ونتائج الزيارة':'Outcome & Notes'}</label>
+        <textarea id="nvOutcome" class="sp-form-input" style="height:65px;resize:vertical;" placeholder="${L==='ar'?'ماذا تم في الزيارة؟ أهم النواقص أو عروض المنافسين...':'What happened during the visit?'}"></textarea>
+        
+        <button class="sp-btn-primary" onclick="saveVisit()" style="padding:14px;font-size:1rem;margin-top:8px;">💾 ${L==='ar'?'حفظ وتوثيق الزيارة':'Save & Verify Visit'}</button>
     `;
     let m = document.createElement('div');
     m.className = 'sp-modal-overlay';
     m.id = 'vModal';
-    m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
+    m.innerHTML = `<div class="sp-modal-content" style="max-width:560px;max-height:92vh;overflow-y:auto;"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
     document.body.appendChild(m);
+};
+
+window.captureGPSCoords = function() {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    let st = document.getElementById('gpsStatusText');
+    if (!navigator.geolocation) {
+        if(st) st.innerHTML = `⚠️ ${L==='ar'?'المتصفح لا يدعم الـ GPS':'Geolocation not supported'}`;
+        return;
+    }
+    if(st) st.innerHTML = `⏳ ${L==='ar'?'جاري تحديد الموقع بدقة...':'Acquiring GPS position...'}`;
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            let lat = pos.coords.latitude.toFixed(6);
+            let lng = pos.coords.longitude.toFixed(6);
+            let acc = Math.round(pos.coords.accuracy);
+            let latEl = document.getElementById('nvGpsLat');
+            let lngEl = document.getElementById('nvGpsLng');
+            if(latEl) latEl.value = lat;
+            if(lngEl) lngEl.value = lng;
+            if(st) st.innerHTML = `🟢 <b>${lat}, ${lng}</b> <small>(±${acc}m)</small>`;
+        },
+        function(err) {
+            if(st) st.innerHTML = `⚠️ ${L==='ar'?'تعذر تحديد الموقع: يرجى تفعيل الـ GPS':'GPS Error: Please enable location'}`;
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+};
+
+window.calcLiveScore = function() {
+    let score = 0;
+    if (document.getElementById('chkMaint') && document.getElementById('chkMaint').checked) score += 10;
+    if (document.getElementById('chkStar') && document.getElementById('chkStar').checked) score += 5;
+    if (document.getElementById('chkTgt') && document.getElementById('chkTgt').checked) score += 5;
+    if (document.getElementById('chkStock') && document.getElementById('chkStock').checked) score += 10;
+    if (document.getElementById('chkColl') && document.getElementById('chkColl').checked) score += 20;
+    if (document.getElementById('chkSale') && document.getElementById('chkSale').checked) score += 50;
+
+    let b = document.getElementById('liveScoreBadge');
+    if (b) {
+        b.textContent = score + '%';
+        b.className = 'score-pill ' + (score >= 80 ? 'score-pill-green' : (score >= 50 ? 'score-pill-yellow' : 'score-pill-red'));
+    }
+    return score;
 };
 
 window.saveVisit = function() {
     let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
-    let c = document.getElementById('nvCust').value;
-    let d = document.getElementById('nvDate').value;
-    let o = document.getElementById('nvOutcome').value;
-    let n = document.getElementById('nvNext').value;
-    if(!c || !d) { alert(L==='ar'?'العميل والتاريخ مطلوبان':'Customer and date are required'); return; }
+    let c = document.getElementById('nvCust') ? document.getElementById('nvCust').value : '';
+    let d = document.getElementById('nvDate') ? document.getElementById('nvDate').value : '';
+    let o = document.getElementById('nvOutcome') ? document.getElementById('nvOutcome').value : '';
+    let n = document.getElementById('nvNext') ? document.getElementById('nvNext').value : '';
+    let area = document.getElementById('nvArea') ? document.getElementById('nvArea').value : '';
+    let purp = document.getElementById('nvPurpose') ? document.getElementById('nvPurpose').value : '';
+    let tier = document.getElementById('nvTier') ? document.getElementById('nvTier').value : '';
+    let sVal = document.getElementById('nvSaleVal') ? Number(document.getElementById('nvSaleVal').value) || 0 : 0;
+    let cVal = document.getElementById('nvCollVal') ? Number(document.getElementById('nvCollVal').value) || 0 : 0;
+    let contact = document.getElementById('nvContact') ? document.getElementById('nvContact').value : '';
+    let lat = document.getElementById('nvGpsLat') ? document.getElementById('nvGpsLat').value : '';
+    let lng = document.getElementById('nvGpsLng') ? document.getElementById('nvGpsLng').value : '';
+    let score = calcLiveScore();
+
+    if(!c || !d) { 
+        alert(L==='ar'?'العميل والتاريخ مطلوبان':'Customer and date are required'); 
+        return; 
+    }
+
     let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
-    visitsData.push({ id: Date.now(), customer: c, date: d, outcome: o, nextDate: n });
+    let now = new Date();
+    let timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    visitsData.push({
+        id: Date.now(),
+        customer: c,
+        date: d,
+        time: timeStr,
+        area: area,
+        purpose: purp,
+        tier: tier,
+        score: score,
+        salesAmount: sVal,
+        collAmount: cVal,
+        contact: contact,
+        outcome: o,
+        nextDate: n,
+        gpsLat: lat,
+        gpsLng: lng,
+        timestamp: Date.now()
+    });
+
     localStorage.setItem('sp_visits', JSON.stringify(visitsData));
     let modal = document.getElementById('vModal');
     if(modal) modal.remove();
     loadVisits();
-    if(typeof toast === 'function') toast(L==='ar'?'تم حفظ الزيارة بنجاح':'Visit saved successfully', 'success');
+    if(typeof toast === 'function') toast(L==='ar'?'تم توثيق وحفظ الزيارة بنجاح 🚗':'Visit logged & verified successfully 🚗', 'success');
 };
+
+window.deleteVisit = function(id) {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    if (!confirm(L==='ar'?'هل أنت متأكد من حذف هذه الزيارة؟':'Are you sure you want to delete this visit?')) return;
+    let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
+    visitsData = visitsData.filter(v => v.id !== id);
+    localStorage.setItem('sp_visits', JSON.stringify(visitsData));
+    loadVisits();
+    if(typeof toast === 'function') toast(L==='ar'?'تم الحذف':'Deleted', 'info');
+};
+
+window.sendVisitWhatsApp = function(encodedVisit) {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    try {
+        let v = JSON.parse(decodeURIComponent(encodedVisit));
+        let phone = (v.contact || '').replace(/[^0-9]/g, '');
+        let msg = L==='ar' 
+            ? `مرحباً بك ${v.customer} 🌸%0Aسعدنا بزيارتكم اليوم ${v.date}.%0A` +
+              (v.nextDate ? `موعد متابعتنا القادم: ${v.nextDate}%0A` : '') +
+              `شكراً لتعاملكم معنا - Sales Pro Enterprise`
+            : `Hello ${v.customer},%0AThank you for meeting us today (${v.date}).%0A` +
+              (v.nextDate ? `Our next scheduled follow-up: ${v.nextDate}%0A` : '') +
+              `Best regards, Sales Pro Enterprise`;
+        let url = phone ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+        window.open(url, '_blank');
+    } catch(e) {
+        alert(e.message);
+    }
+};
+
+window.exportVisitsToExcel = function() {
+    if (typeof XLSX === 'undefined') {
+        alert('Excel library not loaded.');
+        return;
+    }
+    let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
+    if (visitsData.length === 0) {
+        alert('No visits data to export.');
+        return;
+    }
+    let exportRows = visitsData.map(v => ({
+        "Date": v.date,
+        "Time": v.time || "",
+        "Customer Name": v.customer,
+        "Area / Territory": v.area || "",
+        "Purpose": v.purpose || "",
+        "Tier": v.tier || "",
+        "Score %": v.score || 0,
+        "Sales Value (EGP)": v.salesAmount || 0,
+        "Collection Value (EGP)": v.collAmount || 0,
+        "Contact / Mobile": v.contact || "",
+        "Outcome / Notes": v.outcome || "",
+        "Next Visit Date": v.nextDate || "",
+        "GPS Lat": v.gpsLat || "",
+        "GPS Lng": v.gpsLng || ""
+    }));
+    let ws = XLSX.utils.json_to_sheet(exportRows);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Field Visits");
+    XLSX.writeFile(wb, `SalesPro_Field_Visits_${new Date().toISOString().split('T')[0]}.xlsx`);
+};
+
+// --- QUICK POS & WHATSAPP INVOICING MODAL ---
+window.openQuickOrderModal = function(preselectedCust = '') {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    let S_data = typeof getS === 'function' ? getS() : [];
+    let customCusts = [];
+    try { customCusts = JSON.parse(localStorage.getItem('sp_custom_customers') || '[]'); } catch(e) {}
+    let stockData = [];
+    try { stockData = JSON.parse(localStorage.getItem('sp_stock_v1') || '[]'); } catch(e) {}
+
+    let set1 = S_data.map(r => r.Customer || r['Customer Name']).filter(Boolean);
+    let set2 = customCusts.map(c => typeof c === 'string' ? c : c.name || c.Customer).filter(Boolean);
+    let cList = [...new Set([...set1, ...set2])].sort((a,b) => a.localeCompare(b, 'ar'));
+    
+    let custOpts = cList.map(c => `<option value="${c}" ${c===preselectedCust?'selected':''}>${c}</option>`).join('');
+
+    let prodOpts = stockData.map((p, idx) => `<option value="${idx}">${p.name || p.Item} (${p.price || p.Price || 0} EGP - Stock: ${p.qty || p.Qty || 0})</option>`).join('');
+    if(!prodOpts) {
+        prodOpts = `
+            <option value="manual_1">كابل شحن سريع (120 EGP)</option>
+            <option value="manual_2">شاحن حائط 20W (280 EGP)</option>
+            <option value="manual_3">سماعة بلوتوث Pro (450 EGP)</option>
+            <option value="manual_4">باور بانك 10000mAh (650 EGP)</option>
+        `;
+    }
+
+    let h = `
+        <div class="pos-modal-header">
+            <h3 style="margin:0;font-size:1.2rem;display:flex;align-items:center;gap:8px;color:var(--tx1);">🧾 ${L==='ar'?'إصدار فاتورة بيع سريعة (POS)':'Quick POS Invoice'}</h3>
+            <span class="sp-modal-close" onclick="this.closest('.pos-modal-overlay').remove()">×</span>
+        </div>
+        <div class="pos-modal-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+                <div>
+                    <label class="sp-form-label">${L==='ar'?'اسم العميل':'Customer'}</label>
+                    <select id="posCust" class="sp-form-input">${custOpts}</select>
+                </div>
+                <div>
+                    <label class="sp-form-label">${L==='ar'?'رقم واتساب العميل':'WhatsApp Phone'}</label>
+                    <input type="text" id="posPhone" class="sp-form-input" placeholder="e.g. 01012345678">
+                </div>
+            </div>
+
+            <!-- Product Add Bar -->
+            <div style="background:var(--bg3);padding:12px;border-radius:10px;border:1px solid var(--bd);display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;">
+                <div style="flex:2;">
+                    <label class="sp-form-label">${L==='ar'?'اختر الصنف من المخزن':'Select Product'}</label>
+                    <select id="posProdSelect" class="sp-form-input" style="margin:0;">${prodOpts}</select>
+                </div>
+                <div style="width:90px;">
+                    <label class="sp-form-label">${L==='ar'?'الكمية':'Qty'}</label>
+                    <input type="number" id="posQty" class="sp-form-input" value="1" min="1" style="margin:0;">
+                </div>
+                <button type="button" onclick="addPosCartItem()" class="btn" style="background:var(--ac);color:#fff;font-weight:bold;height:42px;padding:0 16px;">➕ ${L==='ar'?'إضافة':'Add'}</button>
+            </div>
+
+            <!-- Cart Table -->
+            <div style="max-height:220px;overflow-y:auto;border:1px solid var(--bd);border-radius:10px;margin-bottom:14px;">
+                <table class="pos-cart-table">
+                    <thead>
+                        <tr>
+                            <th>${L==='ar'?'الصنف':'Item'}</th>
+                            <th style="width:80px;text-align:center;">${L==='ar'?'السعر':'Price'}</th>
+                            <th style="width:100px;text-align:center;">${L==='ar'?'الكمية':'Qty'}</th>
+                            <th style="width:90px;text-align:center;">${L==='ar'?'الإجمالي':'Total'}</th>
+                            <th style="width:40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="posCartBody">
+                        <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--tx3);">${L==='ar'?'السلة فارغة. أضف أصناف أعلاه!':'Cart is empty.'}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary & Actions -->
+            <div style="background:var(--bg2);padding:14px;border-radius:12px;border:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+                <div>
+                    <div style="font-size:0.82rem;color:var(--tx3);">${L==='ar'?'إجمالي الفاتورة الصافي':'Net Total'}</div>
+                    <div id="posTotalVal" style="font-size:1.5rem;font-weight:800;color:#10b981;">0.00 <small style="font-size:0.8rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" onclick="checkoutPosOrder(true)" class="btn-wa" style="padding:10px 16px;">💬 ${L==='ar'?'إرسال الفاتورة عبر واتساب':'Send via WhatsApp'}</button>
+                    <button type="button" onclick="checkoutPosOrder(false)" class="btn" style="background:var(--ac);color:#fff;font-weight:bold;padding:10px 16px;">💾 ${L==='ar'?'حفظ الفاتورة فقط':'Save Invoice'}</button>
+                </div>
+            </div>
+        </div>
+    `;
+    let m = document.createElement('div');
+    m.className = 'pos-modal-overlay';
+    m.id = 'posModal';
+    m.innerHTML = `<div class="pos-modal-box">${h}</div>`;
+    document.body.appendChild(m);
+    window._posCart = [];
+};
+
+window.addPosCartItem = function() {
+    let sel = document.getElementById('posProdSelect');
+    let qtyEl = document.getElementById('posQty');
+    if (!sel || !qtyEl) return;
+    let qty = Number(qtyEl.value) || 1;
+    let stockData = [];
+    try { stockData = JSON.parse(localStorage.getItem('sp_stock_v1') || '[]'); } catch(e) {}
+    
+    let item = stockData[sel.value] || { name: sel.options[sel.selectedIndex].text.split('(')[0].trim(), price: 150 };
+    let price = Number(item.price || item.Price || 150);
+    
+    if(!window._posCart) window._posCart = [];
+    window._posCart.push({ name: item.name || item.Item, price: price, qty: qty, total: price * qty });
+    renderPosCart();
+};
+
+window.renderPosCart = function() {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    let tb = document.getElementById('posCartBody');
+    let totEl = document.getElementById('posTotalVal');
+    if (!tb) return;
+    tb.innerHTML = '';
+    let grandTotal = 0;
+    
+    if (!window._posCart || window._posCart.length === 0) {
+        tb.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--tx3);">${L==='ar'?'السلة فارغة':'Cart is empty'}</td></tr>`;
+        if (totEl) totEl.innerHTML = `0.00 <small style="font-size:0.8rem;">${L==='ar'?'ج.م':'EGP'}</small>`;
+        return;
+    }
+
+    window._posCart.forEach((it, idx) => {
+        grandTotal += it.total;
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="padding:10px;font-weight:600;color:var(--tx1);">${it.name}</td>
+            <td style="padding:10px;text-align:center;">${it.price.toLocaleString()}</td>
+            <td style="padding:10px;text-align:center;">
+                <button type="button" class="pos-qty-btn" onclick="updatePosQty(${idx}, -1)">-</button>
+                <span style="display:inline-block;width:30px;text-align:center;font-weight:bold;">${it.qty}</span>
+                <button type="button" class="pos-qty-btn" onclick="updatePosQty(${idx}, 1)">+</button>
+            </td>
+            <td style="padding:10px;text-align:center;font-weight:bold;color:#10b981;">${it.total.toLocaleString()}</td>
+            <td style="padding:10px;text-align:center;"><button type="button" onclick="removePosItem(${idx})" style="background:none;border:none;color:#ef4444;cursor:pointer;">🗑️</button></td>
+        `;
+        tb.appendChild(tr);
+    });
+
+    if (totEl) totEl.innerHTML = `${grandTotal.toLocaleString()} <small style="font-size:0.8rem;">${L==='ar'?'ج.م':'EGP'}</small>`;
+};
+
+window.updatePosQty = function(idx, delta) {
+    if (!window._posCart || !window._posCart[idx]) return;
+    window._posCart[idx].qty += delta;
+    if (window._posCart[idx].qty <= 0) {
+        window._posCart.splice(idx, 1);
+    } else {
+        window._posCart[idx].total = window._posCart[idx].qty * window._posCart[idx].price;
+    }
+    renderPosCart();
+};
+
+window.removePosItem = function(idx) {
+    if (!window._posCart) return;
+    window._posCart.splice(idx, 1);
+    renderPosCart();
+};
+
+window.checkoutPosOrder = function(sendWhatsApp = false) {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    let cust = document.getElementById('posCust') ? document.getElementById('posCust').value : '';
+    let phone = document.getElementById('posPhone') ? document.getElementById('posPhone').value.replace(/[^0-9]/g, '') : '';
+    if (!cust || !window._posCart || window._posCart.length === 0) {
+        alert(L==='ar'?'يرجى اختيار العميل وإضافة صنف واحد على الأقل':'Please select a customer and at least 1 item');
+        return;
+    }
+
+    let grandTotal = window._posCart.reduce((sum, it) => sum + it.total, 0);
+    let invNum = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+    let dateStr = new Date().toISOString().split('T')[0];
+
+    // Save to Orders storage
+    let orders = JSON.parse(localStorage.getItem('sp_orders') || '[]');
+    orders.push({
+        id: Date.now(),
+        invNum: invNum,
+        customer: cust,
+        phone: phone,
+        date: dateStr,
+        items: [...window._posCart],
+        total: grandTotal
+    });
+    localStorage.setItem('sp_orders', JSON.stringify(orders));
+
+    if (sendWhatsApp) {
+        let itemsList = window._posCart.map(it => `• ${it.name} (×${it.qty}) = ${it.total.toLocaleString()} EGP`).join('%0A');
+        let msg = L==='ar'
+            ? `*فاتورة مبيعات رقم ${invNum}* 🧾%0A` +
+              `العميل: *${cust}*%0A` +
+              `التاريخ: ${dateStr}%0A` +
+              `-----------------------%0A` +
+              `${itemsList}%0A` +
+              `-----------------------%0A` +
+              `*الإجمالي الصافي: ${grandTotal.toLocaleString()} ج.م* 💰%0A%0A` +
+              `شكراً لتعاملكم معنا - Sales Pro Enterprise`
+            : `*Sales Invoice #${invNum}* 🧾%0A` +
+              `Customer: *${cust}*%0A` +
+              `Date: ${dateStr}%0A` +
+              `-----------------------%0A` +
+              `${itemsList}%0A` +
+              `-----------------------%0A` +
+              `*Net Total: ${grandTotal.toLocaleString()} EGP* 💰%0A%0A` +
+              `Thank you for your business - Sales Pro Enterprise`;
+        let url = phone ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+        window.open(url, '_blank');
+    }
+
+    let m = document.getElementById('posModal');
+    if (m) m.remove();
+    if(typeof toast === 'function') toast(L==='ar'?`تم حفظ الفاتورة ${invNum} بنجاح`:`Invoice ${invNum} saved successfully`, 'success');
+};
+
 
 // --- LEADS ---
 window.rLeads = function() {
@@ -9637,6 +8739,14 @@ window.openCustomerProfile = function(cName) {
             btn.title = getLang() === 'ar' ? 'تقرير PDF' : 'PDF Report';
             btn.onclick = (e) => { e.stopPropagation(); window.generateCustomerReport(customerName); };
             firstTd.appendChild(btn);
+
+            let btnRcpt = document.createElement('button');
+            btnRcpt.className = 'sp-rcpt-cust';
+            btnRcpt.style.cssText = 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);color:#10b981;border-radius:5px;padding:3px 7px;font-size:0.7rem;cursor:pointer;font-family:inherit;margin-right:4px;';
+            btnRcpt.textContent = '🧾';
+            btnRcpt.title = getLang() === 'ar' ? 'سند قبض فوري' : 'Digital Receipt';
+            btnRcpt.onclick = (e) => { e.stopPropagation(); window.openDigitalReceiptModal(customerName); };
+            firstTd.appendChild(btnRcpt);
         });
     }
 
@@ -9652,9 +8762,260 @@ window.openCustomerProfile = function(cName) {
     let origRenderFinal = window.render;
     window.render = function () {
         if (origRenderFinal) origRenderFinal();
-        if (typeof P !== 'undefined' && P === 'customers') {
+        if (typeof P !== 'undefined' && (P === 'customers' || P === 'collections')) {
             setTimeout(injectCustomerTablePDF, 600);
         }
+    };
+
+    // ─── AGING DEBT RADAR & CREDIT GUARD ─────────────────────────────────────────
+    window.rAgingDebt = function() {
+        let L = getLang();
+        let S_data = getSalesData();
+        let C_data = getCollectionsData();
+        let now = new Date();
+
+        // Calculate debts per customer
+        let custDebts = {};
+        S_data.forEach(r => {
+            let c = r.Customer || r['Customer Name'];
+            if(!c) return;
+            if(!custDebts[c]) custDebts[c] = { name: c, sales: 0, coll: 0, invoices: [] };
+            let val = typeof getSalesVal === 'function' ? getSalesVal(r) : Number(r['Sales Without Tax'] || 0);
+            let d = parseDate(r['Invoice Date'] || r['Order Date'] || r['Date']) || now;
+            custDebts[c].sales += val;
+            custDebts[c].invoices.push({ amount: val, date: d });
+        });
+
+        C_data.forEach(r => {
+            let keys = Object.keys(r);
+            let getV = (names) => { let k = keys.find(k => names.some(n => k.toLowerCase().replace(/\s+/g,'') === n.toLowerCase().replace(/\s+/g,''))); return k ? r[k] : null; };
+            let c = getV(['Customer Name','Customer']) || '';
+            if (c && custDebts[c]) {
+                let rawVal = getV(['Amount','Collection']) || 0;
+                custDebts[c].coll += Number(rawVal.toString().replace(/,/g,'')) || 0;
+            }
+        });
+
+        let cat30 = 0, cat60 = 0, cat90 = 0, catCrit = 0, totalDue = 0;
+        let debtList = [];
+
+        Object.values(custDebts).forEach(item => {
+            let due = Math.max(0, item.sales - item.coll);
+            if (due <= 0) return;
+            totalDue += due;
+
+            // Find oldest unpaid estimate
+            let lastInv = item.invoices.sort((a,b) => b.date - a.date)[0];
+            let days = lastInv ? Math.floor((now - lastInv.date) / (1000 * 60 * 60 * 24)) : 10;
+            
+            if (days <= 30) cat30 += due;
+            else if (days <= 60) cat60 += due;
+            else if (days <= 90) cat90 += due;
+            else catCrit += due;
+
+            debtList.push({ name: item.name, due: due, days: days, sales: item.sales, coll: item.coll });
+        });
+
+        debtList.sort((a,b) => b.due - a.due);
+
+        let html = `
+            <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+                <h1 style="display:flex;align-items:center;gap:12px;margin:0;"><span style="width:36px;height:36px;display:flex;">🛡️</span> ${L==='ar'?'رادار أعمار الديون والحد الائتماني':'Aging Debt Radar & Credit Guard'}</h1>
+                <button class="btn btn-wa" onclick="sendBulkPaymentReminders()" style="padding:10px 16px;">💬 ${L==='ar'?'إرسال تذكيرات بالواتساب':'Send WhatsApp Reminders'}</button>
+            </div>
+
+            <!-- Aging Summary Grid -->
+            <div class="aging-grid">
+                <div class="aging-card aging-card-30">
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'🟢 جارية (أقل من 30 يوم)':'🟢 Current (< 30 Days)'}</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#10b981;margin-top:4px;">${cat30.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+                <div class="aging-card aging-card-60">
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'🟡 تستحق قريباً (31-60 يوم)':'🟡 Due Soon (31-60 Days)'}</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#f59e0b;margin-top:4px;">${cat60.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+                <div class="aging-card aging-card-90">
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'🟠 متأخرة (61-90 يوم)':'🟠 Overdue (61-90 Days)'}</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#f97316;margin-top:4px;">${cat90.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+                <div class="aging-card aging-card-crit">
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'🔴 حرجة (+90 يوم)':'🔴 Critical (+90 Days)'}</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#ef4444;margin-top:4px;">${catCrit.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+            </div>
+
+            <!-- Detailed Aging Table -->
+            <div class="card">
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;white-space:nowrap;">
+                        <thead>
+                            <tr style="background:var(--bg3);border-bottom:2px solid var(--bd);">
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:right;">${L==='ar'?'العميل':'Customer'}</th>
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'إجمالي المديونية':'Total Due'}</th>
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'فترة التأخير':'Aging Bucket'}</th>
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'حالة الائتمان':'Credit Status'}</th>
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'إجراءات':'Actions'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        debtList.forEach(item => {
+            let bucketColor = item.days <= 30 ? '#10b981' : (item.days <= 60 ? '#f59e0b' : (item.days <= 90 ? '#f97316' : '#ef4444'));
+            let bucketText = item.days <= 30 ? (L==='ar'?'< 30 يوم':'< 30 Days') : (item.days <= 60 ? (L==='ar'?'31-60 يوم':'31-60 Days') : (item.days <= 90 ? (L==='ar'?'61-90 يوم':'61-90 Days') : (L==='ar'?'+90 يوم حرجة':'+90 Days Critical')));
+            let creditSafe = item.due < 50000;
+            let creditBadge = creditSafe 
+                ? `<span style="background:rgba(16,185,129,0.12);color:#10b981;padding:4px 8px;border-radius:6px;font-size:0.8rem;font-weight:700;">🟢 ${L==='ar'?'ائتمان آمن':'Safe Limit'}</span>`
+                : `<span style="background:rgba(239,68,68,0.12);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:0.8rem;font-weight:700;">⚠️ ${L==='ar'?'تجاوز الحد':'Over Limit'}</span>`;
+
+            html += `
+                <tr style="border-bottom:1px solid var(--bd-s);">
+                    <td style="padding:14px 12px;font-weight:bold;color:var(--tx1);text-align:right;">${item.name}</td>
+                    <td style="padding:14px 12px;text-align:center;font-weight:800;color:#ef4444;">${item.due.toLocaleString()} ${L==='ar'?'ج.م':'EGP'}</td>
+                    <td style="padding:14px 12px;text-align:center;"><span style="color:${bucketColor};font-weight:bold;">${bucketText}</span></td>
+                    <td style="padding:14px 12px;text-align:center;">${creditBadge}</td>
+                    <td style="padding:14px 12px;text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="btn" onclick="window.openDigitalReceiptModal('${item.name}')" style="background:#10b981;color:#fff;border:none;padding:6px 10px;border-radius:8px;font-size:0.8rem;cursor:pointer;">🧾 ${L==='ar'?'سند قبض':'Receipt'}</button>
+                            <button class="btn-wa" onclick="sendCustDebtWhatsApp('${item.name}', ${item.due})" style="padding:6px 10px;font-size:0.8rem;">💬 WA</button>
+                            <button class="btn" onclick="window.generateCustomerReport('${item.name}')" style="background:var(--bg3);border:1px solid var(--bd);color:var(--tx1);padding:6px 10px;border-radius:8px;font-size:0.8rem;cursor:pointer;">📄 PDF</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        let M = document.getElementById('M');
+        if (M) M.innerHTML = html;
+    };
+
+    window.sendCustDebtWhatsApp = function(name, due) {
+        let L = getLang();
+        let msg = L==='ar'
+            ? `مرحباً أستاذ ${name} 🌸%0Aنحيطكم علماً بأن رصيد مديونيتكم الحالي هو *${Number(due).toLocaleString()} ج.م*.%0Aيرجى التكرم بترتيب موعد السداد شاكرين حسن تعاونكم الدائم معنا.%0A- Sales Pro Enterprise`
+            : `Hello ${name},%0AKindly note that your current outstanding balance is *${Number(due).toLocaleString()} EGP*.%0APlease arrange for settlement at your earliest convenience.%0AThank you, Sales Pro Enterprise`;
+        window.open(`https://wa.me/?text=${msg}`, '_blank');
+    };
+
+    // ─── DIGITAL RECEIPT MODAL ──────────────────────────────────────────────────
+    window.openDigitalReceiptModal = function(custName = '') {
+        let L = getLang();
+        let rcptNum = 'REC-' + Math.floor(100000 + Math.random() * 900000);
+        let dateStr = new Date().toISOString().split('T')[0];
+
+        let h = `
+            <div class="pos-modal-header">
+                <h3 style="margin:0;font-size:1.2rem;display:flex;align-items:center;gap:8px;color:var(--tx1);">🧾 ${L==='ar'?'إصدار سند قبض نقدية إلكتروني':'Issue Digital Receipt'}</h3>
+                <span class="sp-modal-close" onclick="this.closest('.pos-modal-overlay').remove()">×</span>
+            </div>
+            <div class="pos-modal-body">
+                <div class="receipt-box" id="printReceiptArea">
+                    <div style="text-align:center;border-bottom:2px dashed #cbd5e1;padding-bottom:12px;margin-bottom:14px;">
+                        <h2 style="margin:0;color:#1e293b;">SALES PRO ENTERPRISE</h2>
+                        <div style="font-size:0.85rem;color:#64748b;">${L==='ar'?'سند استلام نقدية رسمي':'Official Cash Receipt'}</div>
+                        <div style="font-weight:bold;color:#4f46e5;margin-top:4px;"># ${rcptNum}</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                        <div>
+                            <label class="sp-form-label">${L==='ar'?'وصلنا من العميل':'Received From'}</label>
+                            <input type="text" id="rcptCust" class="sp-form-input" value="${custName}" placeholder="${L==='ar'?'اسم العميل':'Customer Name'}">
+                        </div>
+                        <div>
+                            <label class="sp-form-label">${L==='ar'?'المبلغ المحصل (ج.م)':'Amount (EGP)'}</label>
+                            <input type="number" id="rcptAmount" class="sp-form-input" placeholder="0.00" style="font-size:1.2rem;font-weight:800;color:#10b981;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                        <div>
+                            <label class="sp-form-label">${L==='ar'?'طريقة الدفع':'Payment Method'}</label>
+                            <select id="rcptMethod" class="sp-form-input">
+                                <option value="نقدي (كاش)">${L==='ar'?'نقدي (كاش)':'Cash'}</option>
+                                <option value="شيك بنكي">${L==='ar'?'شيك بنكي':'Bank Cheque'}</option>
+                                <option value="تحويل بنكي / محفظة">${L==='ar'?'تحويل بنكي / محفظة':'Bank Transfer / Wallet'}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="sp-form-label">${L==='ar'?'رقم واتساب العميل':'WhatsApp Phone'}</label>
+                            <input type="text" id="rcptPhone" class="sp-form-input" placeholder="010XXXXXXXX">
+                        </div>
+                    </div>
+                    <label class="sp-form-label">${L==='ar'?'وذلك عن / البيان':'Description / Notes'}</label>
+                    <input type="text" id="rcptNotes" class="sp-form-input" placeholder="${L==='ar'?'سداد دفعة من الحساب / فاتورة رقم...':'Payment on account / invoice...'}">
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+                    <button type="button" onclick="saveAndSendReceipt(true)" class="btn-wa" style="padding:10px 18px;">💬 ${L==='ar'?'إرسال السند للعميل عبر واتساب':'Send Receipt via WhatsApp'}</button>
+                    <button type="button" onclick="saveAndSendReceipt(false)" class="btn" style="background:var(--ac);color:#fff;font-weight:bold;padding:10px 18px;">💾 ${L==='ar'?'حفظ السند':'Save Receipt'}</button>
+                </div>
+            </div>
+        `;
+        let m = document.createElement('div');
+        m.className = 'pos-modal-overlay';
+        m.id = 'rcptModal';
+        m.innerHTML = `<div class="pos-modal-box" style="max-width:540px;">${h}</div>`;
+        document.body.appendChild(m);
+    };
+
+    window.saveAndSendReceipt = function(sendWhatsApp = false) {
+        let L = getLang();
+        let cust = document.getElementById('rcptCust') ? document.getElementById('rcptCust').value : '';
+        let amt = document.getElementById('rcptAmount') ? Number(document.getElementById('rcptAmount').value) || 0 : 0;
+        let method = document.getElementById('rcptMethod') ? document.getElementById('rcptMethod').value : 'Cash';
+        let phone = document.getElementById('rcptPhone') ? document.getElementById('rcptPhone').value.replace(/[^0-9]/g,'') : '';
+        let notes = document.getElementById('rcptNotes') ? document.getElementById('rcptNotes').value : '';
+
+        if (!cust || amt <= 0) {
+            alert(L==='ar'?'يرجى إدخال اسم العميل والمبلغ بشكل صحيح':'Please enter customer name and valid amount');
+            return;
+        }
+
+        let rcptNum = 'REC-' + Math.floor(100000 + Math.random() * 900000);
+        let dateStr = new Date().toISOString().split('T')[0];
+
+        // Save to Collections store
+        let C_data = getCollectionsData();
+        C_data.push({
+            'Customer Name': cust,
+            'Amount': amt,
+            'Date': dateStr,
+            'Receipt Number': rcptNum,
+            'Method': method,
+            'Notes': notes
+        });
+        localStorage.setItem('payData', JSON.stringify(C_data));
+
+        if (sendWhatsApp) {
+            let msg = L==='ar'
+                ? `*سند قبض واستلام نقدية رقم ${rcptNum}* 🧾%0A` +
+                  `وصلنا من السادة: *${cust}*%0A` +
+                  `مبلغ وقدره: *${amt.toLocaleString()} ج.م* 💰%0A` +
+                  `طريقة السداد: ${method}%0A` +
+                  `التاريخ: ${dateStr}%0A` +
+                  (notes ? `البيان: ${notes}%0A` : '') +
+                  `-----------------------%0A` +
+                  `شكراً لتعاملكم معنا - Sales Pro Enterprise`
+                : `*Official Cash Receipt #${rcptNum}* 🧾%0A` +
+                  `Received from: *${cust}*%0A` +
+                  `Amount: *${amt.toLocaleString()} EGP* 💰%0A` +
+                  `Payment Method: ${method}%0A` +
+                  `Date: ${dateStr}%0A` +
+                  (notes ? `Notes: ${notes}%0A` : '') +
+                  `-----------------------%0A` +
+                  `Thank you, Sales Pro Enterprise`;
+            let url = phone ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+            window.open(url, '_blank');
+        }
+
+        let m = document.getElementById('rcptModal');
+        if (m) m.remove();
+        if(typeof toast === 'function') toast(L==='ar'?`تم حفظ سند القبض ${rcptNum} وتحديث الحساب`:`Receipt ${rcptNum} saved successfully`, 'success');
     };
 
 })();
