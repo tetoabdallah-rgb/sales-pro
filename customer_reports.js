@@ -452,6 +452,14 @@
             btn.title = getLang() === 'ar' ? 'تقرير PDF' : 'PDF Report';
             btn.onclick = (e) => { e.stopPropagation(); window.generateCustomerReport(customerName); };
             firstTd.appendChild(btn);
+
+            let btnRcpt = document.createElement('button');
+            btnRcpt.className = 'sp-rcpt-cust';
+            btnRcpt.style.cssText = 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);color:#10b981;border-radius:5px;padding:3px 7px;font-size:0.7rem;cursor:pointer;font-family:inherit;margin-right:4px;';
+            btnRcpt.textContent = '🧾';
+            btnRcpt.title = getLang() === 'ar' ? 'سند قبض فوري' : 'Digital Receipt';
+            btnRcpt.onclick = (e) => { e.stopPropagation(); window.openDigitalReceiptModal(customerName); };
+            firstTd.appendChild(btnRcpt);
         });
     }
 
@@ -467,9 +475,260 @@
     let origRenderFinal = window.render;
     window.render = function () {
         if (origRenderFinal) origRenderFinal();
-        if (typeof P !== 'undefined' && P === 'customers') {
+        if (typeof P !== 'undefined' && (P === 'customers' || P === 'collections')) {
             setTimeout(injectCustomerTablePDF, 600);
         }
+    };
+
+    // ─── AGING DEBT RADAR & CREDIT GUARD ─────────────────────────────────────────
+    window.rAgingDebt = function() {
+        let L = getLang();
+        let S_data = getSalesData();
+        let C_data = getCollectionsData();
+        let now = new Date();
+
+        // Calculate debts per customer
+        let custDebts = {};
+        S_data.forEach(r => {
+            let c = r.Customer || r['Customer Name'];
+            if(!c) return;
+            if(!custDebts[c]) custDebts[c] = { name: c, sales: 0, coll: 0, invoices: [] };
+            let val = typeof getSalesVal === 'function' ? getSalesVal(r) : Number(r['Sales Without Tax'] || 0);
+            let d = parseDate(r['Invoice Date'] || r['Order Date'] || r['Date']) || now;
+            custDebts[c].sales += val;
+            custDebts[c].invoices.push({ amount: val, date: d });
+        });
+
+        C_data.forEach(r => {
+            let keys = Object.keys(r);
+            let getV = (names) => { let k = keys.find(k => names.some(n => k.toLowerCase().replace(/\s+/g,'') === n.toLowerCase().replace(/\s+/g,''))); return k ? r[k] : null; };
+            let c = getV(['Customer Name','Customer']) || '';
+            if (c && custDebts[c]) {
+                let rawVal = getV(['Amount','Collection']) || 0;
+                custDebts[c].coll += Number(rawVal.toString().replace(/,/g,'')) || 0;
+            }
+        });
+
+        let cat30 = 0, cat60 = 0, cat90 = 0, catCrit = 0, totalDue = 0;
+        let debtList = [];
+
+        Object.values(custDebts).forEach(item => {
+            let due = Math.max(0, item.sales - item.coll);
+            if (due <= 0) return;
+            totalDue += due;
+
+            // Find oldest unpaid estimate
+            let lastInv = item.invoices.sort((a,b) => b.date - a.date)[0];
+            let days = lastInv ? Math.floor((now - lastInv.date) / (1000 * 60 * 60 * 24)) : 10;
+            
+            if (days <= 30) cat30 += due;
+            else if (days <= 60) cat60 += due;
+            else if (days <= 90) cat90 += due;
+            else catCrit += due;
+
+            debtList.push({ name: item.name, due: due, days: days, sales: item.sales, coll: item.coll });
+        });
+
+        debtList.sort((a,b) => b.due - a.due);
+
+        let html = `
+            <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+                <h1 style="display:flex;align-items:center;gap:12px;margin:0;"><span style="width:36px;height:36px;display:flex;">🛡️</span> ${L==='ar'?'رادار أعمار الديون والحد الائتماني':'Aging Debt Radar & Credit Guard'}</h1>
+                <button class="btn btn-wa" onclick="sendBulkPaymentReminders()" style="padding:10px 16px;">💬 ${L==='ar'?'إرسال تذكيرات بالواتساب':'Send WhatsApp Reminders'}</button>
+            </div>
+
+            <!-- Aging Summary Grid -->
+            <div class="aging-grid">
+                <div class="aging-card aging-card-30">
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'🟢 جارية (أقل من 30 يوم)':'🟢 Current (< 30 Days)'}</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#10b981;margin-top:4px;">${cat30.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+                <div class="aging-card aging-card-60">
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'🟡 تستحق قريباً (31-60 يوم)':'🟡 Due Soon (31-60 Days)'}</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#f59e0b;margin-top:4px;">${cat60.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+                <div class="aging-card aging-card-90">
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'🟠 متأخرة (61-90 يوم)':'🟠 Overdue (61-90 Days)'}</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#f97316;margin-top:4px;">${cat90.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+                <div class="aging-card aging-card-crit">
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'🔴 حرجة (+90 يوم)':'🔴 Critical (+90 Days)'}</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#ef4444;margin-top:4px;">${catCrit.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+            </div>
+
+            <!-- Detailed Aging Table -->
+            <div class="card">
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;white-space:nowrap;">
+                        <thead>
+                            <tr style="background:var(--bg3);border-bottom:2px solid var(--bd);">
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:right;">${L==='ar'?'العميل':'Customer'}</th>
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'إجمالي المديونية':'Total Due'}</th>
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'فترة التأخير':'Aging Bucket'}</th>
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'حالة الائتمان':'Credit Status'}</th>
+                                <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'إجراءات':'Actions'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        debtList.forEach(item => {
+            let bucketColor = item.days <= 30 ? '#10b981' : (item.days <= 60 ? '#f59e0b' : (item.days <= 90 ? '#f97316' : '#ef4444'));
+            let bucketText = item.days <= 30 ? (L==='ar'?'< 30 يوم':'< 30 Days') : (item.days <= 60 ? (L==='ar'?'31-60 يوم':'31-60 Days') : (item.days <= 90 ? (L==='ar'?'61-90 يوم':'61-90 Days') : (L==='ar'?'+90 يوم حرجة':'+90 Days Critical')));
+            let creditSafe = item.due < 50000;
+            let creditBadge = creditSafe 
+                ? `<span style="background:rgba(16,185,129,0.12);color:#10b981;padding:4px 8px;border-radius:6px;font-size:0.8rem;font-weight:700;">🟢 ${L==='ar'?'ائتمان آمن':'Safe Limit'}</span>`
+                : `<span style="background:rgba(239,68,68,0.12);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:0.8rem;font-weight:700;">⚠️ ${L==='ar'?'تجاوز الحد':'Over Limit'}</span>`;
+
+            html += `
+                <tr style="border-bottom:1px solid var(--bd-s);">
+                    <td style="padding:14px 12px;font-weight:bold;color:var(--tx1);text-align:right;">${item.name}</td>
+                    <td style="padding:14px 12px;text-align:center;font-weight:800;color:#ef4444;">${item.due.toLocaleString()} ${L==='ar'?'ج.م':'EGP'}</td>
+                    <td style="padding:14px 12px;text-align:center;"><span style="color:${bucketColor};font-weight:bold;">${bucketText}</span></td>
+                    <td style="padding:14px 12px;text-align:center;">${creditBadge}</td>
+                    <td style="padding:14px 12px;text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="btn" onclick="window.openDigitalReceiptModal('${item.name}')" style="background:#10b981;color:#fff;border:none;padding:6px 10px;border-radius:8px;font-size:0.8rem;cursor:pointer;">🧾 ${L==='ar'?'سند قبض':'Receipt'}</button>
+                            <button class="btn-wa" onclick="sendCustDebtWhatsApp('${item.name}', ${item.due})" style="padding:6px 10px;font-size:0.8rem;">💬 WA</button>
+                            <button class="btn" onclick="window.generateCustomerReport('${item.name}')" style="background:var(--bg3);border:1px solid var(--bd);color:var(--tx1);padding:6px 10px;border-radius:8px;font-size:0.8rem;cursor:pointer;">📄 PDF</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        let M = document.getElementById('M');
+        if (M) M.innerHTML = html;
+    };
+
+    window.sendCustDebtWhatsApp = function(name, due) {
+        let L = getLang();
+        let msg = L==='ar'
+            ? `مرحباً أستاذ ${name} 🌸%0Aنحيطكم علماً بأن رصيد مديونيتكم الحالي هو *${Number(due).toLocaleString()} ج.م*.%0Aيرجى التكرم بترتيب موعد السداد شاكرين حسن تعاونكم الدائم معنا.%0A- Sales Pro Enterprise`
+            : `Hello ${name},%0AKindly note that your current outstanding balance is *${Number(due).toLocaleString()} EGP*.%0APlease arrange for settlement at your earliest convenience.%0AThank you, Sales Pro Enterprise`;
+        window.open(`https://wa.me/?text=${msg}`, '_blank');
+    };
+
+    // ─── DIGITAL RECEIPT MODAL ──────────────────────────────────────────────────
+    window.openDigitalReceiptModal = function(custName = '') {
+        let L = getLang();
+        let rcptNum = 'REC-' + Math.floor(100000 + Math.random() * 900000);
+        let dateStr = new Date().toISOString().split('T')[0];
+
+        let h = `
+            <div class="pos-modal-header">
+                <h3 style="margin:0;font-size:1.2rem;display:flex;align-items:center;gap:8px;color:var(--tx1);">🧾 ${L==='ar'?'إصدار سند قبض نقدية إلكتروني':'Issue Digital Receipt'}</h3>
+                <span class="sp-modal-close" onclick="this.closest('.pos-modal-overlay').remove()">×</span>
+            </div>
+            <div class="pos-modal-body">
+                <div class="receipt-box" id="printReceiptArea">
+                    <div style="text-align:center;border-bottom:2px dashed #cbd5e1;padding-bottom:12px;margin-bottom:14px;">
+                        <h2 style="margin:0;color:#1e293b;">SALES PRO ENTERPRISE</h2>
+                        <div style="font-size:0.85rem;color:#64748b;">${L==='ar'?'سند استلام نقدية رسمي':'Official Cash Receipt'}</div>
+                        <div style="font-weight:bold;color:#4f46e5;margin-top:4px;"># ${rcptNum}</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                        <div>
+                            <label class="sp-form-label">${L==='ar'?'وصلنا من العميل':'Received From'}</label>
+                            <input type="text" id="rcptCust" class="sp-form-input" value="${custName}" placeholder="${L==='ar'?'اسم العميل':'Customer Name'}">
+                        </div>
+                        <div>
+                            <label class="sp-form-label">${L==='ar'?'المبلغ المحصل (ج.م)':'Amount (EGP)'}</label>
+                            <input type="number" id="rcptAmount" class="sp-form-input" placeholder="0.00" style="font-size:1.2rem;font-weight:800;color:#10b981;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                        <div>
+                            <label class="sp-form-label">${L==='ar'?'طريقة الدفع':'Payment Method'}</label>
+                            <select id="rcptMethod" class="sp-form-input">
+                                <option value="نقدي (كاش)">${L==='ar'?'نقدي (كاش)':'Cash'}</option>
+                                <option value="شيك بنكي">${L==='ar'?'شيك بنكي':'Bank Cheque'}</option>
+                                <option value="تحويل بنكي / محفظة">${L==='ar'?'تحويل بنكي / محفظة':'Bank Transfer / Wallet'}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="sp-form-label">${L==='ar'?'رقم واتساب العميل':'WhatsApp Phone'}</label>
+                            <input type="text" id="rcptPhone" class="sp-form-input" placeholder="010XXXXXXXX">
+                        </div>
+                    </div>
+                    <label class="sp-form-label">${L==='ar'?'وذلك عن / البيان':'Description / Notes'}</label>
+                    <input type="text" id="rcptNotes" class="sp-form-input" placeholder="${L==='ar'?'سداد دفعة من الحساب / فاتورة رقم...':'Payment on account / invoice...'}">
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+                    <button type="button" onclick="saveAndSendReceipt(true)" class="btn-wa" style="padding:10px 18px;">💬 ${L==='ar'?'إرسال السند للعميل عبر واتساب':'Send Receipt via WhatsApp'}</button>
+                    <button type="button" onclick="saveAndSendReceipt(false)" class="btn" style="background:var(--ac);color:#fff;font-weight:bold;padding:10px 18px;">💾 ${L==='ar'?'حفظ السند':'Save Receipt'}</button>
+                </div>
+            </div>
+        `;
+        let m = document.createElement('div');
+        m.className = 'pos-modal-overlay';
+        m.id = 'rcptModal';
+        m.innerHTML = `<div class="pos-modal-box" style="max-width:540px;">${h}</div>`;
+        document.body.appendChild(m);
+    };
+
+    window.saveAndSendReceipt = function(sendWhatsApp = false) {
+        let L = getLang();
+        let cust = document.getElementById('rcptCust') ? document.getElementById('rcptCust').value : '';
+        let amt = document.getElementById('rcptAmount') ? Number(document.getElementById('rcptAmount').value) || 0 : 0;
+        let method = document.getElementById('rcptMethod') ? document.getElementById('rcptMethod').value : 'Cash';
+        let phone = document.getElementById('rcptPhone') ? document.getElementById('rcptPhone').value.replace(/[^0-9]/g,'') : '';
+        let notes = document.getElementById('rcptNotes') ? document.getElementById('rcptNotes').value : '';
+
+        if (!cust || amt <= 0) {
+            alert(L==='ar'?'يرجى إدخال اسم العميل والمبلغ بشكل صحيح':'Please enter customer name and valid amount');
+            return;
+        }
+
+        let rcptNum = 'REC-' + Math.floor(100000 + Math.random() * 900000);
+        let dateStr = new Date().toISOString().split('T')[0];
+
+        // Save to Collections store
+        let C_data = getCollectionsData();
+        C_data.push({
+            'Customer Name': cust,
+            'Amount': amt,
+            'Date': dateStr,
+            'Receipt Number': rcptNum,
+            'Method': method,
+            'Notes': notes
+        });
+        localStorage.setItem('payData', JSON.stringify(C_data));
+
+        if (sendWhatsApp) {
+            let msg = L==='ar'
+                ? `*سند قبض واستلام نقدية رقم ${rcptNum}* 🧾%0A` +
+                  `وصلنا من السادة: *${cust}*%0A` +
+                  `مبلغ وقدره: *${amt.toLocaleString()} ج.م* 💰%0A` +
+                  `طريقة السداد: ${method}%0A` +
+                  `التاريخ: ${dateStr}%0A` +
+                  (notes ? `البيان: ${notes}%0A` : '') +
+                  `-----------------------%0A` +
+                  `شكراً لتعاملكم معنا - Sales Pro Enterprise`
+                : `*Official Cash Receipt #${rcptNum}* 🧾%0A` +
+                  `Received from: *${cust}*%0A` +
+                  `Amount: *${amt.toLocaleString()} EGP* 💰%0A` +
+                  `Payment Method: ${method}%0A` +
+                  `Date: ${dateStr}%0A` +
+                  (notes ? `Notes: ${notes}%0A` : '') +
+                  `-----------------------%0A` +
+                  `Thank you, Sales Pro Enterprise`;
+            let url = phone ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+            window.open(url, '_blank');
+        }
+
+        let m = document.getElementById('rcptModal');
+        if (m) m.remove();
+        if(typeof toast === 'function') toast(L==='ar'?`تم حفظ سند القبض ${rcptNum} وتحديث الحساب`:`Receipt ${rcptNum} saved successfully`, 'success');
     };
 
 })();
