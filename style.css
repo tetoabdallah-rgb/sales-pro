@@ -1801,3 +1801,20 @@ html[dir="ltr"] .pos-cart-table th {
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     font-family: inherit;
 }
+
+/* ---------- Universal Enterprise Layout & Spacing Polish ---------- */
+.mw {
+    padding: 24px 32px !important;
+    max-width: 100% !important;
+}
+@media (max-width: 992px) {
+    .mw {
+        padding: 16px 14px 95px 14px !important;
+    }
+}
+.card {
+    margin-bottom: 20px !important;
+}
+.ph {
+    margin-bottom: 22px !important;
+}
