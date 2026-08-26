@@ -90,23 +90,54 @@ function getT() { try { return JSON.parse(localStorage.getItem('targetData') || 
     document.head.appendChild(style);
 })();
 
-// --- VISITS ---
+// --- ADVANCED FIELD VISITS SUITE (GPS, SCORING, WHATSAPP & POS) ---
 window.rVisits = function() {
     let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
     let html = `
-        <div class="ph">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">🚗</span> ${L==='ar'?'الزيارات ومتابعة العملاء':'Visits & Follow-up'}</h1>
-            <button class="btn" onclick="addVisitModal()" style="background:var(--ac);color:#fff;font-weight:bold;">➕ ${L==='ar'?'زيارة جديدة':'New Visit'}</button>
+        <div class="ph" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">
+            <h1 style="display:flex;align-items:center;gap:12px;margin:0;"><span style="width:36px;height:36px;display:flex;">🚗</span> ${L==='ar'?'الزيارات الميدانية والمتابعة الذكية':'Field Visits & Smart CRM'}</h1>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn" onclick="exportVisitsToExcel()" style="background:var(--bg3);color:var(--tx1);border:1px solid var(--bd);display:flex;align-items:center;gap:6px;">📊 ${L==='ar'?'تصدير إكسيل':'Export Excel'}</button>
+                <button class="btn" onclick="openQuickOrderModal()" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:bold;display:flex;align-items:center;gap:6px;">🧾 ${L==='ar'?'فاتورة سريعة (POS)':'Quick POS Invoice'}</button>
+                <button class="btn" onclick="addVisitModal()" style="background:var(--ac);color:#fff;font-weight:bold;display:flex;align-items:center;gap:6px;">➕ ${L==='ar'?'تسجيل زيارة (GPS)':'Log Visit (GPS)'}</button>
+            </div>
         </div>
-        <div class="card" id="visitsList" style="margin-top:20px;">
+
+        <!-- Visits Summary KPI Cards -->
+        <div id="visitsKpiGrid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;margin:20px 0;"></div>
+
+        <!-- Filter & Search Bar -->
+        <div class="card" style="padding:16px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="vSearchInput" oninput="loadVisits()" placeholder="${L==='ar'?'🔍 بحث بالعميل، المندوب، أو المنطقة...':'🔍 Search by customer, rep or area...'}" style="flex:1;min-width:220px;padding:10px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--tx1);font-family:inherit;">
+            <select id="vFilterPurpose" onchange="loadVisits()" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--tx1);font-family:inherit;">
+                <option value="">${L==='ar'?'جميع أنواع الزيارات':'All Visit Types'}</option>
+                <option value="Sales Visit">${L==='ar'?'زيارة بيعية':'Sales Visit'}</option>
+                <option value="Collection Only">${L==='ar'?'تحصيل فقط':'Collection Only'}</option>
+                <option value="Maintenance">${L==='ar'?'صيانة ومتابعة':'Maintenance'}</option>
+                <option value="New Customer">${L==='ar'?'فتح عميل جديد':'New Customer'}</option>
+            </select>
+            <select id="vFilterScore" onchange="loadVisits()" style="padding:10px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;color:var(--tx1);font-family:inherit;">
+                <option value="">${L==='ar'?'جميع التقييمات':'All Scores'}</option>
+                <option value="high">🟢 ${L==='ar'?'ممتاز (80% فأعلى)':'High (80%+)'}</option>
+                <option value="mid">🟡 ${L==='ar'?'متوسط (50-79%)':'Medium (50-79%)'}</option>
+                <option value="low">🔴 ${L==='ar'?'ضعيف (أقل من 50%)':'Low (<50%)'}</option>
+            </select>
+        </div>
+
+        <!-- Visits Data List -->
+        <div class="card" id="visitsList">
             <div style="overflow-x:auto;">
                 <table style="width:100%;text-align:left;border-collapse:collapse;white-space:nowrap;">
                     <thead>
-                        <tr style="border-bottom:2px solid var(--bd);">
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'التاريخ':'Date'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'العميل':'Customer'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'النتيجة':'Outcome'}</th>
-                            <th style="padding:15px 10px;color:var(--tx2);">${L==='ar'?'الزيارة القادمة':'Next Visit'}</th>
+                        <tr style="border-bottom:2px solid var(--bd);background:var(--bg3);">
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'التاريخ والوقت':'Date & Time'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'العميل والمنطقة':'Customer & Area'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'النوع والهدف':'Type / Purpose'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'السكور %':'Score %'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'الموقع (GPS)':'GPS Check-In'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'المبيعات / التحصيل':'Sales / Collection'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);">${L==='ar'?'الزيارة القادمة':'Next Visit'}</th>
+                            <th style="padding:14px 12px;color:var(--tx2);text-align:center;">${L==='ar'?'إجراءات':'Actions'}</th>
                         </tr>
                     </thead>
                     <tbody id="vTbody"></tbody>
@@ -118,28 +149,124 @@ window.rVisits = function() {
     if(M) { M.innerHTML = html; loadVisits(); }
 };
 
-function loadVisits() {
+window.loadVisits = function() {
     let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
     let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
     let tb = document.getElementById('vTbody');
+    let kpiGrid = document.getElementById('visitsKpiGrid');
     if (!tb) return;
+
+    // Filters
+    let query = (document.getElementById('vSearchInput') ? document.getElementById('vSearchInput').value : '').toLowerCase().trim();
+    let filterPurp = document.getElementById('vFilterPurpose') ? document.getElementById('vFilterPurpose').value : '';
+    let filterSc = document.getElementById('vFilterScore') ? document.getElementById('vFilterScore').value : '';
+
+    let filtered = visitsData.filter(v => {
+        let matchQ = !query || (v.customer && v.customer.toLowerCase().includes(query)) ||
+                     (v.area && v.area.toLowerCase().includes(query)) ||
+                     (v.rep && v.rep.toLowerCase().includes(query)) ||
+                     (v.outcome && v.outcome.toLowerCase().includes(query));
+        let matchP = !filterPurp || (v.purpose === filterPurp || v.type === filterPurp);
+        let score = Number(v.score || 0);
+        let matchS = true;
+        if (filterSc === 'high') matchS = score >= 80;
+        else if (filterSc === 'mid') matchS = score >= 50 && score < 80;
+        else if (filterSc === 'low') matchS = score < 50;
+        return matchQ && matchP && matchS;
+    });
+
+    // Render KPI Cards
+    if (kpiGrid) {
+        let totalV = visitsData.length;
+        let totalSales = visitsData.reduce((sum, v) => sum + (Number(v.salesAmount) || 0), 0);
+        let totalColl = visitsData.reduce((sum, v) => sum + (Number(v.collAmount) || 0), 0);
+        let avgScore = totalV > 0 ? Math.round(visitsData.reduce((sum, v) => sum + (Number(v.score) || 0), 0) / totalV) : 0;
+        let gpsCount = visitsData.filter(v => v.gpsLat && v.gpsLng).length;
+
+        kpiGrid.innerHTML = `
+            <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;border-right:4px solid var(--ac);">
+                <span style="font-size:2rem;">🚗</span>
+                <div>
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'إجمالي الزيارات':'Total Visits'}</div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--tx1);">${totalV}</div>
+                </div>
+            </div>
+            <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;border-right:4px solid #10b981;">
+                <span style="font-size:2rem;">💰</span>
+                <div>
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'مبيعات الزيارات':'Visit Sales'}</div>
+                    <div style="font-size:1.3rem;font-weight:800;color:#10b981;">${totalSales.toLocaleString()} <small style="font-size:0.75rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+            </div>
+            <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;border-right:4px solid #06b6d4;">
+                <span style="font-size:2rem;">🎯</span>
+                <div>
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'متوسط السكور':'Avg Visit Score'}</div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--tx1);">${avgScore}%</div>
+                </div>
+            </div>
+            <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;border-right:4px solid #f59e0b;">
+                <span style="font-size:2rem;">📍</span>
+                <div>
+                    <div style="font-size:0.8rem;color:var(--tx3);">${L==='ar'?'زيارات موثقة بـ GPS':'GPS Verified'}</div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--tx1);">${gpsCount} <small style="font-size:0.75rem;">/ ${totalV}</small></div>
+                </div>
+            </div>
+        `;
+    }
+
     tb.innerHTML = '';
-    if (visitsData.length === 0) {
-        tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--tx3);">${L==='ar'?'لا توجد زيارات مسجلة. ابدأ بإضافة زيارة جديدة!':'No visits logged'}</td></tr>`;
+    if (filtered.length === 0) {
+        tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--tx3);font-size:0.95rem;">${L==='ar'?'لا توجد زيارات مطابقة للبحث. انقر على "تسجيل زيارة (GPS)" للبدء!':'No matching visits found.'}</td></tr>`;
         return;
     }
-    visitsData.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(v => {
+
+    filtered.sort((a,b) => new Date(b.date || b.timestamp || 0) - new Date(a.date || a.timestamp || 0)).forEach(v => {
+        let score = Number(v.score || 0);
+        let scoreClass = score >= 80 ? 'score-pill-green' : (score >= 50 ? 'score-pill-yellow' : 'score-pill-red');
+        
+        let gpsHtml = '-';
+        if (v.gpsLat && v.gpsLng) {
+            gpsHtml = `<a href="https://maps.google.com/?q=${v.gpsLat},${v.gpsLng}" target="_blank" class="gps-pill" title="View on Google Maps"><span class="gps-dot"></span> GPS Pin</a>`;
+        }
+
+        let finHtml = [];
+        if (Number(v.salesAmount) > 0) finHtml.push(`<span style="color:#10b981;font-weight:bold;">+${Number(v.salesAmount).toLocaleString()} ${L==='ar'?'بيع':'Sale'}</span>`);
+        if (Number(v.collAmount) > 0) finHtml.push(`<span style="color:#06b6d4;font-weight:bold;">+${Number(v.collAmount).toLocaleString()} ${L==='ar'?'تحصيل':'Coll'}</span>`);
+        if (finHtml.length === 0) finHtml.push(`<span style="color:var(--tx3);">-</span>`);
+
         let tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid var(--bd-s)';
         tr.innerHTML = `
-            <td style="padding:15px 10px;">${v.date}</td>
-            <td style="padding:15px 10px;font-weight:bold;color:var(--ac);">${v.customer}</td>
-            <td style="padding:15px 10px;white-space:normal;">${v.outcome}</td>
-            <td style="padding:15px 10px;"><span style="background:var(--bg3);padding:4px 8px;border-radius:4px;">${v.nextDate || '-'}</span></td>
+            <td style="padding:14px 12px;font-size:0.88rem;">
+                <div style="font-weight:bold;color:var(--tx1);">${v.date || '-'}</div>
+                <div style="font-size:0.75rem;color:var(--tx3);">${v.time || ''}</div>
+            </td>
+            <td style="padding:14px 12px;">
+                <div style="font-weight:bold;color:var(--ac);font-size:0.95rem;">${v.customer}</div>
+                <div style="font-size:0.78rem;color:var(--tx3);">${v.area || (L==='ar'?'غير محدد':'Unspecified')} ${v.tier ? '• '+v.tier : ''}</div>
+            </td>
+            <td style="padding:14px 12px;font-size:0.88rem;">
+                <span style="background:var(--bg3);padding:3px 8px;border-radius:6px;border:1px solid var(--bd-s);">${v.purpose || v.type || (L==='ar'?'زيارة عامة':'General')}</span>
+            </td>
+            <td style="padding:14px 12px;text-align:center;">
+                <span class="score-pill ${scoreClass}">${score}%</span>
+            </td>
+            <td style="padding:14px 12px;">${gpsHtml}</td>
+            <td style="padding:14px 12px;font-size:0.85rem;">${finHtml.join('<br>')}</td>
+            <td style="padding:14px 12px;font-size:0.85rem;">
+                <span style="background:var(--bg3);padding:4px 8px;border-radius:4px;">${v.nextDate || '-'}</span>
+            </td>
+            <td style="padding:14px 12px;text-align:center;">
+                <div style="display:flex;gap:6px;justify-content:center;">
+                    <button class="btn-wa" onclick="sendVisitWhatsApp('${encodeURIComponent(JSON.stringify(v))}')" title="${L==='ar'?'إرسال تذكير ومتابعة عبر واتساب':'Send WhatsApp follow-up'}" style="padding:6px 10px;font-size:0.78rem;">💬 WA</button>
+                    <button onclick="deleteVisit(${v.id})" style="background:rgba(239,68,68,0.1);color:#ef4444;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;" title="${L==='ar'?'حذف الزيارة':'Delete'}">🗑️</button>
+                </div>
+            </td>
         `;
         tb.appendChild(tr);
     });
-}
+};
 
 window.addVisitModal = function() {
     let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
@@ -155,42 +282,475 @@ window.addVisitModal = function() {
 
     let cList = [...new Set([...set1, ...set2, ...set3])].sort((a,b) => a.localeCompare(b, 'ar'));
     let opts = cList.map(c => `<option value="${c}">${c}</option>`).join('');
-    if(!opts) opts = `<option value="">${L==='ar'?'لا يوجد عملاء (يرجى رفع ملف المبيعات)':'No customers found'}</option>`;
-    
+    if(!opts) opts = `<option value="">${L==='ar'?'لا يوجد عملاء':'No customers found'}</option>`;
+
     let h = `
-        <h3 style="margin-bottom:20px;font-size:1.2rem;display:flex;align-items:center;gap:8px;">🚗 ${L==='ar'?'تسجيل زيارة جديدة':'Log New Visit'}</h3>
-        <label class="sp-form-label">${L==='ar'?'العميل':'Customer'}</label>
-        <select id="nvCust" class="sp-form-input">${opts}</select>
-        <label class="sp-form-label">${L==='ar'?'تاريخ الزيارة':'Visit Date'}</label>
-        <input type="date" id="nvDate" class="sp-form-input" value="${new Date().toISOString().split('T')[0]}">
-        <label class="sp-form-label">${L==='ar'?'نتائج الزيارة / ملاحظات':'Outcome / Notes'}</label>
-        <textarea id="nvOutcome" class="sp-form-input" style="height:80px;resize:vertical;" placeholder="${L==='ar'?'ماذا حدث في الزيارة؟':'What happened?'}"></textarea>
-        <label class="sp-form-label">${L==='ar'?'موعد الزيارة القادمة':'Next Visit Date'}</label>
-        <input type="date" id="nvNext" class="sp-form-input">
-        <button class="sp-btn-primary" onclick="saveVisit()">${L==='ar'?'حفظ الزيارة':'Save Visit'}</button>
+        <h3 style="margin-bottom:16px;font-size:1.25rem;display:flex;align-items:center;gap:10px;color:var(--tx1);">🚗 ${L==='ar'?'تسجيل زيارة ميدانية وتقييم ذكي':'Log Field Visit & Smart Check-in'}</h3>
+        
+        <!-- GPS Capture Bar -->
+        <div style="background:var(--bg3);padding:12px;border-radius:10px;border:1px solid var(--bd);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div id="gpsStatusText" style="font-size:0.85rem;color:var(--tx2);">📍 ${L==='ar'?'لم يتم التقاط الموقع بعد':'GPS not captured yet'}</div>
+            <button type="button" onclick="captureGPSCoords()" style="background:var(--bl);color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.82rem;">📍 ${L==='ar'?'التقاط موقعي الآن':'Capture GPS'}</button>
+        </div>
+        <input type="hidden" id="nvGpsLat">
+        <input type="hidden" id="nvGpsLng">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <label class="sp-form-label">${L==='ar'?'العميل':'Customer'}</label>
+                <select id="nvCust" class="sp-form-input" onchange="autoFillCustDetails(this.value)">${opts}</select>
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'المنطقة / خط السير':'Area / Territory'}</label>
+                <input type="text" id="nvArea" class="sp-form-input" placeholder="${L==='ar'?'مثال: مدينة نصر، المعادي':'e.g. Nasr City'}">
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div>
+                <label class="sp-form-label">${L==='ar'?'تاريخ الزيارة':'Visit Date'}</label>
+                <input type="date" id="nvDate" class="sp-form-input" value="${new Date().toISOString().split('T')[0]}">
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'نوع وهدف الزيارة':'Purpose'}</label>
+                <select id="nvPurpose" class="sp-form-input">
+                    <option value="Sales Visit">${L==='ar'?'زيارة بيعية':'Sales Visit'}</option>
+                    <option value="Collection Only">${L==='ar'?'تحصيل فقط':'Collection Only'}</option>
+                    <option value="Maintenance">${L==='ar'?'متابعة وصيانة':'Maintenance'}</option>
+                    <option value="New Customer">${L==='ar'?'فتح عميل جديد':'New Customer'}</option>
+                    <option value="Complaint">${L==='ar'?'حل مشكلة / شكوى':'Complaint'}</option>
+                </select>
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'تصنيف العميل':'Tier'}</label>
+                <select id="nvTier" class="sp-form-input">
+                    <option value="Class A (VIP)">Class A (VIP)</option>
+                    <option value="Class B (Medium)">Class B (Medium)</option>
+                    <option value="Class C (Standard)">Class C (Standard)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Smart Checklist Scoring -->
+        <div style="background:var(--bg2);padding:14px;border-radius:12px;border:1px solid var(--bd);margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:700;font-size:0.9rem;color:var(--tx1);">📝 ${L==='ar'?'معايير تقييم الزيارة (السكور)':'Visit KPI Checklist'}</span>
+                <span id="liveScoreBadge" class="score-pill score-pill-yellow" style="font-size:0.85rem;">0%</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.85rem;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkMaint" onchange="calcLiveScore()"> 🔧 ${L==='ar'?'فحص الصيانة (10)':'Maintenance (10)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkStar" onchange="calcLiveScore()"> ⭐ ${L==='ar'?'عرض الاستار (5)':'Star Display (5)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkTgt" onchange="calcLiveScore()"> 🎯 ${L==='ar'?'مراجعة التارجت (5)':'Target Review (5)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkStock" onchange="calcLiveScore()"> 📦 ${L==='ar'?'مراجعة المخزون (10)':'Stock Audit (10)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkColl" onchange="calcLiveScore()"> 💵 ${L==='ar'?'تحصيل فعلي (20)':'Collection (20)'}</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="chkSale" onchange="calcLiveScore()"> 🛒 ${L==='ar'?'طلب بيع مؤكد (50)':'Sales Order (50)'}</label>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <label class="sp-form-label">${L==='ar'?'قيمة البيع (ج.م)':'Sales Value (EGP)'}</label>
+                <input type="number" id="nvSaleVal" class="sp-form-input" placeholder="0.00" oninput="if(Number(this.value)>0){document.getElementById('chkSale').checked=true;calcLiveScore();}">
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'قيمة التحصيل (ج.م)':'Collection Value (EGP)'}</label>
+                <input type="number" id="nvCollVal" class="sp-form-input" placeholder="0.00" oninput="if(Number(this.value)>0){document.getElementById('chkColl').checked=true;calcLiveScore();}">
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <label class="sp-form-label">${L==='ar'?'الشخص المسؤول والموبايل':'Contact & Mobile'}</label>
+                <input type="text" id="nvContact" class="sp-form-input" placeholder="${L==='ar'?'الاسم ورقم الهاتف':'Name & Mobile'}">
+            </div>
+            <div>
+                <label class="sp-form-label">${L==='ar'?'موعد الزيارة القادمة':'Next Visit Date'}</label>
+                <input type="date" id="nvNext" class="sp-form-input">
+            </div>
+        </div>
+
+        <label class="sp-form-label">${L==='ar'?'ملاحظات ونتائج الزيارة':'Outcome & Notes'}</label>
+        <textarea id="nvOutcome" class="sp-form-input" style="height:65px;resize:vertical;" placeholder="${L==='ar'?'ماذا تم في الزيارة؟ أهم النواقص أو عروض المنافسين...':'What happened during the visit?'}"></textarea>
+        
+        <button class="sp-btn-primary" onclick="saveVisit()" style="padding:14px;font-size:1rem;margin-top:8px;">💾 ${L==='ar'?'حفظ وتوثيق الزيارة':'Save & Verify Visit'}</button>
     `;
     let m = document.createElement('div');
     m.className = 'sp-modal-overlay';
     m.id = 'vModal';
-    m.innerHTML = `<div class="sp-modal-content"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
+    m.innerHTML = `<div class="sp-modal-content" style="max-width:560px;max-height:92vh;overflow-y:auto;"><span class="sp-modal-close" onclick="this.closest('.sp-modal-overlay').remove()">×</span>${h}</div>`;
     document.body.appendChild(m);
+};
+
+window.captureGPSCoords = function() {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    let st = document.getElementById('gpsStatusText');
+    if (!navigator.geolocation) {
+        if(st) st.innerHTML = `⚠️ ${L==='ar'?'المتصفح لا يدعم الـ GPS':'Geolocation not supported'}`;
+        return;
+    }
+    if(st) st.innerHTML = `⏳ ${L==='ar'?'جاري تحديد الموقع بدقة...':'Acquiring GPS position...'}`;
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            let lat = pos.coords.latitude.toFixed(6);
+            let lng = pos.coords.longitude.toFixed(6);
+            let acc = Math.round(pos.coords.accuracy);
+            let latEl = document.getElementById('nvGpsLat');
+            let lngEl = document.getElementById('nvGpsLng');
+            if(latEl) latEl.value = lat;
+            if(lngEl) lngEl.value = lng;
+            if(st) st.innerHTML = `🟢 <b>${lat}, ${lng}</b> <small>(±${acc}m)</small>`;
+        },
+        function(err) {
+            if(st) st.innerHTML = `⚠️ ${L==='ar'?'تعذر تحديد الموقع: يرجى تفعيل الـ GPS':'GPS Error: Please enable location'}`;
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+};
+
+window.calcLiveScore = function() {
+    let score = 0;
+    if (document.getElementById('chkMaint') && document.getElementById('chkMaint').checked) score += 10;
+    if (document.getElementById('chkStar') && document.getElementById('chkStar').checked) score += 5;
+    if (document.getElementById('chkTgt') && document.getElementById('chkTgt').checked) score += 5;
+    if (document.getElementById('chkStock') && document.getElementById('chkStock').checked) score += 10;
+    if (document.getElementById('chkColl') && document.getElementById('chkColl').checked) score += 20;
+    if (document.getElementById('chkSale') && document.getElementById('chkSale').checked) score += 50;
+
+    let b = document.getElementById('liveScoreBadge');
+    if (b) {
+        b.textContent = score + '%';
+        b.className = 'score-pill ' + (score >= 80 ? 'score-pill-green' : (score >= 50 ? 'score-pill-yellow' : 'score-pill-red'));
+    }
+    return score;
 };
 
 window.saveVisit = function() {
     let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
-    let c = document.getElementById('nvCust').value;
-    let d = document.getElementById('nvDate').value;
-    let o = document.getElementById('nvOutcome').value;
-    let n = document.getElementById('nvNext').value;
-    if(!c || !d) { alert(L==='ar'?'العميل والتاريخ مطلوبان':'Customer and date are required'); return; }
+    let c = document.getElementById('nvCust') ? document.getElementById('nvCust').value : '';
+    let d = document.getElementById('nvDate') ? document.getElementById('nvDate').value : '';
+    let o = document.getElementById('nvOutcome') ? document.getElementById('nvOutcome').value : '';
+    let n = document.getElementById('nvNext') ? document.getElementById('nvNext').value : '';
+    let area = document.getElementById('nvArea') ? document.getElementById('nvArea').value : '';
+    let purp = document.getElementById('nvPurpose') ? document.getElementById('nvPurpose').value : '';
+    let tier = document.getElementById('nvTier') ? document.getElementById('nvTier').value : '';
+    let sVal = document.getElementById('nvSaleVal') ? Number(document.getElementById('nvSaleVal').value) || 0 : 0;
+    let cVal = document.getElementById('nvCollVal') ? Number(document.getElementById('nvCollVal').value) || 0 : 0;
+    let contact = document.getElementById('nvContact') ? document.getElementById('nvContact').value : '';
+    let lat = document.getElementById('nvGpsLat') ? document.getElementById('nvGpsLat').value : '';
+    let lng = document.getElementById('nvGpsLng') ? document.getElementById('nvGpsLng').value : '';
+    let score = calcLiveScore();
+
+    if(!c || !d) { 
+        alert(L==='ar'?'العميل والتاريخ مطلوبان':'Customer and date are required'); 
+        return; 
+    }
+
     let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
-    visitsData.push({ id: Date.now(), customer: c, date: d, outcome: o, nextDate: n });
+    let now = new Date();
+    let timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    visitsData.push({
+        id: Date.now(),
+        customer: c,
+        date: d,
+        time: timeStr,
+        area: area,
+        purpose: purp,
+        tier: tier,
+        score: score,
+        salesAmount: sVal,
+        collAmount: cVal,
+        contact: contact,
+        outcome: o,
+        nextDate: n,
+        gpsLat: lat,
+        gpsLng: lng,
+        timestamp: Date.now()
+    });
+
     localStorage.setItem('sp_visits', JSON.stringify(visitsData));
     let modal = document.getElementById('vModal');
     if(modal) modal.remove();
     loadVisits();
-    if(typeof toast === 'function') toast(L==='ar'?'تم حفظ الزيارة بنجاح':'Visit saved successfully', 'success');
+    if(typeof toast === 'function') toast(L==='ar'?'تم توثيق وحفظ الزيارة بنجاح 🚗':'Visit logged & verified successfully 🚗', 'success');
 };
+
+window.deleteVisit = function(id) {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    if (!confirm(L==='ar'?'هل أنت متأكد من حذف هذه الزيارة؟':'Are you sure you want to delete this visit?')) return;
+    let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
+    visitsData = visitsData.filter(v => v.id !== id);
+    localStorage.setItem('sp_visits', JSON.stringify(visitsData));
+    loadVisits();
+    if(typeof toast === 'function') toast(L==='ar'?'تم الحذف':'Deleted', 'info');
+};
+
+window.sendVisitWhatsApp = function(encodedVisit) {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    try {
+        let v = JSON.parse(decodeURIComponent(encodedVisit));
+        let phone = (v.contact || '').replace(/[^0-9]/g, '');
+        let msg = L==='ar' 
+            ? `مرحباً بك ${v.customer} 🌸%0Aسعدنا بزيارتكم اليوم ${v.date}.%0A` +
+              (v.nextDate ? `موعد متابعتنا القادم: ${v.nextDate}%0A` : '') +
+              `شكراً لتعاملكم معنا - Sales Pro Enterprise`
+            : `Hello ${v.customer},%0AThank you for meeting us today (${v.date}).%0A` +
+              (v.nextDate ? `Our next scheduled follow-up: ${v.nextDate}%0A` : '') +
+              `Best regards, Sales Pro Enterprise`;
+        let url = phone ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+        window.open(url, '_blank');
+    } catch(e) {
+        alert(e.message);
+    }
+};
+
+window.exportVisitsToExcel = function() {
+    if (typeof XLSX === 'undefined') {
+        alert('Excel library not loaded.');
+        return;
+    }
+    let visitsData = JSON.parse(localStorage.getItem('sp_visits') || '[]');
+    if (visitsData.length === 0) {
+        alert('No visits data to export.');
+        return;
+    }
+    let exportRows = visitsData.map(v => ({
+        "Date": v.date,
+        "Time": v.time || "",
+        "Customer Name": v.customer,
+        "Area / Territory": v.area || "",
+        "Purpose": v.purpose || "",
+        "Tier": v.tier || "",
+        "Score %": v.score || 0,
+        "Sales Value (EGP)": v.salesAmount || 0,
+        "Collection Value (EGP)": v.collAmount || 0,
+        "Contact / Mobile": v.contact || "",
+        "Outcome / Notes": v.outcome || "",
+        "Next Visit Date": v.nextDate || "",
+        "GPS Lat": v.gpsLat || "",
+        "GPS Lng": v.gpsLng || ""
+    }));
+    let ws = XLSX.utils.json_to_sheet(exportRows);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Field Visits");
+    XLSX.writeFile(wb, `SalesPro_Field_Visits_${new Date().toISOString().split('T')[0]}.xlsx`);
+};
+
+// --- QUICK POS & WHATSAPP INVOICING MODAL ---
+window.openQuickOrderModal = function(preselectedCust = '') {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    let S_data = typeof getS === 'function' ? getS() : [];
+    let customCusts = [];
+    try { customCusts = JSON.parse(localStorage.getItem('sp_custom_customers') || '[]'); } catch(e) {}
+    let stockData = [];
+    try { stockData = JSON.parse(localStorage.getItem('sp_stock_v1') || '[]'); } catch(e) {}
+
+    let set1 = S_data.map(r => r.Customer || r['Customer Name']).filter(Boolean);
+    let set2 = customCusts.map(c => typeof c === 'string' ? c : c.name || c.Customer).filter(Boolean);
+    let cList = [...new Set([...set1, ...set2])].sort((a,b) => a.localeCompare(b, 'ar'));
+    
+    let custOpts = cList.map(c => `<option value="${c}" ${c===preselectedCust?'selected':''}>${c}</option>`).join('');
+
+    let prodOpts = stockData.map((p, idx) => `<option value="${idx}">${p.name || p.Item} (${p.price || p.Price || 0} EGP - Stock: ${p.qty || p.Qty || 0})</option>`).join('');
+    if(!prodOpts) {
+        prodOpts = `
+            <option value="manual_1">كابل شحن سريع (120 EGP)</option>
+            <option value="manual_2">شاحن حائط 20W (280 EGP)</option>
+            <option value="manual_3">سماعة بلوتوث Pro (450 EGP)</option>
+            <option value="manual_4">باور بانك 10000mAh (650 EGP)</option>
+        `;
+    }
+
+    let h = `
+        <div class="pos-modal-header">
+            <h3 style="margin:0;font-size:1.2rem;display:flex;align-items:center;gap:8px;color:var(--tx1);">🧾 ${L==='ar'?'إصدار فاتورة بيع سريعة (POS)':'Quick POS Invoice'}</h3>
+            <span class="sp-modal-close" onclick="this.closest('.pos-modal-overlay').remove()">×</span>
+        </div>
+        <div class="pos-modal-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+                <div>
+                    <label class="sp-form-label">${L==='ar'?'اسم العميل':'Customer'}</label>
+                    <select id="posCust" class="sp-form-input">${custOpts}</select>
+                </div>
+                <div>
+                    <label class="sp-form-label">${L==='ar'?'رقم واتساب العميل':'WhatsApp Phone'}</label>
+                    <input type="text" id="posPhone" class="sp-form-input" placeholder="e.g. 01012345678">
+                </div>
+            </div>
+
+            <!-- Product Add Bar -->
+            <div style="background:var(--bg3);padding:12px;border-radius:10px;border:1px solid var(--bd);display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;">
+                <div style="flex:2;">
+                    <label class="sp-form-label">${L==='ar'?'اختر الصنف من المخزن':'Select Product'}</label>
+                    <select id="posProdSelect" class="sp-form-input" style="margin:0;">${prodOpts}</select>
+                </div>
+                <div style="width:90px;">
+                    <label class="sp-form-label">${L==='ar'?'الكمية':'Qty'}</label>
+                    <input type="number" id="posQty" class="sp-form-input" value="1" min="1" style="margin:0;">
+                </div>
+                <button type="button" onclick="addPosCartItem()" class="btn" style="background:var(--ac);color:#fff;font-weight:bold;height:42px;padding:0 16px;">➕ ${L==='ar'?'إضافة':'Add'}</button>
+            </div>
+
+            <!-- Cart Table -->
+            <div style="max-height:220px;overflow-y:auto;border:1px solid var(--bd);border-radius:10px;margin-bottom:14px;">
+                <table class="pos-cart-table">
+                    <thead>
+                        <tr>
+                            <th>${L==='ar'?'الصنف':'Item'}</th>
+                            <th style="width:80px;text-align:center;">${L==='ar'?'السعر':'Price'}</th>
+                            <th style="width:100px;text-align:center;">${L==='ar'?'الكمية':'Qty'}</th>
+                            <th style="width:90px;text-align:center;">${L==='ar'?'الإجمالي':'Total'}</th>
+                            <th style="width:40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="posCartBody">
+                        <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--tx3);">${L==='ar'?'السلة فارغة. أضف أصناف أعلاه!':'Cart is empty.'}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary & Actions -->
+            <div style="background:var(--bg2);padding:14px;border-radius:12px;border:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+                <div>
+                    <div style="font-size:0.82rem;color:var(--tx3);">${L==='ar'?'إجمالي الفاتورة الصافي':'Net Total'}</div>
+                    <div id="posTotalVal" style="font-size:1.5rem;font-weight:800;color:#10b981;">0.00 <small style="font-size:0.8rem;">${L==='ar'?'ج.م':'EGP'}</small></div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" onclick="checkoutPosOrder(true)" class="btn-wa" style="padding:10px 16px;">💬 ${L==='ar'?'إرسال الفاتورة عبر واتساب':'Send via WhatsApp'}</button>
+                    <button type="button" onclick="checkoutPosOrder(false)" class="btn" style="background:var(--ac);color:#fff;font-weight:bold;padding:10px 16px;">💾 ${L==='ar'?'حفظ الفاتورة فقط':'Save Invoice'}</button>
+                </div>
+            </div>
+        </div>
+    `;
+    let m = document.createElement('div');
+    m.className = 'pos-modal-overlay';
+    m.id = 'posModal';
+    m.innerHTML = `<div class="pos-modal-box">${h}</div>`;
+    document.body.appendChild(m);
+    window._posCart = [];
+};
+
+window.addPosCartItem = function() {
+    let sel = document.getElementById('posProdSelect');
+    let qtyEl = document.getElementById('posQty');
+    if (!sel || !qtyEl) return;
+    let qty = Number(qtyEl.value) || 1;
+    let stockData = [];
+    try { stockData = JSON.parse(localStorage.getItem('sp_stock_v1') || '[]'); } catch(e) {}
+    
+    let item = stockData[sel.value] || { name: sel.options[sel.selectedIndex].text.split('(')[0].trim(), price: 150 };
+    let price = Number(item.price || item.Price || 150);
+    
+    if(!window._posCart) window._posCart = [];
+    window._posCart.push({ name: item.name || item.Item, price: price, qty: qty, total: price * qty });
+    renderPosCart();
+};
+
+window.renderPosCart = function() {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    let tb = document.getElementById('posCartBody');
+    let totEl = document.getElementById('posTotalVal');
+    if (!tb) return;
+    tb.innerHTML = '';
+    let grandTotal = 0;
+    
+    if (!window._posCart || window._posCart.length === 0) {
+        tb.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--tx3);">${L==='ar'?'السلة فارغة':'Cart is empty'}</td></tr>`;
+        if (totEl) totEl.innerHTML = `0.00 <small style="font-size:0.8rem;">${L==='ar'?'ج.م':'EGP'}</small>`;
+        return;
+    }
+
+    window._posCart.forEach((it, idx) => {
+        grandTotal += it.total;
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="padding:10px;font-weight:600;color:var(--tx1);">${it.name}</td>
+            <td style="padding:10px;text-align:center;">${it.price.toLocaleString()}</td>
+            <td style="padding:10px;text-align:center;">
+                <button type="button" class="pos-qty-btn" onclick="updatePosQty(${idx}, -1)">-</button>
+                <span style="display:inline-block;width:30px;text-align:center;font-weight:bold;">${it.qty}</span>
+                <button type="button" class="pos-qty-btn" onclick="updatePosQty(${idx}, 1)">+</button>
+            </td>
+            <td style="padding:10px;text-align:center;font-weight:bold;color:#10b981;">${it.total.toLocaleString()}</td>
+            <td style="padding:10px;text-align:center;"><button type="button" onclick="removePosItem(${idx})" style="background:none;border:none;color:#ef4444;cursor:pointer;">🗑️</button></td>
+        `;
+        tb.appendChild(tr);
+    });
+
+    if (totEl) totEl.innerHTML = `${grandTotal.toLocaleString()} <small style="font-size:0.8rem;">${L==='ar'?'ج.م':'EGP'}</small>`;
+};
+
+window.updatePosQty = function(idx, delta) {
+    if (!window._posCart || !window._posCart[idx]) return;
+    window._posCart[idx].qty += delta;
+    if (window._posCart[idx].qty <= 0) {
+        window._posCart.splice(idx, 1);
+    } else {
+        window._posCart[idx].total = window._posCart[idx].qty * window._posCart[idx].price;
+    }
+    renderPosCart();
+};
+
+window.removePosItem = function(idx) {
+    if (!window._posCart) return;
+    window._posCart.splice(idx, 1);
+    renderPosCart();
+};
+
+window.checkoutPosOrder = function(sendWhatsApp = false) {
+    let L = (typeof localStorage !== 'undefined' && localStorage.getItem('sp_lang')) || 'ar';
+    let cust = document.getElementById('posCust') ? document.getElementById('posCust').value : '';
+    let phone = document.getElementById('posPhone') ? document.getElementById('posPhone').value.replace(/[^0-9]/g, '') : '';
+    if (!cust || !window._posCart || window._posCart.length === 0) {
+        alert(L==='ar'?'يرجى اختيار العميل وإضافة صنف واحد على الأقل':'Please select a customer and at least 1 item');
+        return;
+    }
+
+    let grandTotal = window._posCart.reduce((sum, it) => sum + it.total, 0);
+    let invNum = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+    let dateStr = new Date().toISOString().split('T')[0];
+
+    // Save to Orders storage
+    let orders = JSON.parse(localStorage.getItem('sp_orders') || '[]');
+    orders.push({
+        id: Date.now(),
+        invNum: invNum,
+        customer: cust,
+        phone: phone,
+        date: dateStr,
+        items: [...window._posCart],
+        total: grandTotal
+    });
+    localStorage.setItem('sp_orders', JSON.stringify(orders));
+
+    if (sendWhatsApp) {
+        let itemsList = window._posCart.map(it => `• ${it.name} (×${it.qty}) = ${it.total.toLocaleString()} EGP`).join('%0A');
+        let msg = L==='ar'
+            ? `*فاتورة مبيعات رقم ${invNum}* 🧾%0A` +
+              `العميل: *${cust}*%0A` +
+              `التاريخ: ${dateStr}%0A` +
+              `-----------------------%0A` +
+              `${itemsList}%0A` +
+              `-----------------------%0A` +
+              `*الإجمالي الصافي: ${grandTotal.toLocaleString()} ج.م* 💰%0A%0A` +
+              `شكراً لتعاملكم معنا - Sales Pro Enterprise`
+            : `*Sales Invoice #${invNum}* 🧾%0A` +
+              `Customer: *${cust}*%0A` +
+              `Date: ${dateStr}%0A` +
+              `-----------------------%0A` +
+              `${itemsList}%0A` +
+              `-----------------------%0A` +
+              `*Net Total: ${grandTotal.toLocaleString()} EGP* 💰%0A%0A` +
+              `Thank you for your business - Sales Pro Enterprise`;
+        let url = phone ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+        window.open(url, '_blank');
+    }
+
+    let m = document.getElementById('posModal');
+    if (m) m.remove();
+    if(typeof toast === 'function') toast(L==='ar'?`تم حفظ الفاتورة ${invNum} بنجاح`:`Invoice ${invNum} saved successfully`, 'success');
+};
+
 
 // --- LEADS ---
 window.rLeads = function() {
