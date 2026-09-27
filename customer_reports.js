@@ -487,47 +487,80 @@
         let C_data = getCollectionsData();
         let now = new Date();
 
-        // Calculate debts per customer
-        let custDebts = {};
-        S_data.forEach(r => {
-            let c = r.Customer || r['Customer Name'];
-            if(!c) return;
-            if(!custDebts[c]) custDebts[c] = { name: c, sales: 0, coll: 0, invoices: [] };
-            let val = typeof getSalesVal === 'function' ? getSalesVal(r) : Number(r['Sales Without Tax'] || 0);
-            let d = parseDate(r['Invoice Date'] || r['Order Date'] || r['Date']) || now;
-            custDebts[c].sales += val;
-            custDebts[c].invoices.push({ amount: val, date: d });
-        });
-
-        C_data.forEach(r => {
-            let keys = Object.keys(r);
-            let getV = (names) => { let k = keys.find(k => names.some(n => k.toLowerCase().replace(/\s+/g,'') === n.toLowerCase().replace(/\s+/g,''))); return k ? r[k] : null; };
-            let c = getV(['Customer Name','Customer']) || '';
-            if (c && custDebts[c]) {
-                let rawVal = getV(['Amount','Collection']) || 0;
-                custDebts[c].coll += Number(rawVal.toString().replace(/,/g,'')) || 0;
-            }
-        });
-
-        let cat30 = 0, cat60 = 0, cat90 = 0, catCrit = 0, totalDue = 0;
+                let cat30 = 0, cat60 = 0, cat90 = 0, catCrit = 0, totalDue = 0;
         let debtList = [];
 
-        Object.values(custDebts).forEach(item => {
-            let due = Math.max(0, item.sales - item.coll);
-            if (due <= 0) return;
-            totalDue += due;
+        // 1. Check if dedicated duesData is uploaded
+        let duesArr = (typeof D !== 'undefined' && Array.isArray(D) && D.length > 0) ? D : 
+                      (typeof loadLS === 'function' ? loadLS('duesData') : []);
 
-            // Find oldest unpaid estimate
-            let lastInv = item.invoices.sort((a,b) => b.date - a.date)[0];
-            let days = lastInv ? Math.floor((now - lastInv.date) / (1000 * 60 * 60 * 24)) : 10;
-            
-            if (days <= 30) cat30 += due;
-            else if (days <= 60) cat60 += due;
-            else if (days <= 90) cat90 += due;
-            else catCrit += due;
+        if (duesArr && duesArr.length > 0) {
+            let custDuesMap = {};
+            duesArr.forEach(r => {
+                let name = r.Name || r['Customer Name'] || r['العميل'] || r.Customer || 'عميل';
+                let bal = Number(r.Balance || r['الرصيد'] || 0);
+                let days = Number(r.Days || r['الأيام'] || 30);
+                if (!custDuesMap[name]) custDuesMap[name] = { name: name, due: 0, days: days, sales: bal, coll: 0 };
+                custDuesMap[name].due += bal;
+                if (days > custDuesMap[name].days) custDuesMap[name].days = days;
+            });
+            Object.values(custDuesMap).forEach(item => {
+                if (item.due <= 0) return;
+                totalDue += item.due;
+                if (item.days <= 30) cat30 += item.due;
+                else if (item.days <= 60) cat60 += item.due;
+                else if (item.days <= 90) cat90 += item.due;
+                else catCrit += item.due;
+                debtList.push(item);
+            });
+        } else {
+            // 2. Smart Fallback: calculate from Sales - Collections with robust customer matching
+            let custDebts = {};
+            const cleanKey = s => (s || '').toLowerCase().trim().replace(/[\s\-_().]/g, '');
 
-            debtList.push({ name: item.name, due: due, days: days, sales: item.sales, coll: item.coll });
-        });
+            S_data.forEach(r => {
+                let c = (typeof getCustName === 'function' ? getCustName(r) : '') || r.Customer || r['Customer Name'] || '';
+                if(!c) return;
+                let k = cleanKey(c);
+                if(!custDebts[k]) custDebts[k] = { name: c, sales: 0, coll: 0, invoices: [] };
+                let val = typeof getSalesVal === 'function' ? getSalesVal(r) : Number(r['Sales Without Tax'] || 0);
+                let d = parseDate(r['Invoice Date'] || r['Order Date'] || r['Date']) || now;
+                custDebts[k].sales += val;
+                custDebts[k].invoices.push({ amount: val, date: d });
+            });
+
+            C_data.forEach(r => {
+                let keys = Object.keys(r);
+                let getV = (names) => { let k = keys.find(k => names.some(n => k.toLowerCase().replace(/\s+/g,'') === n.toLowerCase().replace(/\s+/g,''))); return k ? r[k] : null; };
+                let c = getV(['Customer Name','Customer']) || '';
+                let k = cleanKey(c);
+                let target = custDebts[k];
+                if (!target) {
+                    let foundKey = Object.keys(custDebts).find(dk => dk.includes(k) || k.includes(dk));
+                    if (foundKey) target = custDebts[foundKey];
+                }
+                if (target) {
+                    let rawVal = getV(['Amount','Collection']) || 0;
+                    target.coll += Number(rawVal.toString().replace(/,/g,'')) || 0;
+                }
+            });
+
+            Object.values(custDebts).forEach(item => {
+                let due = Math.max(0, item.sales - item.coll);
+                if (due <= 0) return;
+                totalDue += due;
+
+                let lastInv = item.invoices.sort((a,b) => b.date - a.date)[0];
+                let days = lastInv ? Math.floor((now - lastInv.date) / (1000 * 60 * 60 * 24)) : 10;
+                
+                if (days <= 30) cat30 += due;
+                else if (days <= 60) cat60 += due;
+                else if (days <= 90) cat90 += due;
+                else catCrit += due;
+
+                debtList.push({ name: item.name, due: due, days: days, sales: item.sales, coll: item.coll });
+            });
+        }
 
         debtList.sort((a,b) => b.due - a.due);
 
