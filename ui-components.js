@@ -438,12 +438,13 @@ function rTgt() {
     let sMap = {}, accSMap = {}, hwSMap = {};
     let pMap = {}, accPMap = {}, hwPMap = {};
     sData.forEach(r => {
-        let c = r.Customer;
+        let c = getCustName(r);
         if(!c) return;
         let s = typeof getSalesVal === 'function' ? getSalesVal(r) : 0;
         let p = typeof getProfitVal === 'function' ? getProfitVal(r) : 0;
-        let isA = isAcc(r['Item Class Name']);
-        let isH = isHW(r['Item Class Name']);
+        let cat = getRowStr(r, ['Item Class Name', 'Category', 'الفئة', 'القسم']);
+        let isA = isAcc(cat);
+        let isH = isHW(cat);
         sMap[c] = (sMap[c] || 0) + s;
         pMap[c] = (pMap[c] || 0) + p;
         if (isA) { accSMap[c] = (accSMap[c] || 0) + s; accPMap[c] = (accPMap[c] || 0) + p; }
@@ -454,10 +455,15 @@ function rTgt() {
     let cPF = (c, f) => f === isAcc ? (accPMap[c] || 0) : (hwPMap[c] || 0);
 
     let tt=0, ta=0;
-    T.forEach(r => { tt += Number(r.Target)||0; ta += cS(r.Customer); });
+    T.forEach(r => { 
+        let c = getCustName(r);
+        let tg = getRowVal(r, ['Target', 'target', 'المستهدف', 'التارجت']);
+        tt += tg; 
+        ta += cS(c); 
+    });
     $('M').innerHTML = `
         <div class="ph" style="display:flex;align-items:center;gap:12px;">
-            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}"</h1>
+            <h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.targets}</span> ${t('targets')}</h1>
             <button id="bExTgt" class="btn bg-g" style="color:#fff;border:none;margin-left:auto;"><span style="font-size:1rem;">&#x1F4E5;</span> Excel</button>
         </div>
         <div class="kg">
@@ -471,29 +477,34 @@ function rTgt() {
         </div>
     `;
     
-    $('bExTgt').onclick = () => exportToExcel(T.map(r => ({ Customer: r.Customer, Target: Number(r.Target)||0, Achieved: cS(r.Customer) })), 'Targets_Report');
+    $('bExTgt').onclick = () => exportToExcel(T.map(r => {
+        let c = getCustName(r);
+        let tg = getRowVal(r, ['Target', 'target', 'المستهدف', 'التارجت']);
+        return { Customer: c, Target: tg, Achieved: cS(c) };
+    }), 'Targets_Report');
 
     function fTg(d){
         $('ttb').innerHTML = d.map(r => {
-            let tg = Number(r.Target)||0, a = cS(r.Customer), p = tg>0 ? a/tg*100 : 0;
-            return `<tr><td>${r.Customer}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(r.Customer,isAcc))}</td><td>${fmt(cPF(r.Customer,isAcc))}</td><td>${fmt(cSF(r.Customer,isHW))}</td><td>${fmt(cPF(r.Customer,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>`;
+            let c = getCustName(r);
+            let tg = getRowVal(r, ['Target', 'target', 'المستهدف', 'التارجت']), a = cS(c), p = tg>0 ? a/tg*100 : 0;
+            return `<tr><td>${c}</td><td>${fmt(tg)}</td><td>${fmt(a)}</td><td>${pc(p)}</td><td>${fmt(cSF(c,isAcc))}</td><td>${fmt(cPF(c,isAcc))}</td><td>${fmt(cSF(c,isHW))}</td><td>${fmt(cPF(c,isHW))}</td><td><span class="badge ${p>=100?'bg-g':p>=60?'bg-a':'bg-r'}">${p>=100?'&#x2B50;':p>=60?'&#x1F44D;':'&#x1F44E;'}</span></td></tr>`;
         }).join('');
     }
     fTg(T);
     
     $('tsr').oninput = debounce(e => {
         let v = e.target.value.toLowerCase();
-        fTg(v ? T.filter(r => (r.Customer||'').toLowerCase().includes(v)) : T);
+        fTg(v ? T.filter(r => (getCustName(r)).toLowerCase().includes(v)) : T);
     });
     initAnm && initAnm();
 }
 function rPers() {
     let myEmail = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.email : '';
-    let myS = S, ts = 0, tp = 0;
+    let myS = typeof getFilteredSales === "function" ? getFilteredSales() : S, ts = 0, tp = 0;
     let accS = 0, accP = 0, hwS = 0, hwP = 0;
     
     let defaultTT = 0, defaultTPT = 0;
-    T.forEach(r => { defaultTT += Number(r.Target)||0; defaultTPT += Number(r['Profit Target'])||0; });
+    T.forEach(r => { defaultTT += getRowVal(r, ['Target', 'target', 'المستهدف', 'التارجت']); defaultTPT += getRowVal(r, ['Profit Target', 'ProfitTarget', 'مستهدف الربح']); });
     
     // Total targets
     let savedTarget = localStorage.getItem('personal_target');
@@ -517,10 +528,13 @@ function rPers() {
         let s = getSalesVal(r);
         let p = getProfitVal(r);
         ts += s; tp += p; 
-        if (isAcc(r['Item Class Name'])) {
+        let cat = getRowStr(r, ['Item Class Name', 'Category', 'الفئة', 'القسم']);
+        if (isAcc(cat)) {
             accS += s; accP += p;
-        } else {
+        } else if (isHW(cat)) {
             hwS += s; hwP += p;
+        } else {
+            accS += s; accP += p;
         }
     });
     
@@ -900,8 +914,9 @@ function rReset() {
 function rBrands() {
     let brands = {};
     let tsTotal = 0;
-    S.forEach(r => {
-        let b = r['Brand'] || r['Item Class Name'] || 'Other';
+    let bData = typeof getFilteredSales === 'function' ? getFilteredSales() : S;
+    bData.forEach(r => {
+        let b = getRowStr(r, ['Brand', 'brand', 'البراند', 'الماركة']) || getRowStr(r, ['Item Class Name', 'Category', 'الفئة', 'القسم']) || 'Other';
         if(!brands[b]) brands[b] = {s:0,p:0,qty:0};
         brands[b].s += getSalesVal(r);
         brands[b].p += getProfitVal(r);
@@ -1009,9 +1024,9 @@ function rAn() {
         if(!monthly[m]) monthly[m] = {s:0,p:0};
         monthly[m].s += getSalesVal(r);
         monthly[m].p += getProfitVal(r);
-        let c = r['Item Class Name']||'Other';
+        let c = getRowStr(r, ['Item Class Name', 'Category', 'الفئة', 'القسم']) || 'Other';
         cats[c] = (cats[c]||0) + (getSalesVal(r));
-        let rg = r['Customer Class']||'Other';
+        let rg = getRowStr(r, ['Customer Class', 'Region', 'Area', 'المنطقة', 'الفئة']) || 'Other';
         regions[rg] = (regions[rg]||0) + (getSalesVal(r));
     });
     let months = Object.keys(monthly).sort();
@@ -1104,7 +1119,8 @@ function rProfit() {
     let ds = getFilteredSales();
     let cu = {};
     ds.forEach(r => {
-        let c = r.Customer||'';
+        let c = getCustName(r);
+        if(!c) return;
         if(!cu[c]) cu[c] = {s:0,p:0};
         cu[c].s += getSalesVal(r);
         cu[c].p += getProfitVal(r);
@@ -1160,12 +1176,11 @@ function rProfit() {
 // Accessories
 function rAcc() {
     // Always use DEF_ACC as base; accCats overrides only if user saved custom ones
-    let _accList = (accCats && accCats.length) ? accCats : DEF_ACC;
-    let ds = getFilteredSales().filter(r => _accList.includes(r['Item Class Name']));
+    let ds = getFilteredSales().filter(r => isAcc(getRowStr(r, ['Item Class Name', 'Category', 'الفئة', 'القسم'])));
     let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
     let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
+    ds.forEach(r => { let c=getRowStr(r, ['Item Class Name', 'Category', 'الفئة', 'القسم'])||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.accessories}</span> ${t('accessories')}</h1></div>
@@ -1212,11 +1227,11 @@ function rAcc() {
 
 // Hardware
 function rHW() {
-    let ds = getFilteredSales().filter(r => isHW(r['Item Class Name']));
+    let ds = getFilteredSales().filter(r => isHW(getRowStr(r, ['Item Class Name', 'Category', 'الفئة', 'القسم'])));
     let tot = ds.reduce((s,r)=>s+(getSalesVal(r)),0);
     let prof = ds.reduce((s,r)=>s+(getProfitVal(r)),0);
     let cats = {};
-    ds.forEach(r => { let c=r['Item Class Name']||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
+    ds.forEach(r => { let c=getRowStr(r, ['Item Class Name', 'Category', 'الفئة', 'القسم'])||'Other'; cats[c]=(cats[c]||0)+(getSalesVal(r)); });
     let catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     $('M').innerHTML = `
         <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.hardware}</span> ${t('hardware')}</h1></div>
@@ -1267,11 +1282,12 @@ function rCollections() {
     let cAccMap = {}, cHWMap = {};
     if (C.length > 0 && !(C[0]['Item Class Name'] || C[0]['Item Group'] || C[0]['category'] || C[0]['Category'] || C[0]['acc - hw'])) {
         S.forEach(s => {
-            let c = s['Customer'];
+            let c = getCustName(s);
             if(c) {
-                let v = Number(s['Sales Without Tax'] || 0);
-                if(isAcc(s['Item Class Name'])) cAccMap[c] = (cAccMap[c]||0) + v;
-                if(isHW(s['Item Class Name'])) cHWMap[c] = (cHWMap[c]||0) + v;
+                let v = getSalesVal(s);
+                let cls = getRowStr(s, ['Item Class Name', 'Category', 'الفئة', 'القسم']);
+                if(isAcc(cls)) cAccMap[c] = (cAccMap[c]||0) + v;
+                if(isHW(cls)) cHWMap[c] = (cHWMap[c]||0) + v;
             }
         });
     }
@@ -1320,7 +1336,7 @@ function rCollections() {
     });
 
     $('M').innerHTML = `
-        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}"</h1></div>
+        <div class="ph"><h1 style="display:flex;align-items:center;gap:12px;"><span style="width:32px;height:32px;display:flex;">${ICONS.collections}</span> ${t('collections')}</h1></div>
         <div class="kg">
             <div class="ki"><div class="lb">${L==='ar'?TUI('Total Collections'):'Total Collections'}</div><div class="vl">${aFmt(tot)}</div></div>
             <div class="ki"><div class="lb">${L==='ar'?'إكسسوارات':'Accessories'}</div><div class="vl">${aFmt(accTot)}</div></div>
@@ -1330,19 +1346,21 @@ function rCollections() {
         ${C.length>0 ? `<div class="tb"><div class="tbt"><h3>${t('collections')}</h3></div>
         <div class="tbs"><table><thead><tr>${Object.keys(C[0]||{}).slice(0,6).map(k=>`<th>${k}</th>`).join('')}</tr></thead>
         <tbody>${C.slice(0,100).map(r=>`<tr>${Object.keys(C[0]).slice(0,6).map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`).join('')}</tbody>
-        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}"
+        </table></div></div>` : `<div class="card"><p style="color:var(--tx2);text-align:center;">${L==='ar'?TUI('No collections data. Upload a file from the Files page.'):'No collections data. Upload a file from the Files page.'}</p></div>`}
     `;
     initAnm && initAnm();
 }
 // Key Accounts (top 20% customers)
 function rKey() {
     let cu = {};
-    S.forEach(r => {
-        let c = r.Customer||'';
+    let kData = typeof getFilteredSales === 'function' ? getFilteredSales() : S;
+    kData.forEach(r => {
+        let c = getCustName(r);
+        if(!c) return;
         if(!cu[c]) cu[c] = {s:0,p:0,o:{}};
         cu[c].s += getSalesVal(r);
         cu[c].p += getProfitVal(r);
-        cu[c].o[r['Order Nbr']] = 1;
+        let oN = r['Order Nbr'] || r['Invoice Nbr'] || r['Order Number'] || r['رقم الفاتورة'] || r['Date'] || Math.random(); cu[c].o[oN] = 1;
     });
     let arr = Object.entries(cu).map(([n,d])=>({n,s:d.s,p:d.p,o:Object.keys(d.o).length,m:d.s>0?d.p/d.s*100:0})).sort((a,b)=>b.s-a.s);
     let totS = arr.reduce((s,x)=>s+x.s,0);
@@ -1609,16 +1627,18 @@ function rDorm() {
 
 // Prospects (CRM Kanban)
 function rPros() {
-    let activeCustomers = new Set(S.map(r=>r.Customer||''));
-    let unpurchasedTargets = T.filter(r=>!activeCustomers.has(r.Customer));
+    let activeCustomers = new Set(S.map(r => getCustName(r)).filter(Boolean));
+    let unpurchasedTargets = T.filter(r => { let c = getCustName(r); return c && !activeCustomers.has(c); });
     let ld = [];
     try { ld = JSON.parse(localStorage.getItem('leadsData') || '[]'); } catch(err){}
     
     // Auto-migrate unpurchased targets into leadsData if not already there
     let added = false;
     unpurchasedTargets.forEach(r => {
-        if(!ld.find(x => x.name === r.Customer)) {
-            ld.push({ id: Date.now() + Math.random(), name: r.Customer, phone: '', branch: 'من التارجت', status: 'Targeted', note: 'المستهدف: ' + r.Target });
+        let c = getCustName(r);
+        let tg = getRowVal(r, ['Target', 'target', 'المستهدف', 'التارجت']);
+        if(c && !ld.find(x => x.name === c)) {
+            ld.push({ id: Date.now() + Math.random(), name: c, phone: getRowStr(r, ['Phone', 'Mobile', 'رقم الموبايل']), branch: 'من التارجت', status: 'Targeted', note: 'المستهدف: ' + tg });
             added = true;
         }
     });
@@ -1668,7 +1688,7 @@ function rPros() {
                         ${stages.map(s => `<option value="${s.id}" ${s.id===x.status?'selected':''}>${s.name}</option>`).join('')}
                     </select>
                 </div>
-                <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:space-between; align-items:center;">('${x.phone}', '${x.name}')" class="btn" style="flex:2; background:#25D366; color:#fff; padding:6px; font-size:0.9rem; border:none; border-radius:4px; display:flex; justify-content:center; align-items:center;">WhatsApp</button>
+                <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:space-between; align-items:center;"><button onclick="waLead('${x.phone}', '${x.name}')" class="btn" style="flex:2; background:#25D366; color:#fff; padding:6px; font-size:0.9rem; border:none; border-radius:4px; display:flex; justify-content:center; align-items:center;">WhatsApp</button>
                     <button onclick="delLead(${x.id})" class="btn" style="background:#f44336; color:#fff; padding:6px; border:none; border-radius:4px; flex:1; min-width:40px; display:flex; justify-content:center; align-items:center;">X</button>
                 </div>
             </div>
@@ -1697,11 +1717,15 @@ function rPros() {
 // Opportunities (customers below 50% of target)
 function rPot() {
     let cu = {};
-    S.forEach(r => { let c=r.Customer||''; cu[c]=(cu[c]||0)+(getSalesVal(r)); });
+    let pSales = typeof getFilteredSales === 'function' ? getFilteredSales() : S;
+    pSales.forEach(r => { let c = getCustName(r); if(c) cu[c] = (cu[c] || 0) + getSalesVal(r); });
     let opps = T.map(r => {
-        let tg = Number(r.Target)||0, ach = cu[r.Customer]||0, pct = tg>0?ach/tg*100:0;
-        return {n:r.Customer, tg, ach, pct, gap: tg-ach};
-    }).filter(r=>r.pct<80 && r.tg>0).sort((a,b)=>b.gap-a.gap);
+        let c = getCustName(r);
+        let tg = getRowVal(r, ['Target', 'target', 'المستهدف', 'التارجت']);
+        let ach = cu[c] || 0;
+        let pct = tg > 0 ? ach / tg * 100 : 0;
+        return { n: c || 'Unknown', tg, ach, pct, gap: Math.max(0, tg - ach) };
+    }).filter(r => r.tg > 0 && r.pct < 80).sort((a,b) => b.gap - a.gap);
     
     let topHtml = '';
     for(let i=0; i<Math.min(3, opps.length); i++) {
@@ -1753,16 +1777,16 @@ function rAl() {
     let alerts = [];
     // Dormant alerts
     let cu = {};
-    S.forEach(r => { let c=r.Customer||''; let d=pd((r['Invoice Date'] || r['Order Date'] || r['Date'])); if(!cu[c]||d>cu[c]) cu[c]=d; });
+    S.forEach(r => { let c=getCustName(r); if(!c) return; let d=getDateVal(r); if(!cu[c]||d>cu[c]) cu[c]=d; });
     Object.entries(cu).forEach(([n,last]) => {
         let days = Math.floor((today - new Date(last)) / 86400000);
         if(days >= 60) alerts.push({type:'warn', icon:'&#x26A0;&#xFE0F;', msg:`${n} ? ${L==='ar'?TUI('No purchase since'):'No purchase since'} ${days} ${L==='ar'?TUI('days'):'days'}`});
     });
     // Low target alerts
     let cuS = {};
-    S.forEach(r => { let c=r.Customer||''; cuS[c]=(cuS[c]||0)+(getSalesVal(r)); });
+    S.forEach(r => { let c=getCustName(r); if(c) cuS[c]=(cuS[c]||0)+(getSalesVal(r)); });
     T.forEach(r => {
-        let tg=Number(r.Target)||0, ach=cuS[r.Customer]||0, pct=tg>0?ach/tg*100:0;
+        let c=getCustName(r); let tg=getRowVal(r, ['Target', 'target', 'المستهدف', 'التارجت']), ach=cuS[c]||0, pct=tg>0?ach/tg*100:0;
         if(pct<50 && tg>0) alerts.push({type:'danger', icon:'&#x26A0;&#xFE0F;', msg:`${r.Customer} ? ${L==='ar'?TUI('Achievement'):'Achievement'} ${pc(pct)}`});
     });
     $('M').innerHTML = `
@@ -1779,7 +1803,7 @@ function rAI() {
     let ds = getFilteredSales();
     let cu = {};
     ds.forEach(r => {
-        let c=r.Customer||'';
+        let c=getCustName(r); if(!c) return;
         if(!cu[c]) cu[c] = {s:0,p:0,o:{},last:'',accS:0,hwS:0};
         cu[c].s += getSalesVal(r);
         cu[c].p += getProfitVal(r);
