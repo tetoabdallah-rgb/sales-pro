@@ -32,28 +32,63 @@ var globalDateRange = window.globalDateRange = { start: null, end: null }; // Gl
 var globalRepFilter = window.globalRepFilter = ''; // Global Sales Rep Filter
 var globalCatFilter = window.globalCatFilter = ''; // Global Category Filter
 
-const DEF_ACC = ['Mobile Accessories','Mobile Power','Accessories Commission','Laptop Accessories','TWS Earbuds','Headphone','Keyboard','Wearables','Imported Bags','Factory Bags','Mouse','Gaming Accessories','A/V Accessories'];
-const DEF_HW = ['Mobile Devices','Gaming Devices','TVs','Laptops'];
+const DEF_ACC = [
+    'Mobile Accessories', 'Mobile Power', 'Accessories Commission', 'Laptop Accessories', 
+    'TWS Earbuds', 'Headphone', 'Keyboard', 'Wearables', 'Imported Bags', 'Factory Bags', 
+    'Mouse', 'Gaming Accessories', 'A/V Accessories', 'Cables', 'Power', 'Screen Protector',
+    'Charger', 'Chargers', 'Bag', 'Bags', 'Cover', 'Covers', 'Case', 'Cases', 'Audio', 'Speaker', 'Speakers'
+];
+const DEF_HW = [
+    'Mobile Devices', 'Gaming Devices', 'TVs', 'Laptops', 'Tablets', 'Monitors', 'Printers'
+];
 const CL = ['#5046e5','#0fa87e','#2b8dea','#e5930f','#e5484d','#8b5cf6','#06b6d4','#f59e0b'];
 
-function isAcc(c) { return accCats.length ? accCats.includes(c) : DEF_ACC.includes(c); }
-function isHW(c) { return hwCats.length ? hwCats.includes(c) : DEF_HW.includes(c); }
+function isAcc(c) {
+    if (!c) return false;
+    let s = String(c).trim();
+    let sl = s.toLowerCase();
+    let list = (accCats && accCats.length) ? accCats : DEF_ACC;
+    if (list.some(x => x.toLowerCase() === sl)) return true;
+    if (sl.includes('acc') || sl.includes('cable') || sl.includes('power') || sl.includes('charger') || sl.includes('headphone') || sl.includes('earbud') || sl.includes('mouse') || sl.includes('keyboard') || sl.includes('bag') || sl.includes('watch') || sl.includes('إكسسوار') || sl.includes('اكسسوار') || sl.includes('كابل') || sl.includes('شاحن') || sl.includes('سماعة') || sl.includes('جراب') || sl.includes('شنطة')) return true;
+    return false;
+}
+function isHW(c) {
+    if (!c) return false;
+    if (isAcc(c)) return false;
+    let s = String(c).trim();
+    let sl = s.toLowerCase();
+    let list = (hwCats && hwCats.length) ? hwCats : DEF_HW;
+    if (list.some(x => x.toLowerCase() === sl)) return true;
+    if (sl === 'mobile' || sl === 'phone' || sl === 'phones' || sl.includes('devices') || sl.includes('laptop') || sl.includes('tv') || sl.includes('console') || sl.includes('tablet') || sl.includes('شاشات') || sl.includes('هاردوير') || sl.includes('أجهزة') || sl.includes('اجهزة') || (sl.includes('هاتف') && !sl.includes('سماعة')) || (sl.includes('موبايل') && !sl.includes('إكسسوار') && !sl.includes('اكسسوار') && !sl.includes('باور') && !sl.includes('شاحن'))) return true;
+    return false;
+}
+
 
 const I = {
     collections:{ar:'التحصيلات',en:'Collections'},dash:{ar:'لوحة التحكم',en:'Dashboard'},
     sales:{ar:'المبيعات',en:'Sales'},targets:{ar:'تارجت العميل',en:'Targets'},
     personal:{ar:'التارجت الشخصي',en:'Personal'},customers:{ar:'العملاء',en:'Customers'},
-    todo:{ar:'مفكرة المهام',en:'To-Do Tasks'},brands:{ar:'البراندات',en:'Brands'},analytics:{ar:'تحليلات',en:'Analytics'},
+    todo:{ar:'مفكرة المهام',en:'To-Do Tasks'},visits:{ar:'الزيارات الميدانية',en:'Field Visits'},
+    brands:{ar:'البراندات',en:'Brands'},analytics:{ar:'تحليلات',en:'Analytics'},
     potential:{ar:'فرص التحقيق',en:'Opportunities'},profit:{ar:'هامش الربح',en:'Profit'},
     accessories:{ar:'الأكسسوارات',en:'Accessories'},hardware:{ar:'الهاردوير',en:'Hardware'},
-    stock:{ar:'المخزون',en:'Stock'},
+    stock:{ar:'المخزون',en:'Stock'},leads:{ar:'العملاء المحتملين',en:'Leads'},
     keyacc:{ar:'المميزين',en:'Key Accounts'},dormant:{ar:'الخاملين',en:'Dormant'},
     prospects:{ar:'محتملين',en:'Prospects'},aging:{ar:'أعمار الديون',en:'Aging Debt'},alerts:{ar:'التنبيهات',en:'Alerts'},
     ai:{ar:'توصيات AI',en:'AI'},account:{ar:'الحساب',en:'Account'},
     backup:{ar:'نسخ احتياطي',en:'Backup'},setup:{ar:'رفع الملفات',en:'Files'},
     logout:{ar:'خروج',en:'Logout'},reset:{ar:'مسح البيانات',en:'Reset App'},
-    settings:{ar:'الإعدادات',en:'Settings'}
+    settings:{ar:'الإعدادات',en:'Settings'},
+    today:{ar:'سجل اليوم',en:'Daily Feed'},
+    upsell:{ar:'محرك الفرص',en:'Upsell & Bundles'},
+    quotes:{ar:'عروض الواتساب',en:'WhatsApp Quotes'},
+    rfm:{ar:'تصنيف العملاء',en:'RFM Segments'},
+    commission:{ar:'حاسبة العمولات',en:'Commission Sim'},
+    routes:{ar:'مسارات الزيارات',en:'Field Routes'},
+    intel:{ar:'استخبارات السوق',en:'Market Intel'},
+    leaderboard:{ar:'لوحة الشرف',en:'Leaderboard'}
 };
+
 
 function t(k) { return I[k] ? I[k][L] : k; }
 function $(id) { return document.getElementById(id); }
@@ -227,10 +262,26 @@ function getPayRef(row) {
     return '';
 }
 
+// Filter out ERP summary/total rows (rows without customer, invoice, or item, or labeled 'Total'/'Summary')
+function isValidSalesRow(r) {
+    if (!r || typeof r !== 'object') return false;
+    let c = getCustName(r);
+    let inv = getRowStr(r, ['Invoice Nbr', 'Invoice Number', 'Order Nbr', 'Order Number', 'Invoice', 'Order', 'رقم الفاتورة', 'رقم الطلب']);
+    let item = getRowStr(r, ['Item Description', 'Item ID', 'Description', 'Item', 'المنتج', 'اسم الصنف']);
+    let cat = getRowStr(r, ['Item Class Name', 'Category', 'category', 'الفئة', 'القسم']);
+    if (!c && !inv && !item && !cat) return false;
+    let txt = (c + ' ' + inv + ' ' + item).toLowerCase();
+    if (txt.includes('total') || txt.includes('إجمالي') || txt.includes('المجموع') || txt.includes('summary')) {
+        if (!inv && !item) return false;
+    }
+    return true;
+}
+
 // Data filtering by date, rep, category
 function getFilteredSales() {
-    if (!globalDateRange.start && !globalDateRange.end && !globalRepFilter && !globalCatFilter) return S;
-    return S.filter(r => {
+    let list = (typeof S !== 'undefined' && Array.isArray(S)) ? S.filter(isValidSalesRow) : [];
+    if (!globalDateRange.start && !globalDateRange.end && !globalRepFilter && !globalCatFilter) return list;
+    return list.filter(r => {
         let pass = true;
         
         // Date filter
@@ -258,6 +309,7 @@ function getFilteredSales() {
         return pass;
     });
 }
+
 
 
 function dc(k) { if(CH[k]) { CH[k].destroy(); delete CH[k]; } }
