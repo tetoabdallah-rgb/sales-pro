@@ -2,13 +2,16 @@
 
 const NAV = [
     {s:{ar:'الأساسية',en:'Core'}},
-    {p:'dash',ic:'🏠'},{p:'sales',ic:'💰'},{p:'targets',ic:'🎯'},{p:'personal',ic:'👤'},
+    {p:'dash',ic:'🏠'},{p:'today',ic:'📅'},{p:'sales',ic:'💰'},{p:'targets',ic:'🎯'},{p:'personal',ic:'👤'},
     {p:'customers',ic:'🏪'},{p:'todo',ic:'📋'},{p:'visits',ic:'🚗'},{p:'brands',ic:'📦'},
     {s:{ar:'الأقسام',en:'Depts'}},
     {p:'accessories',ic:'🎧'},{p:'hardware',ic:'📱'},{p:'collections',ic:'💰'},{p:'stock',ic:'📦'},
     {s:{ar:'متقدم',en:'Advanced'}},
     {p:'analytics',ic:'🧠'},{p:'leads',ic:'🤝'},{p:'potential',ic:'🚀'},{p:'profit',ic:'💵'},
     {p:'keyacc',ic:'⭐'},{p:'dormant',ic:'💤'},{p:'prospects',ic:'🔍'},{p:'aging',ic:'🛡️'},
+    {s:{ar:'مضاعفة المبيعات 🔥',en:'Growth & Booster 🔥'}},
+    {p:'upsell',ic:'🛍️'},{p:'quotes',ic:'💬'},{p:'rfm',ic:'👑'},{p:'commission',ic:'🏆'},
+    {p:'routes',ic:'🗺️'},{p:'intel',ic:'🛡️'},{p:'leaderboard',ic:'🎮'},
     {s:{ar:'ذكي',en:'Smart'}},
     {p:'ai',ic:'🤖'},{p:'alerts',ic:'🔔'},
     {s:{ar:'النظام',en:'System'}},
@@ -23,6 +26,7 @@ const getImg = (name) => `<img src="${F_URL}${name}" style="width:28px;height:28
 
 var ICONS = window.ICONS = {
     dash: getImg('Bar%20chart/3D/bar_chart_3d.png'),
+    today: getImg('Calendar/3D/calendar_3d.png'),
     sales: getImg('Receipt/3D/receipt_3d.png'),
     targets: getImg('Bullseye/3D/bullseye_3d.png'),
     personal: getImg('Handshake/3D/handshake_3d.png'),
@@ -48,8 +52,16 @@ var ICONS = window.ICONS = {
     settings: getImg('Gear/3D/gear_3d.png'),
     collections: getImg('Money%20with%20wings/3D/money_with_wings_3d.png'),
     visits: getImg('Automobile/3D/automobile_3d.png'),
-    leads: getImg('Handshake/3D/handshake_3d.png')
+    leads: getImg('Handshake/3D/handshake_3d.png'),
+    upsell: '🛍️',
+    quotes: '💬',
+    rfm: '👑',
+    commission: '🏆',
+    routes: '🗺️',
+    intel: '🛡️',
+    leaderboard: '🎮'
 };
+
 
 function buildNav() {
     let h = '';
@@ -76,8 +88,13 @@ document.addEventListener('click', e => {
     if(!p) return;
     P = p;
     buildNav();
-    render();
+    if (typeof window !== 'undefined' && typeof window.render === 'function' && window.render !== render) {
+        window.render();
+    } else {
+        render();
+    }
 });
+
 
 if ($('bTh')) {
     $('bTh').onclick = () => {
@@ -154,18 +171,41 @@ function initAnm() {
 
 function render() {
     let fn = {
-        dash: rDash, sales: rSales, targets: rTgt, personal: rPers,
-        customers: rCust, todo: rTodo, visits: rVisits, brands: rBrands, analytics: rAn, potential: rPot,
-        leads: rLeads, profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
+        dash: rDash, today: typeof window.rToday === 'function' ? window.rToday : null,
+        sales: rSales, targets: rTgt, personal: rPers,
+        customers: typeof window.rCust === 'function' ? window.rCust : rCust,
+        todo: typeof window.rTodo === 'function' ? window.rTodo : rTodo,
+        visits: typeof window.rVisits === 'function' ? window.rVisits : (typeof rVisits === 'function' ? rVisits : null),
+        brands: rBrands, analytics: rAn, potential: rPot,
+        leads: typeof window.rLeads === 'function' ? window.rLeads : (typeof rLeads === 'function' ? rLeads : null),
+        profit: rProfit, accessories: rAcc, hardware: rHW, collections: rCollections,
         stock: typeof window.rStock === 'function' ? window.rStock : (typeof rStock === 'function' ? rStock : null),
         keyacc: rKey, dormant: rDorm, prospects: rPros, alerts: rAl, ai: rAI,
         aging: typeof window.rAgingDebt === 'function' ? window.rAgingDebt : (typeof rAgingDebt === 'function' ? rAgingDebt : null),
-        account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings
+        account: rAcct, backup: rBk, setup: rSetup, reset: rReset, settings: rSettings,
+        upsell: typeof window.rUpsell === 'function' ? window.rUpsell : null,
+        quotes: typeof window.rQuotes === 'function' ? window.rQuotes : null,
+        rfm: typeof window.rRFM === 'function' ? window.rRFM : null,
+        commission: typeof window.rCommission === 'function' ? window.rCommission : null,
+        routes: typeof window.rRoutes === 'function' ? window.rRoutes : null,
+        intel: typeof window.rIntel === 'function' ? window.rIntel : null,
+        leaderboard: typeof window.rLeaderboard === 'function' ? window.rLeaderboard : null
     };
-    if (fn[P]) fn[P]();
+
+    let targetFn = fn[P];
+    if (!targetFn && typeof window !== 'undefined') {
+        let cap = 'r' + P.charAt(0).toUpperCase() + P.slice(1);
+        if (typeof window[cap] === 'function') targetFn = window[cap];
+        else if (typeof window['r' + P] === 'function') targetFn = window['r' + P];
+    }
+
+    if (typeof targetFn === 'function') {
+        targetFn();
+    }
     initAnm();
     if (typeof window.enhanceUI === 'function') setTimeout(window.enhanceUI, 50);
 }
+
 
 window.TUI = function(enStr) {
   const map = {
